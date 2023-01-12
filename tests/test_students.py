@@ -71,6 +71,15 @@ def test_put_student(student: StudentData):
     assert student_json == new_student_json, f'Returned student {new_student_json} does not match put student {student_json}.'
 
 
+# Test deleting a student
+def test_delete_student():
+    student_json = all_students_json['Karen Tester']
+    response = client.delete('/students/' + str(student_json['id']))
+    assert response.status_code == status.HTTP_200_OK, f'Error deleting {student_json}'
+    response = client.get('/students/' + str(student_json['id']))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 # Permission test: student not in user's list
 def test_student_permission():
     max_student_id = 0
