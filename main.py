@@ -16,8 +16,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
 app.user = None
-app.db = None
 app.db_path = os.environ.get("DB_PATH") or os.path.join(os.path.dirname(__file__), 'app.db')
+app.db = None
 app.db = db.get_db(app)
 app.roles = load_all_roles(db = app.db)
 app.instructors = {}
@@ -30,7 +30,7 @@ api_router = APIRouter()
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
-client = WebApplicationClient(GOOGLE_CLIENT_ID)
+google_client = WebApplicationClient(GOOGLE_CLIENT_ID)
 
 
 async def get_google_provider_cfg() -> dict:
@@ -39,6 +39,16 @@ async def get_google_provider_cfg() -> dict:
         async with session.get(GOOGLE_DISCOVERY_URL) as response:
             ret_json = await response.json()
     return ret_json
+
+
+def check_basic_auth(permission_url_path):
+    if not app.user:
+        return RedirectResponse(url='/')
+    for role_name in app.user.roles:
+        role = app.roles[role_name]
+        if permission_url_path in role.permissible_endpoints:
+            return None
+    raise HTTPException(status_code=403, detail=f"User does not have permission for {permission_url_path}")
 
 
 def build_base_html_args(request: Request) -> dict:
@@ -68,7 +78,7 @@ async def signin_get(request: Request):
     google_provider_cfg = await get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
     redirect_uri = 'https://' + request.url.netloc + request.url.path + '/callback'
-    request_uri = client.prepare_request_uri(
+    request_uri = google_client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
         scope=["openid", "email", "profile"],
@@ -81,7 +91,7 @@ async def signin_callback_get(request: Request, code):
     google_provider_cfg = await get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
     redirect_url = 'https://' + request.url.netloc + request.url.path
-    token_url, headers, body = client.prepare_token_request(
+    token_url, headers, body = google_client.prepare_token_request(
         token_endpoint,
         authorization_response=f'{request.url}',
         redirect_url=redirect_url,
@@ -91,9 +101,9 @@ async def signin_callback_get(request: Request, code):
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.post(token_url, data=body) as response:
             token_response_json = await response.json()
-    client.parse_request_body_response(json.dumps(token_response_json))
+    google_client.parse_request_body_response(json.dumps(token_response_json))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
-    uri, headers, body = client.add_token(userinfo_endpoint)
+    uri, headers, body = google_client.add_token(userinfo_endpoint)
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(uri, data=body) as response:
             user_info_json = await response.json()
@@ -125,18 +135,6 @@ async def shutdown() -> None:
         os.remove(app.db_path)
 
 
-def check_basic_auth(permission_url_path):
-    if not app.user:
-        return RedirectResponse(url='/')
-
-    for role_name in app.user.roles:
-        role = app.roles[role_name]
-        if permission_url_path in role.permissible_endpoints:
-            return None
-
-    raise HTTPException(status_code=403, detail=f"User does not have permission for {permission_url_path}")
-
-
 @api_router.get("/profile")
 async def profile_get(request: Request):
     auth_check = check_basic_auth('/profile')
@@ -146,13 +144,19 @@ async def profile_get(request: Request):
     return templates.TemplateResponse("profile.html", template_args)
 
 
-@api_router.get("/camps")
-async def camps_get(request: Request):
-    auth_check = check_basic_auth('/camps')
+@api_router.get("/instructor/{user_id}")
+async def instructor_get_one(request: Request, user_id: int):
+    auth_check = check_basic_auth('/instructor')
     if auth_check is not None:
         return auth_check
     template_args = build_base_html_args(request)
-    return templates.TemplateResponse("camps.html", template_args)
+    return templates.TemplateResponse("instructor.html", template_args)
+
+
+
+###############################################################################
+# STUDENTS
+###############################################################################
 
 
 @api_router.get("/students")
@@ -169,6 +173,7 @@ async def get_students_page(request: Request):
     template_args['student_names'] = student_names
     return templates.TemplateResponse("students.html", template_args)
 
+
 @api_router.get("/students/{student_id}", response_model=StudentData)
 async def get_one_student(student_id: int):
     if check_basic_auth('/students') is not None:
@@ -177,6 +182,7 @@ async def get_one_student(student_id: int):
     if student is None:
         raise HTTPException(status_code=403, detail=f"User does not have permission for student id={student_id}")
     return student
+
 
 @api_router.put("/students/{student_id}", response_model = StudentData)
 async def put_update_student(student_id: int, updated_student: StudentData):
@@ -189,6 +195,7 @@ async def put_update_student(student_id: int, updated_student: StudentData):
     await student.update_basic(app.db)
     app.user.students[student_id] = student
     return student
+
 
 @api_router.post("/students", response_model = StudentData)
 async def post_new_student(new_student_data: StudentData):
@@ -205,11 +212,18 @@ async def post_new_student(new_student_data: StudentData):
     app.user.add_student(db = app.db, student = new_student)
     return new_student
 
+
 @api_router.delete("/students/{student_id}")
 async def delete_student(student_id: int):
     if check_basic_auth('/students') is not None:
         return None
     app.user.remove_student(db = app.db, student_id = student_id)
+
+
+
+###############################################################################
+# PROGRAMS/TEACH
+###############################################################################
 
 
 @api_router.get("/teach")
@@ -364,6 +378,12 @@ async def level_delete(request: Request, program_id: int, level_id: int):
         program.remove_level(db = app.db, level_id = level_id)
 
 
+
+###############################################################################
+# ADMIN
+###############################################################################
+
+
 @api_router.get("/members")
 async def members_get(request: Request):
     auth_check = check_basic_auth('/members')
@@ -382,6 +402,12 @@ async def database_get(request: Request):
     return templates.TemplateResponse("database.html", template_args)
 
 
+
+###############################################################################
+# CAMPS/SCHEDULING
+###############################################################################
+
+
 async def schedule_get_all_camps(request: Request, template_args: dict):
     user_program_titles = app.user.load_program_titles(db = app.db)
     load_all_users_by_role(db = app.db, role="INSTRUCTOR", users = app.instructors)
@@ -390,6 +416,15 @@ async def schedule_get_all_camps(request: Request, template_args: dict):
     template_args['user_program_titles'] = user_program_titles
     template_args['instructors'] = app.instructors
     return templates.TemplateResponse("schedule.html", template_args)
+
+
+@api_router.get("/camps")
+async def camps_get(request: Request):
+    auth_check = check_basic_auth('/camps')
+    if auth_check is not None:
+        return auth_check
+    template_args = build_base_html_args(request)
+    return templates.TemplateResponse("camps.html", template_args)
 
 
 @api_router.get("/schedule")
@@ -423,13 +458,11 @@ async def camp_delete(request: Request, camp_id: int):
         camp.delete(db = app.db)
 
 
-@api_router.get("/instructor/{user_id}")
-async def instructor_get_one(request: Request, user_id: int):
-    auth_check = check_basic_auth('/instructor')
-    if auth_check is not None:
-        return auth_check
-    template_args = build_base_html_args(request)
-    return templates.TemplateResponse("instructor.html", template_args)
+
+###############################################################################
+# INCLUDE ROUTER (must go last)
+###############################################################################
 
 
 app.include_router(api_router)
+
