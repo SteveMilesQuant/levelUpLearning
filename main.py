@@ -292,7 +292,6 @@ async def post_new_program(new_program_data: ProgramData):
     if check_basic_auth('/programs') is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
     # TODO: there's got to be a slicker way to do this
-    print(new_program_data)
     new_program = Program(
         db = app.db,
         id = None,
