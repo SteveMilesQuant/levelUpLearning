@@ -54,7 +54,7 @@
   }
 
   function resetNewProgram() {
-    hide("new-student");
+    hide("new-program");
     document.getElementById('new-program-title').innerHTML = "";
     document.getElementById('new-program-tags').innerHTML = "";
     document.getElementById('new-program-from-grade').selectedIndex = 6;
@@ -127,6 +127,8 @@
       programData = new ProgramData(programTitle, programTags, [programFromGrade, programToGrade], programDescription);
 
       http.post('/programs', programData).then((program) => {
+        resetNewProgram();
+        addProgramToTable(program);
         window.open('/programs/' + program.id, '_blank');
       });
     }

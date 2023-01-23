@@ -114,10 +114,10 @@
       <div class='pop-up-subitem'><strong >Title:</strong></div>
       <div class='pop-up-subitem pop-up-text'contenteditable='true' id='new-level-title'></div>
       <div class='pop-up-subitem'>
-        <span><button class='selectable' onclick='postLevel(); hide("new-level"); resetNewLevel();'>
+        <span><button class='selectable' onclick='postLevel(); resetNewLevel();'>
           <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
         </button></span>
-        <span><button class='selectable' onclick='hide("new-level"); resetNewLevel();'>
+        <span><button class='selectable' onclick='resetNewLevel();'>
           <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
         </button></span>
       </div>
@@ -209,6 +209,7 @@
   }
 
   function resetNewLevel() {
+    hide("new-level");
     document.getElementById('new-level-title').innerHTML = '';
   }
 
