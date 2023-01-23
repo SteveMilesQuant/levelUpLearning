@@ -3,7 +3,7 @@ from db import execute_read, execute_write
 from pydantic import BaseModel
 from typing import Dict, List, Optional, Any
 from student import Student
-from program import Program, GradeLevel
+from program import Program
 from filtertable import FilterTable, Checkboxes, DoubleRange
 
 
@@ -47,7 +47,7 @@ class User(BaseModel):
     roles: Optional[List[str]] = []
     email_addresses: Optional[List[str]] = []
     primary_email_address_index: Optional[int] = 0
-    students: Optional[Dict[int, Student]] = {}
+    student_ids: Optional[List[int]] = []
     program_ids: Optional[List[int]] = []
 
     def _load(self, db: Any) -> bool:
@@ -69,7 +69,7 @@ class User(BaseModel):
             '''
             result = execute_read(db, select_stmt)
         if result is None:
-            return False;
+            return False
         row = result[0] # should only be one
         self.google_id = row['google_id']
         self.given_name = row['given_name']
@@ -105,10 +105,10 @@ class User(BaseModel):
                 WHERE user_id = {self.id}
         '''
         result = execute_read(db, select_stmt)
-        self.students.clear()
+        self.student_ids.clear()
         if result is not None:
             for row in result:
-                self.students[row['student_id']] = None
+                self.student_ids.append(row['student_id'])
 
         select_stmt = f'''
             SELECT program_id
@@ -258,37 +258,37 @@ class User(BaseModel):
             '''
             execute_write(db, delete_stmt)
 
-    def load_students(self, db: Any):
-        for student_id in self.students.keys():
-            self.students[student_id] = Student(id=student_id, db=db)
-
-    def add_student(self, db: Any, student: Student):
-        self.students[student.id] = student
-        insert_stmt = f'''
-            INSERT INTO user_x_students (user_id, student_id)
-                VALUES ({self.id}, "{student.id}");
-        '''
-        execute_write(db, insert_stmt)
+    def add_student(self, db: Any, student_id: int):
+        if student_id not in self.student_ids:
+            self.student_ids.append(student_id)
+            insert_stmt = f'''
+                INSERT INTO user_x_students (user_id, student_id)
+                    VALUES ({self.id}, "{student_id}");
+            '''
+            execute_write(db, insert_stmt)
 
     def remove_student(self, db: Any, student_id: int):
-        self.load_students(db = db)
-        student = self.students.pop(student_id)
-        if student is not None:
-            delete_stmt = f'''
-                DELETE FROM user_x_students
-                    WHERE user_id = {self.id} and student_id = {student_id};
-            '''
-            execute_write(db, delete_stmt)
+        try:
+            self.student_ids.remove(student_id)
+        except ValueError:
+            return # not there is ok - just don't delete
 
-            # If no other guardians have this student, fully delete them
-            select_stmt = f'''
-                SELECT student_id
-                    FROM user_x_students
-                    WHERE student_id = {student_id}
-            '''
-            result = execute_read(db, select_stmt)
-            if result is None:
-                student.delete(db = db)
+        delete_stmt = f'''
+            DELETE FROM user_x_students
+                WHERE user_id = {self.id} and student_id = {student_id};
+        '''
+        execute_write(db, delete_stmt)
+
+        # If no other guardians have this student, fully delete them
+        select_stmt = f'''
+            SELECT student_id
+                FROM user_x_students
+                WHERE student_id = {student_id}
+        '''
+        result = execute_read(db, select_stmt)
+        if result is None:
+            student = Student(db = db, id = student_id)
+            student.delete(db = db)
 
     def load_program_titles(self, db: Any) -> Dict:
         select_stmt = f'''
@@ -312,7 +312,7 @@ class User(BaseModel):
         dataframe = pandas.read_sql_query(select_stmt, db)
         dataframe['grade_range'] = dataframe['from_grade'].copy()
         for row_idx, row in dataframe.iterrows():
-            grade_range = f'{GradeLevel(row["grade_range"]).html_display()} to {GradeLevel(row["to_grade"]).html_display()}'
+            grade_range = f'{row["grade_range"]} to {row["to_grade"]}'
             dataframe.at[row_idx,'grade_range'] = grade_range
         filter_table = FilterTable(base_dataframe=dataframe)
         dataframe = filter_table.base_dataframe
@@ -343,6 +343,7 @@ class User(BaseModel):
                 WHERE user_id = {self.id} and program_id = {program_id};
         '''
         execute_write(db, delete_stmt)
+
         # If no other instructors have this program, fully delete it
         select_stmt = f'''
             SELECT program_id

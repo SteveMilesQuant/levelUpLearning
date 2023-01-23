@@ -2,17 +2,19 @@ from db import execute_read, execute_write
 from pydantic import BaseModel
 from typing import Dict, List, Optional, Any
 from datetime import date
-from program import GradeLevel
 
 
 class StudentData(BaseModel):
-    id: Optional[int] = None
     name: Optional[str] = None
     birthdate: Optional[date] = None
     grade_level: Optional[int] = None
 
 
-class Student(StudentData):
+class StudentResponse(StudentData):
+    id: Optional[int] = None
+
+
+class Student(StudentResponse):
     def _load(self, db: Any) -> bool:
         select_stmt = f'''
             SELECT *

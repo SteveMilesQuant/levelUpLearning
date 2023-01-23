@@ -1,12 +1,14 @@
 import os, aiohttp, json, db
-from fastapi import FastAPI, Request, APIRouter, HTTPException, Form
+from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status, Form
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import WebApplicationClient
+from typing import Optional
 from user import User, load_all_roles, load_all_users_by_role
-from student import StudentData, Student
-from program import Program, Level, GradeLevel
+from student import StudentData, StudentResponse, Student
+from program import ProgramData, ProgramResponse, Program
+from program import LevelData, LevelResponse, Level
 from camp import Camp, load_camps_table
 from datetime import date
 
@@ -48,7 +50,7 @@ def check_basic_auth(permission_url_path):
         role = app.roles[role_name]
         if permission_url_path in role.permissible_endpoints:
             return None
-    raise HTTPException(status_code=403, detail=f"User does not have permission for {permission_url_path}")
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for {permission_url_path}")
 
 
 def build_base_html_args(request: Request) -> dict:
@@ -160,47 +162,48 @@ async def instructor_get_one(request: Request, user_id: int):
 
 
 @api_router.get("/students")
-async def get_students_page(request: Request):
+async def get_students(request: Request, accept: Optional[str] = Header(None)):
     auth_check = check_basic_auth('/students')
-    if auth_check is not None:
-        return auth_check
-    template_args = build_base_html_args(request)
-    student_names = {}
-    if app.user is not None:
-        app.user.load_students(db = app.db)
-        for student_id, student in app.user.students.items():
-            student_names[student_id] = student.name
-    template_args['student_names'] = student_names
-    return templates.TemplateResponse("students.html", template_args)
+    if "text/html" in accept:
+        if auth_check is not None:
+            return auth_check
+        template_args = build_base_html_args(request)
+        return templates.TemplateResponse("students.html", template_args)
+    else:
+        if auth_check is not None:
+            return []
+        student_list = []
+        for student_id in app.user.student_ids:
+            student = Student(db = app.db, id = student_id)
+            student_list.append(student.dict(include=StudentResponse().dict()))
+        return student_list
 
 
-@api_router.get("/students/{student_id}", response_model=StudentData)
-async def get_one_student(student_id: int):
+@api_router.get("/students/{student_id}", response_model=StudentResponse)
+async def get_student(student_id: int):
     if check_basic_auth('/students') is not None:
-        return StudentData()
-    student = app.user.students.get(student_id)
-    if student is None:
-        raise HTTPException(status_code=403, detail=f"User does not have permission for student id={student_id}")
+        return StudentResponse()
+    if student_id not in app.user.student_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
+    student = Student(db = app.db, id = student_id)
     return student
 
 
-@api_router.put("/students/{student_id}", response_model = StudentData)
+@api_router.put("/students/{student_id}", response_model = StudentResponse)
 async def put_update_student(student_id: int, updated_student: StudentData):
     if check_basic_auth('/students') is not None:
-        return StudentData()
-    student = app.user.students.get(student_id)
-    if student is None:
-        raise HTTPException(status_code=403, detail=f"User does not have permission for student id={student_id}")
-    student = student.copy(update=updated_student.dict())
+        return StudentResponse()
+    if student_id not in app.user.student_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
+    student = Student(db = app.db, id = student_id).copy(update=updated_student.dict(exclude_unset=True))
     await student.update_basic(app.db)
-    app.user.students[student_id] = student
     return student
 
 
-@api_router.post("/students", response_model = StudentData)
+@api_router.post("/students", response_model = StudentResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_student(new_student_data: StudentData):
     if check_basic_auth('/students') is not None:
-        return StudentData()
+        return StudentResponse()
     # TODO: there's got to be a slicker way to do this
     new_student = Student(
         db = app.db,
@@ -209,7 +212,9 @@ async def post_new_student(new_student_data: StudentData):
         birthdate = new_student_data.birthdate,
         grade_level = new_student_data.grade_level
     )
-    app.user.add_student(db = app.db, student = new_student)
+    if new_student.id is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new student failed")
+    app.user.add_student(db = app.db, student_id = new_student.id)
     return new_student
 
 
@@ -217,6 +222,8 @@ async def post_new_student(new_student_data: StudentData):
 async def delete_student(student_id: int):
     if check_basic_auth('/students') is not None:
         return None
+    if student_id not in app.user.student_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
     app.user.remove_student(db = app.db, student_id = student_id)
 
 
@@ -227,7 +234,7 @@ async def delete_student(student_id: int):
 
 
 @api_router.get("/teach")
-async def programs_teach_get(request: Request):
+async def get_teach_page(request: Request):
     auth_check = check_basic_auth('/teach')
     if auth_check is not None:
         return auth_check
@@ -235,147 +242,156 @@ async def programs_teach_get(request: Request):
     return templates.TemplateResponse("teach.html", template_args)
 
 
-def programs_get(request: Request):
-    template_args = build_base_html_args(request)
-    filtertable = None
-    if app.user is not None:
-        filtertable = app.user.load_programs_table(db = app.db)
-    template_args['filtertable'] = filtertable
-    return templates.TemplateResponse("programs.html", template_args)
-
-
 @api_router.get("/programs")
-async def programs_get_all(request: Request):
+async def get_programs(request: Request, accept: Optional[str] = Header(None)):
     auth_check = check_basic_auth('/programs')
-    if auth_check is not None:
-        return auth_check
-    return programs_get(request)
+    if "text/html" in accept:
+        if auth_check is not None:
+            return auth_check
+        template_args = build_base_html_args(request)
+        return templates.TemplateResponse("programs.html", template_args)
+    else:
+        if auth_check is not None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+        program_list = []
+        for program_id in app.user.program_ids:
+            program = Program(db = app.db, id = program_id)
+            program_list.append(program.dict(include=ProgramResponse().dict()))
+        return program_list
 
 
-def programs_get_one(request: Request, program_id: int, level_id = None):
-    template_args = build_base_html_args(request)
-    current_program = None
-    current_level = None
-    sorted_levels = None
-    if app.user is not None:
+@api_router.get("/programs/{program_id}", response_model = ProgramResponse)
+async def get_program(request: Request, program_id: int, accept: Optional[str] = Header(None)):
+    auth_check = check_basic_auth('/programs')
+    if "text/html" in accept:
+        if auth_check is not None:
+            return auth_check
+        template_args = build_base_html_args(request)
+        return templates.TemplateResponse("program.html", template_args)
+    else:
+        if auth_check is not None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
         if program_id not in app.user.program_ids:
-            return RedirectResponse(url='/programs')
-        current_program = Program(db = app.db, id = program_id)
-        current_program.load_levels(db = app.db)
-        sorted_levels = [None] * len(current_program.levels)
-        for level in current_program.levels.values():
-            sorted_levels[level.list_index-1] = level
-    if current_program is not None and level_id is not None:
-        current_level = current_program.levels.get(level_id)
-    template_args['current_program'] = current_program
-    template_args['current_level']  = current_level
-    template_args['sorted_levels']  = sorted_levels
-    return templates.TemplateResponse("program.html", template_args)
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        return Program(db = app.db, id = program_id)
 
 
-@api_router.get("/programs/{program_id}")
-async def programs_get_one_nolevel(request: Request, program_id: int):
-    auth_check = check_basic_auth('/programs')
-    if auth_check is not None:
-        return auth_check
-    return programs_get_one(request, program_id, level_id=None)
+@api_router.put("/programs/{program_id}", response_model = ProgramResponse)
+async def put_update_program(program_id: int, updated_program: ProgramData):
+    if check_basic_auth('/programs') is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+    if program_id not in app.user.program_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+    program = Program(db = app.db, id = program_id).copy(update=updated_program.dict(exclude_unset=True))
+    await program.update_basic(app.db)
+    return program
 
 
-@api_router.get("/programs/{program_id}/{level_id}")
-async def programs_get_one_withlevel(request: Request, program_id: int, level_id: int):
-    auth_check = check_basic_auth('/programs')
-    if auth_check is not None:
-        return auth_check
-    return programs_get_one(request, program_id, level_id)
-
-
-@api_router.post("/programs")
-async def programs_post_new(request: Request, title: str = Form(), from_grade: int = Form(), to_grade: int = Form()):
-    auth_check = check_basic_auth('/programs')
-    if auth_check is not None:
-        return auth_check
-    form = await request.form()
+@api_router.post("/programs", response_model = ProgramResponse, status_code = status.HTTP_201_CREATED)
+async def post_new_program(new_program_data: ProgramData):
+    if check_basic_auth('/programs') is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+    # TODO: there's got to be a slicker way to do this
+    print(new_program_data)
     new_program = Program(
         db = app.db,
-        title = title,
-        grade_range = (GradeLevel(from_grade), GradeLevel(to_grade)),
-        tags = form.get('tags')
+        id = None,
+        title = new_program_data.title,
+        grade_range = new_program_data.grade_range,
+        tags = new_program_data.tags,
+        description = new_program_data.description
     )
+    if new_program.id is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new program failed")
     app.user.add_program(db = app.db, program_id = new_program.id)
-    return await programs_get_one(request, new_program.id, level_id=None)
-
-
-@api_router.post("/programs/{program_id}")
-async def program_post_update(request: Request, program_id: int):
-    auth_check = check_basic_auth('/programs')
-    if auth_check is not None:
-        return auth_check
-    level_id = None
-    if program_id in app.user.program_ids:
-        program = Program(db = app.db, id = program_id)
-        form = await request.form()
-        level_title = form.get('level_title')
-        if level_title is None:
-            # Updating a program
-            program.update_basic(
-                db = app.db,
-                title = form.get('program_title'),
-                tags = form.get('program_tags'),
-                from_grade = form.get('program_from_grade'),
-                to_grade = form.get('program_to_grade'),
-                description = form.get('program_desc')
-            )
-        else:
-            # New level
-            new_level = Level(
-                db = app.db,
-                title = level_title,
-                description = form.get('level_desc'),
-                list_index = program.get_next_level_index()
-            )
-            program.add_level(db = app.db, level_id = new_level.id)
-            level_id = new_level.id
-    return await programs_get_one(request, program_id, level_id=level_id)
-
-
-@api_router.post("/programs/{program_id}/{level_id}")
-async def level_post_update(request: Request, program_id: int, level_id: int):
-    auth_check = check_basic_auth('/programs')
-    if auth_check is not None:
-        return auth_check
-    if program_id in app.user.program_ids:
-        program = Program(db = app.db, id = program_id)
-        program.load_levels(db = app.db)
-        level = program.levels.get(level_id)
-        if level is not None:
-            form = await request.form()
-            level.update_basic(
-                db = app.db,
-                title = form.get('level_title'),
-                description = form.get('level_desc')
-            )
-            level_list_index = form.get('level_list_index')
-            if level_list_index is not None:
-                program.move_level_index(db = app.db, level_id = level_id, new_list_index = int(level_list_index))
-    return await programs_get_one(request, program_id, level_id)
+    return new_program
 
 
 @api_router.delete("/programs/{program_id}")
-async def program_delete(request: Request, program_id: int):
-    auth_check = check_basic_auth('/programs')
-    if auth_check is not None:
-        return auth_check
+async def delete_program(program_id: int):
+    if check_basic_auth('/programs') is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+    if program_id not in app.user.program_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     app.user.remove_program(db = app.db, program_id = program_id)
 
 
-@api_router.delete("/programs/{program_id}/{level_id}")
-async def level_delete(request: Request, program_id: int, level_id: int):
+@api_router.get("/programs/{program_id}/levels")
+async def get_levels(program_id: int):
     auth_check = check_basic_auth('/programs')
     if auth_check is not None:
-        return auth_check
-    if program_id in app.user.program_ids:
-        program = Program(db = app.db, id = program_id)
-        program.remove_level(db = app.db, level_id = level_id)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+    if program_id not in app.user.program_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+    program = Program(db = app.db, id = program_id)
+    level_list = []
+    for level_id in program.level_ids:
+        level = Level(db = app.db, id = level_id)
+        level_list.append(level.dict(include=LevelResponse().dict()))
+    return level_list
+
+
+@api_router.get("/programs/{program_id}/levels/{level_id}", response_model=LevelResponse)
+async def get_level(program_id: int, level_id: int):
+    if check_basic_auth('/programs') is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+    if program_id not in app.user.program_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+    program = Program(db = app.db, id = program_id)
+    if level_id not in program.level_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
+    return Level(db = app.db, id = level_id)
+
+
+@api_router.put("/programs/{program_id}/levels/{level_id}", response_model = LevelResponse)
+async def put_update_level(program_id: int, level_id: int, updated_level: LevelData):
+    if check_basic_auth('/programs') is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+    if program_id not in app.user.program_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+    program = Program(db = app.db, id = program_id)
+    if level_id not in program.level_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
+    level = Level(db = app.db, id = level_id)
+    new_list_index = updated_level.list_index
+    updated_level.list_index = level.list_index
+    level = level.copy(update=updated_level.dict(exclude_unset=True))
+    await level.update_basic(app.db)
+    if new_list_index != level.list_index:
+        await program.move_level_index(db = app.db, level_id = level.id, new_list_index = new_list_index)
+        level.list_index = new_list_index
+    return level
+
+
+@api_router.post("/programs/{program_id}/levels", response_model = LevelResponse, status_code = status.HTTP_201_CREATED)
+async def post_new_level(program_id: int, new_level_data: LevelData):
+    if check_basic_auth('/programs') is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+    if program_id not in app.user.program_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+    program = Program(db = app.db, id = program_id)
+    # TODO: there's got to be a slicker way to do this
+    new_level = Level(
+        db = app.db,
+        id = None,
+        title = new_level_data.title,
+        description = new_level_data.description,
+        list_index = program.get_next_level_index()
+    )
+    program.add_level(db = app.db, level_id = new_level.id)
+    return new_level
+
+
+@api_router.delete("/programs/{program_id}/levels/{level_id}")
+async def delete_level(program_id: int, level_id: int):
+    if check_basic_auth('/programs') is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+    if program_id not in app.user.program_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+    program = Program(db = app.db, id = program_id)
+    if level_id not in program.level_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
+    await program.remove_level(db = app.db, level_id = level_id)
 
 
 
