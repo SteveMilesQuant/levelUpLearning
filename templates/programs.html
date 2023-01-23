@@ -127,7 +127,7 @@
       programData = new ProgramData(programTitle, programTags, [programFromGrade, programToGrade], programDescription);
 
       http.post('/programs', programData).then((program) => {
-        http.redirect('/programs/' + program.id);
+        window.open('/programs/' + program.id, '_blank');
       });
     }
   }
