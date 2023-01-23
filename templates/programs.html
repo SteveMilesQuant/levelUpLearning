@@ -70,15 +70,20 @@
     newCol = newRow.insertCell(0);
     newCol.hidden = true;
     newCol.innerHTML = program.id;
-    newCol.onclick = function() { http.redirect('/programs/' + program.id); };
+    newCol.onclick = function() {
+      row = this.parentNode;
+      programId = row.cells[0].innerHTML;
+      http.redirect('/programs/' + programId);
+    };
+    funcPtr = newCol.onclick;
 
     newCol = newRow.insertCell(1);
     newCol.innerHTML = program.title;
-    newCol.onclick = function() { http.redirect('/programs/' + program.id); };
+    newCol.onclick = funcPtr;
 
     newCol = newRow.insertCell(2);
     newCol.innerHTML = program.tags;
-    newCol.onclick = function() { http.redirect('/programs/' + program.id); };
+    newCol.onclick = funcPtr
 
     newCol = newRow.insertCell(3);
     from_grade = program.grade_range[0].toString();
@@ -86,16 +91,19 @@
     to_grade = program.grade_range[1].toString();
     if (to_grade == '0') to_grade = 'K';
     newCol.innerHTML =  from_grade + ' to ' + to_grade;
-    newCol.onclick = function() { http.redirect('/programs/' + program.id); };
+    newCol.onclick = funcPtr
 
     newCol = newRow.insertCell(4);
     newButton = document.createElement('button');
     newButton.classList.add('selectable');
     newButton.innerHTML = 'Delete';
     newButton.onclick = function () {
-      if (confirm('Are you sure you want to delete this program?')) {
-        http.delete('/programs', program.id);
-        newRow.remove();
+      row = this.parentNode.parentNode;
+      programId = row.cells[0].innerHTML;
+      programTitle = row.cells[1].innerHTML;
+      if (confirm('Are you sure you want to delete the program "' + programTitle + '"?')) {
+        http.delete('/programs', programId);
+        row.remove();
       }
     }
     newCol.appendChild(newButton);
