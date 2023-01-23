@@ -73,7 +73,7 @@
     newCol.onclick = function() {
       row = this.parentNode;
       programId = row.cells[0].innerHTML;
-      http.redirect('/programs/' + programId);
+      window.open('/programs/' + programId, '_blank');
     };
     funcPtr = newCol.onclick;
 
