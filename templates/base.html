@@ -168,6 +168,69 @@
     }
   }
 
+  function template(strings, ...keys) {
+    return (values) => {
+      const dict = values[values.length - 1] || {};
+      const result = [strings[0]];
+      keys.forEach((key, i) => {
+        const value = Number.isInteger(key) ? values[key] : dict[key];
+        result.push(value, strings[i + 1]);
+      });
+      return result.join("");
+    };
+  }
+  class FilterTableColumn {
+    constructor(label, templateFormat, sourceCols, hide) {
+      if (sourceCols.constructor != Array) sourceCols = [sourceCols];
+      this.label = label;
+      this.templateFormat = templateFormat;
+      this.sourceCols = sourceCols;
+      this.hide = hide;
+    }
+  }
+  class FilterTable {
+    constructor(colMeta, htmlTableId, insertRowShiftIdx, postProcess) {
+      if (colMeta.constructor != Array) colMeta = [colMeta];
+      this.colMeta = colMeta;
+      this.insertRowShiftIdx = insertRowShiftIdx;
+      this.rows = [];
+
+      var table = document.getElementById(htmlTableId);
+      this.htmlTable = table;
+      var newRow = table.insertRow(table.rows.length + insertRowShiftIdx);
+      for (const col of colMeta) {
+        var newCol = document.createElement('th');
+        if (col.hide) newCol.hidden = true;
+        newCol.innerHTML = col.label;
+        newRow.appendChild(newCol);
+      }
+    }
+
+    appendRow(rawRow) {
+      var newRow = this.htmlTable.insertRow(this.htmlTable.rows.length + this.insertRowShiftIdx);
+      rawRow.htmlRow = newRow;
+      this.rows.push(rawRow);
+
+      for (const col of this.colMeta) {
+        var newCol = newRow.insertCell();
+        if (col.hide) newCol.hidden = true;
+        var strArr = [];
+        for (var srcCol of col.sourceCols) {
+          var srcData = rawRow[srcCol];
+          if (srcData.constructor == Array) {
+            for (var srcDataElem of srcData) strArr.push(srcDataElem);
+          }
+          else {
+            strArr.push(srcData);
+          }
+        }
+        newCol.innerHTML = col.templateFormat(strArr);
+      }
+
+      return newRow;
+    }
+  }
+
   // Classes for sending down data to server
   // Responses will be effectively these plus an ID
   class StudentData {

@@ -8,7 +8,6 @@
   <div class='content-body'>
     <div class='content-item'><h1>Programs</h1></div>
     <div class='content-item'><table id='programs-table'>
-      <tr><th hidden>Id</th><th>Title</th><th>Tags</th><th>Grade Range</th></tr>
       <tr class='selectable' onclick='unhide("new-program");'><td>+ Add Program</td></tr>
     </table></div>
     <div class='pop-up' id='new-program' hidden>
@@ -50,7 +49,18 @@
 {% block script %}
   // One-time setup
   window.onload = function() {
-    getProgramTable();
+    colMeta = [];
+    colMeta.push(new FilterTableColumn('ID', template`${0}`, 'id', true));
+    colMeta.push(new FilterTableColumn('Title', template`${0}`, 'title', false));
+    colMeta.push(new FilterTableColumn('Tags', template`${0}`, 'tags', false));
+    colMeta.push(new FilterTableColumn('Grade Range', template`${0} to ${1}`, 'grade_range', false));
+
+    window.userTable = new FilterTable(colMeta, 'programs-table', -1);
+
+    http.get('/programs').then((programList) => {
+
+      for (const program of programList) addProgramToTable(program);
+    })
   }
 
   function resetNewProgram() {
@@ -63,56 +73,31 @@
   }
 
   function addProgramToTable(program) {
-    table = document.getElementById('programs-table');
-    newRow = table.insertRow(table.rows.length - 1);
+    var newRow = window.userTable.appendRow(program);
     newRow.classList.add('selectable');
 
-    newCol = newRow.insertCell(0);
-    newCol.hidden = true;
-    newCol.innerHTML = program.id;
-    newCol.onclick = function() {
+    commonOnClick = function() {
       row = this.parentNode;
       programId = row.cells[0].innerHTML;
       window.open('/programs/' + programId, '_blank');
     };
-    funcPtr = newCol.onclick;
+    for (var col of newRow.childNodes) col.onclick = commonOnClick;
 
-    newCol = newRow.insertCell(1);
-    newCol.innerHTML = program.title;
-    newCol.onclick = funcPtr;
-
-    newCol = newRow.insertCell(2);
-    newCol.innerHTML = program.tags;
-    newCol.onclick = funcPtr
-
-    newCol = newRow.insertCell(3);
-    from_grade = program.grade_range[0].toString();
-    if (from_grade == '0') from_grade = 'K';
-    to_grade = program.grade_range[1].toString();
-    if (to_grade == '0') to_grade = 'K';
-    newCol.innerHTML =  from_grade + ' to ' + to_grade;
-    newCol.onclick = funcPtr
-
-    newCol = newRow.insertCell(4);
-    newButton = document.createElement('button');
+    // Add a delete button off the right side
+    var newCol = newRow.insertCell();
+    var newButton = document.createElement('button');
     newButton.classList.add('selectable');
     newButton.innerHTML = 'Delete';
     newButton.onclick = function () {
-      row = this.parentNode.parentNode;
-      programId = row.cells[0].innerHTML;
-      programTitle = row.cells[1].innerHTML;
+      var row = this.parentNode.parentNode;
+      var programId = row.cells[0].innerHTML;
+      var programTitle = row.cells[1].innerHTML;
       if (confirm('Are you sure you want to delete the program "' + programTitle + '"?')) {
         http.delete('/programs', programId);
         row.remove();
       }
     }
     newCol.appendChild(newButton);
-  }
-
-  function getProgramTable() {
-    http.get('/programs').then((programList) => {
-      for (const program of programList) { addProgramToTable(program); }
-    });
   }
 
   function postProgram() {
@@ -136,6 +121,12 @@
 
   function deleteProgram(programId) {
     http.delete('/programs', programId);
-    http.redirect('/programs');
+
+    for (var row of window.userTable.rows) {
+      if (row.id == programId) {
+        row.htmlRow.remove();
+        break;
+      }
+    }
   }
 {% endblock %}
