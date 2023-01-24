@@ -168,6 +168,7 @@
     }
   }
 
+  // Filterable and searchable table class
   function template(strings, ...keys) {
     return (values) => {
       const dict = values[values.length - 1] || {};
@@ -180,12 +181,11 @@
     };
   }
   class FilterTableColumn {
-    constructor(label, templateFormat, sourceCols, hide) {
+    constructor(label, templateFormat, sourceCols) {
       if (sourceCols.constructor != Array) sourceCols = [sourceCols];
       this.label = label;
       this.templateFormat = templateFormat;
       this.sourceCols = sourceCols;
-      this.hide = hide;
     }
   }
   class FilterTable {
@@ -200,7 +200,6 @@
       var newRow = table.insertRow(table.rows.length + insertRowShiftIdx);
       for (const col of colMeta) {
         var newCol = document.createElement('th');
-        if (col.hide) newCol.hidden = true;
         newCol.innerHTML = col.label;
         newRow.appendChild(newCol);
       }
@@ -213,7 +212,6 @@
 
       for (const col of this.colMeta) {
         var newCol = newRow.insertCell();
-        if (col.hide) newCol.hidden = true;
         var strArr = [];
         for (var srcCol of col.sourceCols) {
           var srcData = rawRow[srcCol];

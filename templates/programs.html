@@ -50,17 +50,13 @@
   // One-time setup
   window.onload = function() {
     colMeta = [];
-    colMeta.push(new FilterTableColumn('ID', template`${0}`, 'id', true));
-    colMeta.push(new FilterTableColumn('Title', template`${0}`, 'title', false));
-    colMeta.push(new FilterTableColumn('Tags', template`${0}`, 'tags', false));
-    colMeta.push(new FilterTableColumn('Grade Range', template`${0} to ${1}`, 'grade_range', false));
+    colMeta.push(new FilterTableColumn('Title', template`${0}`, 'title'));
+    colMeta.push(new FilterTableColumn('Tags', template`${0}`, 'tags'));
+    colMeta.push(new FilterTableColumn('Grade Range', template`${0} to ${1}`, 'grade_range'));
 
     window.userTable = new FilterTable(colMeta, 'programs-table', -1);
 
-    http.get('/programs').then((programList) => {
-
-      for (const program of programList) addProgramToTable(program);
-    })
+    http.get('/programs').then((programList) => {for (const program of programList) addProgramToTable(program); });
   }
 
   function resetNewProgram() {
@@ -116,17 +112,6 @@
         addProgramToTable(program);
         window.open('/programs/' + program.id, '_blank');
       });
-    }
-  }
-
-  function deleteProgram(programId) {
-    http.delete('/programs', programId);
-
-    for (var row of window.userTable.rows) {
-      if (row.id == programId) {
-        row.htmlRow.remove();
-        break;
-      }
     }
   }
 {% endblock %}
