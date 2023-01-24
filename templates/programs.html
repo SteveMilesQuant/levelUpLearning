@@ -56,7 +56,7 @@
 
     window.userTable = new FilterTable(colMeta, 'programs-table', -1);
 
-    http.get('/programs').then((programList) => {for (const program of programList) addProgramToTable(program); });
+    http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
   }
 
   function resetNewProgram() {
@@ -70,12 +70,12 @@
 
   function addProgramToTable(program) {
     var newRow = window.userTable.appendRow(program);
+    newRow.programId = program.id;
     newRow.classList.add('selectable');
 
     commonOnClick = function() {
       row = this.parentNode;
-      programId = row.cells[0].innerHTML;
-      window.open('/programs/' + programId, '_blank');
+      window.open('/programs/' + row.programId, '_blank');
     };
     for (var col of newRow.childNodes) col.onclick = commonOnClick;
 
@@ -86,10 +86,9 @@
     newButton.innerHTML = 'Delete';
     newButton.onclick = function () {
       var row = this.parentNode.parentNode;
-      var programId = row.cells[0].innerHTML;
-      var programTitle = row.cells[1].innerHTML;
+      var programTitle = row.cells[0].innerHTML;
       if (confirm('Are you sure you want to delete the program "' + programTitle + '"?')) {
-        http.delete('/programs', programId);
+        http.delete('/programs', row.programId);
         row.remove();
       }
     }
