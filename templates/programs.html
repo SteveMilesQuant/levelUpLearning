@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <span class='sidebar'>
+  <span class='sidebar' id='sidebar'>
     <div class='sidebar-title'><h1>Filters</h1></div>
     <hr class='h-divider'></hr>
   </span>
@@ -50,11 +50,11 @@
   // One-time setup
   window.onload = function() {
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Title', template`${0}`, 'title'));
-    colMeta.push(new FilterTableColumn('Tags', template`${0}`, 'tags'));
-    colMeta.push(new FilterTableColumn('Grade Range', template`${0} to ${1}`, 'grade_range'));
+    colMeta.push(new FilterTableColumn('Title', template`${0}`, 'title', null));
+    colMeta.push(new FilterTableColumn('Tags', template`${0}`, 'tags', FilterType.Tags));
+    colMeta.push(new FilterTableColumn('Grade Range', template`${0} to ${1}`, 'grade_range', null));
 
-    window.userTable = new FilterTable(colMeta, 'programs-table', -1);
+    window.userTable = new FilterTable(colMeta, 'programs-table', 'sidebar', -1);
 
     http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
   }
@@ -89,6 +89,7 @@
       var programTitle = row.cells[0].innerHTML;
       if (confirm('Are you sure you want to delete the program "' + programTitle + '"?')) {
         http.delete('/programs', row.programId);
+        for (var filterValue of row.filterValues) filterValue.removeRow(row);
         row.remove();
       }
     }
