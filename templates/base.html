@@ -169,9 +169,11 @@
   }
 
   // Filterable and searchable table class
+
   const FilterType = {
     Tags: "Tags"
   };
+
   function template(strings, ...keys) {
     return (values) => {
       const dict = values[values.length - 1] || {};
@@ -183,20 +185,52 @@
       return result.join("");
     };
   }
-  class CheckBoxValue {
-    constructor(value, filter, htmlCheckBox) {
+
+  class FilterValue {
+    constructor(value, filter, htmlBox) {
       this.value = value;
       this.filter = filter;
-      this.htmlCheckBox = htmlCheckBox;
-      this.checked = true;
+      this.htmlBox = htmlBox;
       this.inRows = [];
+    }
+
+    appendRow(row) {
+      if (!Object.hasOwn(row, 'filterValues')) row.filterValues = [];
+      row.filterValues.push(this);
+      if (!Object.hasOwn(row, 'removeFuncs')) {
+        row.origRemove = row.remove;
+        row.remove = function () {
+          for (var filterValue of this.filterValues) filterValue.removeRow(this);
+          row.origRemove();
+        }
+      }
+      this.inRows.push(row);
+    }
+
+    removeRow(row) {
+      var index = this.inRows.indexOf(row);
+      if (index != -1) {
+        this.inRows.splice(index, 1);
+        if (this.inRows.length == 0) {
+          this.htmlBox.remove();
+          this.htmlBox = null;
+        }
+      }
+    }
+  }
+
+  class CheckBoxValue extends FilterValue {
+    constructor(value, filter, htmlBox) {
+      super(value, filter, htmlBox);
+      this.checked = true;
     }
 
     check() {
       this.checked = true;
+      this.htmlBox.firstChild.checked = true;
       for (const row of this.inRows) row.hidden = false;
       var allChecked = true;
-      Object.entries(this.filter.values).every(([key, checkBoxValue]) => {
+      Object.entries(this.filter.filterValues).every(([key, checkBoxValue]) => {
         if (!checkBoxValue.checked) {
           allChecked = false;
           return false;
@@ -208,32 +242,54 @@
 
     uncheck() {
       this.checked = false;
+      this.htmlBox.firstChild.checked = false;
       this.filter.allCheckBox.checked = false;
       for (const row of this.inRows) row.hidden = true;
-      Object.entries(this.filter.values).forEach(([key, checkBoxValue]) => {
+      Object.entries(this.filter.filterValues).forEach(([key, checkBoxValue]) => {
         if (checkBoxValue.checked) checkBoxValue.check();
       })
     }
-
-    removeRow(row) {
-      var index = this.inRows.indexOf(row);
-      if (index != -1) {
-        this.inRows.splice(index, 1);
-        if (this.inRows.length == 0) {
-          this.htmlCheckBox.parentNode.remove();
-          this.htmlCheckBox = null;
-        }
-      }
-    }
   }
+
+  // Create both the check box html and check box object
+  function createCheckBox(value, filter) {
+    // Add new filter value
+    var container = document.createElement('div');
+    var checkBox = document.createElement('input');
+    var checkBoxValue = new CheckBoxValue(value, filter, container);
+    filter.filterValues[value] = checkBoxValue;
+
+    // Create checkbox for this new value
+    checkBox.type = "checkbox";
+    checkBox.checked = true;
+    checkBox.checkBoxValue = checkBoxValue;
+    checkBox.onclick = function () {
+      if (this.checked) this.checkBoxValue.check();
+      else this.checkBoxValue.uncheck();
+    }
+
+    // Create label for the checkbox
+    var label = document.createElement('label');
+    label.for = checkBox;
+    label.innerText = value;
+
+    // Put it all together
+    container.appendChild(checkBox);
+    container.appendChild(label);
+    filter.htmlFilter.appendChild(container);
+
+    return [container, checkBox, checkBoxValue];
+  }
+
   class Filter {
     constructor(filterType, colIdx, htmlFilter) {
       this.filterType = filterType;
       this.colIdx = colIdx;
       this.htmlFilter = htmlFilter;
-      this.values = {};
+      this.filterValues = {};
     }
   }
+
   class FilterTableColumn {
     constructor(label, templateFormat, sourceCols, filterType) {
       if (sourceCols.constructor != Array) sourceCols = [sourceCols];
@@ -243,6 +299,7 @@
       this.filterType = filterType;
     }
   }
+
   class FilterTable {
     constructor(colMeta, htmlTableId, htmlFilterBoxId, insertRowShiftIdx) {
       if (colMeta.constructor != Array) colMeta = [colMeta];
@@ -274,31 +331,23 @@
           switch(newFilter.filterType) {
             case FilterType.Tags:
               // Add an "All" option
-              var newCheckBox = document.createElement('input');
-              newCheckBox.type = "checkbox";
-              newCheckBox.checked = true;
-              newCheckBox.filterTable = this;
-              newCheckBox.onclick = function () {
+              var checkBoxContainer, checkBoxHTML, checkBoxValue;
+              [checkBoxContainer, checkBoxHTML, checkBoxValue] = createCheckBox("All", newFilter);
+              newDiv.appendChild(checkBoxContainer);
+
+              // Don't want "All" in list of filter values, so reset it
+              newFilter.filterValues = {};
+
+              // Custom onclick for "All"
+              checkBoxHTML.onclick = function () {
                 // When clicking "All", copy checked down to all other values
-                var nextDiv = this.parentNode.nextSibling.nextSibling;
-                for (; nextDiv; nextDiv = nextDiv.nextSibling) {
-                  nextDiv.firstChild.checked = this.checked;
-                }
-
-                // Hide or unhide all rows
-                for (const row of this.filterTable.rows) row.htmlRow.hidden = !this.checked;
+                var filter = this.checkBoxValue.filter;
+                Object.entries(filter.filterValues).forEach(([key, checkBoxValue]) => {
+                  if (this.checked) checkBoxValue.check();
+                  else checkBoxValue.uncheck();
+                })
               }
-              newFilter.allCheckBox = newCheckBox;
-
-              var newLabel = document.createElement('label');
-              newLabel.for = newCheckBox;
-              newLabel.innerText = "All";
-
-              var newDivAll = document.createElement('div');
-              newDivAll.classList.add('sidebar-subitem');
-              newDivAll.appendChild(newCheckBox);
-              newDivAll.appendChild(newLabel);
-              newDiv.appendChild(newDivAll);
+              newFilter.allCheckBox = checkBoxHTML;
 
               var newHLine = document.createElement('hr');
               newHLine.classList.add('h-divider');
@@ -315,9 +364,7 @@
     appendRow(rawRow) {
       var newRow = this.htmlTable.insertRow(this.htmlTable.rows.length + this.insertRowShiftIdx);
       newRow.filterValues = [];
-      rawRow.htmlRow = newRow;
-      rawRow.rowIdx = this.rows.length;
-      this.rows.push(rawRow);
+      this.rows.push(newRow);
 
       for (var colIdx in this.colMeta) {
         const col = this.colMeta[colIdx];
@@ -342,38 +389,14 @@
               var srcCol = col.sourceCols[0];
               var srcData = rawRow[srcCol];
               for (const word of srcData.split(" ")) {
-                var checkBoxValue = filter.values[word];
+                var checkBoxValue = filter.filterValues[word];
                 if (!checkBoxValue) {
-                  // Add new filter value
-                  var newCheckBox = document.createElement('input');
-                  checkBoxValue = new CheckBoxValue(word, filter, newCheckBox);
-                  filter.values[word] = checkBoxValue;
-
-                  // Create checkbox for this new value
-                  newCheckBox.type = "checkbox";
-                  newCheckBox.checked = true;
-                  newCheckBox.checkBoxValue = checkBoxValue;
-                  newCheckBox.onclick = function () {
-                    if (this.checked) this.checkBoxValue.check();
-                    else this.checkBoxValue.uncheck();
-                  }
-
-                  // Create label for the checkbox
-                  var newLabel = document.createElement('label');
-                  newLabel.for = newCheckBox;
-                  newLabel.innerText = word;
-
-                  // Put it all together
-                  var newDiv = document.createElement('div');
-                  newDiv.classList.add('sidebar-subitem');
-                  newDiv.appendChild(newCheckBox);
-                  newDiv.appendChild(newLabel);
-                  filter.htmlFilter.appendChild(newDiv);
+                  var checkBoxContainer, checkBoxHTML;
+                  [checkBoxContainer, checkBoxHTML, checkBoxValue] = createCheckBox(word, filter);
                 }
 
                 // Add this row to this filter's value
-                checkBoxValue.inRows.push(rawRow.htmlRow);
-                newRow.filterValues.push(checkBoxValue);
+                checkBoxValue.appendRow(newRow);
               }
               break;
             default:

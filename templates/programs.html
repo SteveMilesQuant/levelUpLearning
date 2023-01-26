@@ -89,7 +89,6 @@
       var programTitle = row.cells[0].innerHTML;
       if (confirm('Are you sure you want to delete the program "' + programTitle + '"?')) {
         http.delete('/programs', row.programId);
-        for (var filterValue of row.filterValues) filterValue.removeRow(row);
         row.remove();
       }
     }
