@@ -197,7 +197,7 @@
     appendRow(row) {
       if (!Object.hasOwn(row, 'filterValues')) row.filterValues = [];
       row.filterValues.push(this);
-      if (!Object.hasOwn(row, 'removeFuncs')) {
+      if (!Object.hasOwn(row, 'origRemove')) {
         row.origRemove = row.remove;
         row.remove = function () {
           for (var filterValue of this.filterValues) filterValue.removeRow(this);
@@ -214,6 +214,7 @@
         if (this.inRows.length == 0) {
           this.htmlBox.remove();
           this.htmlBox = null;
+          delete this.filter.filterValues[this.value];
         }
       }
     }
