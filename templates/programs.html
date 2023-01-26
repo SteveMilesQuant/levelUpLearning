@@ -54,7 +54,9 @@
     colMeta.push(new FilterTableColumn('Tags', template`${0}`, 'tags', FilterType.Tags));
     colMeta.push(new FilterTableColumn('Grade Range', template`${0} to ${1}`, 'grade_range', null));
 
-    window.userTable = new FilterTable(colMeta, 'programs-table', 'sidebar', -1);
+    var htmlTable = document.getElementById('programs-table');
+    var sidebar = document.getElementById('sidebar');
+    window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar);
 
     http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
   }
