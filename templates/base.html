@@ -277,7 +277,17 @@
     // Put it all together
     container.appendChild(checkBox);
     container.appendChild(label);
-    filter.htmlFilter.appendChild(container);
+    
+    // Insert sorted
+    var didInsert = false;
+    for (child of filter.htmlFilter.children) {
+      if (value < child.lastChild.innerText) {
+        filter.htmlFilter.insertBefore(container, child);
+        didInsert = true;
+        break;
+      }
+    }
+    if (!didInsert) filter.htmlFilter.appendChild(container);
 
     return [container, checkBox, checkBoxValue];
   }
@@ -398,18 +408,6 @@
                 if (!checkBoxValue) {
                   var checkBoxContainer, checkBoxHTML;
                   [checkBoxContainer, checkBoxHTML, checkBoxValue] = createCheckBox(word, filter);
-
-                  // Sort these values
-                  var toSort = filter.htmlFilter.children;
-                  toSort = Array.prototype.slice.call(toSort, 0);
-                  toSort.sort(function(a, b) {
-                      const aText = a.lastChild.innerText;
-                      const bText = b.lastChild.innerText;
-                      if (aText > bText) return 1;
-                      else if (aText < bText) return -1;
-                      else return 0;
-                  });
-                  for (var child of toSort) { filter.htmlFilter.appendChild(child); }
                 }
 
                 // Add this row to this filter's value
