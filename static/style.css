@@ -187,9 +187,12 @@ footer {
 .pop-up-text { width: 800px; border: 2px solid #ddd; }
 
 .form-item { margin-top: 16px; display: inline-block; }
-.form-input-text { width: 800px; }
+.form-input-text { width: 800px; border: none; }
 .form-input-longtext { position: relative; width: 99%; height: 1400px; border: none; top: -692px; overflow-x: scroll; }
 .longtext-box { width: 800px; height: 500px; background-color: white; border: 2px solid #ddd; overflow: hidden; resize: none; }
 .longtext-box:focus, .form-input-longtext:focus { outline: none; }
 .shorttext-box { border: 2px solid #ddd; padding-left: 5px; padding-right: 5px; padding-top: 2px; padding-bottom: 2px; }
-
+.search-box { border: 2px solid #ddd; margin-top: 32px; margin-left: 32px; }
+.search-box-item { margin: 4px; display: inline-block; }
+#search-box-text { width: 600px; }
+#search-box-text:focus { outline: 0px solid transparent; }

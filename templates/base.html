@@ -332,26 +332,59 @@
   }
 
   class FilterTableColumn {
-    constructor(label, templateFormat, sourceCols, filterType) {
+    constructor(label, templateFormat, sourceCols, filterType, searchable) {
       if (sourceCols.constructor != Array) sourceCols = [sourceCols];
       this.label = label;
       this.templateFormat = templateFormat;
       this.sourceCols = sourceCols;
       this.filterType = filterType;
+      this.searchable = searchable;
     }
   }
 
   class FilterTable {
-    constructor(colMeta, htmlTable, insertRowShiftIdx, htmlFilterBox) {
+    constructor(colMeta, htmlTable, insertRowShiftIdx, htmlFilterBox, searchBox) {
       if (colMeta.constructor != Array) colMeta = [colMeta];
       this.colMeta = colMeta;
       this.htmlTable = htmlTable;
       this.insertRowShiftIdx = insertRowShiftIdx;
+      this.searchBox = searchBox;
       this.rows = [];
       this.filters = Array(colMeta.length).fill(null);
 
-      var newRow = htmlTable.insertRow(htmlTable.rows.length + insertRowShiftIdx);
+      // Add keyup event for the search bar to search on searchable columns
+      searchBox.rows = this.rows;
+      searchBox.addEventListener('keyup', (event) => {
+        if (event.isComposing || event.keyCode === 229) {
+          return;
+        }
 
+        // Search for these keys in each row
+        const keysToCheck = searchBox.innerText.trim().toLowerCase().split(' ');
+        for (var row of searchBox.rows) {
+          if (keysToCheck.length == 0) {
+            // Nothing searched - include all rows
+            row.selectedBySearch = true;
+          }
+          else if (row.searchKey.length == 0) {
+            // Somehow no search key - never include
+            row.selectedBySearch = false;
+          }
+          else {
+            row.selectedBySearch = true;
+            for (const key of keysToCheck) {
+              if (row.searchKey.indexOf(key) == -1) {
+                row.selectedBySearch = false;
+                break;
+              }
+            }
+          }
+          row.filterSetHidden();
+        }
+      });
+
+      // Create header row
+      var newRow = htmlTable.insertRow(htmlTable.rows.length + insertRowShiftIdx);
       for (var colIdx in colMeta) {
         const col = colMeta[colIdx];
         var newCol = document.createElement('th');
@@ -416,8 +449,12 @@
       var newRow = this.htmlTable.insertRow(this.htmlTable.rows.length + this.insertRowShiftIdx);
       this.rows.push(newRow);
 
+      newRow.searchKey = '';
+
       for (var colIdx in this.colMeta) {
         const col = this.colMeta[colIdx];
+
+        // Insert column in this row and create filter on value
         var newCol = newRow.insertCell();
         var strArr = [];
         for (var srcCol of col.sourceCols) {
@@ -454,9 +491,20 @@
               break;
           }
         }
+
+        // For searchable columns, add value to search key
+        if (col.searchable) newRow.searchKey += strArr.join('').trim().toLowerCase();
       }
 
       return newRow;
+    }
+
+    resetSearchBox() {
+      this.searchBox.innerText = '';
+      for (var row of this.searchBox.rows) {
+        row.selectedBySearch = true;
+        row.filterSetHidden();
+      }
     }
   }
 

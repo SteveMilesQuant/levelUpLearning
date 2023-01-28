@@ -7,6 +7,13 @@
   </span>
   <div class='content-body'>
     <div class='content-item'><h1>Programs</h1></div>
+    <div class='search-box'>
+      <span class='search-box-item'><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span class='search-box-item' contenteditable=true id='search-box-text'></span>
+      <span class='search-box-item'><button class='selectable' onclick='window.userTable.resetSearchBox();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
+    </div>
     <div class='content-item'><table id='programs-table'>
       <tr class='selectable' onclick='unhide("new-program");'><td>+ Add Program</td></tr>
     </table></div>
@@ -50,13 +57,14 @@
   // One-time setup
   window.onload = function() {
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Title', template`${0}`, 'title', null));
-    colMeta.push(new FilterTableColumn('Tags', template`${0}`, 'tags', FilterType.Tags));
-    colMeta.push(new FilterTableColumn('Grade Range', template`${0} to ${1}`, 'grade_range', null));
+    colMeta.push(new FilterTableColumn('Title', template`${0}`, 'title', null, true));
+    colMeta.push(new FilterTableColumn('Tags', template`${0}`, 'tags', FilterType.Tags, true));
+    colMeta.push(new FilterTableColumn('Grade Range', template`${0} to ${1}`, 'grade_range', null, false));
 
     var htmlTable = document.getElementById('programs-table');
     var sidebar = document.getElementById('sidebar');
-    window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar);
+    var searchBox = document.getElementById('search-box-text');
+    window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, searchBox); // -1 for row shift - we have one extra final static row for "Add Program"
 
     http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
   }
