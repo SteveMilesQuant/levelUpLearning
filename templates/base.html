@@ -203,6 +203,17 @@
           for (var filterValue of this.filterValues) filterValue.removeRow(this);
           row.origRemove();
         }
+
+        row.selectedByFilter = true;
+        row.selectedBySearch = true;
+        row.filterSetHidden = function() {
+          if (this.selectedByFilter && this.selectedBySearch) {
+            row.hidden = false;
+          }
+          else {
+            row.hidden = true;
+          }
+        }
       }
       row.filterValues.push(this);
       this.rows.push(row);
@@ -219,6 +230,28 @@
         }
       }
     }
+
+    select() {
+      this.selected = true;
+      for (var row of this.rows) {
+        row.selectedByFilter = true;
+        row.filterSetHidden();
+      }
+    }
+
+    unselect() {
+      this.selected = false;
+      for (var row of this.rows) {
+        row.selectedByFilter = false;
+        for (const filterValue of row.filterValues) {
+          if (filterValue.selected) {
+            row.selectedByFilter = true;
+            break;
+          }
+        }
+        row.filterSetHidden();
+      }
+    }
   }
 
   class CheckBoxValue extends FilterValue {
@@ -227,28 +260,13 @@
     }
 
     check() {
-      this.selected = true;
-      this.htmlBox.firstChild.checked = true;
-      for (const row of this.rows) row.hidden = false;
-      var allChecked = true;
-      Object.entries(this.filter.filterValues).every(([key, checkBoxValue]) => {
-        if (!checkBoxValue.selected) {
-          allChecked = false;
-          return false;
-        }
-        return true;
-      })
-      if (allChecked) this.filter.allCheckBox.checked = true;
+      this.select();
+      if (this.filter.allValuesSelected()) this.filter.allCheckBox.checked = true;
     }
 
     uncheck() {
-      this.selected = false;
-      this.htmlBox.firstChild.checked = false;
+      this.unselect();
       this.filter.allCheckBox.checked = false;
-      for (const row of this.rows) row.hidden = true;
-      Object.entries(this.filter.filterValues).forEach(([key, checkBoxValue]) => {
-        if (checkBoxValue.checked) checkBoxValue.check();
-      })
     }
   }
 
@@ -298,6 +316,18 @@
       this.colIdx = colIdx;
       this.htmlFilter = htmlFilter;
       this.filterValues = {};
+    }
+
+    allValuesSelected() {
+      var allSelected = true;
+      Object.entries(this.filterValues).every(([key, checkBoxValue]) => {
+        if (!checkBoxValue.selected) {
+          allSelected = false;
+          return false;
+        }
+        return true;
+      })
+      return allSelected;
     }
   }
 
@@ -353,8 +383,14 @@
                 // When clicking "All", copy checked down to all other values
                 var filter = this.checkBoxValue.filter;
                 Object.entries(filter.filterValues).forEach(([key, checkBoxValue]) => {
-                  if (this.checked) checkBoxValue.check();
-                  else checkBoxValue.uncheck();
+                  if (this.checked) {
+                    checkBoxValue.htmlBox.firstChild.checked = true;
+                    checkBoxValue.check();
+                  }
+                  else {
+                    checkBoxValue.htmlBox.firstChild.checked = false;
+                    checkBoxValue.uncheck();
+                  }
                 })
               }
               newFilter.allCheckBox = checkBoxHTML;
