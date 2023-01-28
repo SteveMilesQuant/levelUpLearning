@@ -274,7 +274,9 @@
   function createCheckBox(value, filter) {
     // Add new filter value
     var container = document.createElement('div');
+    container.classList.add('check-box-item');
     var checkBox = document.createElement('input');
+    checkBox.classList.add('check-box-subitem');
     var checkBoxValue = new CheckBoxValue(value, filter, container);
     filter.filterValues[value] = checkBoxValue;
 
@@ -291,6 +293,7 @@
     var label = document.createElement('label');
     label.for = checkBox;
     label.innerText = value;
+    label.classList.add('check-box-subitem');
 
     // Put it all together
     container.appendChild(checkBox);
@@ -429,7 +432,7 @@
               newFilter.allCheckBox = checkBoxHTML;
 
               var newHLine = document.createElement('hr');
-              newHLine.classList.add('h-divider');
+              newHLine.classList.add('check-box-item');
               filterBox.appendChild(newHLine);
               break;
             default:
@@ -493,7 +496,7 @@
         }
 
         // For searchable columns, add value to search key
-        if (col.searchable) newRow.searchKey += strArr.join('').trim().toLowerCase();
+        if (col.searchable) newRow.searchKey += ' ' + strArr.join('').trim().toLowerCase();
       }
 
       return newRow;
