@@ -171,7 +171,8 @@
   // Filterable and searchable table class
 
   const FilterType = {
-    Tags: "Tags"
+    Tags: "Tags",
+    IntRange: "IntRange"
   };
 
   function template(strings, ...keys) {
@@ -187,17 +188,25 @@
   }
 
   class FilterValue {
-    constructor(value, filter, htmlBox) {
+    constructor(value, filter, htmlBox, colIdx) {
       this.value = value;
       this.filter = filter; // for deletion
       this.htmlBox = htmlBox; // for deletion
+      this.colIdx = colIdx;
       this.selected = true;
       this.rows = [];
     }
 
     appendRow(row) {
-      row.filterValues.push(this);
+      row.filterValuesByCol[this.colIdx].push(this);
       this.rows.push(row);
+
+      // This is a little funny, but it will ensure that when we
+      //  add a row that's already unselected, it will be noted
+      if (!this.selected) {
+        this.selected = true;
+        this.unselect();
+      }
     }
 
     removeRow(row) {
@@ -213,38 +222,41 @@
     }
 
     select() {
-      this.selected = true;
-      for (var row of this.rows) {
-        row.selectedByFilter = true;
-        row.filterSetHidden();
+      if (!this.selected) {
+        this.selected = true;
+        for (var row of this.rows) {
+          row.selectedByFilter[this.colIdx] = true;
+          row.filterSetHidden();
+        }
       }
     }
 
     unselect() {
-      this.selected = false;
-      for (var row of this.rows) {
-        row.selectedByFilter = false;
-        for (const filterValue of row.filterValues) {
-          if (filterValue.selected) {
-            row.selectedByFilter = true;
-            break;
+      if (this.selected) {
+        this.selected = false;
+        for (var row of this.rows) {
+          row.selectedByFilter[this.colIdx] = false;
+          for (const filterValue of row.filterValuesByCol[this.colIdx]) {
+            if (filterValue.selected) {
+              row.selectedByFilter[this.colIdx] = true;
+              break;
+            }
           }
+          row.filterSetHidden();
         }
-        row.filterSetHidden();
       }
     }
   }
 
   class CheckBoxValue extends FilterValue {
-    constructor(value, filter) {
+    constructor(value, filter, colIdx) {
       var container = document.createElement('div');
       var checkBox = document.createElement('input');
-      super(value, filter, container);
+      super(value, filter, container, colIdx);
       this.htmlCheckBox = checkBox;
 
       // Add new filter value
-      container.classList.add('check-box-item');
-      checkBox.classList.add('check-box-subitem');
+      container.classList.add('checkbox-box');
       filter.filterValues[value] = this;
 
       // Create checkbox for this new value
@@ -260,7 +272,6 @@
       var label = document.createElement('label');
       label.for = checkBox;
       label.innerText = value;
-      label.classList.add('check-box-subitem');
 
       // Put it all together
       container.appendChild(checkBox);
@@ -286,6 +297,104 @@
     uncheck() {
       this.unselect();
       this.filter.allCheckBox.checked = false;
+    }
+  }
+
+  class IntRangeValue extends FilterValue {
+    constructor(range, filter, colIdx) {
+      super(range, filter, null, colIdx);
+      filter.filterValues[range] = this;
+
+      var fromVal = range[0].toString();
+      var toVal = range[1].toString();
+
+      if (!Object.hasOwn(filter, 'fromRange')) {
+        var fromRangeBox = document.createElement('div');
+        var toRangeBox = document.createElement('div');
+        var fromRange = document.createElement('input');
+        var toRange = document.createElement('input');
+        var fromLabel = document.createElement('label');
+        var toLabel = document.createElement('label');
+        fromRangeBox.appendChild(fromRange);
+        fromRangeBox.appendChild(fromLabel);
+        fromLabel.for = fromRange;
+        toRangeBox.appendChild(toRange);
+        toRangeBox.appendChild(toLabel);
+        fromLabel.for = toRange;
+        filter.htmlFilter.appendChild(fromRangeBox);
+        filter.htmlFilter.appendChild(toRangeBox);
+
+        fromRangeBox.classList.add('range-box');
+        toRangeBox.classList.add('range-box');
+        fromRange.classList.add('range-input');
+        toRange.classList.add('range-input');
+        fromLabel.classList.add('range-label');
+        toLabel.classList.add('range-label');
+
+        fromRange.type = "range";
+        fromRange.min = fromVal;
+        fromRange.max = toVal;
+        fromRange.value = fromVal;
+
+        toRange.type = "range";
+        toRange.min = fromVal;
+        toRange.max = toVal;
+        toRange.value = toVal;
+
+        filter.fromRange = fromRange;
+        filter.toRange = toRange;
+        filter.fromLabel = fromLabel;
+        filter.toLabel = toLabel;
+
+        fromRange.filter = filter;
+        fromRange.userSelectedOnce = false;
+        fromRange.oninput = function() {
+          var filter = this.filter;
+          this.userSelectedOnce = true;
+          filter.fromLabel.innerText = this.value;
+          filter.toRange.value = Math.max(parseInt(filter.toRange.value), parseInt(this.value)).toString();
+          filter.toLabel.innerText = filter.toRange.value;
+          for (var [key, filterValue] of Object.entries(filter.filterValues)) {
+            if (this.value > filterValue.value[1]) filterValue.unselect();
+            else filterValue.select();
+          }
+        }
+        toRange.filter = filter;
+        toRange.userSelectedOnce = false;
+        toRange.oninput = function() {
+          var filter = this.filter;
+          this.userSelectedOnce = true;
+          filter.toLabel.innerText = this.value;
+          filter.fromRange.value = Math.min(parseInt(filter.fromRange.value), parseInt(this.value)).toString();
+          filter.fromLabel.innerText = filter.fromRange.value;
+          for (var [key, filterValue] of Object.entries(filter.filterValues)) {
+            if (this.value < filterValue.value[0]) filterValue.unselect();
+            else filterValue.select();
+          }
+        }
+      }
+      else {
+        filter.fromRange.min = Math.min(parseInt(filter.fromRange.min), fromVal).toString();
+        filter.fromRange.max = Math.max(parseInt(filter.fromRange.max), toVal).toString();
+        filter.toRange.min = Math.min(parseInt(filter.toRange.min), fromVal).toString();
+        filter.toRange.max = Math.max(parseInt(filter.toRange.max), toVal).toString();
+
+        if (filter.fromRange.userSelectedOnce) {
+          // If selected once, we may need to filter out this value
+          if (parseInt(filter.fromRange.value) > range[1]) this.unselect();
+        }
+        else {
+          filter.fromRange.value = Math.min(parseInt(filter.fromRange.value), fromVal).toString();
+        }
+        if (filter.toRange.userSelectedOnce) {
+          if (parseInt(filter.toRange.value) < range[0]) this.unselect();
+        }
+        else {
+          filter.toRange.value = Math.max(parseInt(filter.toRange.value), toVal).toString();
+        }
+      }
+      filter.fromLabel.innerText = filter.fromRange.value;
+      filter.toLabel.innerText = filter.toRange.value;
     }
   }
 
@@ -321,6 +430,30 @@
     }
   }
 
+  function checkSearchBox(searchBox) {
+    const keysToCheck = searchBox.innerText.trim().toLowerCase().split(' ');
+    for (var row of searchBox.rows) {
+      if (keysToCheck.length == 0) {
+        // Nothing searched - include all rows
+        row.selectedBySearch = true;
+      }
+      else if (row.searchKey.length == 0) {
+        // Somehow no search key - never include
+        row.selectedBySearch = false;
+      }
+      else {
+        row.selectedBySearch = true;
+        for (const key of keysToCheck) {
+          if (row.searchKey.indexOf(key) == -1) {
+            row.selectedBySearch = false;
+            break;
+          }
+        }
+      }
+      row.filterSetHidden();
+    }
+  }
+
   class FilterTable {
     constructor(colMeta, htmlTable, insertRowShiftIdx, htmlFilterBox, searchBox) {
       if (colMeta.constructor != Array) colMeta = [colMeta];
@@ -339,27 +472,7 @@
         }
 
         // Search for these keys in each row
-        const keysToCheck = searchBox.innerText.trim().toLowerCase().split(' ');
-        for (var row of searchBox.rows) {
-          if (keysToCheck.length == 0) {
-            // Nothing searched - include all rows
-            row.selectedBySearch = true;
-          }
-          else if (row.searchKey.length == 0) {
-            // Somehow no search key - never include
-            row.selectedBySearch = false;
-          }
-          else {
-            row.selectedBySearch = true;
-            for (const key of keysToCheck) {
-              if (row.searchKey.indexOf(key) == -1) {
-                row.selectedBySearch = false;
-                break;
-              }
-            }
-          }
-          row.filterSetHidden();
-        }
+        checkSearchBox(searchBox);
       });
 
       // Create header row
@@ -374,7 +487,7 @@
           var filterTitleBox = document.createElement('div');
           var newFilter = new Filter(col.filterType, colIdx, filterBox);
           this.filters[colIdx] = newFilter;
-          filterBox.classList.add('sidebar-item');
+          filterBox.classList.add('sidebar-item'); // maybe take this as input
           filterBox.classList.add('menu-font');
           filterTitleBox.innerHTML = col.label;
           filterBox.appendChild(filterTitleBox);
@@ -408,8 +521,10 @@
               newFilter.allCheckBox = checkBoxHTML;
 
               var newHLine = document.createElement('hr');
-              newHLine.classList.add('check-box-item');
-              filterBox.appendChild(newHLine);
+              checkBoxValue.htmlBox.appendChild(newHLine);
+              break;
+            case FilterType.IntRange:
+              // Do nothing - ranges are set up with first value
               break;
             default:
               // Do nothing
@@ -430,22 +545,34 @@
 
       // Initialize our special information for this row
       // Since we want to replace remove(), we'll just put our extra stuff here
-      // instead of creating new row class that contains the html row
+      //    instead of creating new row class that contains the html row
       newRow.searchKey = '';
-      newRow.filterValues = [];
+      newRow.filterValuesByCol = Array(this.colMeta.length).fill(null);
       newRow.origRemove = newRow.remove;
       newRow.remove = function () {
-        for (var filterValue of this.filterValues) filterValue.removeRow(this);
+        for (var filterValues of this.filterValuesByCol) {
+          if (filterValues) {
+            for (var filterValue of filterValues) {
+              filterValue.removeRow(this);
+            }
+          }
+        }
         this.origRemove();
       }
-      newRow.selectedByFilter = true;
+      newRow.selectedByFilter = Array(this.colMeta.length).fill(true);
       newRow.selectedBySearch = true;
       newRow.filterSetHidden = function() {
-        if (this.selectedByFilter && this.selectedBySearch) {
-          newRow.hidden = false;
+        if (!this.selectedBySearch) {
+          newRow.hidden = true;
         }
         else {
-          newRow.hidden = true;
+          newRow.hidden = false;
+          for (const selected of this.selectedByFilter) {
+            if (!selected) {
+              newRow.hidden = true;
+              break;
+            }
+          }
         }
       }
 
@@ -470,17 +597,22 @@
         // Process filter
         if (col.filterType) {
           var filter = this.filters[colIdx];
+          if (!newRow.filterValuesByCol[colIdx]) newRow.filterValuesByCol[colIdx] = [];
           switch(filter.filterType) {
             case FilterType.Tags:
               var srcCol = col.sourceCols[0];
               var srcData = rawRow[srcCol];
               for (const word of srcData.split(" ")) {
                 var checkBoxValue = filter.filterValues[word];
-                if (!checkBoxValue) checkBoxValue = new CheckBoxValue(word, filter);
-
-                // Add this row to this filter's value
+                if (!checkBoxValue) checkBoxValue = new CheckBoxValue(word, filter, colIdx);
                 checkBoxValue.appendRow(newRow);
               }
+              break;
+            case FilterType.IntRange:
+              var range = rawRow[col.sourceCols];
+              var rangeValue = filter.filterValues[range];
+              if (!rangeValue) rangeValue = new IntRangeValue(range, filter, colIdx);
+              rangeValue.appendRow(newRow);
               break;
             default:
               // Do nothing
@@ -491,6 +623,9 @@
         // For searchable columns, add value to search key
         if (col.searchable) newRow.searchKey += ' ' + strArr.join('').trim().toLowerCase();
       }
+
+      // Check search box and filter values, to perhaps hide a row that was already searched or filtered out
+      checkSearchBox(this.searchBox);
 
       return newRow;
     }

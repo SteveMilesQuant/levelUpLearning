@@ -198,8 +198,13 @@ footer {
 .search-box-text { width: 600px; }
 .search-box-text:focus { outline: 0px solid transparent; }
 
-.check-box-item { margin: 4px; font-size: 14px; }
-.check-box-subitem { margin: 4px; }
-.check-box-divider { border: 1px solid #ddd; }
+.checkbox-box { margin: 4px; }
+.checkbox-box input, label, hr { margin: 4px; }
+.checkbox-box label { font-size: 14px; }
+.checkbox-box hr { border: 1px solid #ddd; }
+
+.range-box { margin: 4px; font-size: 14px; }
+.range-box input { margin: 4px; font-size: 14px; }
+.range-box label { margin: 4px; font-size: 14px; }
 
 
