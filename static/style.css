@@ -18,7 +18,7 @@ th {
   background-color: lightblue;
   cursor: auto;
 }
-tr:nth-child(even){background-color: lightcyan;}
+tr:nth-child(even), tr:nth-child(even) td button { background-color: lightcyan; }
 
 .selectable:hover { background-color: #ddd; cursor: pointer; }
 .h-divider { margin-left: 8px; margin-right: 8px; border: 1px solid #ddd; }
@@ -197,6 +197,8 @@ footer {
 .search-box-item { margin: 4px; display: inline-block; }
 .search-box-text { width: 600px; }
 .search-box-text:focus { outline: 0px solid transparent; }
+
+.filter-title { margin-bottom: 8px; }
 
 .checkbox-box { margin: 4px; }
 .checkbox-box input, label, hr { margin: 4px; }

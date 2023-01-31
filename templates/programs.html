@@ -58,9 +58,9 @@
   // One-time setup
   window.onload = function() {
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Title', template`${0}`, 'title', null, true));
-    colMeta.push(new FilterTableColumn('Tags', template`${0}`, 'tags', FilterType.Tags, true));
-    colMeta.push(new FilterTableColumn('Grade Range', template`${0} to ${1}`, 'grade_range', FilterType.IntRange, false));
+    colMeta.push(new FilterTableColumn('Title', simpleTemplate`${0}`, 'title', null, true));
+    colMeta.push(new FilterTableColumn('Tags', simpleTemplate`${0}`, 'tags', FilterType.Tags, true));
+    colMeta.push(new FilterTableColumn('Grade Range', simpleTemplate`${0} to ${1}`, 'grade_range', FilterType.IntRange, false));
 
     var htmlTable = document.getElementById('programs-table');
     var sidebar = document.getElementById('sidebar');
