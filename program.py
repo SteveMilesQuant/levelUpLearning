@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel
-from typing import Dict, List, Tuple, Optional, Any
+from typing import List, Tuple, Optional, Any
 from db import execute_read, execute_write
 
 

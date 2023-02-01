@@ -1,10 +1,8 @@
-import pandas
 from db import execute_read, execute_write
 from pydantic import BaseModel
 from typing import Dict, List, Optional, Any
 from student import Student
 from program import Program
-from filtertable import FilterTable, Checkboxes, DoubleRange
 
 
 class Role(BaseModel):
@@ -290,39 +288,6 @@ class User(BaseModel):
             student = Student(db = db, id = student_id)
             student.delete(db = db)
 
-    def load_program_titles(self, db: Any) -> Dict:
-        select_stmt = f'''
-            SELECT t2.id, t2.title
-                FROM user_x_programs as t1, program as t2
-                WHERE t1.user_id = {self.id} and t1.program_id = t2.id
-        '''
-        result = execute_read(db, select_stmt)
-        program_titles = {}
-        if result is not None:
-            for row in result:
-                program_titles[row['id']] = row['title']
-        return program_titles
-
-    def load_programs_table(self, db: Any) -> FilterTable:
-        select_stmt = f'''
-            SELECT t2.*
-                FROM user_x_programs as t1, program as t2
-                WHERE t1.user_id = {self.id} and t1.program_id = t2.id
-        '''
-        dataframe = pandas.read_sql_query(select_stmt, db)
-        dataframe['grade_range'] = dataframe['from_grade'].copy()
-        for row_idx, row in dataframe.iterrows():
-            grade_range = f'{row["grade_range"]} to {row["to_grade"]}'
-            dataframe.at[row_idx,'grade_range'] = grade_range
-        filter_table = FilterTable(base_dataframe=dataframe)
-        dataframe = filter_table.base_dataframe
-        dataframe.columns[dataframe.columns.get_loc('title')].display = True
-        dataframe.columns[dataframe.columns.get_loc('tags')].display = True
-        dataframe.columns[dataframe.columns.get_loc('grade_range')].display = True
-        filter_table.filters.append(Checkboxes(display_column='tags', source_column='tags'))
-        filter_table.filters.append(DoubleRange(display_column='grade_range', source_columns=('from_grade','to_grade')))
-        return filter_table
-
     def add_program(self, db: Any, program_id: int):
         if program_id not in self.program_ids:
             self.program_ids.append(program_id)
@@ -356,15 +321,4 @@ class User(BaseModel):
             program.delete(db = db)
 
 
-def load_all_users_by_role(db: Any, role: str, users: Dict[int,User]):
-    select_stmt = f'''
-        SELECT id
-            FROM user
-            WHERE id IN (SELECT id from user_x_roles WHERE role = "{role}")
-    '''
-    result = execute_read(db, select_stmt)
-    if result is not None:
-        for row in result:
-            user = User(db = db, id = row['id'])
-            users[user.id] = user
 

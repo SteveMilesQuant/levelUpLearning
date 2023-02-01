@@ -5,11 +5,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import WebApplicationClient
 from typing import Optional
-from user import User, load_all_roles, load_all_users_by_role
+from user import User, load_all_roles
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program
 from program import LevelData, LevelResponse, Level
-from camp import Camp, load_camps_table
 from datetime import date
 
 
@@ -423,54 +422,31 @@ async def database_get(request: Request):
 ###############################################################################
 
 
-async def schedule_get_all_camps(request: Request, template_args: dict):
-    user_program_titles = app.user.load_program_titles(db = app.db)
-    load_all_users_by_role(db = app.db, role="INSTRUCTOR", users = app.instructors)
-    template_args['filtertable'] = load_camps_table(db = app.db)
-    template_args['promoted_programs'] = app.promoted_programs
-    template_args['user_program_titles'] = user_program_titles
-    template_args['instructors'] = app.instructors
-    return templates.TemplateResponse("schedule.html", template_args)
-
 
 @api_router.get("/camps")
-async def camps_get(request: Request):
+async def camps_get(request: Request, accept: Optional[str] = Header(None)):
     auth_check = check_basic_auth('/camps')
-    if auth_check is not None:
-        return auth_check
-    template_args = build_base_html_args(request)
-    return templates.TemplateResponse("camps.html", template_args)
+    if "text/html" in accept:
+        if auth_check is not None:
+            return auth_check
+        template_args = build_base_html_args(request)
+        return templates.TemplateResponse("camps.html", template_args)
+    else:
+        pass # TODO
 
 
 @api_router.get("/schedule")
-async def schedule_get(request: Request):
+async def get_schedule(request: Request, accept: Optional[str] = Header(None)):
     auth_check = check_basic_auth('/schedule')
-    if auth_check is not None:
-        return auth_check
-    template_args = build_base_html_args(request)
-    return await schedule_get_all_camps(request, template_args)
+    if "text/html" in accept:
+        if auth_check is not None:
+            return auth_check
+        template_args = build_base_html_args(request)
+        return templates.TemplateResponse("schedule.html", template_args)
+    else:
+        pass # TODO
 
 
-@api_router.post("/schedule")
-async def schedule_post_new_camp(request: Request, camp_program_id: int = Form(), camp_instructor_id: int = Form()):
-    auth_check = check_basic_auth('/schedule')
-    if auth_check is not None:
-        return auth_check
-    template_args = build_base_html_args(request)
-    new_camp = Camp(db = app.db, program_id = camp_program_id)
-    new_camp.add_instructor(db = app.db, user_id = camp_instructor_id)
-    return await schedule_get_all_camps(request, template_args)
-
-
-@api_router.delete("/schedule/{camp_id}")
-async def camp_delete(request: Request, camp_id: int):
-    auth_check = check_basic_auth('/schedule')
-    if auth_check is not None:
-        return auth_check
-    load_all_camps(db = app.db, camps = app.camps)
-    camp = app.camps.pop(camp_id)
-    if camp is not None:
-        camp.delete(db = app.db)
 
 
 
