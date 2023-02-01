@@ -2,7 +2,7 @@
 
 FastAPI web application for managing the "Level Up Learning" small business for track out educational camps.
 
-# Setup on Ubuntu
+## Setup on Ubuntu
 
 The following instructions will guide you on running a developer's instance of the Level Up Learning FastAPI website on Ubuntu.
 
