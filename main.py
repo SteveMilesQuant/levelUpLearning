@@ -1,6 +1,6 @@
 import os, aiohttp, json, db
-from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status, Form
-from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import WebApplicationClient
@@ -9,7 +9,7 @@ from user import User, load_all_roles
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program
 from program import LevelData, LevelResponse, Level
-from datetime import date
+from camp import CampData, CampResponse, Camp, load_all_camps
 
 
 app = FastAPI()
@@ -68,13 +68,13 @@ def build_base_html_args(request: Request) -> dict:
     return template_args
 
 
-@api_router.get("/")
+@api_router.get("/", response_class = HTMLResponse)
 async def homepage_get(request: Request):
     template_args = build_base_html_args(request)
     return templates.TemplateResponse("index.html", template_args)
 
 
-@api_router.get("/signin")
+@api_router.get("/signin", response_class = RedirectResponse)
 async def signin_get(request: Request):
     google_provider_cfg = await get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
@@ -119,11 +119,11 @@ async def signin_callback_get(request: Request, code):
         )
         app.user.add_email_address(db = app.db, email_address = user_info_json["email"])
     else:
-        return "User email not available or not verified by Google.", 400
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User email not available or not verified by Google.")
     return RedirectResponse(url='/')
 
 
-@api_router.get("/signout")
+@api_router.get("/signout", response_class = RedirectResponse)
 async def signout_get(request: Request):
     app.user = None
     return RedirectResponse(url='/')
@@ -394,6 +394,117 @@ async def delete_level(program_id: int, level_id: int):
 
 
 ###############################################################################
+# CAMPS/SCHEDULING
+###############################################################################
+
+
+@api_router.get("/camps")
+async def get_camps(request: Request, accept: Optional[str] = Header(None)):
+    auth_check = check_basic_auth('/camps')
+    if "text/html" in accept:
+        if auth_check is not None:
+            return auth_check
+        template_args = build_base_html_args(request)
+        return templates.TemplateResponse("camps.html", template_args)
+    else:
+        camps = load_all_camps(db = app.db)
+        for i in range(len(camps)):
+            camp = camps[i]
+            camps[i] = camp.dict(include=CampResponse().dict())
+        return camps
+
+
+@api_router.get("/camps/{camp_id}", response_model = CampResponse)
+async def get_camp(camp_id: int):
+    auth_check = check_basic_auth('/camps')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /camps endpoints")
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+    return camp
+
+
+@api_router.get("/camps/{camp_id}/programs/{program_id}", response_model = ProgramResponse)
+async def get_camp_program(camp_id: int, program_id: int):
+    auth_check = check_basic_auth('/camps')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /camps endpoints")
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
+    if program_id != camp.program_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist for camp id={camp_id}")
+    return Program(db = app.db, id = program_id)
+
+
+@api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelResponse)
+async def get_camp_level(camp_id: int, level_id: int):
+    auth_check = check_basic_auth('/camps')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /camps endpoints")
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
+    if camp.level_schedules_lookup.get(level_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for camp id={camp_id}")
+    return Level(db = app.db, id = level_id)
+
+
+@api_router.get("/schedule", response_class = HTMLResponse)
+async def get_schedule(request: Request):
+    auth_check = check_basic_auth('/schedule')
+    if auth_check is not None:
+        return auth_check
+    template_args = build_base_html_args(request)
+    return templates.TemplateResponse("schedule.html", template_args)
+
+
+@api_router.post("/camps", response_model = CampResponse, status_code = status.HTTP_201_CREATED)
+async def post_new_camp(new_camp_data: CampData):
+    auth_check = check_basic_auth('/schedule')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for POST /camps")
+    # TODO: there's got to be a slicker way to do this
+    new_camp = Camp(
+        db = app.db,
+        id = None,
+        program_id = new_camp_data.program_id,
+        primary_instructor_id = new_camp_data.primary_instructor_id,
+        instructor_ids = new_camp_data.instructor_ids,
+        level_schedules = new_camp_data.level_schedules
+    )
+    if new_camp.id is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new camp failed")
+    return new_camp
+
+
+@api_router.put("/camps/{camp_id}", response_model = CampResponse)
+async def put_update_camp(camp_id: int, updated_camp_data: CampData):
+    auth_check = check_basic_auth('/schedule')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for PUT /camps")
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+    camp = camp.copy(update=updated_camp_data.dict(exclude_unset=True))
+    await camp.update_basic(db = app.db)
+    return camp
+
+
+@api_router.delete("/camps/{camp_id}")
+async def delete_camp(camp_id: int):
+    auth_check = check_basic_auth('/schedule')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for DELETE /camps")
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+    camp.delete(db = app.db)
+
+
+
+###############################################################################
 # ADMIN
 ###############################################################################
 
@@ -405,48 +516,6 @@ async def members_get(request: Request):
         return auth_check
     template_args = build_base_html_args(request)
     return templates.TemplateResponse("members.html", template_args)
-
-
-@api_router.get("/database")
-async def database_get(request: Request):
-    auth_check = check_basic_auth('/database')
-    if auth_check is not None:
-        return auth_check
-    template_args = build_base_html_args(request)
-    return templates.TemplateResponse("database.html", template_args)
-
-
-
-###############################################################################
-# CAMPS/SCHEDULING
-###############################################################################
-
-
-
-@api_router.get("/camps")
-async def camps_get(request: Request, accept: Optional[str] = Header(None)):
-    auth_check = check_basic_auth('/camps')
-    if "text/html" in accept:
-        if auth_check is not None:
-            return auth_check
-        template_args = build_base_html_args(request)
-        return templates.TemplateResponse("camps.html", template_args)
-    else:
-        pass # TODO
-
-
-@api_router.get("/schedule")
-async def get_schedule(request: Request, accept: Optional[str] = Header(None)):
-    auth_check = check_basic_auth('/schedule')
-    if "text/html" in accept:
-        if auth_check is not None:
-            return auth_check
-        template_args = build_base_html_args(request)
-        return templates.TemplateResponse("schedule.html", template_args)
-    else:
-        pass # TODO
-
-
 
 
 

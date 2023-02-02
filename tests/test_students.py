@@ -2,8 +2,7 @@ import pytest, json
 from fastapi import status
 from fastapi.testclient import TestClient
 from user import User
-from student import StudentData
-from datetime import date
+from student import StudentData, FastApiDate
 from main import app
 
 client = TestClient(app)
@@ -20,9 +19,9 @@ def test_get_students_html():
 
 # Test adding students
 @pytest.mark.parametrize(('student'), (
-    (StudentData(name='Karen Tester', birthdate=date(1987, 6, 15), grade_level=6)),
-    (StudentData(name='Cheri Tester', birthdate=date(1988, 7, 16), grade_level=7)),
-    (StudentData(name='Renee Tester', birthdate=date(1989, 8, 17), grade_level=8)),
+    (StudentData(name='Karen Tester', birthdate=FastApiDate(1987, 6, 15), grade_level=6)),
+    (StudentData(name='Cheri Tester', birthdate=FastApiDate(1988, 7, 16), grade_level=7)),
+    (StudentData(name='Renee Tester', birthdate=FastApiDate(1989, 8, 17), grade_level=8)),
 ))
 def test_post_students(student: StudentData):
     student_json = json.loads(json.dumps(student.dict(), indent=4, sort_keys=True, default=str))
@@ -56,9 +55,9 @@ def test_get_students():
 
 # Test updating students
 @pytest.mark.parametrize(('student'), (
-    (StudentData(name='Karen Tester', birthdate=date(1997, 6, 15), grade_level=1)),
-    (StudentData(name='Cheri Tester', birthdate=date(1998, 7, 16), grade_level=2)),
-    (StudentData(name='Renee Tester', birthdate=date(1999, 8, 17), grade_level=3)),
+    (StudentData(name='Karen Tester', birthdate=FastApiDate(1997, 6, 15), grade_level=1)),
+    (StudentData(name='Cheri Tester', birthdate=FastApiDate(1998, 7, 16), grade_level=2)),
+    (StudentData(name='Renee Tester', birthdate=FastApiDate(1999, 8, 17), grade_level=3)),
 ))
 def test_put_student(student: StudentData):
     student_id = all_students_json[student.name]['id']
@@ -92,7 +91,7 @@ def test_student_permission():
     returned_json = response.json()
     assert returned_json == student_error_json
 
-    student = StudentData(name='Karen Tester', birthdate=date(1997, 6, 15), grade_level=1)
+    student = StudentData(name='Karen Tester', birthdate=FastApiDate(1997, 6, 15), grade_level=1)
     student_json = json.loads(json.dumps(student.dict(), indent=4, sort_keys=True, default=str))
     response = client.put('/students/' + str(bad_student_id), json=student_json)
     assert response.status_code == status.HTTP_403_FORBIDDEN

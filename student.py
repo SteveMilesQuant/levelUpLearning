@@ -3,10 +3,13 @@ from pydantic import BaseModel
 from typing import Dict, List, Optional, Any
 from datetime import date
 
+class FastApiDate(date):
+    def __str__(self) -> str:
+        return self.strftime('%Y-%m-%d')
 
 class StudentData(BaseModel):
     name: Optional[str] = None
-    birthdate: Optional[date] = None
+    birthdate: Optional[FastApiDate] = None
     grade_level: Optional[int] = None
 
 
@@ -27,15 +30,14 @@ class Student(StudentResponse):
         row = result[0] # should only be one
         self.name = row['name']
         year, month, day = row['birthdate'].split('-')
-        self.birthdate = date(int(year), int(month), int(day))
+        self.birthdate = FastApiDate(int(year), int(month), int(day))
         self.grade_level = row['grade_level']
         return True
 
     def _create(self, db: Any):
-        sql_date = self.birthdate.strftime('%Y-%m-%d')
         insert_stmt = f'''
             INSERT INTO student (name, birthdate, grade_level)
-                VALUES ("{self.name}", "{sql_date}", {self.grade_level});
+                VALUES ("{self.name}", "{self.birthdate}", {self.grade_level});
         '''
         self.id = execute_write(db, insert_stmt)
 

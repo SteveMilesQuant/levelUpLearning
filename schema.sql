@@ -20,7 +20,6 @@ INSERT INTO role_permissions (role, endpoint, endpoint_title) VALUES
 	("INSTRUCTOR",	"/teach",		"Ongoing Camps"),
 	("INSTRUCTOR",	"/programs",	"Design Programs"),
 	("ADMIN",		"/members",		"Manage Members"),
-	("ADMIN",		"/database",	"Manage Database"),
 	("ADMIN",		"/schedule",	"Schedule Camps");
 
 DROP TABLE IF EXISTS user_x_roles;
@@ -98,8 +97,19 @@ create table camp (
 DROP TABLE IF EXISTS camp_x_instructors;
 create table camp_x_instructors (
 	camp_id INTEGER NOT NULL,
-	user_id INTEGER NOT NULL,
+	instructor_id INTEGER NOT NULL,
 	is_primary BOOL,
 	FOREIGN KEY (camp_id) REFERENCES camp(id),
-	FOREIGN KEY (user_id) REFERENCES user(id)
+	FOREIGN KEY (instructor_id) REFERENCES user(id)
 );
+
+DROP TABLE IF EXISTS camp_x_levels;
+create table camp_x_levels (
+	camp_id INTEGER NOT NULL,
+	level_id INTEGER NOT NULL,
+	start_time SMALLDATETIME,
+	end_time SMALLDATETIME,
+	FOREIGN KEY (camp_id) REFERENCES camp(id),
+	FOREIGN KEY (level_id) REFERENCES level(id)
+);
+

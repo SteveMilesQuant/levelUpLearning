@@ -42,7 +42,7 @@ class Level(LevelResponse):
         if self.id is None:
             self._create(db = db)
         elif not self._load(db = db):
-            self._create(db = db)
+            self.id = None # don't create if not loaded for camps
 
     async def update_basic(self, db: Any):
         update_stmt = f'''
