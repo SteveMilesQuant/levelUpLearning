@@ -39,7 +39,8 @@ def test_get_programs():
     # Get individually
     compare_program_list = []
     for program_json in all_programs_json.values():
-        response = client.get('/programs/' + str(program_json['id']))
+        program_id = program_json['id']
+        response = client.get(f'/programs/{program_id}')
         content_type = response.headers['content-type']
         assert response.status_code == status.HTTP_200_OK, f'Error getting {program_json}'
         assert 'application/json' in content_type
@@ -47,7 +48,7 @@ def test_get_programs():
         assert program_json == got_program_json, f'Returned program {got_program_json} does not match requested program {program_json}.'
         compare_program_list.append(got_program_json)
         # Also test getting webpage for individual programs
-        response = client.get('/programs/' + str(program_json['id']))
+        response = client.get(f'/programs/{program_id}')
         assert response.status_code == status.HTTP_200_OK
 
     # Get as list
@@ -67,7 +68,7 @@ def test_get_programs():
 def test_put_program(program: ProgramData):
     program_id = all_programs_json[program.title]['id']
     program_json = json.loads(json.dumps(program.dict(), indent=4, sort_keys=True, default=str))
-    response = client.put('/programs/' + str(program_id), json=program_json)
+    response = client.put(f'/programs/{program_id}', json=program_json)
     assert response.status_code == status.HTTP_200_OK, f'Error putting {program_json}'
     new_program_json = response.json()
     program_json['id'] = program_id
@@ -85,7 +86,7 @@ def test_post_level(level: LevelData):
     program_json = all_programs_json['Mathletes Anonymous']
     program_id = program_json["id"]
     level_json = json.loads(json.dumps(level.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/programs/{program_json["id"]}/levels', json=level_json)
+    response = client.post(f'/programs/{program_id}/levels', json=level_json)
     assert response.status_code == status.HTTP_201_CREATED, f'Error posting {level_json}'
     new_level_json = response.json()
     level_json['id'] = new_level_json['id']
@@ -102,7 +103,8 @@ def test_get_levels():
 
     # Get individually
     for level_json in all_levels_json.values():
-        response = client.get(f'/programs/{program_id}/levels/' + str(level_json['id']))
+        level_id = level_json['id']
+        response = client.get(f'/programs/{program_id}/levels/{level_id}')
         assert response.status_code == status.HTTP_200_OK, f'Error getting {level_json}'
         got_level_json = response.json()
         assert level_json == got_level_json, f'Returned level {got_level_json} does not match requested level {level_json}.'
@@ -129,11 +131,17 @@ def test_put_level(level: LevelData):
     program_id = program_json["id"]
     level_id = all_levels_json[level.title]['id']
     level_json = json.loads(json.dumps(level.dict(), indent=4, sort_keys=True, default=str))
-    response = client.put(f'/programs/{program_id}/levels/' + str(level_id), json=level_json)
+    response = client.put(f'/programs/{program_id}/levels/{level_id}', json=level_json)
     assert response.status_code == status.HTTP_200_OK, f'Error putting {level_json}'
     new_level_json = response.json()
     level_json['id'] = level_id
     assert level_json == new_level_json, f'Returned level {new_level_json} does not match put level {level_json}.'
+
+    # Also test post-put get
+    response = client.get(f'/programs/{program_id}/levels/{level_id}')
+    assert response.status_code == status.HTTP_200_OK, f'Error getting {level_json}'
+    got_level_json = response.json()
+    assert level_json == got_level_json, f'Returned level {got_level_json} does not match requested level {level_json}.'
 
 
 # Test deleting a level
@@ -141,18 +149,20 @@ def test_delete_level():
     program_json = all_programs_json['Mathletes Anonymous']
     program_id = program_json["id"]
     level_json = all_levels_json['Admitting you have a problem']
-    response = client.delete(f'/programs/{program_id}/levels/' + str(level_json['id']))
+    level_id = level_json['id']
+    response = client.delete(f'/programs/{program_id}/levels/{level_id}')
     assert response.status_code == status.HTTP_200_OK, f'Error deleting {level_json}'
-    response = client.get(f'/programs/{program_id}/levels/' + str(level_json['id']))
+    response = client.get(f'/programs/{program_id}/levels/{level_id}')
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 # Test deleting a program
 def test_delete_program():
     program_json = all_programs_json['Creative Writing Workshop']
-    response = client.delete('/programs/' + str(program_json['id']))
+    program_id = program_json['id']
+    response = client.delete(f'/programs/{program_id}')
     assert response.status_code == status.HTTP_200_OK, f'Error deleting {program_json}'
-    response = client.get('/programs/' + str(program_json['id']))
+    response = client.get(f'/programs/{program_id}')
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -167,14 +177,14 @@ def test_permission():
     program_error_json_2 = {'detail': f'User does not have permission for program id=None'}
 
     # Program get with bad id
-    response = client.get('/programs/' + str(bad_program_id))
+    response = client.get(f'/programs/{bad_program_id}')
     assert response.status_code == status.HTTP_403_FORBIDDEN
     returned_json = response.json()
     assert returned_json == program_error_json
 
     # Program put with bad id
     program_json = json.loads(json.dumps(program.dict(), indent=4, sort_keys=True, default=str))
-    response = client.put('/programs/' + str(bad_program_id), json=program_json)
+    response = client.put(f'/programs/{bad_program_id}', json=program_json)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     returned_json = response.json()
     assert returned_json == program_error_json
@@ -183,19 +193,20 @@ def test_permission():
     for level_json in all_levels_json.values():
         max_level_id = max(max_level_id, level_json['id'])
     level_json = all_levels_json['Getting help for being a Mathlete']
+    level_id = level_json['id']
+    bad_level_id = max_level_id + 1
     program_json = all_programs_json['Mathletes Anonymous']
     program_id = program_json["id"]
 
     # Level get with bad level id
-    response = client.get(f'/programs/{program_id}/levels/' + str(max_level_id + 1))
+    response = client.get(f'/programs/{program_id}/levels/{bad_level_id}')
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
     # Level put with bad program id
-    response = client.put(f'/programs/{bad_program_id}/levels/' + str(level_json['id']), json=level_json)
+    response = client.put(f'/programs/{bad_program_id}/levels/{level_id}', json=level_json)
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
     # Level put with bad level id, but good program id
-    level_json['id'] = max_level_id + 1
-    response = client.put(f'/programs/{program_id}/levels/' + str(level_json['id']), json=level_json)
+    response = client.put(f'/programs/{program_id}/levels/{bad_level_id}', json=level_json)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 

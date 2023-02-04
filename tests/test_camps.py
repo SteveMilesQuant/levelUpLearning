@@ -72,7 +72,8 @@ def test_get_camps():
     # Get individually
     compare_camp_list = []
     for camp_json in all_camps_json:
-        response = client.get('/camps/' + str(camp_json['id']))
+        camp_id = camp_json['id']
+        response = client.get(f'/camps/{camp_id}')
         content_type = response.headers['content-type']
         assert response.status_code == status.HTTP_200_OK, f'Error getting {camp_json}'
         assert 'application/json' in content_type
@@ -80,7 +81,7 @@ def test_get_camps():
         assert camp_json == got_camp_json, f'Returned camp {got_camp_json} does not match requested camp {camp_json}.'
         compare_camp_list.append(got_camp_json)
         # Also test getting webpage for individual camps
-        response = client.get('/camps/' + str(camp_json['id']))
+        response = client.get(f'/camps/{camp_id}')
         assert response.status_code == status.HTTP_200_OK
 
     # Get as list
@@ -97,7 +98,7 @@ def test_get_camps():
     (0, CampData(
         program_id = program.id,
         primary_instructor_id=app.instructor_user.id,
-        instructor_ids = [app.user.id, app.instructor_user.id],
+        instructor_ids = [app.instructor_user.id],
         level_schedules = [
             LevelSchedule(level_id = levels[0].id, start_time = FastApiDatetime(2024, 2, 6, 9, 0, 0, 0), end_time = FastApiDatetime(2024, 2, 6, 12, 0, 0, 0)),
             LevelSchedule(level_id = levels[1].id, start_time = FastApiDatetime(2024, 2, 7, 9, 0, 0, 0), end_time = FastApiDatetime(2024, 2, 7, 12, 0, 0, 0)),
@@ -116,21 +117,29 @@ def test_get_camps():
     )),
 ))
 def test_put_camp(camp_index: int, camp: CampData):
-    camp_id = all_camps_json[camp_index]['id']
     camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
-    response = client.put('/camps/' + str(camp_id), json=camp_json)
+    camp_id = all_camps_json[camp_index]['id']
+    response = client.put(f'/camps/{camp_id}', json=camp_json)
     assert response.status_code == status.HTTP_200_OK, f'Error putting {camp_json}'
     new_camp_json = response.json()
     camp_json['id'] = camp_id
     assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match put camp {camp_json}.'
+    
+    response = client.get(f'/camps/{camp_id}')
+    content_type = response.headers['content-type']
+    assert response.status_code == status.HTTP_200_OK, f'Error getting {camp_json}'
+    assert 'application/json' in content_type
+    got_camp_json = response.json()
+    assert camp_json == got_camp_json, f'Returned camp {got_camp_json} does not match requested camp {camp_json}.'
 
 
 # Test deleting a camp
 def test_delete_camp():
     camp_json = all_camps_json[0]
-    response = client.delete('/camps/' + str(camp_json['id']))
+    camp_id = camp_json['id']
+    response = client.delete(f'/camps/{camp_id}')
     assert response.status_code == status.HTTP_200_OK, f'Error deleting {camp_json}'
-    response = client.get('/camps/' + str(camp_json['id']))
+    response = client.get(f'/camps/{camp_id}')
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -153,14 +162,14 @@ def test_permission():
     camp_error_json = {'detail': f'Camp id={bad_camp_id} not found.'}
 
     # camp get with bad id
-    response = client.get('/camps/' + str(bad_camp_id))
+    response = client.get(f'/camps/{bad_camp_id}')
     assert response.status_code == status.HTTP_404_NOT_FOUND
     returned_json = response.json()
     assert returned_json == camp_error_json
 
     # camp put with bad id
     camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
-    response = client.put('/camps/' + str(bad_camp_id), json=camp_json)
+    response = client.put(f'/camps/{bad_camp_id}', json=camp_json)
     assert response.status_code == status.HTTP_404_NOT_FOUND
     returned_json = response.json()
     assert returned_json == camp_error_json

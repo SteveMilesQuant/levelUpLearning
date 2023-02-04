@@ -38,7 +38,8 @@ def test_get_students():
     # Get them individually
     compare_student_list = []
     for student_json in all_students_json.values():
-        response = client.get('/students/' + str(student_json['id']))
+        student_id = student_json['id']
+        response = client.get(f'/students/{student_id}')
         assert response.status_code == status.HTTP_200_OK, f'Error getting {student_json}'
         got_student_json = response.json()
         assert student_json == got_student_json, f'Returned student {got_student_json} does not match requested student {student_json}.'
@@ -62,19 +63,25 @@ def test_get_students():
 def test_put_student(student: StudentData):
     student_id = all_students_json[student.name]['id']
     student_json = json.loads(json.dumps(student.dict(), indent=4, sort_keys=True, default=str))
-    response = client.put('/students/' + str(student_id), json=student_json)
+    response = client.put(f'/students/{student_id}', json=student_json)
     assert response.status_code == status.HTTP_200_OK, f'Error putting {student_json}'
     new_student_json = response.json()
     student_json['id'] = student_id
     assert student_json == new_student_json, f'Returned student {new_student_json} does not match put student {student_json}.'
 
+    response = client.get(f'/students/{student_id}')
+    assert response.status_code == status.HTTP_200_OK, f'Error getting {student_json}'
+    got_student_json = response.json()
+    assert student_json == got_student_json, f'Returned student {got_student_json} does not match requested student {student_json}.'
+
 
 # Test deleting a student
 def test_delete_student():
     student_json = all_students_json['Karen Tester']
-    response = client.delete('/students/' + str(student_json['id']))
+    student_id = student_json['id']
+    response = client.delete(f'/students/{student_id}')
     assert response.status_code == status.HTTP_200_OK, f'Error deleting {student_json}'
-    response = client.get('/students/' + str(student_json['id']))
+    response = client.get(f'/students/{student_id}')
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -86,14 +93,14 @@ def test_student_permission():
     bad_student_id = max_student_id + 1
     student_error_json = {'detail': f'User does not have permission for student id={bad_student_id}'}
 
-    response = client.get('/students/' + str(bad_student_id))
+    response = client.get(f'/students/{bad_student_id}')
     assert response.status_code == status.HTTP_403_FORBIDDEN
     returned_json = response.json()
     assert returned_json == student_error_json
 
     student = StudentData(name='Karen Tester', birthdate=FastApiDate(1997, 6, 15), grade_level=1)
     student_json = json.loads(json.dumps(student.dict(), indent=4, sort_keys=True, default=str))
-    response = client.put('/students/' + str(bad_student_id), json=student_json)
+    response = client.put(f'/students/{bad_student_id}', json=student_json)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     returned_json = response.json()
     assert returned_json == student_error_json

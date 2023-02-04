@@ -487,7 +487,24 @@ async def put_update_camp(camp_id: int, updated_camp_data: CampData):
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+    for instructor_id in updated_camp_data.instructor_ids:
+        if instructor_id not in camp.instructor_ids:
+            camp.add_instructor(db = app.db, instructor_id = instructor_id)
+    camp.make_instructor_primary(db = app.db, instructor_id = updated_camp_data.primary_instructor_id)
+    for instructor_id in camp.instructor_ids:
+        if instructor_id not in updated_camp_data.instructor_ids:
+            camp.remove_instructor(db = app.db, instructor_id = instructor_id)
+    updated_level_schedules_lookup = {}
+    for level_schedule in updated_camp_data.level_schedules:
+        updated_level_schedules_lookup[level_schedule.level_id] = level_schedule
+    for level_id in camp.level_schedules_lookup.keys():
+        if updated_level_schedules_lookup.get(level_id) is None:
+            camp.remove_level_schedule(db = app.db, level_id = level_id)
+    level_schedules = updated_camp_data.level_schedules # bc copy-update just makes these dictionaries
+    updated_camp_data.level_schedules = None
     camp = camp.copy(update=updated_camp_data.dict(exclude_unset=True))
+    camp.level_schedules = level_schedules
+    camp.update_level_schedules(db = app.db)
     await camp.update_basic(db = app.db)
     return camp
 
