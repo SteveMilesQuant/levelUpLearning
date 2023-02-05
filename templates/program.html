@@ -2,37 +2,40 @@
 
 {% block content %}
   <span class='sidebar' id='sidebar'>
-    <div class='sidebar-title'><h1><a class='selectable' href='javascript:"/programs/" + getProgramIdStr();' id='sidebar-program-title'></a></h1></div>
-    <hr class='h-divider'></hr>
+    <div class='sidebar-title'>
+      <h1><a class='selectable' href='javascript:"/programs/" + getProgramIdStr();' id='sidebar-program-title'></a></h1>
+      <hr class='h-divider'></hr>
+    </div>
     <!-- Levels added here -->
-    <div class='sidebar-item' id='add-level-box'><button class='selectable menu-font' onclick="unhide('new-level');">+ Add Level</button></div>
-    <hr class='h-divider'></hr>
-    <div class='sidebar-item'><a class='selectable menu-font' href="/programs"><strong>Back to programs</strong></a></div>
+    <div id='add-level-box'><button class='selectable menu-font' onclick="unhide('new-level');">+ Add Level</button></div>
+    <div><a class='selectable menu-font' href="/programs"><strong>Back to programs</strong></a></div>
   </span>
   <span class='content-body' id='program-content-left'>
-    <div class='content-item'><h1>
-      <span>Program</span>
-      <span><button class='selectable' id='program-edit' onclick='edit(["program-title", "program-tags", "program-from-grade", "program-to-grade", "program-description"]); hide(["program-edit", "program-delete"]); unhide(["program-submit", "program-cancel"]);'>
-        <img class='small-button' src="{{ url_for('images', path='/pencil.png') }}" alt='Edit'/>
-      </button></span>
-      <span><button class='selectable' id='program-submit' onclick='putProgram(); unhide(["program-edit", "program-delete"]); hide(["program-submit", "program-cancel"]);' hidden>
-        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
-      </button></span>
-      <span><button class='selectable' id='program-cancel' onclick='getProgram(); unhide(["program-edit", "program-delete"]); hide(["program-submit", "program-cancel"]);' hidden>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
-      </button></span>
-    </h1></div>
-    <hr class='h-divider'></hr>
-    <div class='content-item' hidden>
+    <div>
+      <h1>
+        <span>Program</span>
+        <span><button class='selectable' id='program-edit' onclick='edit(["program-title", "program-tags", "program-from-grade", "program-to-grade", "program-description"]); hide(["program-edit", "program-delete"]); unhide(["program-submit", "program-cancel"]);'>
+          <img class='small-button' src="{{ url_for('images', path='/pencil.png') }}" alt='Edit'/>
+        </button></span>
+        <span><button class='selectable' id='program-submit' onclick='putProgram(); unhide(["program-edit", "program-delete"]); hide(["program-submit", "program-cancel"]);' hidden>
+          <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+        </button></span>
+        <span><button class='selectable' id='program-cancel' onclick='getProgram(); unhide(["program-edit", "program-delete"]); hide(["program-submit", "program-cancel"]);' hidden>
+          <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        </button></span>
+      </h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <div hidden>
       <span><strong>ID: </strong><span id='program-id'></span></span>
     </div>
-    <div class='content-item'>
+    <div>
       <span><strong>Title: </strong><span id='program-title'></span></span>
     </div>
-    <div class='content-item'>
+    <div>
       <span><strong>Tags: </strong><span id='program-tags'></span></span>
     </div>
-    <div class='content-item'>
+    <div>
       <strong>Grade range: </strong>
       <select type='select' id='program-from-grade'>
         <option value="0">K</option>
@@ -48,7 +51,7 @@
         {% endfor %}
       </select>
     </div>
-    <div class='content-item' id='program-delete'>
+    <div id='program-delete'>
       <button class='selectable' onclick="confirmDeleteProgram();">
         <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
         <span><strong>Delete Program</strong></span>
@@ -56,32 +59,34 @@
     </div>
   </span>
   <span class='content-body' id='level-content-left' hidden>
-    <div class='content-item'><h1>
-      <span id='level-header-text'>Level X</span>
-      <span><button class='selectable' id='level-edit' onclick='edit(["level-title", "level-list-index", "level-description"]); hide(["level-edit", "level-delete"]); unhide(["level-submit", "level-cancel"]);'>
-        <img class='small-button' src="{{ url_for('images', path='/pencil.png') }}" alt='Edit'/>
-      </button></span>
-      <span><button class='selectable' id='level-submit' onclick='putLevel(); unhide(["level-edit", "level-delete"]); hide(["level-submit", "level-cancel"]);' hidden>
-        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
-      </button></span>
-      <span><button class='selectable' id='level-cancel' onclick='getLevel(null); unhide(["level-edit", "level-delete"]); hide(["level-submit", "level-cancel"]);' hidden>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
-      </button></span>
-    </h1></div>
-    <hr class='h-divider'></hr>
-    <div class='content-item' hidden>
+    <div>
+      <h1>
+        <span id='level-header-text'>Level X</span>
+        <span><button class='selectable' id='level-edit' onclick='edit(["level-title", "level-list-index", "level-description"]); hide(["level-edit", "level-delete"]); unhide(["level-submit", "level-cancel"]);'>
+          <img class='small-button' src="{{ url_for('images', path='/pencil.png') }}" alt='Edit'/>
+        </button></span>
+        <span><button class='selectable' id='level-submit' onclick='putLevel(); unhide(["level-edit", "level-delete"]); hide(["level-submit", "level-cancel"]);' hidden>
+          <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+        </button></span>
+        <span><button class='selectable' id='level-cancel' onclick='getLevel(null); unhide(["level-edit", "level-delete"]); hide(["level-submit", "level-cancel"]);' hidden>
+          <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        </button></span>
+      </h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <div hidden>
       <span><strong>ID: </strong><span id='level-id'></span></span>
     </div>
-    <div class='content-item'>
+    <div>
       <span><strong>Title: </strong><span id='level-title'></span></span>
     </div>
-    <div class='content-item'>
+    <div>
       <strong>Index: </strong>
       <select type='select' id='level-list-index'>
         <option value="1">1</option>
       </select>
     </div>
-    <div class='content-item' id='level-delete'>
+    <div id='level-delete'>
       <button class='selectable' onclick="confirmDeleteLevel();">
         <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
         <span><strong>Delete Level</strong></span>
@@ -90,30 +95,30 @@
   </span>
   <div class="v-divider"></div>
   <span class='content-body' id='program-content-right'>
-    <div class='content-item'>
+    <div>
       <strong>Description: </strong>
     </div>
-    <div class='content-item'>
+    <div>
       <textarea wrap='soft' class='longtext-box' id='program-description'></textarea>
     </div>
   </span>
   <span class='content-body' id='level-content-right' hidden>
-    <div class='content-item'>
+    <div>
       <strong>Description: </strong>
     </div>
-    <div class='content-item'>
+    <div>
       <textarea wrap='soft' class='longtext-box' id='level-description'></textarea>
     </div>
   </span>
   <div class='pop-up' id='new-level' hidden>
-    <div class='pop-up-item'>
+    <div>
       <h1 id='new-level-header'>Level for Program X</h1>
       <hr class='h-divider'></hr>
     </div>
-    <div class='pop-up-item'>
-      <div class='pop-up-subitem'><strong >Title:</strong></div>
-      <div class='pop-up-subitem pop-up-text'contenteditable='true' id='new-level-title'></div>
-      <div class='pop-up-subitem'>
+    <div>
+      <div><strong >Title:</strong></div>
+      <div><p contenteditable='true' id='new-level-title'></p></div>
+      <div>
         <span><button class='selectable' onclick='postLevel(); resetNewLevel();'>
           <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
         </button></span>
@@ -218,7 +223,6 @@
     sidebar = document.getElementById('sidebar');
     sidebarTail = document.getElementById('add-level-box');
     newDiv = document.createElement('div');
-    newDiv.classList.add('sidebar-item');
     newDiv.classList.add('menu-font');
     newDiv.classList.add('selectable');
     newDiv.id = 'sidebar-level-' + level.id;

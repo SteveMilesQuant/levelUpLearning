@@ -2,46 +2,51 @@
 
 {% block content %}
   <span class='sidebar' id='sidebar'>
-    <div class='sidebar-title'><h1>Filters</h1></div>
-    <hr class='h-divider'></hr>
+    <div class='sidebar-title'>
+      <h1>Filters</h1>
+      <hr class='h-divider'></hr>
+    </div>
   </span>
   <div class='content-body'>
-    <div class='content-item'><h1>Programs</h1></div>
+    <div>
+      <h1>Programs</h1>
+      <hr class='h-divider'></hr>
+    </div>
     <div class='search-box'>
-      <span class='search-box-item'><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
-      <span class='search-box-item search-box-text' contenteditable=true id='search-box-text'></span>
-      <span class='search-box-item'><button class='selectable' onclick='window.userTable.resetSearchBox();'>
+      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><p contenteditable=true id='search-box-text'></p></span>
+      <span><button class='selectable' onclick='window.userTable.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
     </div>
-    <div class='content-item'><table id='programs-table'>
+    <div><table id='programs-table'>
       <tr class='selectable' onclick='unhide("new-program");'><td>+ Add Program</td></tr>
     </table></div>
     <div class='pop-up' id='new-program' hidden>
-      <div class='pop-up-item'>
+      <div>
         <h1>New Program</h1>
         <hr class='h-divider'></hr>
       </div>
-      <div class='pop-up-item'>
-        <div class='pop-up-subitem'><strong >Title:</strong></div>
-        <div class='pop-up-subitem pop-up-text'contenteditable='true' id='new-program-title'></div>
-        <div class='pop-up-subitem'><strong >Tags:</strong></div>
-        <div class='pop-up-subitem pop-up-text'contenteditable='true' id='new-program-tags'></div>
-        <div class='pop-up-subitem'><strong>From grade:</strong></div>
-        <div class='pop-up-subitem'><select type='select' id='new-program-from-grade'>
+      <div>
+        <div><strong >Title:</strong></div>
+        <div><p contenteditable='true' id='new-program-title'></p></div>
+        <div><strong >Tags:</strong></div>
+        <div><p contenteditable='true' id='new-program-tags'></p></div>
+        <div><strong>From grade:</strong></div>
+        <div><select type='select' id='new-program-from-grade'>
           <option value="0">K</option>
           {% for grade in range(1,13) %}
             <option value="{{grade}}" {% if grade == 6 %} selected {% endif %}>{{grade}}</option>
           {% endfor %}
         </select></div>
-        <div class='pop-up-subitem'><strong>To grade:</strong></div>
-        <div class='pop-up-subitem'><select type='select' id='new-program-to-grade'>
+        <div><strong>To grade:</strong></div>
+        <div><select type='select' id='new-program-to-grade'>
           <option value="0">K</option>
           {% for grade in range(1,13) %}
             <option value="{{grade}}" {% if grade == 8 %} selected {% endif %}>{{grade}}</option>
           {% endfor %}
         </select></div>
-        <div class='pop-up-subitem'>
+        <div>
           <span><button class='selectable' onclick='postProgram();'>
             <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
           </button></span>

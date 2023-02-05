@@ -21,7 +21,7 @@ th {
 tr:nth-child(even), tr:nth-child(even) td button { background-color: lightcyan; }
 
 .selectable:hover { background-color: #ddd; cursor: pointer; }
-.h-divider { margin-left: 8px; margin-right: 8px; border: 1px solid #ddd; }
+.h-divider { margin: 0; border: 1px solid #ddd; }
 .v-divider { border: 1px solid #ddd; margin-top: 8px; margin-bottom: 8px; margin-left: 64px; }
 .menu-font { font-size: 18px; }
 
@@ -164,18 +164,16 @@ footer {
 .dropdown:hover .dropdown-content { display: block; }
 .dropdown:hover .dropbtn { background-color: #f1f1f1; }
 
-
 #main { transition: 0.5s; }
 .content-container { display: flex; height: 100%; width: 100%; }
 .content { height: 100%; width: 100%; display: flex; margin: 0px; }
 .content-body { height: 100%; margin: 32px; }
 .content-body a { text-decoration: none; }
-.content-item { margin-top: 32px; margin-left: 32px; width: 100%; }
-.content-subitem { margin-top: 16px; }
+.content-body div { margin-top: 32px; margin-left: 32px; }
 .sidebar { position: relative; top: 6px; height: 90%; min-width: 300px; box-shadow: 0px 4px 16px 3px rgba(0,0,0,0.2); overflow-y: scroll; }
-.sidebar-item { margin: 32px; }
-.sidebar-item a { text-decoration: none }
-.sidebar-subitem { margin-left: 16px; margin-top: 16px; }
+.sidebar div { margin: 32px; }
+.sidebar div a { text-decoration: none }
+.sidebar div div { margin: 0; }
 .sidebar-title { margin-top: 34px; margin-bottom: 34px; margin-left: 32px; margin-left: 32px; text-decoration: none; }
 .sidebar-title a { text-decoration: none }
 .add-button { height: 28px; text-align: center; line-height: 100%; border: none; }
@@ -183,24 +181,19 @@ footer {
 
 .pop-up { position: fixed; margin-left: 200px; z-index: 1; top: 128px; background-color: white; border: 2px solid #ddd; }
 .pop-up div { margin: 32px; }
-.pop-up div div { margin-top: 16px; }
-.pop-up-item { margin: 32px; }
-.pop-up-subitem { margin-top: 16px; }
-.pop-up-text { width: 800px; border: 2px solid #ddd; }
+.pop-up div div { margin-top: 16px; margin-left: 0; margin-right: 0; margin-bottom: 0; }
+.pop-up div div p { width: 800px; border: 2px solid #ddd; margin: 0; }
 
-.form-item { margin-top: 16px; display: inline-block; }
-.form-input-text { width: 800px; border: none; }
-.form-input-longtext { position: relative; width: 99%; height: 1400px; border: none; top: -692px; overflow-x: scroll; }
 .longtext-box { width: 800px; height: 500px; background-color: white; border: 2px solid #ddd; overflow: hidden; resize: none; }
 .longtext-box:focus, .form-input-longtext:focus { outline: none; }
 .shorttext-box { border: 2px solid #ddd; padding-left: 5px; padding-right: 5px; padding-top: 2px; padding-bottom: 2px; }
 
+.filter-title { padding-bottom: 8px; }
+
 .search-box { border: 2px solid #ddd; margin-top: 32px; margin-left: 32px; }
 .search-box span { margin: 4px; display: inline-block; }
-.search-box-text { width: 600px; }
-.search-box-text:focus { outline: 0px solid transparent; }
-
-.filter-title { margin-bottom: 8px; }
+.search-box span p { width: 600px; margin: 0; }
+.search-box span p:focus { outline: 0px solid transparent; }
 
 .checkbox-box { margin: 4px; }
 .checkbox-box input, label, hr { margin: 4px; }

@@ -8,9 +8,9 @@
   <div class='content-body'>
     <div class='content-item'><h1>Camps</h1></div>
     <div class='search-box'>
-      <span class='search-box-item'><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
-      <span class='search-box-item search-box-text' contenteditable=true id='search-box-text'></span>
-      <span class='search-box-item'><button class='selectable' onclick='window.userTable.resetSearchBox();'>
+      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><p contenteditable=true id='search-box-text'></p></span>
+      <span><button class='selectable' onclick='window.userTable.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
     </div>
@@ -24,9 +24,9 @@
       </div>
       <div>
         <div class='search-box'>
-          <span class='search-box-item'><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
-          <span class='search-box-item search-box-text' contenteditable=true id='new-camp-search-program'></span>
-          <span class='search-box-item'><button class='selectable' onclick='window.popupTable.resetSearchBox();'>
+          <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+          <span><p contenteditable=true id='new-camp-search-program'></p></span>
+          <span><button class='selectable' onclick='window.popupTable.resetSearchBox();'>
             <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
           </button></span>
         </div>
@@ -71,13 +71,13 @@
 
     http.get('/instructors').then((instructorList) => {
       for (const instructor of instructorList) {
-        addInstructorToSelection(instructor);
+        addInstructorToList(instructor);
       }
     });
 
     http.get('/programs').then((programList) => {
       for (const program of programList) {
-        addProgramToPopupTable(program);
+        addProgramToList(program);
       }
     });
   }
@@ -86,11 +86,11 @@
     // TODO
   }
 
-  function addInstructorToSelection(camp) {
+  function addInstructorToList(camp) {
     // TODO
   }
 
-  function addProgramToPopupTable(camp) {
+  function addProgramToList(camp) {
     // TODO
   }
 

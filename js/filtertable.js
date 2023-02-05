@@ -46,7 +46,6 @@ class FilterTable {
             if (col.filterType) {
                 // Create html container for filter, label, and values
                 var filterBox = document.createElement('div');
-                filterBox.classList.add('sidebar-item'); // maybe take this as input
                 filterBox.classList.add('menu-font');
                 htmlFilterBox.appendChild(filterBox);
 
@@ -411,7 +410,6 @@ class IntRangeValue extends FilterValue {
 
             // Create "from" range input
             var fromRange = document.createElement('input');
-            fromRange.classList.add('range-input');
             fromRange.type = "range";
             fromRange.min = fromVal;
             fromRange.max = toVal;
@@ -434,7 +432,6 @@ class IntRangeValue extends FilterValue {
 
             // Create "from" range label (displays currently selected value)
             var fromLabel = document.createElement('label');
-            fromLabel.classList.add('range-label');
             fromLabel.for = fromRange;
             fromRangeBox.appendChild(fromLabel);
             filter.fromLabel = fromLabel;
@@ -446,7 +443,6 @@ class IntRangeValue extends FilterValue {
 
             // Create "to" range input
             var toRange = document.createElement('input');
-            toRange.classList.add('range-input');
             toRange.type = "range";
             toRange.min = fromVal;
             toRange.max = toVal;
@@ -469,7 +465,6 @@ class IntRangeValue extends FilterValue {
 
             // Create "to" range label (displays currently selected value)
             var toLabel = document.createElement('label');
-            toLabel.classList.add('range-label');
             toLabel.for = toRange;
             toRangeBox.appendChild(toLabel);
             filter.toLabel = toLabel;
