@@ -46,13 +46,11 @@ class FilterTable {
             if (col.filterType) {
                 // Create html container for filter, label, and values
                 var filterBox = document.createElement('div');
-                filterBox.classList.add('menu-font');
                 htmlFilterBox.appendChild(filterBox);
 
                 // Create html for filter title (column name)
-                var filterTitle = document.createElement('div');
-                filterTitle.classList.add('filter-title');
-                filterTitle.innerHTML = col.label;
+                var filterTitle = document.createElement('p');
+                filterTitle.innerText = col.label;
                 filterBox.appendChild(filterTitle);
 
                 // Initialize filter

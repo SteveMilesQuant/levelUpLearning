@@ -2,8 +2,9 @@
 
 {% block content %}
 	<span class='sidebar' id='sidebar'>
-    <div class='sidebar-title'><h1>Filters</h1></div>
+    <div><h1>Filters</h1></div>
     <hr class='h-divider'></hr>
+    <!-- Camp filters added here -->
   </span>
   <div class='content-body'>
     <div class='content-item'><h1>Camps</h1></div>
@@ -17,28 +18,35 @@
     <div class='content-item'><table id='camps-table'>
       <tr class='selectable' onclick='unhide("new-camp");'><td>+ Schedule New Camp</td></tr>
     </table></div>
-    <div class='pop-up' id='new-camp' hidden>
-      <div>
-        <h1>New Camp</h1>
-        <hr class='h-divider'></hr>
-      </div>
-      <div>
-        <div class='search-box'>
-          <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
-          <span><p contenteditable=true id='new-camp-search-program'></p></span>
-          <span><button class='selectable' onclick='window.popupTable.resetSearchBox();'>
-            <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
-          </button></span>
-        </div>
-        <div>
-          <span><button class='selectable' onclick='postCamp();'>
-            <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
-          </button></span>
-          <span><button class='selectable' onclick='resetNewCamp();'>
-            <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
-          </button></span>
-        </div>
-      </div>
+  </div>
+  <div class='pop-up' id='new-camp' hidden>
+    <div>
+      <h1>New Camp</h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <div><strong>Program:</strong></div>
+    <div class='search-box'>
+      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><p contenteditable=true id='new-camp-search-program'></p></span>
+      <span><button class='selectable' onclick='window.popupTable.resetSearchBox();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
+    </div>
+    <div><strong>Instructors:</strong></div>
+    <div class='search-box'>
+      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><p contenteditable=true id='new-camp-search-program'></p></span>
+      <span><button class='selectable' onclick='window.popupTable.resetSearchBox();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
+    </div>
+    <div>
+      <span><button class='selectable' onclick='postCamp();'>
+        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+      </button></span>
+      <span><button class='selectable' onclick='resetNewCamp();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
     </div>
   </div>
 {% endblock %}

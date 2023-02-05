@@ -2,13 +2,13 @@
 
 {% block content %}
   <span class='sidebar' id='sidebar'>
-    <div class='sidebar-title'>
+    <div>
       <h1><a class='selectable' href='javascript:"/programs/" + getProgramIdStr();' id='sidebar-program-title'></a></h1>
       <hr class='h-divider'></hr>
     </div>
     <!-- Levels added here -->
-    <div id='add-level-box'><button class='selectable menu-font' onclick="unhide('new-level');">+ Add Level</button></div>
-    <div><a class='selectable menu-font' href="/programs"><strong>Back to programs</strong></a></div>
+    <div id='add-level-box' class='selectable' onclick="unhide('new-level');"><p>+ Add Level</p></div>
+    <div><a class='selectable' href="/programs"><strong>Back to programs</strong></a></div>
   </span>
   <span class='content-body' id='program-content-left'>
     <div>
@@ -115,17 +115,15 @@
       <h1 id='new-level-header'>Level for Program X</h1>
       <hr class='h-divider'></hr>
     </div>
+    <div><strong >Title:</strong></div>
+    <div><p contenteditable='true' id='new-level-title'></p></div>
     <div>
-      <div><strong >Title:</strong></div>
-      <div><p contenteditable='true' id='new-level-title'></p></div>
-      <div>
-        <span><button class='selectable' onclick='postLevel(); resetNewLevel();'>
-          <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
-        </button></span>
-        <span><button class='selectable' onclick='resetNewLevel();'>
-          <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
-        </button></span>
-      </div>
+      <span><button class='selectable' onclick='postLevel(); resetNewLevel();'>
+        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+      </button></span>
+      <span><button class='selectable' onclick='resetNewLevel();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
     </div>
   </div>
 {% endblock %}
@@ -220,14 +218,17 @@
   }
 
   function addLevelToSidebar(level) {
+    newDiv = document.createElement('div');
+    newDiv.classList.add('selectable');
+    newDiv.onclick = function() { getLevel(level.id); };
+    newDiv.id = 'sidebar-level-' + level.id;
+
+    newText = document.createElement('p');
+    newText.innerText = level.list_index.toString() + ': ' + level.title;
+    newDiv.appendChild(newText);
+
     sidebar = document.getElementById('sidebar');
     sidebarTail = document.getElementById('add-level-box');
-    newDiv = document.createElement('div');
-    newDiv.classList.add('menu-font');
-    newDiv.classList.add('selectable');
-    newDiv.id = 'sidebar-level-' + level.id;
-    newDiv.onclick = function() { getLevel(level.id); };
-    newDiv.innerHTML = level.list_index.toString() + ': ' + level.title;
     sidebar.insertBefore(newDiv, sidebarTail);
   }
 
@@ -282,14 +283,14 @@
       if (origLevelIndex < level.list_index) {
         // Moving forward
         sidebarLevel = document.getElementById('sidebar-level-' + levelId);
-        splitLevel = sidebarLevel.innerHTML.split(':');
+        splitLevel = sidebarLevel.firstChild.innerText.split(':');
         splitLevel[0] = level.list_index.toString();
-        sidebarLevel.innerHTML = splitLevel.join(':');
+        sidebarLevel.firstChild.innerText = splitLevel.join(':');
         for (i = origLevelIndex; i < level.list_index; i++) {
           sidebarLevel = sidebarLevel.nextSibling;
-          splitLevel = sidebarLevel.innerHTML.split(':');
+          splitLevel = sidebarLevel.firstChild.innerText.split(':');
           splitLevel[0] = (parseInt(splitLevel[0]) - 1).toString();
-          sidebarLevel.innerHTML = splitLevel.join(':');
+          sidebarLevel.firstChild.innerText = splitLevel.join(':');
         }
 
         insertBeforeLevel = sidebarLevel.nextSibling;
@@ -299,14 +300,14 @@
       else if (origLevelIndex > level.list_index) {
         // Moving backwards
         sidebarLevel = document.getElementById('sidebar-level-' + levelId);
-        splitLevel = sidebarLevel.innerHTML.split(':');
+        splitLevel = sidebarLevel.firstChild.innerText.split(':');
         splitLevel[0] = level.list_index.toString();
-        sidebarLevel.innerHTML = splitLevel.join(':');
+        sidebarLevel.firstChild.innerText = splitLevel.join(':');
         for (i = level.list_index; i < origLevelIndex; i++) {
           sidebarLevel = sidebarLevel.previousSibling;
-          splitLevel = sidebarLevel.innerHTML.split(':');
+          splitLevel = sidebarLevel.firstChild.innerText.split(':');
           splitLevel[0] = (parseInt(splitLevel[0]) + 1).toString();
-          sidebarLevel.innerHTML = splitLevel.join(':');
+          sidebarLevel.firstChild.innerText = splitLevel.join(':');
         }
 
         insertBeforeLevel = sidebarLevel;

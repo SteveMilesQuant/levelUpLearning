@@ -23,7 +23,6 @@ tr:nth-child(even), tr:nth-child(even) td button { background-color: lightcyan; 
 .selectable:hover { background-color: #ddd; cursor: pointer; }
 .h-divider { margin: 0; border: 1px solid #ddd; }
 .v-divider { border: 1px solid #ddd; margin-top: 8px; margin-bottom: 8px; margin-left: 64px; }
-.menu-font { font-size: 18px; }
 
 
 .banner {
@@ -111,26 +110,10 @@ footer {
 	width: 300px;
 	transition: 0.5s;
 }
+.hamburger-nav div { margin: 32px; }
+.hamburger-nav div div { margin-left: 32px; }
+.hamburger-nav div div a { text-decoration: none; font-size: 18px; }
 
-.hamburger-nav-role {
-	margin: 32px;
-	padding-top: 2px;
-}
-
-.hamburger-nav-role-link {
-	margin: 32px;
-}
-
-.hamburger-nav-role-link a {text-decoration: none;}
-
-
-.dropbtn {
-	background-color: rgba(0,0,0,0);
-	height: 100%;
-	width: 100%;
-	border-radius: 50%;
-	border: none;
-}
 
 .dropdown {
 	position: relative;
@@ -141,7 +124,13 @@ footer {
 	padding-right: 16px;
 	float: right;
 }
-
+.dropdown-button {
+	background-color: rgba(0,0,0,0);
+	height: 100%;
+	width: 100%;
+	border-radius: 50%;
+	border: none;
+}
 .dropdown-content {
 	display: none;
 	position: absolute;
@@ -149,20 +138,12 @@ footer {
 	min-width: 250px;
 	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
 	z-index: 1;
-	border-radius: 10%;
 	right: 16px;
 }
-
-.dropdown-item {
-	margin: 16px;
-	display: block;
-	border-radius: 10%;
-	border: none;
-}
-
-.dropdown-item a { text-decoration: none; }
+.dropdown-content div { margin: 16px; }
+.dropdown-content div a { text-decoration: none; font-size: 18px; }
 .dropdown:hover .dropdown-content { display: block; }
-.dropdown:hover .dropbtn { background-color: #f1f1f1; }
+.dropdown:hover .dropdown-button { background-color: #f1f1f1; }
 
 #main { transition: 0.5s; }
 .content-container { display: flex; height: 100%; width: 100%; }
@@ -173,26 +154,22 @@ footer {
 .sidebar { position: relative; top: 6px; height: 90%; min-width: 300px; box-shadow: 0px 4px 16px 3px rgba(0,0,0,0.2); overflow-y: scroll; }
 .sidebar div { margin: 32px; }
 .sidebar div a { text-decoration: none }
-.sidebar div div { margin: 0; }
-.sidebar-title { margin-top: 34px; margin-bottom: 34px; margin-left: 32px; margin-left: 32px; text-decoration: none; }
-.sidebar-title a { text-decoration: none }
-.add-button { height: 28px; text-align: center; line-height: 100%; border: none; }
+.sidebar div div { margin: 0px; }
+.sidebar div p { margin: 0; font-size: 18px; margin-bottom: 8px; }
+.sidebar div button { margin: 0; font-size: 18px; }
 .small-button {height: 16px; width: 16px; }
 
-.pop-up { position: fixed; margin-left: 200px; z-index: 1; top: 128px; background-color: white; border: 2px solid #ddd; }
-.pop-up div { margin: 32px; }
-.pop-up div div { margin-top: 16px; margin-left: 0; margin-right: 0; margin-bottom: 0; }
-.pop-up div div p { width: 800px; border: 2px solid #ddd; margin: 0; }
+.pop-up { position: fixed; margin-left: 200px; z-index: 1; top: 128px; background-color: white; border: 2px solid #ddd; padding: 32px; }
+.pop-up div { margin: 16px; }
+.pop-up div p { width: 800px; border: 2px solid #ddd; margin: 0; }
 
 .longtext-box { width: 800px; height: 500px; background-color: white; border: 2px solid #ddd; overflow: hidden; resize: none; }
 .longtext-box:focus, .form-input-longtext:focus { outline: none; }
 .shorttext-box { border: 2px solid #ddd; padding-left: 5px; padding-right: 5px; padding-top: 2px; padding-bottom: 2px; }
 
-.filter-title { padding-bottom: 8px; }
-
 .search-box { border: 2px solid #ddd; margin-top: 32px; margin-left: 32px; }
 .search-box span { margin: 4px; display: inline-block; }
-.search-box span p { width: 600px; margin: 0; }
+.search-box span p { width: 600px; margin: 0; border: none; }
 .search-box span p:focus { outline: 0px solid transparent; }
 
 .checkbox-box { margin: 4px; }
