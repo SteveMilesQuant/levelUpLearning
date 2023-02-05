@@ -18,6 +18,81 @@
       <tr class='selectable' onclick='unhide("new-camp");'><td>+ Schedule New Camp</td></tr>
     </table></div>
     <div class='pop-up' id='new-camp' hidden>
+      <div>
+        <h1>New Camp</h1>
+        <hr class='h-divider'></hr>
+      </div>
+      <div>
+        <div class='search-box'>
+          <span class='search-box-item'><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+          <span class='search-box-item search-box-text' contenteditable=true id='new-camp-search-program'></span>
+          <span class='search-box-item'><button class='selectable' onclick='window.popupTable.resetSearchBox();'>
+            <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+          </button></span>
+        </div>
+        <div>
+          <span><button class='selectable' onclick='postCamp();'>
+            <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+          </button></span>
+          <span><button class='selectable' onclick='resetNewCamp();'>
+            <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+          </button></span>
+        </div>
+      </div>
     </div>
   </div>
+{% endblock %}
+
+{% block script %}
+  // One-time setup
+  window.onload = function() {
+    colMeta = [];
+    colMeta.push(new FilterTableColumn('Program Title', simpleTemplate`${0}`, 'program.title', null, true));
+    colMeta.push(new FilterTableColumn('Primary Instructor', simpleTemplate`${0}`, 'primary_instructor.full_name', null, true));
+
+    var htmlTable = document.getElementById('camps-table');
+    var sidebar = document.getElementById('sidebar');
+    var searchBox = document.getElementById('search-box-text');
+    window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, searchBox); // -1 for row shift - we have one extra final static row for "Add Camp"
+
+    http.get('/camps').then((campList) => {
+      for (var camp of campList) {
+        http.get('/programs/' + camp.program_id).then((program) => {
+          camp.program = program;
+          http.get('/instructors/' + camp.primary_instructor_id).then((instructor) => {
+            camp.primary_instructor = instructor;
+            addCampToTable(camp);
+          });
+        });
+      }
+    });
+
+    http.get('/instructors').then((instructorList) => {
+      for (const instructor of instructorList) {
+        addInstructorToSelection(instructor);
+      }
+    });
+
+    http.get('/programs').then((programList) => {
+      for (const program of programList) {
+        addProgramToPopupTable(program);
+      }
+    });
+  }
+
+  function addCampToTable(camp) {
+    // TODO
+  }
+
+  function addInstructorToSelection(camp) {
+    // TODO
+  }
+
+  function addProgramToPopupTable(camp) {
+    // TODO
+  }
+
+  function resetNewCamp() {
+    hide("new-camp");
+  }
 {% endblock %}

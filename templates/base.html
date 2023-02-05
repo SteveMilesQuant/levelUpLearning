@@ -154,7 +154,7 @@
   function slideFromLeft(elementId, width) {
     elem = document.getElementById(elementId);
     mainElem = document.getElementById('main');
-    if (elem.style.left == '0px') {
+    if (elem.style.left === '0px') {
       elem.style.left = '-' + width;
       mainElem.style.marginLeft = '0px';
     }
@@ -190,10 +190,10 @@
     }
     for (const elemId of elemIds) {
       elem = document.getElementById(elemId);
-      if (elem.tagName == 'TEXTAREA' || elem.tagName == 'INPUT') {
+      if (elem.tagName === 'TEXTAREA' || elem.tagName === 'INPUT') {
         elem.readOnly = false;
       }
-      else if (elem.tagName == 'SELECT') {
+      else if (elem.tagName === 'SELECT') {
         elem.disabled = false;
       }
       else {
@@ -208,7 +208,7 @@
       const dict = values[values.length - 1] || {};
       const result = [strings[0]];
       keys.forEach((key, i) => {
-        const value = Number.isInteger(key) ? values[key] : dict[key];
+        const value = typeof(key) === "number" ? values[key] : dict[key];
         result.push(value, strings[i + 1]);
       });
       return result.join("");
@@ -374,7 +374,7 @@
         var valueAsArray = [];
         for (var srcCol of col.sourceCols) {
           var srcData = rawRow[srcCol];
-          if (srcData.constructor == Array) {
+          if (srcData.constructor === Array) {
             for (var srcDataElem of srcData) valueAsArray.push(srcDataElem);
           }
           else {
@@ -414,7 +414,7 @@
 
         // For searchable columns, add value to search key
         if (col.searchable) {
-          if (newRow.searchKey.length == 0) newRow.searchKey = valueAsArray.join('').trim().toLowerCase();
+          if (newRow.searchKey.length === 0) newRow.searchKey = valueAsArray.join('').trim().toLowerCase();
           else newRow.searchKey += ' ' + valueAsArray.join('').trim().toLowerCase();
         }
       } // loop on columns
@@ -438,18 +438,18 @@
     checkSearchBox() {
       const keysToCheck = this.searchBox.innerText.trim().toLowerCase().split(' ');
       for (var row of this.searchBox.rows) {
-        if (keysToCheck.length == 0) {
+        if (keysToCheck.length === 0) {
           // Nothing searched - include all rows
           row.selectedBySearch = true;
         }
-        else if (row.searchKey.length == 0) {
+        else if (row.searchKey.length === 0) {
           // Somehow no search key - never include
           row.selectedBySearch = false;
         }
         else {
           row.selectedBySearch = true;
           for (const key of keysToCheck) {
-            if (row.searchKey.indexOf(key) == -1) {
+            if (row.searchKey.indexOf(key) === -1) {
               row.selectedBySearch = false;
               break;
             }
@@ -501,7 +501,7 @@
       this.rows.push(row);
 
       // If this wasn't selected, ensure that this row knows that
-      if (!this.selected && row.filterValuesByCol[this.colIdx].length == 1) {
+      if (!this.selected && row.filterValuesByCol[this.colIdx].length === 1) {
         row.selectedByFilter[this.colIdx] = false;
         row.filterSetHidden();
       }
@@ -514,7 +514,7 @@
         this.rows.splice(index, 1);
 
         // If this value isn't used anymore, delete it
-        if (this.rows.length == 0) {
+        if (this.rows.length === 0) {
           this.htmlBox.remove();
           this.htmlBox = null;
           delete this.filter.filterValues[this.value];
@@ -584,7 +584,7 @@
       // Create label for the checkbox
       var label = document.createElement('label');
       label.for = checkBox;
-      if (value.length == 0) label.innerText = ' (blank)';
+      if (value.length === 0) label.innerText = ' (blank)';
       else label.innerText = value;
       container.appendChild(label);
 
@@ -640,7 +640,7 @@
           var filter = this.filter;
           this.userSelectedOnce = true;
           filter.fromLabel.innerText = this.value;
-          filter.toRange.value = Math.max(parseInt(filter.toRange.value), parseInt(this.value)).toString();
+          filter.toRange.value = Math.max(parseInt(filter.toRange.value.replace(/,/g, '')), parseInt(this.value.replace(/,/g, ''))).toString();
           filter.toLabel.innerText = filter.toRange.value;
           for (var [key, filterValue] of Object.entries(filter.filterValues)) {
             if (this.value > filterValue.value[1]) filterValue.unselect();

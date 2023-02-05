@@ -522,7 +522,7 @@ async def delete_camp(camp_id: int):
 
 
 ###############################################################################
-# ADMIN
+# USERS
 ###############################################################################
 
 
@@ -534,6 +534,13 @@ async def members_get(request: Request):
     template_args = build_base_html_args(request)
     return templates.TemplateResponse("members.html", template_args)
 
+
+@api_router.get("/instructors")
+async def members_get(request: Request):
+    auth_check = check_basic_auth('/schedule')
+    if auth_check is not None:
+        return []
+    return []
 
 
 ###############################################################################
