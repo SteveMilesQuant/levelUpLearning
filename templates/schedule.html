@@ -44,6 +44,8 @@
 {% endblock %}
 
 {% block script %}
+<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script>
   // One-time setup
   window.onload = function() {
     colMeta = [];
@@ -95,4 +97,5 @@
   function resetNewCamp() {
     hide("new-camp");
   }
+</script>
 {% endblock %}

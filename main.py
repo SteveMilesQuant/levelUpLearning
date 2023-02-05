@@ -15,8 +15,9 @@ from camp import CampData, CampResponse, Camp, load_all_camps
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
+app.mount("/js", StaticFiles(directory="js"), name="js")
 app.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
-app.user = None
+app.user = None # BIG TODO: use jwt for token authentication and user repo
 app.db_path = os.environ.get("DB_PATH") or os.path.join(os.path.dirname(__file__), 'app.db')
 app.db = None
 app.db = db.get_db(app)

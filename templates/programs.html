@@ -55,6 +55,8 @@
 {% endblock %}
 
 {% block script %}
+<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script>
   // One-time setup
   window.onload = function() {
     colMeta = [];
@@ -114,7 +116,7 @@
     programDescription = ""; // intentionally left off "new program"
 
     // TODO: create requirement for this value
-    if (programTitle != "") {
+    if (programTitle !== "") {
       programData = new ProgramData(programTitle, programTags, [programFromGrade, programToGrade], programDescription);
 
       http.post('/programs', programData).then((program) => {
@@ -124,4 +126,5 @@
       });
     }
   }
+</script>
 {% endblock %}

@@ -82,6 +82,7 @@
 {% endblock %}
 
 {% block script %}
+<script>
   function displayStudent(student) {
     unhide(["content-body-1", "content-body-2", "content-body-3"]);
 
@@ -141,7 +142,7 @@
     studentGrade = document.getElementById('new-student-grade').selectedIndex;
 
     // TODO: create requirements for these values
-    if (studentName != "" && studentBirthdate != "") {
+    if (studentName !== "" && studentBirthdate !== "") {
       studentData = new StudentData(studentName, studentBirthdate, studentGrade);
 
       http.post('/students', studentData).then((student) => {
@@ -165,5 +166,6 @@
     http.delete('/students', studentId);
     http.redirect('/students');
   }
+</script>
 {% endblock %}
 
