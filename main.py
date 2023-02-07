@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import WebApplicationClient
 from typing import Optional
-from user import User, load_all_roles
+from user import User, load_all_roles, load_all_instructors
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program
 from program import LevelData, LevelResponse, Level
@@ -541,7 +541,7 @@ async def members_get(request: Request):
     auth_check = check_basic_auth('/schedule')
     if auth_check is not None:
         return []
-    return []
+    return load_all_instructors(app.db)
 
 
 ###############################################################################

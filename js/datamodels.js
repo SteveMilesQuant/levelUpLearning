@@ -25,3 +25,11 @@ class LevelData {
         this.description = description;
     }
 }
+
+class CampData {
+    constructor(program_id, primary_instructor_id) {
+        this.program_id = program_id;
+        this.primary_instructor_id = primary_instructor_id;
+    }
+}
+

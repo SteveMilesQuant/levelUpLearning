@@ -35,13 +35,19 @@ def load_all_roles(db: Any) -> Dict[str, Role]:
     return all_roles
 
 
-class User(BaseModel):
-    id: Optional[int] = None  # we use AUTOMATICINCREMENT on create, so this wouldn't be necessary then
-    google_id: Optional[int]
+class UserData(BaseModel):
     given_name: Optional[str]
     family_name: Optional[str]
     full_name: Optional[str]
     picture: Optional[str]
+
+
+class UserResponse(UserData):
+    id: Optional[int]
+
+
+class User(UserResponse):
+    google_id: Optional[int]
     roles: Optional[List[str]] = []
     email_addresses: Optional[List[str]] = []
     primary_email_address_index: Optional[int] = 0
@@ -320,5 +326,20 @@ class User(BaseModel):
             program = Program(db = db, id = program_id)
             program.delete(db = db)
 
+
+def load_all_instructors(db: Any):
+    instructors = []
+    select_stmt = f'''
+        SELECT user_id
+            FROM user_x_roles
+            WHERE role = "INSTRUCTOR"
+    '''
+    result = execute_read(db, select_stmt)
+    if result is None:
+        return instructors
+    for row in result:
+        instructor = User(db = db, id = row['user_id'])
+        instructors.append(instructor.dict(include=UserResponse().dict()))
+    return instructors
 
 

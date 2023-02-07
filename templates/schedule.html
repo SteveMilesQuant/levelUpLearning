@@ -28,17 +28,23 @@
     <div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='new-camp-search-program'></p></span>
-      <span><button class='selectable' onclick='window.popupTable.resetSearchBox();'>
+      <span><button class='selectable' onclick='window.newCampProgramList.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
     </div>
-    <div><strong>Instructors:</strong></div>
+    <div id='new-camp-program-list'>
+      <!-- List of programs inserted here -->
+    </div>
+    <div><strong>Primary instructor:</strong></div>
     <div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
-      <span><p contenteditable=true id='new-camp-search-program'></p></span>
-      <span><button class='selectable' onclick='window.popupTable.resetSearchBox();'>
+      <span><p contenteditable=true id='new-camp-search-instructor'></p></span>
+      <span><button class='selectable' onclick='window.newCampInstructorList.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
+    </div>
+    <div id='new-camp-instructor-list'>
+      <!-- List of programs inserted here -->
     </div>
     <div>
       <span><button class='selectable' onclick='postCamp();'>
@@ -53,6 +59,7 @@
 
 {% block script %}
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script>
   // One-time setup
   window.onload = function() {
@@ -62,14 +69,14 @@
 
     var htmlTable = document.getElementById('camps-table');
     var sidebar = document.getElementById('sidebar');
-    var searchBox = document.getElementById('search-box-text');
-    window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, searchBox); // -1 for row shift - we have one extra final static row for "Add Camp"
+    var tableSearchBox = document.getElementById('search-box-text');
+    window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, tableSearchBox); // -1 for row shift - we have one extra final static row for "Add Camp"
 
     http.get('/camps').then((campList) => {
       for (var camp of campList) {
-        http.get('/programs/' + camp.program_id).then((program) => {
+        http.get('/camps/' + camp.id + '/programs/' + camp.program_id).then((program) => {
           camp.program = program;
-          http.get('/instructors/' + camp.primary_instructor_id).then((instructor) => {
+          http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
             camp.primary_instructor = instructor;
             addCampToTable(camp);
           });
@@ -77,33 +84,55 @@
       }
     });
 
-    http.get('/instructors').then((instructorList) => {
-      for (const instructor of instructorList) {
-        addInstructorToList(instructor);
+    var htmlProgramList = document.getElementById('new-camp-program-list');
+    htmlProgramList.classList.add('listbox');
+    var programSearchBox = document.getElementById('new-camp-search-program');
+    window.newCampProgramList = new SearchList(htmlProgramList, programSearchBox);
+    http.get('/programs').then((programList) => {
+      for (const program of programList) {
+        window.newCampProgramList.appendValue(program.id, program.title);
       }
     });
 
-    http.get('/programs').then((programList) => {
-      for (const program of programList) {
-        addProgramToList(program);
+    var htmlInstructorList = document.getElementById('new-camp-instructor-list');
+    htmlInstructorList.classList.add('listbox');
+    var instructorSearchBox = document.getElementById('new-camp-search-instructor');
+    window.newCampInstructorList = new SearchList(htmlInstructorList, instructorSearchBox);
+    http.get('/instructors').then((instructorList) => {
+      for (const instructor of instructorList) {
+        window.newCampInstructorList.appendValue(instructor.id, instructor.full_name);
       }
     });
   }
 
   function addCampToTable(camp) {
-    // TODO
-  }
-
-  function addInstructorToList(camp) {
-    // TODO
-  }
-
-  function addProgramToList(camp) {
-    // TODO
+    var newRow = window.userTable.appendRow(camp);
+    newRow.classList.add('selectable');
   }
 
   function resetNewCamp() {
     hide("new-camp");
+    window.newCampProgramList.reset();
+    window.newCampInstructorList.reset();
+  }
+
+  function postCamp() {
+    var selectedProgram = window.newCampProgramList.selectedRow;
+    var selectedInstructor = window.newCampInstructorList.selectedRow;
+
+    // TODO: create requirement for these values
+    if (selectedProgram && selectedInstructor) {
+      campData = new CampData(selectedProgram.id, selectedInstructor.id);
+      http.post('/camps', campData).then((camp) => {
+        http.get('/camps/' + camp.id + '/programs/' + camp.program_id).then((program) => {
+          camp.program = program;
+          http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
+            camp.primary_instructor = instructor;
+            addCampToTable(camp);
+          });
+        });
+      });
+    }
   }
 </script>
 {% endblock %}
