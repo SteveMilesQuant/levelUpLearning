@@ -427,8 +427,8 @@ async def get_camp(camp_id: int):
     return camp
 
 
-@api_router.get("/camps/{camp_id}/levelschedules/{level_id}", response_model = LevelSchedule)
-async def get_camp_levelschedule(camp_id: int, level_id: int):
+@api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelSchedule)
+async def get_camp_level_schedule(camp_id: int, level_id: int):
     auth_check = check_basic_auth('/camps')
     if auth_check is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /camps endpoints")
@@ -437,7 +437,7 @@ async def get_camp_levelschedule(camp_id: int, level_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
     level_schedule = camp.level_schedules.get(level_id)
     if level_schedule is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level schedule id={level_id} not found for camp id={camp_id}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} not found for camp id={camp_id}")
     return level_schedule
 
 
@@ -558,16 +558,14 @@ async def remove_instructor_from_camp(camp_id: int, instructor_id: int):
     camp.remove_instructor(db = app.db, instructor_id = instructor_id)
 
 
-@api_router.put("/camps/{camp_id}/programs/{program_id}/levels/{level_id}", response_model = LevelSchedule)
-async def camp_update_level_schedule(camp_id: int, program_id: int, level_id: int, updated_level_schedule: LevelSchedule):
+@api_router.put("/camps/{camp_id}/levels/{level_id}", response_model = LevelSchedule)
+async def camp_update_level_schedule(camp_id: int, level_id: int, updated_level_schedule: LevelSchedule):
     auth_check = check_basic_auth('/schedule')
     if auth_check is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for POST /camps")
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-    if program_id != camp.program_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist for camp id={camp_id}")
     level_schedule = camp.level_schedules.get(level_id)
     if level_schedule is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for camp id={camp_id}")

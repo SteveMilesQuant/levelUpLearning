@@ -48,12 +48,11 @@ class Camp(CampResponse):
         result = execute_read(db, select_stmt)
         self.instructor_ids = []
         self.primary_instructor_id = None
-        if result is not None:
-            for row in result:
-                instructor_id = row['instructor_id']
-                self.instructor_ids.append(instructor_id)
-                if row['is_primary']:
-                    self.primary_instructor_id = instructor_id
+        for row in result or []:
+            instructor_id = row['instructor_id']
+            self.instructor_ids.append(instructor_id)
+            if row['is_primary']:
+                self.primary_instructor_id = instructor_id
 
         select_stmt = f'''
             SELECT level_id, start_time, end_time
@@ -63,25 +62,25 @@ class Camp(CampResponse):
         '''
         result = execute_read(db, select_stmt)
         self.level_schedules = {}
-        if result is not None:
-            for row in result:
-                if row['start_time'] == 'null':
-                    start_time = None
-                else:
-                    date, time = row['start_time'].split(' ')
-                    year, month, day = date.split('-')
-                    hours, minutes, seconds = time.split(':')
-                    start_time = FastApiDatetime(int(year), int(month), int(day), int(hours), int(minutes), int(seconds))
+        for row in result or []:
+            level_id = row['level_id']
+            if row['start_time'] == 'null' or row['start_time'] is None:
+                start_time = None
+            else:
+                date, time = row['start_time'].split(' ')
+                year, month, day = date.split('-')
+                hours, minutes, seconds = time.split(':')
+                start_time = FastApiDatetime(int(year), int(month), int(day), int(hours), int(minutes), int(seconds))
 
-                if row['end_time'] == 'null':
-                    end_time = None
-                else:
-                    date, time = row['end_time'].split(' ')
-                    year, month, day = date.split('-')
-                    hours, minutes, seconds = time.split(':')
-                    end_time = FastApiDatetime(int(year), int(month), int(day), int(hours), int(minutes), int(seconds))
-                level_schedule = LevelSchedule(start_time=start_time, end_time=end_time)
-                self.level_schedules[row['level_id']].append(level_schedule)
+            if row['end_time'] == 'null' or row['end_time'] is None:
+                end_time = None
+            else:
+                date, time = row['end_time'].split(' ')
+                year, month, day = date.split('-')
+                hours, minutes, seconds = time.split(':')
+                end_time = FastApiDatetime(int(year), int(month), int(day), int(hours), int(minutes), int(seconds))
+            level_schedule = LevelSchedule(start_time=start_time, end_time=end_time)
+            self.level_schedules[level_id] = level_schedule
 
         return True
 
@@ -99,6 +98,17 @@ class Camp(CampResponse):
             self.primary_instructor_id = None # temporarily make none, so that make_instructor_primary isn't skipped
             self.add_instructor(db = db, instructor_id = primary_instructor_id)
             self.make_instructor_primary(db = db, instructor_id = primary_instructor_id)
+
+        program = Program(db = db, id = self.program_id)
+        if len(program.level_ids or []) > 0:
+            insert_stmt = f'''
+                INSERT INTO camp_x_levels (camp_id, level_id)
+                    VALUES
+            '''
+            for level_id in program.level_ids:
+                insert_stmt += f'({self.id}, {level_id}), '
+            insert_stmt = insert_stmt.rstrip()[:-1] + ';'
+            execute_write(db, insert_stmt)
 
     def __init__(self, db: Any, **data):
         super().__init__(**data)
@@ -181,12 +191,23 @@ class Camp(CampResponse):
         self.primary_instructor_id = instructor_id
 
     def update_level_schedule(self, db: Any, level_id: int, level_schedule: LevelSchedule):
+        if self.level_schedules.get(level_id) is None:
+            return
+        if level_schedule.start_time is None:
+            start_time_str = 'null'
+        else:
+            start_time_str = f'"{level_schedule.start_time}"'
+        if level_schedule.end_time is None:
+            end_time_str = 'null'
+        else:
+            end_time_str = f'"{level_schedule.end_time}"'
         update_stmt = f'''
             UPDATE camp_x_levels
-                SET start_time = {level_schedule.start_time or "null"}, end_time = {level_schedule.end_time or "null"}
+                SET start_time = {start_time_str}, end_time = {end_time_str}
                 WHERE camp_id = {self.id} and level_id = {level_id};
         '''
         execute_write(db, update_stmt)
+        self.level_schedules[level_id] = level_schedule
 
 
 def load_all_camps(db: Any) -> List[Camp]:
@@ -196,8 +217,7 @@ def load_all_camps(db: Any) -> List[Camp]:
             FROM camp
     '''
     result = execute_read(db, select_stmt)
-    if result is not None:
-        for row in result:
-            camps.append(Camp(db = db, id = row['id']))
+    for row in result or []:
+        camps.append(Camp(db = db, id = row['id']))
     return camps
 

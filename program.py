@@ -62,7 +62,7 @@ class Level(LevelResponse):
         execute_write(db, delete_stmt)
         delete_stmt = f'''
             DELETE FROM camp_x_levels
-                WHERE level_id = {level_id};
+                WHERE level_id = {self.id};
         '''
         execute_write(db, delete_stmt)
         delete_stmt = f'''
@@ -109,9 +109,8 @@ class Program(ProgramResponse):
         '''
         result = execute_read(db, select_stmt)
         self.level_ids.clear()
-        if result is not None:
-            for row in result:
-                self.level_ids.append(row['level_id'])
+        for row in result or []:
+            self.level_ids.append(row['level_id'])
         return True
 
     def _create(self, db: Any):

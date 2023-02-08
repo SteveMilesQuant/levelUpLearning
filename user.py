@@ -110,9 +110,8 @@ class User(UserResponse):
         '''
         result = execute_read(db, select_stmt)
         self.student_ids.clear()
-        if result is not None:
-            for row in result:
-                self.student_ids.append(row['student_id'])
+        for row in result or []:
+            self.student_ids.append(row['student_id'])
 
         select_stmt = f'''
             SELECT program_id
@@ -121,9 +120,8 @@ class User(UserResponse):
         '''
         result = execute_read(db, select_stmt)
         self.program_ids.clear()
-        if result is not None:
-            for row in result:
-                self.program_ids.append(row['program_id'])
+        for row in result or []:
+            self.program_ids.append(row['program_id'])
         return True
 
     def _create(self, db: Any):

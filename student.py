@@ -49,10 +49,9 @@ class Student(StudentResponse):
             self._create(db = db)
 
     async def update_basic(self, db: Any):
-        sql_date = self.birthdate.strftime('%Y-%m-%d')
         update_stmt = f'''
             UPDATE student
-                SET name="{self.name}", birthdate="{sql_date}",
+                SET name="{self.name}", birthdate="{self.birthdate}",
                     grade_level={self.grade_level}
                 WHERE id = {self.id};
         '''

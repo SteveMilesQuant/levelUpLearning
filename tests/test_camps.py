@@ -142,13 +142,27 @@ def test_change_primary_instructor(camp_index: int, instructor_id: int):
 
 
 # Test updating the level schedules
-def test_update_level_schedules():
-    pass # TODO
+@pytest.mark.parametrize(('camp_index', 'level_index', 'level_schedule'), (
+    (0, 0, LevelSchedule(start_time=FastApiDatetime(2023, 2, 6, 9, 0, 0), end_time=FastApiDatetime(2023, 2, 6, 12, 0, 0))),
+    (0, 1, LevelSchedule(start_time=None, end_time=FastApiDatetime(2023, 2, 6, 16, 0, 0))),
+    (0, 1, LevelSchedule(start_time=FastApiDatetime(2023, 2, 7, 9, 0, 0), end_time=None)),
+))
+def test_update_level_schedules(camp_index: int, level_index: int, level_schedule: LevelSchedule):
+    camp_json = all_camps_json[camp_index]
+    camp_id = camp_json['id']
+    level = levels[level_index]
+    level_schedule_json = json.loads(json.dumps(level_schedule.dict(), indent=4, sort_keys=True, default=str))
+    response = client.put(f'/camps/{camp_id}/levels/{level.id}', json=level_schedule_json)
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    new_level_schedule_json = response.json()
+    assert new_level_schedule_json == level_schedule_json
 
-
-# Test getting back level schedules
-def test_get_level_schedules():
-    pass # TODO
+    response = client.get(f'/camps/{camp_id}/levels/{level.id}')
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    get_level_schedule_json = response.json()
+    assert get_level_schedule_json == level_schedule_json
 
 
 # Test removing instructors
