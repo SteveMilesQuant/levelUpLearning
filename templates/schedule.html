@@ -108,6 +108,28 @@
   function addCampToTable(camp) {
     var newRow = window.userTable.appendRow(camp);
     newRow.classList.add('selectable');
+    newRow.campId = camp.id;
+
+    commonOnClick = function() {
+      row = this.parentNode;
+      window.open('/schedule/' + row.campId, '_blank');
+    };
+    for (var col of newRow.childNodes) col.onclick = commonOnClick;
+
+    // Add a delete button off the right side
+    var newCol = newRow.insertCell();
+    var newButton = document.createElement('button');
+    newButton.classList.add('selectable');
+    newButton.innerHTML = 'Delete';
+    newButton.onclick = function () {
+      var row = this.parentNode.parentNode;
+      var programTitle = row.cells[0].innerHTML;
+      if (confirm('Are you sure you want to delete this camp?')) {
+        http.delete('/camps', row.campId);
+        row.remove();
+      }
+    }
+    newCol.appendChild(newButton);
   }
 
   function resetNewCamp() {
