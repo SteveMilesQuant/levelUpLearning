@@ -34,34 +34,34 @@ class FilterTable {
         });
 
         // Create header row
-        var newRow = htmlTable.insertRow(htmlTable.rows.length + insertRowShiftIdx);
-        for (var colIdx in colMeta) {
+        let newRow = htmlTable.insertRow(htmlTable.rows.length + insertRowShiftIdx);
+        for (let colIdx in colMeta) {
             const col = colMeta[colIdx];
 
-            var newCol = document.createElement('th');
+            let newCol = document.createElement('th');
             newCol.innerHTML = col.label;
             newRow.appendChild(newCol);
 
             // If this column is filterable, set up that filter
             if (col.filterType) {
                 // Create html container for filter, label, and values
-                var filterBox = document.createElement('div');
+                let filterBox = document.createElement('div');
                 htmlFilterBox.appendChild(filterBox);
 
                 // Create html for filter title (column name)
-                var filterTitle = document.createElement('p');
+                let filterTitle = document.createElement('p');
                 filterTitle.innerText = col.label;
                 filterBox.appendChild(filterTitle);
 
                 // Initialize filter
-                var newFilter = new Filter(col.filterType, colIdx, filterBox);
+                let newFilter = new Filter(col.filterType, colIdx, filterBox);
                 this.filters[colIdx] = newFilter;
 
                 // Specific filter setup
                 switch(newFilter.filterType) {
                     case FilterType.Tags:
                         // Add an "All" option
-                        var checkBoxValue = new CheckBoxValue("All", newFilter);
+                        let checkBoxValue = new CheckBoxValue("All", newFilter);
                         newFilter.allCheckBox = checkBoxValue.htmlCheckBox;
                         filterBox.appendChild(checkBoxValue.htmlBox); // special place for "All"
 
@@ -71,7 +71,7 @@ class FilterTable {
                         // Custom onclick for "All"
                         newFilter.allCheckBox.onclick = function () {
                             // When clicking "All", copy checked down to all other values
-                            var filter = this.checkBoxValue.filter;
+                            let filter = this.checkBoxValue.filter;
                             Object.entries(filter.filterValues).forEach(([key, checkBoxValue]) => {
                                 if (this.checked) {
                                     checkBoxValue.htmlBox.firstChild.checked = true;
@@ -85,7 +85,7 @@ class FilterTable {
                         }
 
                         // Add a horizontal line to separate "All" from the other filter values
-                        var newHLine = document.createElement('hr');
+                        let newHLine = document.createElement('hr');
                         checkBoxValue.htmlBox.appendChild(newHLine);
                         break;
                     case FilterType.IntRange:
@@ -108,7 +108,7 @@ class FilterTable {
     // Append a row to this filter table
     // Creates cross-references between filters, rows, and "filter values"
     appendRow(rawRow) {
-        var newRow = this.htmlTable.insertRow(this.htmlTable.rows.length + this.insertRowShiftIdx);
+        let newRow = this.htmlTable.insertRow(this.htmlTable.rows.length + this.insertRowShiftIdx);
         this.rows.push(newRow);
 
         // Initialize our special information for this row
@@ -118,9 +118,9 @@ class FilterTable {
         newRow.filterValuesByCol = Array(this.colMeta.length).fill(null);
         newRow.origRemove = newRow.remove;
         newRow.remove = function () {
-            for (var filterValues of this.filterValuesByCol) {
+            for (let filterValues of this.filterValuesByCol) {
                 if (filterValues) {
-                    for (var filterValue of filterValues) {
+                    for (let filterValue of filterValues) {
                         filterValue.removeRow(this);
                     }
                 }
@@ -145,15 +145,18 @@ class FilterTable {
         }
 
         // Append this row to the table, one column at a time
-        for (var colIdx in this.colMeta) {
+        for (let colIdx in this.colMeta) {
             const col = this.colMeta[colIdx];
 
             // Collect all the source values into an array
-            var valueAsArray = [];
-            for (var srcCol of col.sourceCols) {
-                var srcData = rawRow[srcCol];
+            let valueAsArray = [];
+            for (const srcCol of col.sourceCols) {
+                let srcData = rawRow;
+                for (let srcColItem of srcCol.split('.')) {
+                    srcData = srcData[srcColItem];
+                }
                 if (srcData.constructor === Array) {
-                    for (var srcDataElem of srcData) valueAsArray.push(srcDataElem);
+                    for (let srcDataElem of srcData) valueAsArray.push(srcDataElem);
                 }
                 else {
                     valueAsArray.push(srcData);
@@ -161,26 +164,26 @@ class FilterTable {
             }
 
             // Create a column with this label
-            var newCol = newRow.insertCell();
+            let newCol = newRow.insertCell();
             newCol.innerHTML = col.templateFormat(valueAsArray);
 
             // Process filter: add cross references between row, filter, and filter value
             if (col.filterType) {
-                var filter = this.filters[colIdx];
+                let filter = this.filters[colIdx];
                 if (!newRow.filterValuesByCol[colIdx]) newRow.filterValuesByCol[colIdx] = [];
                 switch(filter.filterType) {
                     case FilterType.Tags:
-                        var srcCol = col.sourceCols[0];
-                        var srcData = rawRow[srcCol];
+                        const srcCol = col.sourceCols[0];
+                        let srcData = rawRow[srcCol];
                         for (const word of srcData.split(" ")) {
-                            var checkBoxValue = filter.filterValues[word];
+                            let checkBoxValue = filter.filterValues[word];
                             if (!checkBoxValue) checkBoxValue = new CheckBoxValue(word, filter, colIdx);
                             checkBoxValue.appendRow(newRow);
                         }
                         break;
                     case FilterType.IntRange:
-                        var range = rawRow[col.sourceCols];
-                        var rangeValue = filter.filterValues[range];
+                        let range = rawRow[col.sourceCols];
+                        let rangeValue = filter.filterValues[range];
                         if (!rangeValue) rangeValue = new IntRangeValue(range, filter, colIdx);
                         rangeValue.appendRow(newRow);
                         break;
@@ -206,7 +209,7 @@ class FilterTable {
     // Reset the search box
     resetSearchBox() {
         this.searchBox.innerText = '';
-        for (var row of this.searchBox.rows) {
+        for (let row of this.searchBox.rows) {
             row.selectedBySearch = true;
             row.filterSetHidden();
         }
@@ -215,7 +218,7 @@ class FilterTable {
     // Check each row against the current value of the search box
     checkSearchBox() {
         const keysToCheck = this.searchBox.innerText.trim().toLowerCase().split(' ');
-        for (var row of this.searchBox.rows) {
+        for (let row of this.searchBox.rows) {
             if (keysToCheck.length === 0) {
                 // Nothing searched - include all rows
                 row.selectedBySearch = true;
@@ -250,7 +253,7 @@ class Filter {
     // Returns true if all values in this filter are selected
     // Useful for an "All" checkbox
     allValuesSelected() {
-        var allSelected = true;
+        let allSelected = true;
         Object.entries(this.filterValues).every(([key, filterValue]) => {
             if (!filterValue.selected) {
                 allSelected = false;
@@ -287,7 +290,7 @@ class FilterValue {
 
     // Remove cross-references between a row and this filterable value
     removeRow(row) {
-        var index = this.rows.indexOf(row);
+        let index = this.rows.indexOf(row);
         if (index !== -1) {
             this.rows.splice(index, 1);
 
@@ -304,7 +307,7 @@ class FilterValue {
     select() {
         if (!this.selected) {
             this.selected = true;
-            for (var row of this.rows) {
+            for (let row of this.rows) {
                 row.selectedByFilter[this.colIdx] = true;
                 row.filterSetHidden();
             }
@@ -315,7 +318,7 @@ class FilterValue {
     unselect() {
         if (this.selected) {
             this.selected = false;
-            for (var row of this.rows) {
+            for (let row of this.rows) {
                 row.selectedByFilter[this.colIdx] = false;
                 for (const filterValue of row.filterValuesByCol[this.colIdx]) {
                     if (filterValue.selected) {
@@ -339,7 +342,7 @@ const FilterType = {
 class CheckBoxValue extends FilterValue {
     constructor(value, filter, colIdx) {
         // Create box for checkbox, containing "input" and "label"
-        var container = document.createElement('div');
+        let container = document.createElement('div');
         container.classList.add('checkbox-box');
 
         super(value, filter, container, colIdx);
@@ -348,7 +351,7 @@ class CheckBoxValue extends FilterValue {
         filter.filterValues[value] = this;
 
         // Create checkbox for this new value
-        var checkBox = document.createElement('input');
+        let checkBox = document.createElement('input');
         checkBox.type = "checkbox";
         checkBox.checked = true;
         checkBox.checkBoxValue = this;
@@ -360,15 +363,15 @@ class CheckBoxValue extends FilterValue {
         container.appendChild(checkBox);
 
         // Create label for the checkbox
-        var label = document.createElement('label');
+        let label = document.createElement('label');
         label.for = checkBox;
         if (value.length === 0) label.innerText = ' (blank)';
         else label.innerText = value;
         container.appendChild(label);
 
         // Insert sorted
-        var didInsert = false;
-        for (var child of filter.htmlFilter.children) {
+        let didInsert = false;
+        for (let child of filter.htmlFilter.children) {
             if (value < child.lastChild.innerText) {
                 filter.htmlFilter.insertBefore(container, child);
                 didInsert = true;
@@ -395,31 +398,31 @@ class IntRangeValue extends FilterValue {
         super(range, filter, null, colIdx);
         filter.filterValues[range] = this;
 
-        var fromVal = range[0].toString();
-        var toVal = range[1].toString();
+        let fromVal = range[0].toString();
+        let toVal = range[1].toString();
 
         // If this is the first time, do some first-time setup of the html objects
         // Otherwise update max and mix
         if (!Object.hasOwn(filter, 'fromRange')) {
             // Create box for range (input) and label on the "from" side
-            var fromRangeBox = document.createElement('div');
+            let fromRangeBox = document.createElement('div');
             fromRangeBox.classList.add('range-box');
             filter.htmlFilter.appendChild(fromRangeBox);
 
             // Create "from" range input
-            var fromRange = document.createElement('input');
+            let fromRange = document.createElement('input');
             fromRange.type = "range";
             fromRange.min = fromVal;
             fromRange.max = toVal;
             fromRange.value = fromVal;
             fromRange.userSelectedOnce = false;
             fromRange.oninput = function() {
-                var filter = this.filter;
+                let filter = this.filter;
                 this.userSelectedOnce = true;
                 filter.fromLabel.innerText = this.value;
                 filter.toRange.value = Math.max(parseInt(filter.toRange.value.replace(/,/g, '')), parseInt(this.value.replace(/,/g, ''))).toString();
                 filter.toLabel.innerText = filter.toRange.value;
-                for (var [key, filterValue] of Object.entries(filter.filterValues)) {
+                for (let [key, filterValue] of Object.entries(filter.filterValues)) {
                     if (this.value > filterValue.value[1]) filterValue.unselect();
                     else filterValue.select();
                 }
@@ -429,30 +432,30 @@ class IntRangeValue extends FilterValue {
             fromRangeBox.appendChild(fromRange);
 
             // Create "from" range label (displays currently selected value)
-            var fromLabel = document.createElement('label');
+            let fromLabel = document.createElement('label');
             fromLabel.for = fromRange;
             fromRangeBox.appendChild(fromLabel);
             filter.fromLabel = fromLabel;
 
             // Create box for range (input) and label on the "to" side
-            var toRangeBox = document.createElement('div');
+            let toRangeBox = document.createElement('div');
             toRangeBox.classList.add('range-box');
             filter.htmlFilter.appendChild(toRangeBox);
 
             // Create "to" range input
-            var toRange = document.createElement('input');
+            let toRange = document.createElement('input');
             toRange.type = "range";
             toRange.min = fromVal;
             toRange.max = toVal;
             toRange.value = toVal;
             toRange.userSelectedOnce = false;
             toRange.oninput = function() {
-                var filter = this.filter;
+                let filter = this.filter;
                 this.userSelectedOnce = true;
                 filter.toLabel.innerText = this.value;
                 filter.fromRange.value = Math.min(parseInt(filter.fromRange.value), parseInt(this.value)).toString();
                 filter.fromLabel.innerText = filter.fromRange.value;
-                for (var [key, filterValue] of Object.entries(filter.filterValues)) {
+                for (let [key, filterValue] of Object.entries(filter.filterValues)) {
                     if (this.value < filterValue.value[0]) filterValue.unselect();
                     else filterValue.select();
                 }
@@ -462,7 +465,7 @@ class IntRangeValue extends FilterValue {
             toRangeBox.appendChild(toRange);
 
             // Create "to" range label (displays currently selected value)
-            var toLabel = document.createElement('label');
+            let toLabel = document.createElement('label');
             toLabel.for = toRange;
             toRangeBox.appendChild(toLabel);
             filter.toLabel = toLabel;

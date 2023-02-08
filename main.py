@@ -272,8 +272,6 @@ async def get_program(request: Request, program_id: int, accept: Optional[str] =
         auth_check = check_basic_auth('/camps') # special authorization: if you can get a camp, you can get a program/level
         if auth_check is not None:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized to get programs")
-        if program_id not in app.user.program_ids:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
         return Program(db = app.db, id = program_id)
 
 
@@ -321,8 +319,6 @@ async def get_levels(program_id: int):
     auth_check = check_basic_auth('/camps') # special authorization: if you can get a camp, you can get a program/level
     if auth_check is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized to get programs")
-    if program_id not in app.user.program_ids:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     program = Program(db = app.db, id = program_id)
     level_list = []
     for level_id in program.level_ids:
@@ -335,8 +331,6 @@ async def get_levels(program_id: int):
 async def get_level(program_id: int, level_id: int):
     if check_basic_auth('/camps') is not None: # special authorization: if you can get a camp, you can get a program/level
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized to get programs")
-    if program_id not in app.user.program_ids:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     program = Program(db = app.db, id = program_id)
     if level_id not in program.level_ids:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")

@@ -313,14 +313,20 @@ class User(UserResponse):
         '''
         execute_write(db, delete_stmt)
 
-        # If no other instructors have this program, fully delete it
+        # If no other instructors and no other camps have this program, fully delete it
         select_stmt = f'''
             SELECT program_id
                 FROM user_x_programs
                 WHERE program_id = {program_id}
         '''
-        result = execute_read(db, select_stmt)
-        if result is None:
+        result_instructors = execute_read(db, select_stmt)
+        select_stmt = f'''
+            SELECT program_id
+                FROM camp
+                WHERE program_id = {program_id}
+        '''
+        result_camps = execute_read(db, select_stmt)
+        if result_instructors is None and result_camps is None:
             program = Program(db = db, id = program_id)
             program.delete(db = db)
 

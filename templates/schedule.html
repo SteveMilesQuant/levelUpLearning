@@ -47,7 +47,7 @@
       <!-- List of programs inserted here -->
     </div>
     <div>
-      <span><button class='selectable' onclick='postCamp();'>
+      <span><button class='selectable' onclick='postCamp(); hide("new-camp"); resetNewCamp();'>
         <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
       </button></span>
       <span><button class='selectable' onclick='resetNewCamp();'>
@@ -73,7 +73,7 @@
     window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, tableSearchBox); // -1 for row shift - we have one extra final static row for "Add Camp"
 
     http.get('/camps').then((campList) => {
-      for (var camp of campList) {
+      for (let camp of campList) {
         http.get('/programs/' + camp.program_id).then((program) => {
           camp.program = program;
           http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
