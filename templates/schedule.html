@@ -74,7 +74,7 @@
 
     http.get('/camps').then((campList) => {
       for (var camp of campList) {
-        http.get('/camps/' + camp.id + '/programs/' + camp.program_id).then((program) => {
+        http.get('/programs/' + camp.program_id).then((program) => {
           camp.program = program;
           http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
             camp.primary_instructor = instructor;
@@ -124,7 +124,7 @@
     if (selectedProgram && selectedInstructor) {
       campData = new CampData(selectedProgram.id, selectedInstructor.id);
       http.post('/camps', campData).then((camp) => {
-        http.get('/camps/' + camp.id + '/programs/' + camp.program_id).then((program) => {
+        http.get('/programs/' + camp.program_id).then((program) => {
           camp.program = program;
           http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
             camp.primary_instructor = instructor;

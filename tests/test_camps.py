@@ -21,6 +21,9 @@ levels = [
 for level in levels:
     program.add_level(db = app.db, level_id = level.id)
 
+alt_program = Program(db = app.db, title='Mathletes Anonymous', grade_range=(6,8), tags='math', description='Math anon description.')
+alt_level = Level(db = app.db, title='Math 101', description='First desc.', list_index = 1)
+alt_program.add_level(db = app.db, level_id = alt_level.id)
 
 # Test webpage reads
 @pytest.mark.parametrize(('endpoint'), (
@@ -166,8 +169,21 @@ def test_update_level_schedules(camp_index: int, level_index: int, level_schedul
 
 
 # Test removing instructors
-def test_remove_instructor():
-    pass # TODO
+@pytest.mark.parametrize(('camp_index', 'instructor_id'), (
+    (0, app.instructor_user.id),
+    (1, app.instructor_user.id),
+))
+def test_remove_instructor(camp_index: int, instructor_id: int):
+    camp_json = all_camps_json[camp_index]
+    camp_id = camp_json['id']
+    response = client.delete(f'/camps/{camp_id}/instructors/{instructor_id}')
+    assert response.status_code == status.HTTP_200_OK, f'Error deleting {camp_json}'
+    response = client.get(f'/camps/{camp_id}/instructors/{instructor_id}')
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    response = client.get(f'/camps/{camp_id}')
+    got_camp_json = response.json()
+    assert got_camp_json['primary_instructor_id'] != instructor_id
 
 
 # Test deleting a camp
@@ -187,7 +203,11 @@ def test_permission():
         max_camp_id = max(max_camp_id, camp_json['id'])
     bad_camp_id = max_camp_id + 1
     camp = CampData(program_id = program.id, primary_instructor_id=app.instructor_user.id)
+    camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
+    camp_id = all_camps_json[1]['id']
     camp_error_json = {'detail': f'Camp id={bad_camp_id} not found.'}
+    bad_program_id = alt_program.id
+    bad_level_id = alt_level.id
 
     # camp get with bad id
     response = client.get(f'/camps/{bad_camp_id}')
@@ -195,20 +215,19 @@ def test_permission():
     returned_json = response.json()
     assert returned_json == camp_error_json
 
-    # camp put with bad id
-    camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
+    # camp put with bad camp id
     response = client.put(f'/camps/{bad_camp_id}', json=camp_json)
     assert response.status_code == status.HTTP_404_NOT_FOUND
     returned_json = response.json()
     assert returned_json == camp_error_json
 
     # Try to change program_id (not allowed)
-    # TODO
-
-    # Get bad program id
-    # TODO
+    camp_json['program_id'] = bad_program_id
+    response = client.put(f'/camps/{camp_id}', json=camp_json)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
     # Get bad level id
-    # TODO
+    response = client.get(f'/camps/{camp_id}/levels/{bad_level_id}')
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
