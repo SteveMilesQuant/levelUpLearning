@@ -163,7 +163,7 @@ def test_delete_program():
     response = client.delete(f'/programs/{program_id}')
     assert response.status_code == status.HTTP_200_OK, f'Error deleting {program_json}'
     response = client.get(f'/programs/{program_id}')
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 # Permission tests
@@ -174,13 +174,10 @@ def test_permission():
     bad_program_id = max_program_id + 1
     program = ProgramData(title='Creative Writing Workshop', grade_range=(6,8), tags='writing creative', description='')
     program_error_json = {'detail': f'User does not have permission for program id={bad_program_id}'}
-    program_error_json_2 = {'detail': f'User does not have permission for program id=None'}
 
     # Program get with bad id
     response = client.get(f'/programs/{bad_program_id}')
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    returned_json = response.json()
-    assert returned_json == program_error_json
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
     # Program put with bad id
     program_json = json.loads(json.dumps(program.dict(), indent=4, sort_keys=True, default=str))

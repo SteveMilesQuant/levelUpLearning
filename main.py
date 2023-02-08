@@ -62,9 +62,7 @@ def build_base_html_args(request: Request) -> dict:
     else:
         template_args['user_id'] = app.user.id
         template_args['user_name'] = app.user.full_name
-        current_roles = []
-        for role_name in app.user.roles:
-            current_roles.append(app.roles[role_name])
+        current_roles = [app.roles[role_name] for role_name in app.user.roles]
         template_args['roles'] = current_roles
     return template_args
 
@@ -272,7 +270,10 @@ async def get_program(request: Request, program_id: int, accept: Optional[str] =
         auth_check = check_basic_auth('/camps') # special authorization: if you can get a camp, you can get a program/level
         if auth_check is not None:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized to get programs")
-        return Program(db = app.db, id = program_id)
+        program = Program(db = app.db, id = program_id)
+        if program.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
+        return program
 
 
 @api_router.put("/programs/{program_id}", response_model = ProgramResponse)
@@ -332,6 +333,8 @@ async def get_level(program_id: int, level_id: int):
     if check_basic_auth('/camps') is not None: # special authorization: if you can get a camp, you can get a program/level
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized to get programs")
     program = Program(db = app.db, id = program_id)
+    if program.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
     if level_id not in program.level_ids:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
     return Level(db = app.db, id = level_id)

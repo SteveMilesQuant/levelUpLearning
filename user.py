@@ -87,9 +87,7 @@ class User(UserResponse):
                 WHERE user_id = {self.id}
         '''
         result = execute_read(db, select_stmt)
-        self.roles.clear()
-        for row in result:
-            self.roles.append(row['role'])
+        self.roles = [row['role'] for row in result or []]
 
         select_stmt = f'''
             SELECT email_address, is_primary
@@ -109,9 +107,7 @@ class User(UserResponse):
                 WHERE user_id = {self.id}
         '''
         result = execute_read(db, select_stmt)
-        self.student_ids.clear()
-        for row in result or []:
-            self.student_ids.append(row['student_id'])
+        self.student_ids = [row['student_id'] for row in result or []]
 
         select_stmt = f'''
             SELECT program_id
@@ -119,9 +115,7 @@ class User(UserResponse):
                 WHERE user_id = {self.id}
         '''
         result = execute_read(db, select_stmt)
-        self.program_ids.clear()
-        for row in result or []:
-            self.program_ids.append(row['program_id'])
+        self.program_ids = [row['program_id'] for row in result or []]
         return True
 
     def _create(self, db: Any):
@@ -133,10 +127,7 @@ class User(UserResponse):
 
         if self.id == 1:
             # first user gets all roles
-            self.roles.clear()
-            self.roles.append("GUARDIAN")
-            self.roles.append("INSTRUCTOR")
-            self.roles.append("ADMIN")
+            self.roles = ["GUARDIAN", "INSTRUCTOR", "ADMIN"]
             insert_stmt = f'''
                 INSERT INTO user_x_roles (user_id, role)
                     VALUES ({self.id}, "GUARDIAN"), ({self.id}, "INSTRUCTOR"), ({self.id}, "ADMIN");
@@ -144,8 +135,7 @@ class User(UserResponse):
             execute_write(db, insert_stmt)
         else:
             # new users are only guardians - admin must upgrade them
-            self.roles.clear()
-            self.roles.append("GUARDIAN")
+            self.roles = ["GUARDIAN"]
             insert_stmt = f'''
                 INSERT INTO user_x_roles (user_id, role)
                     VALUES ({self.id}, "GUARDIAN");
@@ -339,9 +329,7 @@ def load_all_instructors(db: Any):
             WHERE role = "INSTRUCTOR"
     '''
     result = execute_read(db, select_stmt)
-    if result is None:
-        return instructors
-    for row in result:
+    for row in result or []:
         instructor = User(db = db, id = row['user_id'])
         instructors.append(instructor.dict(include=UserResponse().dict()))
     return instructors

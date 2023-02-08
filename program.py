@@ -42,7 +42,7 @@ class Level(LevelResponse):
         if self.id is None:
             self._create(db = db)
         elif not self._load(db = db):
-            self.id = None # don't create if not loaded for camps
+            self.id = None
 
     async def update_basic(self, db: Any):
         update_stmt = f'''
@@ -108,9 +108,7 @@ class Program(ProgramResponse):
                 ORDER BY list_index
         '''
         result = execute_read(db, select_stmt)
-        self.level_ids.clear()
-        for row in result or []:
-            self.level_ids.append(row['level_id'])
+        self.level_ids = [row['level_id'] for row in result or []]
         return True
 
     def _create(self, db: Any):
@@ -126,7 +124,7 @@ class Program(ProgramResponse):
         if self.id is None:
             self._create(db = db)
         elif not self._load(db = db):
-            self._create(db = db)
+            self.id = None
 
     async def update_basic(self, db: Any):
         update_stmt = f'''
