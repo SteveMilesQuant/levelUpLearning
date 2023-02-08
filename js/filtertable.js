@@ -59,6 +59,7 @@ class FilterTable {
 
                 // Specific filter setup
                 switch(newFilter.filterType) {
+                    case FilterType.CheckBoxes:
                     case FilterType.Tags:
                         // Add an "All" option
                         let checkBoxValue = new CheckBoxValue("All", newFilter);
@@ -172,9 +173,14 @@ class FilterTable {
                 let filter = this.filters[colIdx];
                 if (!newRow.filterValuesByCol[colIdx]) newRow.filterValuesByCol[colIdx] = [];
                 switch(filter.filterType) {
+                    case FilterType.CheckBoxes:
+                        let checkBoxValue = filter.filterValues[newCol.innerHTML];
+                        if (!checkBoxValue) checkBoxValue = new CheckBoxValue(newCol.innerHTML, filter, colIdx);
+                        checkBoxValue.appendRow(newRow);
+                        break;
                     case FilterType.Tags:
                         const srcCol = col.sourceCols[0];
-                        let srcData = rawRow[srcCol];
+                        const srcData = rawRow[srcCol];
                         for (const word of srcData.split(" ")) {
                             let checkBoxValue = filter.filterValues[word];
                             if (!checkBoxValue) checkBoxValue = new CheckBoxValue(word, filter, colIdx);
@@ -334,6 +340,7 @@ class FilterValue {
 
 // Currently supported types of filters
 const FilterType = {
+    CheckBoxes: "CheckBoxes",
     Tags: "Tags",
     IntRange: "IntRange"
 };
