@@ -5,11 +5,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import WebApplicationClient
 from typing import Optional
-from user import User, load_all_roles, load_all_instructors
+from user import UserResponse, User, load_all_roles, load_all_instructors
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program
 from program import LevelData, LevelResponse, Level
-from camp import CampData, CampResponse, Camp, load_all_camps
+from camp import CampData, CampResponse, Camp, LevelSchedule, load_all_camps
 
 
 app = FastAPI()
@@ -262,15 +262,16 @@ async def get_programs(request: Request, accept: Optional[str] = Header(None)):
 
 @api_router.get("/programs/{program_id}", response_model = ProgramResponse)
 async def get_program(request: Request, program_id: int, accept: Optional[str] = Header(None)):
-    auth_check = check_basic_auth('/programs')
     if "text/html" in accept:
+        auth_check = check_basic_auth('/programs')
         if auth_check is not None:
             return auth_check
         template_args = build_base_html_args(request)
         return templates.TemplateResponse("program.html", template_args)
     else:
+        auth_check = check_basic_auth('/camps') # special authorization: if you can get a camp, you can get a program/level
         if auth_check is not None:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized to get programs")
         if program_id not in app.user.program_ids:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
         return Program(db = app.db, id = program_id)
@@ -317,9 +318,9 @@ async def delete_program(program_id: int):
 
 @api_router.get("/programs/{program_id}/levels")
 async def get_levels(program_id: int):
-    auth_check = check_basic_auth('/programs')
+    auth_check = check_basic_auth('/camps') # special authorization: if you can get a camp, you can get a program/level
     if auth_check is not None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized to get programs")
     if program_id not in app.user.program_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     program = Program(db = app.db, id = program_id)
@@ -332,8 +333,8 @@ async def get_levels(program_id: int):
 
 @api_router.get("/programs/{program_id}/levels/{level_id}", response_model=LevelResponse)
 async def get_level(program_id: int, level_id: int):
-    if check_basic_auth('/programs') is not None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /programs endpoints")
+    if check_basic_auth('/camps') is not None: # special authorization: if you can get a camp, you can get a program/level
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized to get programs")
     if program_id not in app.user.program_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     program = Program(db = app.db, id = program_id)
@@ -395,7 +396,7 @@ async def delete_level(program_id: int, level_id: int):
 
 
 ###############################################################################
-# CAMPS/SCHEDULING
+# VIEW CAMPS (READ SIDE OF CAMPS)
 ###############################################################################
 
 
@@ -426,30 +427,54 @@ async def get_camp(camp_id: int):
     return camp
 
 
-@api_router.get("/camps/{camp_id}/programs/{program_id}", response_model = ProgramResponse)
-async def get_camp_program(camp_id: int, program_id: int):
+@api_router.get("/camps/{camp_id}/levelschedules/{level_id}", response_model = LevelSchedule)
+async def get_camp_levelschedule(camp_id: int, level_id: int):
     auth_check = check_basic_auth('/camps')
     if auth_check is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /camps endpoints")
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-    if program_id != camp.program_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist for camp id={camp_id}")
-    return Program(db = app.db, id = program_id)
+    level_schedule = camp.level_schedules.get(level_id)
+    if level_schedule is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level schedule id={level_id} not found for camp id={camp_id}")
+    return level_schedule
 
 
-@api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelResponse)
-async def get_camp_level(camp_id: int, level_id: int):
+@api_router.get("/camps/{camp_id}/instructors")
+async def get_camp_instructors(camp_id: int):
     auth_check = check_basic_auth('/camps')
     if auth_check is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /camps endpoints")
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-    if camp.level_schedules_lookup.get(level_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for camp id={camp_id}")
-    return Level(db = app.db, id = level_id)
+    instructors = []
+    for instructor_id in camp.instructor_ids:
+        instructor = User(db = app.db, id = instructor_id)
+        instructor_response = instructor.dict(include=UserResponse().dict())
+        instructor_response['is_primary'] = (instructor_id == camp.primary_instructor_id)
+        instructors.append(instructor_response)
+    return instructors
+
+
+@api_router.get("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse)
+async def get_camp_instructor(camp_id: int, instructor_id: int):
+    auth_check = check_basic_auth('/camps')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for /camps endpoints")
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
+    if instructor_id not in camp.instructor_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} does not exist for camp id={camp_id}")
+    return User(db = app.db, id = instructor_id)
+
+
+
+###############################################################################
+# SCHEDULE CAMPS (WRITE SIDE OF CAMPS)
+###############################################################################
 
 
 @api_router.get("/schedule", response_class = HTMLResponse)
@@ -471,9 +496,7 @@ async def post_new_camp(new_camp_data: CampData):
         db = app.db,
         id = None,
         program_id = new_camp_data.program_id,
-        primary_instructor_id = new_camp_data.primary_instructor_id,
-        instructor_ids = new_camp_data.instructor_ids,
-        level_schedules = new_camp_data.level_schedules
+        primary_instructor_id = new_camp_data.primary_instructor_id
     )
     if new_camp.id is None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new camp failed")
@@ -488,25 +511,11 @@ async def put_update_camp(camp_id: int, updated_camp_data: CampData):
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-    for instructor_id in updated_camp_data.instructor_ids:
-        if instructor_id not in camp.instructor_ids:
-            camp.add_instructor(db = app.db, instructor_id = instructor_id)
+    if updated_camp_data.program_id != camp.program_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Once created, the program cannot be changed for a camp. Schedule a new camp, instead.")
+    if updated_camp_data.primary_instructor_id not in camp.instructor_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={updated_camp_data.primary_instructor_id} does not exist for camp id={camp_id}")
     camp.make_instructor_primary(db = app.db, instructor_id = updated_camp_data.primary_instructor_id)
-    for instructor_id in camp.instructor_ids:
-        if instructor_id not in updated_camp_data.instructor_ids:
-            camp.remove_instructor(db = app.db, instructor_id = instructor_id)
-    updated_level_schedules_lookup = {}
-    for level_schedule in updated_camp_data.level_schedules:
-        updated_level_schedules_lookup[level_schedule.level_id] = level_schedule
-    for level_id in camp.level_schedules_lookup.keys():
-        if updated_level_schedules_lookup.get(level_id) is None:
-            camp.remove_level_schedule(db = app.db, level_id = level_id)
-    level_schedules = updated_camp_data.level_schedules # bc copy-update just makes these dictionaries
-    updated_camp_data.level_schedules = None
-    camp = camp.copy(update=updated_camp_data.dict(exclude_unset=True))
-    camp.level_schedules = level_schedules
-    camp.update_level_schedules(db = app.db)
-    await camp.update_basic(db = app.db)
     return camp
 
 
@@ -519,6 +528,59 @@ async def delete_camp(camp_id: int):
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
     camp.delete(db = app.db)
+
+
+@api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
+async def add_instructor_to_camp(camp_id: int, instructor_id: int):
+    auth_check = check_basic_auth('/schedule')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for POST /camps")
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+    camp.add_instructor(db = app.db, instructor_id = instructor_id)
+    if instructor_id not in camp.instructor_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} not found.")
+    instructor = User(db = app.db, id = instructor_id)
+    return instructor
+
+
+@api_router.delete("/camps/{camp_id}/instructors/{instructor_id}")
+async def remove_instructor_from_camp(camp_id: int, instructor_id: int):
+    auth_check = check_basic_auth('/schedule')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for POST /camps")
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+    if instructor_id not in camp.instructor_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} not found in camp id={camp_id}.")
+    camp.remove_instructor(db = app.db, instructor_id = instructor_id)
+
+
+@api_router.put("/camps/{camp_id}/programs/{program_id}/levels/{level_id}", response_model = LevelSchedule)
+async def camp_update_level_schedule(camp_id: int, program_id: int, level_id: int, updated_level_schedule: LevelSchedule):
+    auth_check = check_basic_auth('/schedule')
+    if auth_check is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for POST /camps")
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+    if program_id != camp.program_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist for camp id={camp_id}")
+    level_schedule = camp.level_schedules.get(level_id)
+    if level_schedule is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for camp id={camp_id}")
+    camp.update_level_schedule(db = app.db, level_id = level_id, level_schedule = updated_level_schedule)
+    return camp.level_schedules.get(level_id)
+
+
+@api_router.get("/instructors")
+async def get_all_possible_instructors(request: Request):
+    auth_check = check_basic_auth('/schedule')
+    if auth_check is not None:
+        return []
+    return load_all_instructors(app.db)
 
 
 
@@ -536,12 +598,7 @@ async def members_get(request: Request):
     return templates.TemplateResponse("members.html", template_args)
 
 
-@api_router.get("/instructors")
-async def members_get(request: Request):
-    auth_check = check_basic_auth('/schedule')
-    if auth_check is not None:
-        return []
-    return load_all_instructors(app.db)
+
 
 
 ###############################################################################

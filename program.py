@@ -61,6 +61,11 @@ class Level(LevelResponse):
         '''
         execute_write(db, delete_stmt)
         delete_stmt = f'''
+            DELETE FROM camp_x_levels
+                WHERE level_id = {level_id};
+        '''
+        execute_write(db, delete_stmt)
+        delete_stmt = f'''
             DELETE FROM level
                 WHERE id = {self.id};
         '''
@@ -162,6 +167,20 @@ class Program(ProgramResponse):
                     VALUES ({self.id}, "{level_id}");
             '''
             execute_write(db, insert_stmt)
+
+            select_stmt = f'''
+                SELECT id
+                    FROM camp
+                    WHERE program_id = {self.id}
+            '''
+            result = execute_read(db, select_stmt)
+            for row in result or []:
+                camp_id = row['id']
+                insert_stmt = f'''
+                    INSERT INTO camp_x_levels (camp_id, level_id)
+                        VALUES ({camp_id}, "{level_id}");
+                '''
+                execute_write(db, insert_stmt)
 
     async def remove_level(self, db: Any, level_id: int):
         try:

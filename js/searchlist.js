@@ -45,6 +45,7 @@ class ListRow {
     }
 }
 
+
 class SearchList {
     constructor(htmlList, searchBox) {
         this.htmlList = htmlList;
@@ -75,7 +76,7 @@ class SearchList {
         }
     }
 
-    // Reset: unselect values and reset search box
+    // Reset: unselect value and reset search box
     reset() {
         this.resetSearchBox();
         if (this.selectedRow) {

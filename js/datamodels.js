@@ -33,3 +33,12 @@ class CampData {
     }
 }
 
+class LevelSchedule {
+    constructor(start_time, end_time) {
+        this.start_time = start_time;
+        this.end_time = end_time;
+        // Exception to the rule: reponse does not include level id
+    }
+}
+
+

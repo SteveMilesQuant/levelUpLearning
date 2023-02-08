@@ -98,7 +98,7 @@ class User(UserResponse):
         '''
         result = execute_read(db, select_stmt)
         self.email_addresses.clear()
-        for row_idx, row in enumerate(result):
+        for row_idx, row in enumerate(result or []):
             self.email_addresses.append(row['email_address'])
             if row['is_primary']:
                 self.primary_email_address_index = row_idx

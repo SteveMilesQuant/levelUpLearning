@@ -1,8 +1,8 @@
 import pytest, json
 from fastapi import status
 from fastapi.testclient import TestClient
-from user import User
-from program import Program, Level
+from user import User, UserResponse
+from program import Program, ProgramResponse, Level
 from camp import CampData, LevelSchedule, FastApiDatetime
 from main import app
 
@@ -36,26 +36,8 @@ def test_get_camps_html(endpoint: str):
 
 # Test adding camps
 @pytest.mark.parametrize(('camp'), (
-    (CampData(
-        program_id = program.id,
-        primary_instructor_id=app.user.id,
-        instructor_ids = [app.user.id],
-        level_schedules = [
-            LevelSchedule(level_id = levels[0].id, start_time = FastApiDatetime(2023, 2, 6, 9, 0, 0, 0), end_time = FastApiDatetime(2023, 2, 6, 12, 0, 0, 0)),
-            LevelSchedule(level_id = levels[1].id, start_time = FastApiDatetime(2023, 2, 7, 9, 0, 0, 0), end_time = FastApiDatetime(2023, 2, 7, 12, 0, 0, 0)),
-            LevelSchedule(level_id = levels[2].id, start_time = FastApiDatetime(2023, 2, 8, 9, 0, 0, 0), end_time = FastApiDatetime(2023, 2, 8, 12, 0, 0, 0))
-        ]
-    )),
-    (CampData(
-        program_id = program.id,
-        primary_instructor_id=app.user.id,
-        instructor_ids = [app.user.id],
-        level_schedules = [
-            LevelSchedule(level_id = levels[0].id, start_time = FastApiDatetime(2023, 2, 13, 9, 0, 0, 0), end_time = FastApiDatetime(2023, 2, 13, 12, 0, 0, 0)),
-            LevelSchedule(level_id = levels[1].id, start_time = FastApiDatetime(2023, 2, 14, 9, 0, 0, 0), end_time = None),
-            LevelSchedule(level_id = levels[2].id, start_time = None, end_time = None)
-        ]
-    )),
+    (CampData(program_id = program.id, primary_instructor_id=app.user.id)),
+    (CampData(program_id = program.id, primary_instructor_id=app.instructor_user.id)),
 ))
 def test_post_camp(camp: CampData):
     camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
@@ -93,44 +75,85 @@ def test_get_camps():
     assert camps_list == compare_camp_list
 
 
-# Test updating camps
-@pytest.mark.parametrize(('camp_index', 'camp'), (
-    (0, CampData(
-        program_id = program.id,
-        primary_instructor_id=app.instructor_user.id,
-        instructor_ids = [app.instructor_user.id],
-        level_schedules = [
-            LevelSchedule(level_id = levels[0].id, start_time = FastApiDatetime(2024, 2, 6, 9, 0, 0, 0), end_time = FastApiDatetime(2024, 2, 6, 12, 0, 0, 0)),
-            LevelSchedule(level_id = levels[1].id, start_time = FastApiDatetime(2024, 2, 7, 9, 0, 0, 0), end_time = FastApiDatetime(2024, 2, 7, 12, 0, 0, 0)),
-            LevelSchedule(level_id = levels[2].id, start_time = FastApiDatetime(2024, 2, 8, 9, 0, 0, 0), end_time = FastApiDatetime(2024, 2, 8, 12, 0, 0, 0))
-        ]
-    )),
-    (1, CampData(
-        program_id = program.id,
-        primary_instructor_id=app.user.id,
-        instructor_ids = [app.user.id, app.instructor_user.id],
-        level_schedules = [
-            LevelSchedule(level_id = levels[0].id, start_time = FastApiDatetime(2023, 2, 6, 9, 0, 0, 0), end_time = FastApiDatetime(2023, 2, 6, 12, 0, 0, 0)),
-            LevelSchedule(level_id = levels[1].id, start_time = FastApiDatetime(2023, 2, 7, 9, 0, 0, 0), end_time = FastApiDatetime(2023, 2, 7, 12, 0, 0, 0)),
-            LevelSchedule(level_id = levels[2].id, start_time = FastApiDatetime(2023, 2, 8, 9, 0, 0, 0), end_time = FastApiDatetime(2023, 2, 8, 12, 0, 0, 0))
-        ]
-    )),
+# Test adding instructors
+@pytest.mark.parametrize(('camp_index', 'instructor'), (
+    (0, app.instructor_user),
+    (1, app.user),
 ))
-def test_put_camp(camp_index: int, camp: CampData):
-    camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
-    camp_id = all_camps_json[camp_index]['id']
+def test_add_instructor_to_camp(camp_index: int, instructor: User):
+    camp_json = all_camps_json[camp_index]
+    camp_id = camp_json['id']
+    response = client.post(f'/camps/{camp_id}/instructors/{instructor.id}', json={})
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    new_instructor_json = response.json()
+    instructor_json = json.loads(json.dumps(instructor.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
+    assert new_instructor_json == instructor_json
+
+
+# Test getting instructors
+def test_getting_camp_instructors():
+    # Get all instructors at once
+    camp_json = all_camps_json[0]
+    camp_id = camp_json['id']
+    primary_instructor_id = camp_json['primary_instructor_id']
+    admin_user_json = json.loads(json.dumps(app.user.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
+    admin_user_json['is_primary'] = (admin_user_json['id'] == primary_instructor_id)
+    instructor_user_json = json.loads(json.dumps(app.instructor_user.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
+    instructor_user_json['is_primary'] = (instructor_user_json['id'] == primary_instructor_id)
+    instructors_json = [admin_user_json, instructor_user_json]
+    response = client.get(f'/camps/{camp_id}/instructors')
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    got_instructors_json = response.json()
+    assert got_instructors_json == instructors_json
+
+    # Get instructors individually
+    for instructor_json in instructors_json:
+        instructor_id = instructor_json['id']
+        response = client.get(f'/camps/{camp_id}/instructors/{instructor_id}')
+        content_type = response.headers['content-type']
+        assert 'application/json' in content_type
+        got_instructor_json = response.json()
+        got_instructor_json['is_primary'] = (instructor_id == primary_instructor_id)
+        assert got_instructor_json == instructor_json
+
+
+# Test changing primary instructor
+@pytest.mark.parametrize(('camp_index', 'instructor_id'), (
+    (0, app.instructor_user.id),
+    (1, app.user.id),
+))
+def test_change_primary_instructor(camp_index: int, instructor_id: int):
+    camp_json = all_camps_json[camp_index]
+    camp_id = camp_json['id']
+    camp_json['primary_instructor_id'] = instructor_id
     response = client.put(f'/camps/{camp_id}', json=camp_json)
-    assert response.status_code == status.HTTP_200_OK, f'Error putting {camp_json}'
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
     new_camp_json = response.json()
-    camp_json['id'] = camp_id
-    assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match put camp {camp_json}.'
-    
+    assert new_camp_json == camp_json
+
     response = client.get(f'/camps/{camp_id}')
     content_type = response.headers['content-type']
-    assert response.status_code == status.HTTP_200_OK, f'Error getting {camp_json}'
     assert 'application/json' in content_type
     got_camp_json = response.json()
-    assert camp_json == got_camp_json, f'Returned camp {got_camp_json} does not match requested camp {camp_json}.'
+    assert got_camp_json == camp_json
+
+
+# Test updating the level schedules
+def test_update_level_schedules():
+    pass # TODO
+
+
+# Test getting back level schedules
+def test_get_level_schedules():
+    pass # TODO
+
+
+# Test removing instructors
+def test_remove_instructor():
+    pass # TODO
 
 
 # Test deleting a camp
@@ -149,16 +172,7 @@ def test_permission():
     for camp_json in all_camps_json:
         max_camp_id = max(max_camp_id, camp_json['id'])
     bad_camp_id = max_camp_id + 1
-    camp = CampData(
-        program_id = program.id,
-        primary_instructor_id=app.instructor_user.id,
-        instructor_ids = [app.user.id, app.instructor_user.id],
-        level_schedules = [
-            LevelSchedule(level_id = levels[0].id, start_time = FastApiDatetime(2024, 2, 6, 9, 0, 0, 0), end_time = FastApiDatetime(2024, 2, 6, 12, 0, 0, 0)),
-            LevelSchedule(level_id = levels[1].id, start_time = FastApiDatetime(2024, 2, 7, 9, 0, 0, 0), end_time = FastApiDatetime(2024, 2, 7, 12, 0, 0, 0)),
-            LevelSchedule(level_id = levels[2].id, start_time = FastApiDatetime(2024, 2, 8, 9, 0, 0, 0), end_time = FastApiDatetime(2024, 2, 8, 12, 0, 0, 0))
-        ]
-    )
+    camp = CampData(program_id = program.id, primary_instructor_id=app.instructor_user.id)
     camp_error_json = {'detail': f'Camp id={bad_camp_id} not found.'}
 
     # camp get with bad id
@@ -173,5 +187,14 @@ def test_permission():
     assert response.status_code == status.HTTP_404_NOT_FOUND
     returned_json = response.json()
     assert returned_json == camp_error_json
+
+    # Try to change program_id (not allowed)
+    # TODO
+
+    # Get bad program id
+    # TODO
+
+    # Get bad level id
+    # TODO
 
 
