@@ -53,17 +53,20 @@ async def get_google_provider_cfg() -> dict:
     return ret_json
 
 
-def get_authorized_user(permission_url_path):
-    if not app.user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not logged in.")
-    for role_name in app.user.roles:
-        role = app.roles[role_name]
-        if permission_url_path in role.permissible_endpoints:
-            return app.user
-    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for {permission_url_path}")
+def get_authorized_user(permission_url_path, required = True) -> Optional[User]:
+    if required: # TODO: get rid of this check
+        if not app.user:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not logged in.")
+        for role_name in app.user.roles:
+            role = app.roles[role_name]
+            if permission_url_path in role.permissible_endpoints:
+                return app.user
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for {permission_url_path}")
+    else:
+        return app.user
 
 
-# TODO: eliminate this and create a user endpoint
+# TODO: eliminate this and create a user endpoint and roles endpoint
 def build_base_html_args(request: Request, user: User) -> dict:
     template_args = {"request": request}
     if user is None:
@@ -80,6 +83,7 @@ def build_base_html_args(request: Request, user: User) -> dict:
 
 @api_router.get("/", response_class = HTMLResponse)
 async def homepage_get(request: Request):
+    user = get_authorized_user('/', required = False) # TODO: get rid of this
     template_args = build_base_html_args(request, user)
     return templates.TemplateResponse("index.html", template_args)
 
@@ -141,14 +145,14 @@ async def signout_get(request: Request):
 
 @api_router.get("/profile")
 async def profile_get(request: Request):
-    user = get_authorized_user('/profile')
+    user = get_authorized_user('/', required = False) # TODO: get rid of this
     template_args = build_base_html_args(request, user)
     return templates.TemplateResponse("profile.html", template_args)
 
 
-@api_router.get("/instructor/{user_id}")
+@api_router.get("/instructors/{user_id}")
 async def instructor_get_one(request: Request, user_id: int):
-    user = get_authorized_user('/instructor')
+    user = get_authorized_user('/instructors', required = False) # TODO: get rid of this
     template_args = build_base_html_args(request, user)
     return templates.TemplateResponse("instructor.html", template_args)
 
@@ -161,11 +165,12 @@ async def instructor_get_one(request: Request, user_id: int):
 
 @api_router.get("/students")
 async def get_students(request: Request, accept: Optional[str] = Header(None)):
-    user = get_authorized_user('/students')
     if "text/html" in accept:
+        user = get_authorized_user('/students', required = False) # TODO: get rid of this
         template_args = build_base_html_args(request, user)
         return templates.TemplateResponse("students.html", template_args)
     else:
+        user = get_authorized_user('/students')
         student_list = []
         for student_id in user.student_ids:
             student = Student(db = app.db, id = student_id)
@@ -225,18 +230,19 @@ async def delete_student(student_id: int):
 
 @api_router.get("/teach")
 async def get_teach_page(request: Request):
-    user = get_authorized_user('/teach')
+    user = get_authorized_user('/teach', required = False) # TODO: get rid of this
     template_args = build_base_html_args(request, user)
     return templates.TemplateResponse("teach.html", template_args)
 
 
 @api_router.get("/programs")
 async def get_programs(request: Request, accept: Optional[str] = Header(None)):
-    user = get_authorized_user('/programs')
     if "text/html" in accept:
+        user = get_authorized_user('/programs', required = False) # TODO: get rid of this
         template_args = build_base_html_args(request, user)
         return templates.TemplateResponse("programs.html", template_args)
     else:
+        user = get_authorized_user('/programs')
         program_list = []
         for program_id in user.program_ids:
             program = Program(db = app.db, id = program_id)
@@ -247,7 +253,7 @@ async def get_programs(request: Request, accept: Optional[str] = Header(None)):
 @api_router.get("/programs/{program_id}", response_model = ProgramResponse)
 async def get_program(request: Request, program_id: int, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        user = get_authorized_user('/programs')
+        user = get_authorized_user('/programs', required = False) # TODO: get rid of this
         template_args = build_base_html_args(request, user)
         return templates.TemplateResponse("program.html", template_args)
     else:
@@ -372,11 +378,12 @@ async def delete_level(program_id: int, level_id: int):
 
 @api_router.get("/camps")
 async def get_camps(request: Request, accept: Optional[str] = Header(None)):
-    user = get_authorized_user('/camps')
     if "text/html" in accept:
+        user = get_authorized_user('/camps', required = False) # TODO: get rid of this
         template_args = build_base_html_args(request, user)
         return templates.TemplateResponse("camps.html", template_args)
     else:
+        user = get_authorized_user('/camps')
         camps = load_all_camps(db = app.db)
         for i in range(len(camps)):
             camp = camps[i]
@@ -439,7 +446,7 @@ async def get_camp_instructor(camp_id: int, instructor_id: int):
 
 @api_router.get("/schedule", response_class = HTMLResponse)
 async def get_schedule(request: Request):
-    user = get_authorized_user('/schedule')
+    user = get_authorized_user('/schedule', required = False) # TODO: get rid of this
     template_args = build_base_html_args(request, user)
     return templates.TemplateResponse("schedule.html", template_args)
 
@@ -533,7 +540,7 @@ async def get_all_possible_instructors(request: Request):
 
 @api_router.get("/members")
 async def members_get(request: Request):
-    user = get_authorized_user('/members')
+    user = get_authorized_user('/members', required = False) # TODO: get rid of this
     template_args = build_base_html_args(request, user)
     return templates.TemplateResponse("members.html", template_args)
 
