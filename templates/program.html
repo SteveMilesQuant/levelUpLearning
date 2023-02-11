@@ -132,6 +132,8 @@
 <script>
   // One-time setup
   window.onload = function() {
+    commonOnLoad();
+
     programId = getProgramIdStr();
     document.getElementById('program-id').innerHTML = programId;
     document.getElementById('sidebar-program-title').href = '/programs/' + programId;

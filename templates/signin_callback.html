@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<!-- I know this is a super weird way to handle this, but I'm not sure how else to do it, yet -->
+<html lang='en'>
+<script src="{{ url_for('js', path='/http.js') }}"></script>
+<script>
+  window.onload = function() {
+    setCookie('userToken', {{userToken}}, 30, 'Secure; HttpOnly; SameSite=Strict;');
+    http.redirect('/');
+  }
+</script>
+</html>

@@ -63,6 +63,8 @@
 <script>
   // One-time setup
   window.onload = function() {
+    commonOnLoad();
+
     colMeta = [];
     colMeta.push(new FilterTableColumn('Program Title', simpleTemplate`${0}`, 'program.title', null, true));
     colMeta.push(new FilterTableColumn('Primary Instructor', simpleTemplate`${0}`, 'primary_instructor.full_name', FilterType.CheckBoxes, true));

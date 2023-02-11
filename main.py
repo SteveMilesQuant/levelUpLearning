@@ -1,8 +1,9 @@
 import os, aiohttp, json, db
-from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status
+from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status, Security
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.security import APIKeyHeader
 from oauthlib.oauth2 import WebApplicationClient
 from typing import Optional
 from user import UserResponse, User, load_all_roles, load_all_instructors
@@ -53,8 +54,9 @@ async def get_google_provider_cfg() -> dict:
     return ret_json
 
 
-def get_authorized_user(permission_url_path, required = True) -> Optional[User]:
-    if required: # TODO: get rid of this check
+def get_authorized_user(request, permission_url_path, required = True) -> Optional[User]:
+    # TODO: use this: api_key = request.headers.get('Authorization')
+    if required:
         if not app.user:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not logged in.")
         for role_name in app.user.roles:
@@ -66,26 +68,9 @@ def get_authorized_user(permission_url_path, required = True) -> Optional[User]:
         return app.user
 
 
-# TODO: eliminate this and create a user endpoint and roles endpoint
-def build_base_html_args(request: Request, user: User) -> dict:
-    template_args = {"request": request}
-    if user is None:
-        template_args['user_id'] = None
-        template_args['user_name'] = None
-        template_args['roles'] = None
-    else:
-        template_args['user_id'] = user.id
-        template_args['user_name'] = user.full_name
-        current_roles = [app.roles[role_name] for role_name in user.roles]
-        template_args['roles'] = current_roles
-    return template_args
-
-
 @api_router.get("/", response_class = HTMLResponse)
 async def homepage_get(request: Request):
-    user = get_authorized_user('/', required = False) # TODO: get rid of this
-    template_args = build_base_html_args(request, user)
-    return templates.TemplateResponse("index.html", template_args)
+    return templates.TemplateResponse("index.html", {'request': request})
 
 
 @api_router.get("/signin", response_class = RedirectResponse)
@@ -122,19 +107,20 @@ async def signin_callback_get(request: Request, code):
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(uri, data=body) as response:
             user_info_json = await response.json()
-    if user_info_json.get("email_verified"):
-        app.user = User(
-            db = app.db,
-            google_id = user_info_json["sub"],
-            given_name = user_info_json["given_name"],
-            family_name = user_info_json["family_name"],
-            full_name = user_info_json["name"],
-            picture = user_info_json["picture"]
-        )
-        app.user.add_email_address(db = app.db, email_address = user_info_json["email"])
-    else:
+    if not user_info_json.get("email_verified"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User email not available or not verified by Google.")
-    return RedirectResponse(url='/') # TODO: add a user token to this response
+    user = User(
+        db = app.db,
+        google_id = user_info_json["sub"],
+        given_name = user_info_json["given_name"],
+        family_name = user_info_json["family_name"],
+        full_name = user_info_json["name"],
+        picture = user_info_json["picture"]
+    )
+    user.add_email_address(db = app.db, email_address = user_info_json["email"])
+    app.user = user # TODO: instead create a jwt token
+    userToken = f'{user.id}' # TODO: instead create a jwt token
+    return templates.TemplateResponse("signin_callback.html", {"request": request, 'userToken': userToken})
 
 
 @api_router.get("/signout", response_class = RedirectResponse)
@@ -145,16 +131,26 @@ async def signout_get(request: Request):
 
 @api_router.get("/profile")
 async def profile_get(request: Request):
-    user = get_authorized_user('/', required = False) # TODO: get rid of this
-    template_args = build_base_html_args(request, user)
-    return templates.TemplateResponse("profile.html", template_args)
+    return templates.TemplateResponse("profile.html", {'request': request})
+
+
+@api_router.get("/user")
+async def profile_get(request: Request) -> Optional[UserResponse]:
+    return get_authorized_user(request, '/', required = False)
+
+
+@api_router.get("/user/roles")
+async def profile_get(request: Request):
+    user = get_authorized_user(request, '/', required = False)
+    if user is None:
+        return []
+    else:
+        return [app.roles[role_name] for role_name in user.roles]
 
 
 @api_router.get("/instructors/{user_id}")
 async def instructor_get_one(request: Request, user_id: int):
-    user = get_authorized_user('/instructors', required = False) # TODO: get rid of this
-    template_args = build_base_html_args(request, user)
-    return templates.TemplateResponse("instructor.html", template_args)
+    return templates.TemplateResponse("instructor.html", {'request': request})
 
 
 
@@ -166,11 +162,9 @@ async def instructor_get_one(request: Request, user_id: int):
 @api_router.get("/students")
 async def get_students(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        user = get_authorized_user('/students', required = False) # TODO: get rid of this
-        template_args = build_base_html_args(request, user)
-        return templates.TemplateResponse("students.html", template_args)
+        return templates.TemplateResponse("students.html", {'request': request})
     else:
-        user = get_authorized_user('/students')
+        user = get_authorized_user(request, '/students')
         student_list = []
         for student_id in user.student_ids:
             student = Student(db = app.db, id = student_id)
@@ -179,8 +173,8 @@ async def get_students(request: Request, accept: Optional[str] = Header(None)):
 
 
 @api_router.get("/students/{student_id}", response_model=StudentResponse)
-async def get_student(student_id: int):
-    user = get_authorized_user('/students')
+async def get_student(request: Request, student_id: int):
+    user = get_authorized_user(request, '/students')
     if student_id not in user.student_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
     student = Student(db = app.db, id = student_id)
@@ -188,8 +182,8 @@ async def get_student(student_id: int):
 
 
 @api_router.put("/students/{student_id}", response_model = StudentResponse)
-async def put_update_student(student_id: int, updated_student: StudentData):
-    user = get_authorized_user('/students')
+async def put_update_student(request: Request, student_id: int, updated_student: StudentData):
+    user = get_authorized_user(request, '/students')
     if student_id not in user.student_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
     student = Student(db = app.db, id = student_id).copy(update=updated_student.dict(exclude_unset=True))
@@ -198,8 +192,8 @@ async def put_update_student(student_id: int, updated_student: StudentData):
 
 
 @api_router.post("/students", response_model = StudentResponse, status_code = status.HTTP_201_CREATED)
-async def post_new_student(new_student_data: StudentData):
-    user = get_authorized_user('/students')
+async def post_new_student(request: Request, new_student_data: StudentData):
+    user = get_authorized_user(request, '/students')
     # TODO: there's got to be a slicker way to do this
     new_student = Student(
         db = app.db,
@@ -215,8 +209,8 @@ async def post_new_student(new_student_data: StudentData):
 
 
 @api_router.delete("/students/{student_id}")
-async def delete_student(student_id: int):
-    user = get_authorized_user('/students')
+async def delete_student(request: Request, student_id: int):
+    user = get_authorized_user(request, '/students')
     if student_id not in user.student_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
     user.remove_student(db = app.db, student_id = student_id)
@@ -230,19 +224,15 @@ async def delete_student(student_id: int):
 
 @api_router.get("/teach")
 async def get_teach_page(request: Request):
-    user = get_authorized_user('/teach', required = False) # TODO: get rid of this
-    template_args = build_base_html_args(request, user)
-    return templates.TemplateResponse("teach.html", template_args)
+    return templates.TemplateResponse("teach.html", {'request': request})
 
 
 @api_router.get("/programs")
 async def get_programs(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        user = get_authorized_user('/programs', required = False) # TODO: get rid of this
-        template_args = build_base_html_args(request, user)
-        return templates.TemplateResponse("programs.html", template_args)
+        return templates.TemplateResponse("programs.html", {'request': request})
     else:
-        user = get_authorized_user('/programs')
+        user = get_authorized_user(request, '/programs')
         program_list = []
         for program_id in user.program_ids:
             program = Program(db = app.db, id = program_id)
@@ -253,11 +243,9 @@ async def get_programs(request: Request, accept: Optional[str] = Header(None)):
 @api_router.get("/programs/{program_id}", response_model = ProgramResponse)
 async def get_program(request: Request, program_id: int, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        user = get_authorized_user('/programs', required = False) # TODO: get rid of this
-        template_args = build_base_html_args(request, user)
-        return templates.TemplateResponse("program.html", template_args)
+        return templates.TemplateResponse("program.html", {'request': request})
     else:
-        user = get_authorized_user('/camps') # special authorization: if you can get a camp, you can get a program/level
+        user = get_authorized_user(request, '/camps') # special authorization: if you can get a camp, you can get a program/level
         program = Program(db = app.db, id = program_id)
         if program.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
@@ -265,8 +253,8 @@ async def get_program(request: Request, program_id: int, accept: Optional[str] =
 
 
 @api_router.put("/programs/{program_id}", response_model = ProgramResponse)
-async def put_update_program(program_id: int, updated_program: ProgramData):
-    user = get_authorized_user('/programs')
+async def put_update_program(request: Request, program_id: int, updated_program: ProgramData):
+    user = get_authorized_user(request, '/programs')
     if program_id not in user.program_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     program = Program(db = app.db, id = program_id).copy(update=updated_program.dict(exclude_unset=True))
@@ -275,8 +263,8 @@ async def put_update_program(program_id: int, updated_program: ProgramData):
 
 
 @api_router.post("/programs", response_model = ProgramResponse, status_code = status.HTTP_201_CREATED)
-async def post_new_program(new_program_data: ProgramData):
-    user = get_authorized_user('/programs')
+async def post_new_program(request: Request, new_program_data: ProgramData):
+    user = get_authorized_user(request, '/programs')
     # TODO: there's got to be a slicker way to do this
     new_program = Program(
         db = app.db,
@@ -293,16 +281,16 @@ async def post_new_program(new_program_data: ProgramData):
 
 
 @api_router.delete("/programs/{program_id}")
-async def delete_program(program_id: int):
-    user = get_authorized_user('/programs')
+async def delete_program(request: Request, program_id: int):
+    user = get_authorized_user(request, '/programs')
     if program_id not in user.program_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     user.remove_program(db = app.db, program_id = program_id)
 
 
 @api_router.get("/programs/{program_id}/levels")
-async def get_levels(program_id: int):
-    user = get_authorized_user('/camps') # special authorization: if you can get a camp, you can get a program/level
+async def get_levels(request: Request, program_id: int):
+    user = get_authorized_user(request, '/camps') # special authorization: if you can get a camp, you can get a program/level
     program = Program(db = app.db, id = program_id)
     level_list = []
     for level_id in program.level_ids:
@@ -312,8 +300,8 @@ async def get_levels(program_id: int):
 
 
 @api_router.get("/programs/{program_id}/levels/{level_id}", response_model=LevelResponse)
-async def get_level(program_id: int, level_id: int):
-    user = get_authorized_user('/camps') # special authorization: if you can get a camp, you can get a program/level
+async def get_level(request: Request, program_id: int, level_id: int):
+    user = get_authorized_user(request, '/camps') # special authorization: if you can get a camp, you can get a program/level
     program = Program(db = app.db, id = program_id)
     if program.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
@@ -323,8 +311,8 @@ async def get_level(program_id: int, level_id: int):
 
 
 @api_router.put("/programs/{program_id}/levels/{level_id}", response_model = LevelResponse)
-async def put_update_level(program_id: int, level_id: int, updated_level: LevelData):
-    user = get_authorized_user('/programs')
+async def put_update_level(request: Request, program_id: int, level_id: int, updated_level: LevelData):
+    user = get_authorized_user(request, '/programs')
     if program_id not in user.program_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     program = Program(db = app.db, id = program_id)
@@ -342,8 +330,8 @@ async def put_update_level(program_id: int, level_id: int, updated_level: LevelD
 
 
 @api_router.post("/programs/{program_id}/levels", response_model = LevelResponse, status_code = status.HTTP_201_CREATED)
-async def post_new_level(program_id: int, new_level_data: LevelData):
-    user = get_authorized_user('/programs')
+async def post_new_level(request: Request, program_id: int, new_level_data: LevelData):
+    user = get_authorized_user(request, '/programs')
     if program_id not in user.program_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     program = Program(db = app.db, id = program_id)
@@ -360,8 +348,8 @@ async def post_new_level(program_id: int, new_level_data: LevelData):
 
 
 @api_router.delete("/programs/{program_id}/levels/{level_id}")
-async def delete_level(program_id: int, level_id: int):
-    user = get_authorized_user('/programs')
+async def delete_level(request: Request, program_id: int, level_id: int):
+    user = get_authorized_user(request, '/programs')
     if program_id not in user.program_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
     program = Program(db = app.db, id = program_id)
@@ -379,11 +367,9 @@ async def delete_level(program_id: int, level_id: int):
 @api_router.get("/camps")
 async def get_camps(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        user = get_authorized_user('/camps', required = False) # TODO: get rid of this
-        template_args = build_base_html_args(request, user)
-        return templates.TemplateResponse("camps.html", template_args)
+        return templates.TemplateResponse("camps.html", {'request': request})
     else:
-        user = get_authorized_user('/camps')
+        user = get_authorized_user(request, '/camps')
         camps = load_all_camps(db = app.db)
         for i in range(len(camps)):
             camp = camps[i]
@@ -392,8 +378,8 @@ async def get_camps(request: Request, accept: Optional[str] = Header(None)):
 
 
 @api_router.get("/camps/{camp_id}", response_model = CampResponse)
-async def get_camp(camp_id: int):
-    user = get_authorized_user('/camps')
+async def get_camp(request: Request, camp_id: int):
+    user = get_authorized_user(request, '/camps')
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
@@ -401,8 +387,8 @@ async def get_camp(camp_id: int):
 
 
 @api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelSchedule)
-async def get_camp_level_schedule(camp_id: int, level_id: int):
-    user = get_authorized_user('/camps')
+async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int):
+    user = get_authorized_user(request, '/camps')
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
@@ -413,8 +399,8 @@ async def get_camp_level_schedule(camp_id: int, level_id: int):
 
 
 @api_router.get("/camps/{camp_id}/instructors")
-async def get_camp_instructors(camp_id: int):
-    user = get_authorized_user('/camps')
+async def get_camp_instructors(request: Request, camp_id: int):
+    user = get_authorized_user(request, '/camps')
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
@@ -428,8 +414,8 @@ async def get_camp_instructors(camp_id: int):
 
 
 @api_router.get("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse)
-async def get_camp_instructor(camp_id: int, instructor_id: int):
-    user = get_authorized_user('/camps')
+async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int):
+    user = get_authorized_user(request, '/camps')
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
@@ -446,14 +432,12 @@ async def get_camp_instructor(camp_id: int, instructor_id: int):
 
 @api_router.get("/schedule", response_class = HTMLResponse)
 async def get_schedule(request: Request):
-    user = get_authorized_user('/schedule', required = False) # TODO: get rid of this
-    template_args = build_base_html_args(request, user)
-    return templates.TemplateResponse("schedule.html", template_args)
+    return templates.TemplateResponse("schedule.html", {'request': request})
 
 
 @api_router.post("/camps", response_model = CampResponse, status_code = status.HTTP_201_CREATED)
-async def post_new_camp(new_camp_data: CampData):
-    user = get_authorized_user('/schedule')
+async def post_new_camp(request: Request, new_camp_data: CampData):
+    user = get_authorized_user(request, '/schedule')
     # TODO: there's got to be a slicker way to do this
     new_camp = Camp(
         db = app.db,
@@ -467,8 +451,8 @@ async def post_new_camp(new_camp_data: CampData):
 
 
 @api_router.put("/camps/{camp_id}", response_model = CampResponse)
-async def put_update_camp(camp_id: int, updated_camp_data: CampData):
-    user = get_authorized_user('/schedule')
+async def put_update_camp(request: Request, camp_id: int, updated_camp_data: CampData):
+    user = get_authorized_user(request, '/schedule')
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
@@ -481,8 +465,8 @@ async def put_update_camp(camp_id: int, updated_camp_data: CampData):
 
 
 @api_router.delete("/camps/{camp_id}")
-async def delete_camp(camp_id: int):
-    user = get_authorized_user('/schedule')
+async def delete_camp(request: Request, camp_id: int):
+    user = get_authorized_user(request, '/schedule')
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
@@ -490,8 +474,8 @@ async def delete_camp(camp_id: int):
 
 
 @api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
-async def add_instructor_to_camp(camp_id: int, instructor_id: int):
-    user = get_authorized_user('/schedule')
+async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: int):
+    user = get_authorized_user(request, '/schedule')
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
@@ -503,8 +487,8 @@ async def add_instructor_to_camp(camp_id: int, instructor_id: int):
 
 
 @api_router.delete("/camps/{camp_id}/instructors/{instructor_id}")
-async def remove_instructor_from_camp(camp_id: int, instructor_id: int):
-    user = get_authorized_user('/schedule')
+async def remove_instructor_from_camp(request: Request, camp_id: int, instructor_id: int):
+    user = get_authorized_user(request, '/schedule')
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
@@ -514,8 +498,8 @@ async def remove_instructor_from_camp(camp_id: int, instructor_id: int):
 
 
 @api_router.put("/camps/{camp_id}/levels/{level_id}", response_model = LevelSchedule)
-async def camp_update_level_schedule(camp_id: int, level_id: int, updated_level_schedule: LevelSchedule):
-    user = get_authorized_user('/schedule')
+async def camp_update_level_schedule(request: Request, camp_id: int, level_id: int, updated_level_schedule: LevelSchedule):
+    user = get_authorized_user(request, '/schedule')
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
@@ -528,7 +512,7 @@ async def camp_update_level_schedule(camp_id: int, level_id: int, updated_level_
 
 @api_router.get("/instructors")
 async def get_all_possible_instructors(request: Request):
-    user = get_authorized_user('/schedule')
+    user = get_authorized_user(request, '/schedule')
     return load_all_instructors(app.db)
 
 
@@ -540,9 +524,7 @@ async def get_all_possible_instructors(request: Request):
 
 @api_router.get("/members")
 async def members_get(request: Request):
-    user = get_authorized_user('/members', required = False) # TODO: get rid of this
-    template_args = build_base_html_args(request, user)
-    return templates.TemplateResponse("members.html", template_args)
+    return templates.TemplateResponse("members.html", {'request': request})
 
 
 

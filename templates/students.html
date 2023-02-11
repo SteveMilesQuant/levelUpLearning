@@ -88,6 +88,10 @@
 
 {% block script %}
 <script>
+  window.onload = function () {
+    commonOnLoad();
+  }
+
   function displayStudent(student) {
     unhide(["content-body-1", "content-body-2", "content-body-3"]);
 

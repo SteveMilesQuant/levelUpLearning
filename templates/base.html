@@ -23,31 +23,24 @@
           <img src="{{ url_for('images', path='/graduation-hat.png') }}" alt='Sign In/Out'/>
         </button>
         <div class='dropdown-content'>
-          {% if user_id is none %}
+          <div id='dropdown-no-user'>
             <div><a class='selectable' href='/signin'>Sign in with Google</a></div>
-          {% else %}
-            <div><a class='selectable' href='/profile'>{{user_name}}</a></div>
+          </div>
+          <div id='dropdown-with-user'>
+            <div><a class='selectable' href='/profile' id='user-name'></a></div>
             <hr class='h-divider'></hr>
             <div><a class='selectable' href='/signout'>Sign out</a></div>
-          {% endif %}
+          </div>
         </div>
       </span>
   </div>
 </header>
 <div class='content-container'>
   <section class='hamburger-nav' id='hamburger-side-nav'>
-    {% if user_id is not none %}
-      {% for role in roles %}
-        <div>
-          {% if roles|length > 1 %} <h1>{{role.name|title}}</h1> {% endif %}
-          {% for link_tgt, link_label in role.permissible_endpoints.items() %}
-            <div><a class='selectable' href="{{link_tgt}}">{{link_label}}</a></div>
-          {% endfor %}
-        </div>
-      {% endfor %}
-    {% else %}
-      <div><a href="/signin">Sign in with Google</a></div>
-    {% endif %}
+    <div id='hamburger-nav-with-user'>
+      <!-- Roles and endpoints inserted here -->
+    </div>
+    <div id='hamburger-nav-no-user'><a href="/signin">Sign in with Google</a></div>
   </section>
   <section class='content' id='main'>
     {% block content %}{% endblock %}
@@ -63,6 +56,48 @@
 <script src="{{ url_for('js', path='/http.js') }}"></script>
 <script src="{{ url_for('js', path='/datamodels.js') }}"></script>
 <script src="{{ url_for('js', path='/util.js') }}"></script>
+<script>
+  function commonOnLoad() {
+    http.get('/user').then((user) => {
+      if (user) {
+        hide('dropdown-no-user');
+        unhide('dropdown-with-user');
+        document.getElementById('user-name').innerText = user.full_name;
+
+        hide('hamburger-nav-no-user');
+        unhide('hamburger-nav-with-user');
+      }
+      else {
+        unhide('dropdown-no-user');
+        hide('dropdown-with-user');
+        document.getElementById('user-name').innerText = '';
+
+        unhide('hamburger-nav-no-user');
+        hide('hamburger-nav-with-user');
+      }
+    });
+
+    http.get('/user/roles').then((roleList) => {
+      let outerBox = document.getElementById('hamburger-nav-with-user');
+      for (const role of roleList) {
+        let title = document.createElement('h1');
+        title.innerText = role.name;
+        outerBox.appendChild(title);
+
+        for (const [endPoint, endPointLabel] of Object.entries(role.permissible_endpoints)) {
+          let box = document.createElement('div');
+          outerBox.appendChild(box);
+
+          let link = document.createElement('a');
+          link.classList.add('selectable');
+          link.href = endPoint;
+          link.innerText = endPointLabel;
+          box.appendChild(link);
+       }
+      }
+    });
+  }
+</script>
 {% block script %}{% endblock %}
 </body>
 </html>
