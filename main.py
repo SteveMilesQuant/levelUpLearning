@@ -1,11 +1,12 @@
 import os, aiohttp, json, db
-from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status, Security
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, APIRouter, Request, Response, Header, HTTPException, status, Security
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import APIKeyHeader
 from oauthlib.oauth2 import WebApplicationClient
 from typing import Optional
+from datetime import datetime, timedelta
 from user import UserResponse, User, load_all_roles, load_all_instructors
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program
@@ -27,6 +28,7 @@ app.config.db_path = os.environ.get("DB_PATH") or os.path.join(os.path.dirname(_
 app.config.GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 app.config.GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 app.config.GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
+app.config.user_token_lifetime = timedelta(minutes=30)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
@@ -55,17 +57,21 @@ async def get_google_provider_cfg() -> dict:
 
 
 def get_authorized_user(request, permission_url_path, required = True) -> Optional[User]:
-    # TODO: use this: api_key = request.headers.get('Authorization')
+    user_token = request.cookies.get('userToken')
+    if user_token:
+        user = app.user
+    else:
+        user = None
     if required:
-        if not app.user:
+        if not user:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not logged in.")
-        for role_name in app.user.roles:
+        for role_name in user.roles:
             role = app.roles[role_name]
             if permission_url_path in role.permissible_endpoints:
-                return app.user
+                return user
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for {permission_url_path}")
     else:
-        return app.user
+        return user
 
 
 @api_router.get("/", response_class = HTMLResponse)
@@ -87,7 +93,7 @@ async def signin_get(request: Request):
 
 
 @api_router.get("/signin/callback")
-async def signin_callback_get(request: Request, code):
+async def signin_callback_get(request: Request, response: Response, code):
     google_provider_cfg = await get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
     redirect_url = 'https://' + request.url.netloc + request.url.path
@@ -99,14 +105,14 @@ async def signin_callback_get(request: Request, code):
         client_secret=app.config.GOOGLE_CLIENT_SECRET
     )
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.post(token_url, data=body) as response:
-            token_response_json = await response.json()
+        async with session.post(token_url, data=body) as google_response:
+            token_response_json = await google_response.json()
     app.google_client.parse_request_body_response(json.dumps(token_response_json))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = app.google_client.add_token(userinfo_endpoint)
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(uri, data=body) as response:
-            user_info_json = await response.json()
+        async with session.get(uri, data=body) as google_response:
+            user_info_json = await google_response.json()
     if not user_info_json.get("email_verified"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User email not available or not verified by Google.")
     user = User(
@@ -119,8 +125,18 @@ async def signin_callback_get(request: Request, code):
     )
     user.add_email_address(db = app.db, email_address = user_info_json["email"])
     app.user = user # TODO: instead create a jwt token
-    userToken = f'{user.id}' # TODO: instead create a jwt token
-    return templates.TemplateResponse("signin_callback.html", {"request": request, 'userToken': userToken})
+    user_token = f'{user.id}' # TODO: instead create a jwt token
+    token_expiration = datetime.now() + app.config.user_token_lifetime
+    response = RedirectResponse(url = '/')
+    response.set_cookie(
+        key = 'userToken',
+        value = user_token,
+        expires = token_expiration,
+        secure = True,
+        httponly = True,
+        samesite = 'strict'
+    )
+    return response
 
 
 @api_router.get("/signout", response_class = RedirectResponse)
