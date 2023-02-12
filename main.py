@@ -92,7 +92,7 @@ async def signin_get(request: Request):
     return RedirectResponse(url=request_uri)
 
 
-@api_router.get("/signin/callback")
+@api_router.get("/signin/callback", response_class = RedirectResponse)
 async def signin_callback_get(request: Request, response: Response, code):
     google_provider_cfg = await get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
@@ -141,8 +141,10 @@ async def signin_callback_get(request: Request, response: Response, code):
 
 @api_router.get("/signout", response_class = RedirectResponse)
 async def signout_get(request: Request):
-    app.user = None
-    return RedirectResponse(url='/')
+    app.user = None # TODO: instead delete from user repo
+    response = RedirectResponse(url='/')
+    response.delete_cookie(key = 'userToken')
+    return response
 
 
 @api_router.get("/profile")
