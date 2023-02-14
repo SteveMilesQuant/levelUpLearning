@@ -2,6 +2,7 @@ import jwt
 from typing import Any, Optional
 from pydantic import BaseModel
 from datetime import datetime
+from pytz import UTC as utc
 
 
 class JWTMeta(BaseModel):
@@ -24,7 +25,7 @@ def auth_token_to_user_id(app: Any, token: Optional[str]) -> Optional[int]:
     if not token:
         return None
     decoded_token = JWTUser(**jwt.decode(token, app.config.secret_key, algorithms=[app.config.jwt_algorithm]))
-    #TODO: if decoded_token.exp > datetime.utcnow():
-    # return None
+    if decoded_token.exp < utc.localize(datetime.utcnow()):
+        return None
     return decoded_token.user_id
 
