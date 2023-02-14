@@ -5,8 +5,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.security import APIKeyHeader
 from oauthlib.oauth2 import WebApplicationClient
+from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
+from authentication import user_id_to_auth_token, auth_token_to_user_id
 from user import UserResponse, User, load_all_roles, load_all_instructors
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program
@@ -14,13 +16,13 @@ from program import LevelData, LevelResponse, Level
 from camp import CampData, CampResponse, Camp, LevelSchedule, load_all_camps
 
 
+class Object(object):
+    pass
+
+
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 api_router = APIRouter()
-
-
-class Object(object):
-    pass
 
 app.config = Object()
 app.config.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
@@ -28,7 +30,9 @@ app.config.db_path = os.environ.get("DB_PATH") or os.path.join(os.path.dirname(_
 app.config.GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 app.config.GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 app.config.GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
-app.config.user_token_lifetime = timedelta(minutes=30)
+app.config.jwt_lifetime = timedelta(minutes=30)
+app.config.jwt_algorithm = "HS256"
+app.config.jwt_subject = "access"
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
@@ -38,7 +42,6 @@ app.google_client = WebApplicationClient(app.config.GOOGLE_CLIENT_ID)
 app.db = None
 app.db = db.get_db(app)
 app.roles = load_all_roles(db = app.db)
-app.user = None # BIG TODO: use jwt for token authentication and user repo
 
 
 @app.on_event("shutdown")
@@ -57,9 +60,9 @@ async def get_google_provider_cfg() -> dict:
 
 
 def get_authorized_user(request, permission_url_path, required = True) -> Optional[User]:
-    user_token = request.cookies.get('userToken')
-    if user_token:
-        user = app.user
+    user_id = auth_token_to_user_id(app, request.cookies.get('userToken'))
+    if user_id:
+        user = User(db = app.db, id = user_id)
     else:
         user = None
     if required:
@@ -124,9 +127,8 @@ async def signin_callback_get(request: Request, response: Response, code):
         picture = user_info_json["picture"]
     )
     user.add_email_address(db = app.db, email_address = user_info_json["email"])
-    app.user = user # TODO: instead create a jwt token
-    user_token = f'{user.id}' # TODO: instead create a jwt token
-    token_expiration = datetime.now() + app.config.user_token_lifetime
+
+    user_token, token_expiration = user_id_to_auth_token(app, user.id)
     response = RedirectResponse(url = '/')
     response.set_cookie(
         key = 'userToken',
@@ -141,7 +143,6 @@ async def signin_callback_get(request: Request, response: Response, code):
 
 @api_router.get("/signout", response_class = RedirectResponse)
 async def signout_get(request: Request):
-    app.user = None # TODO: instead delete from user repo
     response = RedirectResponse(url='/')
     response.delete_cookie(key = 'userToken')
     return response

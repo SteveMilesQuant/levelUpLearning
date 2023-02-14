@@ -7,9 +7,9 @@ from camp import CampData, LevelSchedule, FastApiDatetime
 from main import app
 
 
-client = TestClient(app)
-app.user = User(db = app.db, id = 1)
+client = TestClient(app, cookies = app.test.cookies)
 all_camps_json = []
+
 
 # Seed program and level for use with camps tests
 program = Program(db = app.db, title='Creative Writing Workshop', grade_range=(6,8), tags='writing creative', description='Creative writing description.')
@@ -39,8 +39,8 @@ def test_get_camps_html(endpoint: str):
 
 # Test adding camps
 @pytest.mark.parametrize(('camp'), (
-    (CampData(program_id = program.id, primary_instructor_id=app.user.id)),
-    (CampData(program_id = program.id, primary_instructor_id=app.instructor_user.id)),
+    (CampData(program_id = program.id, primary_instructor_id=app.test.users.admin.id)),
+    (CampData(program_id = program.id, primary_instructor_id=app.test.users.instructor.id)),
 ))
 def test_post_camp(camp: CampData):
     camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
@@ -80,8 +80,8 @@ def test_get_camps():
 
 # Test adding instructors
 @pytest.mark.parametrize(('camp_index', 'instructor'), (
-    (0, app.instructor_user),
-    (1, app.user),
+    (0, app.test.users.instructor),
+    (1, app.test.users.admin),
 ))
 def test_add_instructor_to_camp(camp_index: int, instructor: User):
     camp_json = all_camps_json[camp_index]
@@ -100,9 +100,9 @@ def test_getting_camp_instructors():
     camp_json = all_camps_json[0]
     camp_id = camp_json['id']
     primary_instructor_id = camp_json['primary_instructor_id']
-    admin_user_json = json.loads(json.dumps(app.user.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
+    admin_user_json = json.loads(json.dumps(app.test.users.admin.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
     admin_user_json['is_primary'] = (admin_user_json['id'] == primary_instructor_id)
-    instructor_user_json = json.loads(json.dumps(app.instructor_user.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
+    instructor_user_json = json.loads(json.dumps(app.test.users.instructor.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
     instructor_user_json['is_primary'] = (instructor_user_json['id'] == primary_instructor_id)
     instructors_json = [admin_user_json, instructor_user_json]
     response = client.get(f'/camps/{camp_id}/instructors')
@@ -124,8 +124,8 @@ def test_getting_camp_instructors():
 
 # Test changing primary instructor
 @pytest.mark.parametrize(('camp_index', 'instructor_id'), (
-    (0, app.instructor_user.id),
-    (1, app.user.id),
+    (0, app.test.users.instructor.id),
+    (1, app.test.users.admin.id),
 ))
 def test_change_primary_instructor(camp_index: int, instructor_id: int):
     camp_json = all_camps_json[camp_index]
@@ -170,8 +170,8 @@ def test_update_level_schedules(camp_index: int, level_index: int, level_schedul
 
 # Test removing instructors
 @pytest.mark.parametrize(('camp_index', 'instructor_id'), (
-    (0, app.instructor_user.id),
-    (1, app.instructor_user.id),
+    (0, app.test.users.instructor.id),
+    (1, app.test.users.instructor.id),
 ))
 def test_remove_instructor(camp_index: int, instructor_id: int):
     camp_json = all_camps_json[camp_index]
@@ -202,7 +202,7 @@ def test_permission():
     for camp_json in all_camps_json:
         max_camp_id = max(max_camp_id, camp_json['id'])
     bad_camp_id = max_camp_id + 1
-    camp = CampData(program_id = program.id, primary_instructor_id=app.instructor_user.id)
+    camp = CampData(program_id = program.id, primary_instructor_id=app.test.users.instructor.id)
     camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
     camp_id = all_camps_json[1]['id']
     camp_error_json = {'detail': f'Camp id={bad_camp_id} not found.'}

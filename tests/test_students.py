@@ -5,8 +5,7 @@ from user import User
 from student import StudentData, FastApiDate
 from main import app
 
-client = TestClient(app)
-app.user = User(db = app.db, id = 1)
+client = TestClient(app, cookies = app.test.cookies)
 all_students_json = {}
 
 
