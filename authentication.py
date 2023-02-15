@@ -3,6 +3,7 @@ from typing import Any, Optional
 from pydantic import BaseModel
 from datetime import datetime
 from pytz import UTC as utc
+from fastapi import HTTPException, status
 
 
 class JWTMeta(BaseModel):
@@ -24,8 +25,11 @@ def user_id_to_auth_token(app: Any, user_id: int) -> str:
 def auth_token_to_user_id(app: Any, token: Optional[str]) -> Optional[int]:
     if not token:
         return None
-    decoded_token = JWTUser(**jwt.decode(token, app.config.secret_key, algorithms=[app.config.jwt_algorithm]))
+    try:
+        decoded_token = JWTUser(**jwt.decode(token, app.config.secret_key, algorithms=[app.config.jwt_algorithm]))
+    except jwt.exceptions.InvalidSignatureError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Bad authentication token.")
     if decoded_token.exp < utc.localize(datetime.utcnow()):
-        return None
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Expired authentication token.")
     return decoded_token.user_id
 
