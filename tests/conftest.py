@@ -44,7 +44,7 @@ def pytest_sessionstart(session):
 
     app.test.auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.admin.id)
     app.test.cookies = httpx.Cookies()
-    app.test.cookies.set('userToken', app.test.auth_token)
+    app.test.cookies.set(app.config.jwt_cookie_name, app.test.auth_token)
 
 
 def pytest_sessionfinish(session, exitstatus):

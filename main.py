@@ -1,9 +1,8 @@
 import os, aiohttp, json, db
-from fastapi import FastAPI, APIRouter, Request, Response, Header, HTTPException, status, Security
+from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.security import APIKeyHeader
 from oauthlib.oauth2 import WebApplicationClient
 from pydantic import BaseModel
 from typing import Optional
@@ -30,6 +29,7 @@ app.config.db_path = os.environ.get("DB_PATH") or os.path.join(os.path.dirname(_
 app.config.GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
 app.config.GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
 app.config.GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
+app.config.jwt_cookie_name = "authToken"
 app.config.jwt_lifetime = timedelta(minutes=30)
 app.config.jwt_algorithm = "HS256"
 app.config.jwt_subject = "access"
@@ -60,7 +60,7 @@ async def get_google_provider_cfg() -> dict:
 
 
 def get_authorized_user(request, permission_url_path, required = True) -> Optional[User]:
-    user_id = auth_token_to_user_id(app, request.cookies.get('userToken'))
+    user_id = auth_token_to_user_id(app, request.cookies.get(app.config.jwt_cookie_name))
     if user_id:
         user = User(db = app.db, id = user_id)
     else:
@@ -96,7 +96,7 @@ async def signin_get(request: Request):
 
 
 @api_router.get("/signin/callback", response_class = RedirectResponse)
-async def signin_callback_get(request: Request, response: Response, code):
+async def signin_callback_get(request: Request, code):
     google_provider_cfg = await get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
     redirect_url = 'https://' + request.url.netloc + request.url.path
@@ -131,7 +131,7 @@ async def signin_callback_get(request: Request, response: Response, code):
     user_token, token_expiration = user_id_to_auth_token(app, user.id)
     response = RedirectResponse(url = '/')
     response.set_cookie(
-        key = 'userToken',
+        key = app.config.jwt_cookie_name,
         value = user_token,
         expires = token_expiration,
         secure = True,
@@ -144,7 +144,7 @@ async def signin_callback_get(request: Request, response: Response, code):
 @api_router.get("/signout", response_class = RedirectResponse)
 async def signout_get(request: Request):
     response = RedirectResponse(url='/')
-    response.delete_cookie(key = 'userToken')
+    response.delete_cookie(key = app.config.jwt_cookie_name)
     return response
 
 
