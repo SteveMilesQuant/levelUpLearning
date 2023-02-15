@@ -69,9 +69,9 @@
     commonOnLoad();
 
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Program Title', simpleTemplate`${0}`, 'program.title', null, true));
-    colMeta.push(new FilterTableColumn('Primary Instructor', simpleTemplate`${0}`, 'primary_instructor.full_name', FilterType.CheckBoxes, true));
-    colMeta.push(new FilterTableColumn('Start Date', simpleTemplate`${0}`, 'first_level_schedule.start_date', null, true));
+    colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'program.title', null, true));
+    colMeta.push(new FilterTableColumn('Primary Instructor', DisplayType.Simple, 'primary_instructor.full_name', FilterType.CheckBoxes, true));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'first_level_schedule.start_time', null, true));
 
     let htmlTable = document.getElementById('camps-table');
     let sidebar = document.getElementById('sidebar');
@@ -84,7 +84,6 @@
           camp.program = program;
           http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
             http.get('/camps/' + camp.id + '/levels/' + levelList[0].id).then((firstLevelSchedule) => {
-              firstLevelSchedule.start_date = firstLevelSchedule.start_time.split('T')[0];
               camp.first_level_schedule = firstLevelSchedule;
               http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
                 camp.primary_instructor = instructor;
@@ -151,11 +150,12 @@
     window.newCampProgramList.reset();
     window.newCampInstructorList.reset();
 
-    // Set to next Monday
+    // Set to next Monday at 9am
+    // toISOString always reports in UTC, so set according to UTC
     let date = new Date();
-    shiftDays = 8 - date.getDay();
-    date.setDate(date.getDate() + shiftDays);
-    date.setHours(4, 0, 0);
+    let shiftDays = 8 - date.getUTCDay();
+    date.setUTCDate(date.getUTCDate() + shiftDays);
+    date.setUTCHours(9, 0, 0);
     document.getElementById('new-camp-start-datetime').value = date.toISOString().slice(0,16);
   }
 

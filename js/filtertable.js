@@ -1,13 +1,19 @@
 // Class for a filterable and searchable table
 
 
+// Currently supported types of filters
+const DisplayType = {
+    Simple: "Simple",
+    Range: "Range",
+    Datetime: "Datetime"
+};
+
 // Column configuration
 class FilterTableColumn {
-    constructor(label, templateFormat, sourceCols, filterType, searchable) {
-        if (sourceCols.constructor !== Array) sourceCols = [sourceCols];
+    constructor(label, displayType, sourceCol, filterType, searchable) {
         this.label = label;
-        this.templateFormat = templateFormat;
-        this.sourceCols = sourceCols;
+        this.displayType = displayType;
+        this.sourceCol = sourceCol;
         this.filterType = filterType;
         this.searchable = searchable;
     }
@@ -150,24 +156,30 @@ class FilterTable {
             const col = this.colMeta[colIdx];
 
             // Collect all the source values into an array
-            let valueAsArray = [];
-            for (const srcCol of col.sourceCols) {
-                let srcData = rawRow;
-                for (let srcColItem of srcCol.split('.')) {
-                    srcData = srcData[srcColItem];
-                }
-                if (!srcData) srcData = '';
-                if (srcData.constructor === Array) {
-                    for (let srcDataElem of srcData) valueAsArray.push(srcDataElem);
-                }
-                else {
-                    valueAsArray.push(srcData);
-                }
+            let srcData = rawRow;
+            for (let srcColItem of col.sourceCol.split('.')) {
+                srcData = srcData[srcColItem];
             }
+            if (!srcData) srcData = '';
 
             // Create a column with this label
             let newCol = newRow.insertCell();
-            newCol.innerHTML = col.templateFormat(valueAsArray);
+            switch(col.displayType) {
+                case DisplayType.Range:
+                    newCol.innerText = srcData[0] + ' to ' + srcData[1];
+                    break;
+                case DisplayType.Datetime:
+                    let newInput = document.createElement('input');
+                    newInput.setAttribute('type', 'datetime-local');
+                    newInput.value = srcData;
+                    newInput.disabled = true;
+                    newCol.appendChild(newInput);
+                    break;
+                case DisplayType.Simple:
+                default:
+                    newCol.innerText = srcData;
+                    break;
+            }
 
             // Process filter: add cross references between row, filter, and filter value
             if (col.filterType) {
@@ -180,8 +192,6 @@ class FilterTable {
                         checkBoxValue.appendRow(newRow);
                         break;
                     case FilterType.Tags:
-                        const srcCol = col.sourceCols[0];
-                        const srcData = rawRow[srcCol];
                         for (const word of srcData.split(" ")) {
                             let checkBoxValue = filter.filterValues[word];
                             if (!checkBoxValue) checkBoxValue = new CheckBoxValue(word, filter, colIdx);
@@ -189,9 +199,8 @@ class FilterTable {
                         }
                         break;
                     case FilterType.IntRange:
-                        let range = rawRow[col.sourceCols];
-                        let rangeValue = filter.filterValues[range];
-                        if (!rangeValue) rangeValue = new IntRangeValue(range, filter, colIdx);
+                        let rangeValue = filter.filterValues[srcData];
+                        if (!rangeValue) rangeValue = new IntRangeValue(srcData, filter, colIdx);
                         rangeValue.appendRow(newRow);
                         break;
                     default:
@@ -202,8 +211,8 @@ class FilterTable {
 
             // For searchable columns, add value to search key
             if (col.searchable) {
-                if (newRow.searchKey.length === 0) newRow.searchKey = valueAsArray.join('').trim().toLowerCase();
-                else newRow.searchKey += ' ' + valueAsArray.join('').trim().toLowerCase();
+                if (newRow.searchKey.length === 0) newRow.searchKey = srcData.trim().toLowerCase();
+                else newRow.searchKey += ' ' + srcData.trim().toLowerCase();
             }
         } // loop on columns
 
