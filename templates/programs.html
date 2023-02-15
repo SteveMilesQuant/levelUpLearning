@@ -124,11 +124,14 @@
     // TODO: create requirement for this value
     if (programTitle !== "") {
       programData = new ProgramData(programTitle, programTags, [programFromGrade, programToGrade], programDescription);
+      levelData = new LevelData('First Level', 1, '');
 
       http.post('/programs', programData).then((program) => {
         resetNewProgram();
         addProgramToTable(program);
-        window.open('/programs/' + program.id, '_blank');
+        http.post('/programs/' + program.id + '/levels', levelData).then((firstLevel) => {
+          window.open('/programs/' + program.id, '_blank');
+        });
       });
     }
   }

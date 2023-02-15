@@ -156,6 +156,7 @@ class FilterTable {
                 for (let srcColItem of srcCol.split('.')) {
                     srcData = srcData[srcColItem];
                 }
+                if (!srcData) srcData = '';
                 if (srcData.constructor === Array) {
                     for (let srcDataElem of srcData) valueAsArray.push(srcDataElem);
                 }
