@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <span class='content-body'>
+    <div>
+      <h1><span>Camp</span></h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <div hidden>
+      <span><strong>ID: </strong><span id='camp-id'></span></span>
+    </div>
+    <div>
+      <span><strong>Program Title: </strong><span id='program-title'></span></span>
+    </div>
+    <div id='camp-delete'>
+      <button class='selectable' onclick="confirmDeleteCamp();">
+        <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
+        <span><strong>Delete Camp</strong></span>
+      </button>
+    </div>
+    <!-- TODO: instructor list -->
+  </span>
+  <div class="v-divider"></div>
+  <span class='content-body'>
+    <div class='content-item'><h1>Level Schedules</h1></div>
+    <div class='content-item'><table id='levels-table'>
+      <!-- Levels table rows inserted here -->
+    </table></div>
+  </span>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script>
+  // One-time setup
+  window.onload = function() {
+    commonOnLoad();
+
+    campId = getCampIdStr();
+    document.getElementById('camp-id').innerText = campId;
+
+    colMeta = [];
+    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'title', null, true));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'levelSchedule.start_time', null, true));
+    colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'levelSchedule.end_time', null, true));
+
+    let htmlTable = document.getElementById('levels-table');
+    window.userTable = new FilterTable(colMeta, htmlTable, 0, null, null);
+
+    http.get('/camps/' + campId).then((camp) => {
+      http.get('/programs/' + camp.program_id).then((program) => {
+        document.getElementById('program-title').innerText = program.title;
+        http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+          for (let level of levelList) {
+            http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
+              level.levelSchedule = levelSchedule;
+              addLevelToTable(level);
+            });
+          }
+        });
+      });
+    });
+  }
+
+  function getCampIdStr() {
+    const urlAsArray = document.URL.split("/");
+    return urlAsArray[urlAsArray.indexOf("schedule")+1];
+  }
+
+  function addLevelToTable(level) {
+    let campId = document.getElementById('camp-id').innerHTML;
+    let newRow = window.userTable.appendRow(level);
+    let startTime = newRow.cells[1].firstChild;
+    let endTime = newRow.cells[2].firstChild;
+
+    // Add edit/confirm/cancel buttons off the right side
+    let newCol = newRow.insertCell();
+
+    let editButton = document.createElement('button');
+    let editImage = document.createElement('img');
+    editButton.classList.add('selectable');
+    editImage.classList.add('small-button');
+    editImage.src = '{{ url_for("images", path="/pencil.png") }}';
+    editImage.alt = 'Edit';
+    editButton.appendChild(editImage);
+
+    let confirmButton = document.createElement('button');
+    let confirmImage = document.createElement('img');
+    confirmButton.hidden = true;
+    confirmButton.classList.add('selectable');
+    confirmImage.classList.add('small-button');
+    confirmImage.src = '{{ url_for("images", path="/confirm.png") }}';
+    confirmImage.alt = 'Submit';
+    confirmButton.appendChild(confirmImage);
+
+    let cancelButton = document.createElement('button');
+    let cancelImage = document.createElement('img');
+    cancelButton.hidden = true;
+    cancelButton.classList.add('selectable');
+    cancelImage.classList.add('small-button');
+    cancelImage.src = '{{ url_for("images", path="/cancel.png") }}';
+    cancelImage.alt = 'Cancel';
+    cancelButton.appendChild(cancelImage);
+
+    editButton.onclick = function () {
+      editButton.hidden = true;
+      confirmButton.hidden = false;
+      cancelButton.hidden = false;
+      startTime.disabled = false;
+      endTime.disabled = false;
+    }
+
+    confirmButton.onclick = function () {
+      confirmButton.hidden = true;
+      cancelButton.hidden = true;
+      startTime.disabled = true;
+      endTime.disabled = true;
+
+      let levelScheduleData = new LevelSchedule(startTime.value, endTime.value);
+      http.put('/camps/' + campId + '/levels', level.id, levelScheduleData).then((levelSchedule) => {
+        startTime.value = levelSchedule.start_time;
+        endTime.value = levelSchedule.end_time;
+        editButton.hidden = false;
+      });
+    }
+
+    cancelButton.onclick = function () {
+      confirmButton.hidden = true;
+      cancelButton.hidden = true;
+      startTime.disabled = true;
+      endTime.disabled = true;
+
+      http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
+        startTime.value = levelSchedule.start_time;
+        endTime.value = levelSchedule.end_time;
+        editButton.hidden = false;
+      });
+    }
+
+    newCol.appendChild(editButton);
+    newCol.appendChild(confirmButton);
+    newCol.appendChild(cancelButton);
+  }
+
+  function putCamp() {
+  }
+
+  function confirmDeleteCamp() {
+    let campId = document.getElementById('camp-id').innerHTML;
+    if (confirm('Are you sure you want to delete this camp?')) {
+      http.delete('/camps', campId);
+      http.redirect('/schedule');
+    }
+  }
+</script>
+{% endblock %}

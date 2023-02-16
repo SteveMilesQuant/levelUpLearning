@@ -454,6 +454,11 @@ async def get_schedule(request: Request):
     return templates.TemplateResponse("schedule.html", {'request': request})
 
 
+@api_router.get("/schedule/{camp_id}", response_class = HTMLResponse)
+async def get_schedule(request: Request):
+    return templates.TemplateResponse("schedule_levels.html", {'request': request})
+
+
 @api_router.post("/camps", response_model = CampResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_camp(request: Request, new_camp_data: CampData):
     user = get_authorized_user(request, '/schedule')

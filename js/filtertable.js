@@ -31,13 +31,15 @@ class FilterTable {
         this.filters = Array(colMeta.length).fill(null);
 
         // Add keyup event for the search bar to search on searchable columns
-        searchBox.rows = this.rows;
-        searchBox.addEventListener('keyup', (event) => {
-            if (event.isComposing || event.keyCode === 229) {
-                return;
-            }
-            this.checkSearchBox();
-        });
+        if (searchBox) {
+            searchBox.rows = this.rows;
+            searchBox.addEventListener('keyup', (event) => {
+                if (event.isComposing || event.keyCode === 229) {
+                    return;
+                }
+                this.checkSearchBox();
+            });
+        }
 
         // Create header row
         let newRow = htmlTable.insertRow(htmlTable.rows.length + insertRowShiftIdx);
@@ -224,6 +226,7 @@ class FilterTable {
 
     // Reset the search box
     resetSearchBox() {
+        if (!this.searchBox) return;
         this.searchBox.innerText = '';
         for (let row of this.searchBox.rows) {
             row.selectedBySearch = true;
@@ -233,6 +236,7 @@ class FilterTable {
 
     // Check each row against the current value of the search box
     checkSearchBox() {
+        if (!this.searchBox) return;
         const keysToCheck = this.searchBox.innerText.trim().toLowerCase().split(' ');
         for (let row of this.searchBox.rows) {
             if (keysToCheck.length === 0) {

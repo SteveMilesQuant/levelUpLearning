@@ -11,7 +11,6 @@
   <div class='content-body'>
     <div>
       <h1>Programs</h1>
-      <hr class='h-divider'></hr>
     </div>
     <div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
@@ -70,9 +69,9 @@
     colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'tags', FilterType.Tags, true));
     colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'grade_range', FilterType.IntRange, false));
 
-    var htmlTable = document.getElementById('programs-table');
-    var sidebar = document.getElementById('sidebar');
-    var searchBox = document.getElementById('search-box-text');
+    let htmlTable = document.getElementById('programs-table');
+    let sidebar = document.getElementById('sidebar');
+    let searchBox = document.getElementById('search-box-text');
     window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, searchBox); // -1 for row shift - we have one extra final static row for "Add Program"
 
     http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
@@ -80,15 +79,15 @@
 
   function resetNewProgram() {
     hide("new-program");
-    document.getElementById('new-program-title').innerHTML = "";
-    document.getElementById('new-program-tags').innerHTML = "";
+    document.getElementById('new-program-title').innerText = "";
+    document.getElementById('new-program-tags').innerText = "";
     document.getElementById('new-program-from-grade').selectedIndex = 6;
     document.getElementById('new-program-to-grade').selectedIndex = 8;
     // Description intentionally left off "new program"
   }
 
   function addProgramToTable(program) {
-    var newRow = window.userTable.appendRow(program);
+    let newRow = window.userTable.appendRow(program);
     newRow.programId = program.id;
     newRow.classList.add('selectable');
 
@@ -96,16 +95,16 @@
       row = this.parentNode;
       window.open('/programs/' + row.programId, '_blank');
     };
-    for (var col of newRow.childNodes) col.onclick = commonOnClick;
+    for (let col of newRow.childNodes) col.onclick = commonOnClick;
 
     // Add a delete button off the right side
-    var newCol = newRow.insertCell();
-    var newButton = document.createElement('button');
+    let newCol = newRow.insertCell();
+    let newButton = document.createElement('button');
     newButton.classList.add('selectable');
-    newButton.innerHTML = 'Delete';
+    newButton.innerText = 'Delete';
     newButton.onclick = function () {
-      var row = this.parentNode.parentNode;
-      var programTitle = row.cells[0].innerHTML;
+      let row = this.parentNode.parentNode;
+      let programTitle = row.cells[0].innerText;
       if (confirm('Are you sure you want to delete the program "' + programTitle + '"?')) {
         http.delete('/programs', row.programId);
         row.remove();
@@ -115,8 +114,8 @@
   }
 
   function postProgram() {
-    programTitle = document.getElementById('new-program-title').innerHTML;
-    programTags = document.getElementById('new-program-tags').innerHTML;
+    programTitle = document.getElementById('new-program-title').innerText;
+    programTags = document.getElementById('new-program-tags').innerText;
     programFromGrade = document.getElementById('new-program-from-grade').selectedIndex;
     programToGrade = document.getElementById('new-program-to-grade').selectedIndex;
     programDescription = ""; // intentionally left off "new program"
