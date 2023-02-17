@@ -201,8 +201,8 @@ class User(UserResponse):
             execute_write(db, insert_stmt)
 
     def remove_role(self, db: Any, role: str):
-        del_role = self.roles.pop(role)
-        if del_role is not None:
+        if role in self.roles:
+            self.roles.remove(role)
             delete_stmt = f'''
                 DELETE FROM user_x_roles WHERE user_id={self.id} and role="{role}";
             '''

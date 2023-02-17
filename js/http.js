@@ -15,6 +15,7 @@ class EasyHTTP {
             }
         });
         const resData = await response.json();
+        if (response.status === 403) this.redirect('/signout');
         return resData;
     }
 
@@ -37,6 +38,7 @@ class EasyHTTP {
             body: bodyJson
         });
         const resData = await response.json();
+        if (response.status === 403) this.redirect('/signout');
         return resData;
     }
 
@@ -50,6 +52,7 @@ class EasyHTTP {
             body: bodyJson
         });
         const resData = await response.json();
+        if (response.status === 403) this.redirect('/signout');
         return resData;
     }
 }
