@@ -334,4 +334,19 @@ def load_all_instructors(db: Any):
         instructors.append(instructor.dict(include=UserResponse().dict()))
     return instructors
 
+def load_all_users(db: Any):
+    users = []
+    select_stmt = f'''
+        SELECT id
+            FROM user
+    '''
+    result = execute_read(db, select_stmt)
+    for row in result or []:
+        user = User(db = db, id = row['id'])
+        user_json = user.dict(include=UserResponse().dict())
+        user_json['roles'] = user.roles
+        user_json['primary_email'] = user.email_addresses[user.primary_email_address_index]
+        users.append(user_json)
+    return users
+
 

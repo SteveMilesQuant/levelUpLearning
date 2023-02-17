@@ -7,7 +7,7 @@
     <!-- Camp filters added here -->
   </span>
   <div class='content-body'>
-    <div class='content-item'><h1>Camps</h1></div>
+    <div><h1>Camps</h1></div>
     <div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
@@ -15,7 +15,7 @@
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
     </div>
-    <div class='content-item'><table id='camps-table'>
+    <div><table id='camps-table'>
       <!-- Camps table rows inserted here -->
       <tr class='selectable' onclick='unhide("new-camp");'><td>+ Schedule New Camp</td></tr>
     </table></div>

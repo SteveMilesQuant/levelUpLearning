@@ -1,13 +1,93 @@
 {% extends 'base.html' %}
 
 {% block content %}
-	<p>You are an administrator editing the members of this website.</p>
+	<span class='content-body'>
+    <div>
+      <h1><span>Members</span></h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <div class='search-box'>
+      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><p contenteditable=true id='search-box-text'></p></span>
+      <span><button class='selectable' onclick='window.userTable.resetSearchBox();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
+    </div>
+    <div><table id='members-table'>
+      <!-- Member table rows inserted here -->
+    </table></div>
+  </div>
 {% endblock %}
 
 {% block script %}
+<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script>
   window.onload = function () {
     commonOnLoad();
+
+    http.get('/roles').then((rolesList) => {
+      colMeta = [];
+      colMeta.push(new FilterTableColumn('Name', DisplayType.Simple, 'full_name', null, true));
+      colMeta.push(new FilterTableColumn('Email', DisplayType.Simple, 'primary_email', null, true));
+      for (const role of rolesList) {
+        let displayName = role.name.toLowerCase();
+        displayName =  displayName.charAt(0).toUpperCase() + displayName.substring(1, displayName.length);
+        colMeta.push(new FilterTableColumn(displayName, DisplayType.Simple, role.name, null, true));
+      }
+
+      let htmlTable = document.getElementById('members-table');
+      let tableSearchBox = document.getElementById('search-box-text');
+      window.userTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox);
+
+      http.get('/users').then((userList) => {
+        let yesOnClick = function () {
+          let role = this.userRole;
+          let user = this.parentNode.user;
+          if (confirm('Disable the ' + role.name + ' role for ' + user.full_name + '?')) {
+            http.delete('/users/' + user.id + '/roles', role.name);
+            this.innerText = 'No';
+            this.onclick = this.noOnClick;
+          }
+        }
+        let noOnClick = function () {
+          let role = this.userRole;
+          let user = this.parentNode.user;
+          if (confirm('Enable the ' + role.name + ' role for ' + user.full_name + '?')) {
+            http.post('/users/' + user.id + '/roles/' + role.name, null).then((role_name) => {
+              this.innerText = 'Yes';
+              this.onclick = this.yesOnClick;
+            });
+          }
+        }
+
+        for (let user of userList) {
+          for (const role of rolesList) {
+            user[role.name] = 'No';
+          }
+          for (const role of user.roles) {
+            user[role] = 'Yes';
+          }
+          newRow = window.userTable.appendRow(user);
+          newRow.user = user;
+
+          let roleIdx = 0;
+          for (let colIdx = 2; colIdx < newRow.childNodes.length; colIdx++, roleIdx++) {
+            let col = newRow.childNodes[colIdx];
+            col.classList.add('selectable');
+            col.userRole = rolesList[roleIdx];
+            col.yesOnClick = yesOnClick;
+            col.noOnClick = noOnClick;
+
+            if (col.innerText === 'Yes') {
+              col.onclick = col.yesOnClick;
+            }
+            else {
+              col.onclick = col.noOnClick;
+            }
+          }
+        }
+      });
+    });
   }
 </script>
 {% endblock %}

@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
 from authentication import user_id_to_auth_token, auth_token_to_user_id
-from user import UserResponse, User, load_all_roles, load_all_instructors
+from user import UserResponse, User, load_all_roles, load_all_instructors, load_all_users
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program
 from program import LevelData, LevelResponse, Level
@@ -542,7 +542,7 @@ async def get_all_possible_instructors(request: Request):
 
 
 ###############################################################################
-# USERS
+# MEMBERS (full access to users)
 ###############################################################################
 
 
@@ -551,7 +551,30 @@ async def members_get(request: Request):
     return templates.TemplateResponse("members.html", {'request': request})
 
 
+@api_router.get("/users")
+async def users_get_all(request: Request):
+    user = get_authorized_user(request, '/members')
+    return load_all_users(app.db)
 
+@api_router.get("/roles")
+async def roles_get_all(request: Request):
+    user = get_authorized_user(request, '/members')
+    return [role for role in app.roles.values()]
+
+
+@api_router.post("/users/{user_id}/roles/{role_name}")
+async def user_add_role(request: Request, user_id: int, role_name: str):
+    user = get_authorized_user(request, '/members')
+    tgt_user = User(db = app.db, id = user_id)
+    tgt_user.add_role(db = app.db, role = role_name)
+    return role_name
+
+
+@api_router.delete("/users/{user_id}/roles/{role_name}")
+async def user_remove_role(request: Request, user_id: int, role_name: str):
+    user = get_authorized_user(request, '/members')
+    tgt_user = User(db = app.db, id = user_id)
+    tgt_user.remove_role(db = app.db, role = role_name)
 
 
 ###############################################################################
