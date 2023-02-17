@@ -29,6 +29,8 @@ def auth_token_to_user_id(app: Any, token: Optional[str]) -> Optional[int]:
         decoded_token = JWTUser(**jwt.decode(token, app.config.secret_key, algorithms=[app.config.jwt_algorithm]))
     except jwt.exceptions.InvalidSignatureError:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Bad authentication token.")
+    except jwt.exceptions.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Expired authentication token.")
     if decoded_token.exp < utc.localize(datetime.utcnow()):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Expired authentication token.")
     return decoded_token.user_id

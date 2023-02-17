@@ -50,10 +50,10 @@
     <div><strong>Start time:</strong></div>
     <div><input type='datetime-local' id='new-camp-start-datetime'></div>
     <div>
-      <span><button class='selectable' onclick='postCamp(); hide("new-camp"); resetNewCamp();'>
+      <span><button class='selectable' onclick='hide("new-camp"); postCamp(); resetNewCamp();'>
         <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
       </button></span>
-      <span><button class='selectable' onclick='resetNewCamp();'>
+      <span><button class='selectable' onclick='hide("new-camp"); resetNewCamp();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
     </div>
@@ -146,7 +146,6 @@
   }
 
   function resetNewCamp() {
-    hide("new-camp");
     window.newCampProgramList.reset();
     window.newCampInstructorList.reset();
 

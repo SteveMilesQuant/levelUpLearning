@@ -12,13 +12,19 @@
     <div>
       <span><strong>Program Title: </strong><span id='program-title'></span></span>
     </div>
+    <div>
+      <span><strong>Instructors: </strong></span>
+    </div>
+    <div id='instructors-box' class='bordered-box'>
+      <!-- List of instructors assigned to this camp here -->
+      <div class='selectable' onclick='unhide("add-instructor");'>+ Add Instructor</div>
+    </div>
     <div id='camp-delete'>
       <button class='selectable' onclick="confirmDeleteCamp();">
         <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
         <span><strong>Delete Camp</strong></span>
       </button>
     </div>
-    <!-- TODO: instructor list -->
   </span>
   <div class="v-divider"></div>
   <span class='content-body'>
@@ -27,9 +33,34 @@
       <!-- Levels table rows inserted here -->
     </table></div>
   </span>
+  <div class='pop-up' id='add-instructor' hidden>
+    <div>
+      <h1>Add instructor</h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <div class='search-box'>
+      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><p contenteditable=true id='add-instructor-search'></p></span>
+      <span><button class='selectable' onclick='window.allInstructorsList.resetSearchBox();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
+    </div>
+    <div id='add-instructor-list'>
+      <!-- List of all possible instructors inserted here -->
+    </div>
+    <div>
+      <span><button class='selectable' onclick='hide("add-instructor"); postCampInstructor(); window.allInstructorsList.reset();'>
+        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+      </button></span>
+      <span><button class='selectable' onclick='hide("add-instructor"); window.allInstructorsList.reset();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
+    </div>
+  </div>
 {% endblock %}
 
 {% block script %}
+<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script>
   // One-time setup
@@ -59,6 +90,22 @@
           }
         });
       });
+
+      http.get('/camps/' + campId + '/instructors').then((instructorList) => {
+        for (const instructor of instructorList) {
+          addInstructorToList(instructor);
+        }
+      });
+    });
+
+    let htmlInstructorList = document.getElementById('add-instructor-list');
+    htmlInstructorList.classList.add('listbox');
+    let instructorSearchBox = document.getElementById('add-instructor-search');
+    window.allInstructorsList = new SearchList(htmlInstructorList, instructorSearchBox);
+    http.get('/instructors').then((instructorList) => {
+      for (const instructor of instructorList) {
+        window.allInstructorsList.appendValue(instructor.id, instructor.full_name);
+      }
     });
   }
 
@@ -142,7 +189,46 @@
     newCol.appendChild(cancelButton);
   }
 
-  function putCamp() {
+  function addInstructorToList(instructor) {
+    let instructorBox = document.getElementById('instructors-box');
+
+    let div = document.createElement('div');
+    div.instructor = instructor;
+    if (instructor.is_primary) {
+      div.innerText = instructor.full_name + ' (primary)';
+      instructorBox.primary_instructor_box = div;
+    }
+    else {
+      div.innerText = instructor.full_name;
+      div.classList.add('selectable');
+      div.onclick = function () {
+        if (confirm('Make ' + this.instructor.full_name + ' the primary instructor?')) {
+          let instructorBox = document.getElementById('instructors-box');
+          let campId = document.getElementById('camp-id').innerHTML;
+          let campData = new CampData(campId, this.instructor.id);
+          http.put('/camps', campId, campData).then((camp) => {
+            instructorBox.primary_instructor_box.innerText = instructorBox.primary_instructor_box.instructor.full_name;
+            instructorBox.primary_instructor_box.instructor.is_primary = false;
+            instructorBox.primary_instructor_box.classList.add('selectable');
+            instructorBox.primary_instructor_box.onlick = this.onclick;
+            this.innerText = this.instructor.full_name + ' (primary)';
+            this.instructor.is_primary = true;
+            this.classList.remove('selectable');
+            instructorBox.primary_instructor_box = this;
+            this.onclick = function () { }
+          });
+        }
+      }
+    }
+    instructorBox.insertBefore(div, instructorBox.lastElementChild);
+  }
+
+  function postCampInstructor() {
+    let campId = document.getElementById('camp-id').innerHTML;
+    let selectedInstructor = window.newCampInstructorList.selectedRow;
+    http.post('/camps/' + campId + '/instructors/' + selectedInstructor.id, null).then((instructor) => {
+      addInstructorToList(instructor);
+    });
   }
 
   function confirmDeleteCamp() {
