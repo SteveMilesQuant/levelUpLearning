@@ -46,11 +46,14 @@ class UserResponse(UserData):
     id: Optional[int]
 
 
-class User(UserResponse):
+class UserResponseForAdmin(UserResponse):
+    primary_email_address: Optional[str]
+    
+
+class User(UserResponseForAdmin):
     google_id: Optional[int]
     roles: Optional[List[str]] = []
     email_addresses: Optional[List[str]] = []
-    primary_email_address_index: Optional[int] = 0
     student_ids: Optional[List[int]] = []
     program_ids: Optional[List[int]] = []
 
@@ -99,7 +102,7 @@ class User(UserResponse):
         for row_idx, row in enumerate(result or []):
             self.email_addresses.append(row['email_address'])
             if row['is_primary']:
-                self.primary_email_address_index = row_idx
+                self.primary_email_address = row['email_address']
 
         select_stmt = f'''
             SELECT student_id
@@ -210,7 +213,7 @@ class User(UserResponse):
 
     def make_email_address_primary(self, db: Any, email_address: str):
         try:
-            old_primary_address = self.email_addresses[self.primary_email_address_index]
+            old_primary_address = self.primary_email_address
             email_address_index = self.email_addresses.index(email_address)
             update_stmt = f'''
                 UPDATE user
@@ -224,7 +227,7 @@ class User(UserResponse):
                     WHERE ser_id={self.id} and email_address="{email_address}";
             '''
             execute_write(db, update_stmt)
-            self.primary_email_address_index = email_address_index
+            self.primary_email_address = self.email_addresses[email_address_index]
         except ValueError:
             pass # not found - do nothing
 
@@ -232,7 +235,7 @@ class User(UserResponse):
         if email_address not in self.email_addresses:
             if len(self.email_addresses) == 0:
                 is_primary = True
-                self.primary_email_address_index = 0
+                self.primary_email_address = email_address
             else:
                 is_primary = False
             self.email_addresses.append(email_address)
@@ -331,8 +334,7 @@ def load_all_instructors(db: Any):
     result = execute_read(db, select_stmt)
     for row in result or []:
         instructor = User(db = db, id = row['user_id'])
-        instructor_json = instructor.dict(include=UserResponse().dict())
-        instructor_json['primary_email'] = instructor.email_addresses[instructor.primary_email_address_index]
+        instructor_json = instructor.dict(include=UserResponseForAdmin().dict())
         instructors.append(instructor_json)
     return instructors
 
@@ -345,9 +347,8 @@ def load_all_users(db: Any):
     result = execute_read(db, select_stmt)
     for row in result or []:
         user = User(db = db, id = row['id'])
-        user_json = user.dict(include=UserResponse().dict())
+        user_json = user.dict(include=UserResponseForAdmin().dict())
         user_json['roles'] = user.roles
-        user_json['primary_email'] = user.email_addresses[user.primary_email_address_index]
         users.append(user_json)
     return users
 

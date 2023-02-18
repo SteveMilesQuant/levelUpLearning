@@ -109,7 +109,7 @@
     window.newCampInstructorList = new SearchList(htmlInstructorList, instructorSearchBox);
     http.get('/instructors').then((instructorList) => {
       for (const instructor of instructorList) {
-        window.newCampInstructorList.appendValue(instructor.id, instructor.full_name + ' (' + instructor.primary_email + ')');
+        window.newCampInstructorList.appendValue(instructor.id, instructor.full_name + ' (' + instructor.primary_email_address + ')');
       }
     });
 

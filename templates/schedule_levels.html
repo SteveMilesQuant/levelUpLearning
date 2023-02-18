@@ -54,6 +54,10 @@
       </button></span>
     </div>
   </div>
+  <div id='instructor-rightclick' class='rightclick-box' hidden>
+    <div class='selectable'><p>Make primary</p></div>
+    <div class='selectable'><p>Delete</p></div>
+  </div>
 {% endblock %}
 
 {% block script %}
@@ -100,8 +104,13 @@
     window.allInstructorsList = new SearchList(htmlInstructorList, instructorSearchBox);
     http.get('/instructors').then((instructorList) => {
       for (const instructor of instructorList) {
-        window.allInstructorsList.appendValue(instructor.id, instructor.full_name + ' (' + instructor.primary_email + ')');
+        window.allInstructorsList.appendValue(instructor.id, instructor.full_name + ' (' + instructor.primary_email_address + ')');
       }
+    });
+    
+    document.addEventListener('click', function (event) {
+      let contextmenu = document.getElementById('instructor-rightclick');
+      contextmenu.hidden = true;
     });
   }
 
@@ -188,34 +197,58 @@
   function addInstructorToList(instructor) {
     let instructorBox = document.getElementById('instructors-box');
 
-    let div = document.createElement('div');
-    div.instructor = instructor;
-    div.onclick = function () {
-      if (!this.instructor.is_primary && confirm('Make ' + this.instructor.full_name + ' the primary instructor?')) {
-        let instructorBox = document.getElementById('instructors-box');
-        let campId = window.camp.id;
-        let programId = window.camp.program_id;
-        let campData = new CampData(programId, this.instructor.id);
-        http.put('/camps', campId, campData).then((camp) => {
-          instructorBox.primary_instructor_box.innerText = instructorBox.primary_instructor_box.instructor.full_name;
-          instructorBox.primary_instructor_box.instructor.is_primary = false;
-          instructorBox.primary_instructor_box.classList.add('selectable');
-          this.innerText = this.instructor.full_name + ' (primary)';
-          this.instructor.is_primary = true;
-          this.classList.remove('selectable');
-          instructorBox.primary_instructor_box = this;
-        });
+    let box = document.createElement('div');
+    box.classList.add('rightclickable');
+    box.innerText = instructor.full_name + ' (' + instructor.primary_email_address + ')';
+    box.instructor = instructor;
+    if (instructor.is_primary) instructorBox.primaryInstructorBox = box;
+    box.addEventListener('contextmenu', function (event) {
+      event.preventDefault();
+
+      let contextmenu = document.getElementById('instructor-rightclick');
+      contextmenu.hidden = false;
+      contextmenu.style.left = event.x + 'px';
+      contextmenu.style.top = event.y + 'px';
+      let instructor = box.instructor;
+
+      let makePrimaryBox = contextmenu.firstElementChild;
+      makePrimaryBox.instructor = instructor;
+      if (instructor.is_primary) {
+        makePrimaryBox.hidden = true;
       }
-    }
-    if (instructor.is_primary) {
-      div.innerText = instructor.full_name + ' (primary)';
-      instructorBox.primary_instructor_box = div;
-    }
-    else {
-      div.innerText = instructor.full_name;
-      div.classList.add('selectable');
-    }
-    instructorBox.insertBefore(div, instructorBox.lastElementChild);
+      else {
+        makePrimaryBox.hidden = false;
+        makePrimaryBox.onclick = function () {
+          let instructorBox = document.getElementById('instructors-box');
+          let campId = window.camp.id;
+          let programId = window.camp.program_id;
+          let campData = new CampData(programId, this.instructor.id);
+          http.put('/camps', campId, campData).then((camp) => {
+            window.camp = camp;
+            instructorBox.primaryInstructorBox.instructor.is_primary = false;
+            instructor.is_primary = true;
+            instructorBox.primaryInstructorBox = this;
+          });
+
+          let contextmenu = document.getElementById('instructor-rightclick');
+          contextmenu.hidden = true;
+        }
+      }
+
+      let deleteBox = contextmenu.lastElementChild;
+      deleteBox.instructor = instructor;
+      deleteBox.onclick = function () {
+        let campId = window.camp.id;
+        http.delete('/camps/' + campId + '/instructors', this.instructor.id);
+        box.remove();
+
+        let contextmenu = document.getElementById('instructor-rightclick');
+        contextmenu.hidden = true;
+      }
+
+      return false;
+    }, false);
+    instructorBox.insertBefore(box, instructorBox.lastElementChild);
   }
 
   function postCampInstructor() {

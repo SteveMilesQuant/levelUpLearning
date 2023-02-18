@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
 from authentication import user_id_to_auth_token, auth_token_to_user_id
-from user import UserResponse, User, load_all_roles, load_all_instructors, load_all_users
+from user import User, UserResponse, UserResponseForAdmin, load_all_roles, load_all_instructors, load_all_users
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program, load_all_programs
 from program import LevelData, LevelResponse, Level
@@ -423,27 +423,37 @@ async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int)
 @api_router.get("/camps/{camp_id}/instructors")
 async def get_camp_instructors(request: Request, camp_id: int):
     user = get_authorized_user(request, '/camps')
+    for_admin = ('ADMIN' in user.roles)
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
     instructors = []
     for instructor_id in camp.instructor_ids:
         instructor = User(db = app.db, id = instructor_id)
-        instructor_response = instructor.dict(include=UserResponse().dict())
+        if for_admin:
+            instructor_response = instructor.dict(include=UserResponseForAdmin().dict())
+        else:
+            instructor_response = instructor.dict(include=UserResponse().dict())
         instructor_response['is_primary'] = (instructor_id == camp.primary_instructor_id)
         instructors.append(instructor_response)
     return instructors
 
 
-@api_router.get("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse)
+@api_router.get("/camps/{camp_id}/instructors/{instructor_id}")
 async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int):
     user = get_authorized_user(request, '/camps')
+    for_admin = ('ADMIN' in user.roles)
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
     if instructor_id not in camp.instructor_ids:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} does not exist for camp id={camp_id}")
-    return User(db = app.db, id = instructor_id)
+    instructor = User(db = app.db, id = instructor_id)
+    if for_admin:
+        instructor_response = instructor.dict(include=UserResponseForAdmin().dict())
+    else:
+        instructor_response = instructor.dict(include=UserResponse().dict())
+    return instructor_response
 
 
 
@@ -500,7 +510,7 @@ async def delete_camp(request: Request, camp_id: int):
     camp.delete(db = app.db)
 
 
-@api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
+@api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponseForAdmin, status_code = status.HTTP_201_CREATED)
 async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: int):
     user = get_authorized_user(request, '/schedule')
     camp = Camp(db = app.db, id = camp_id)
@@ -509,8 +519,7 @@ async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: 
     camp.add_instructor(db = app.db, instructor_id = instructor_id)
     if instructor_id not in camp.instructor_ids:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} not found.")
-    instructor = User(db = app.db, id = instructor_id)
-    return instructor
+    return User(db = app.db, id = instructor_id)
 
 
 @api_router.delete("/camps/{camp_id}/instructors/{instructor_id}")

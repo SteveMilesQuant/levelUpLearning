@@ -174,6 +174,10 @@ footer {
 .search-box span p { width: 600px; margin: 0; border: none; }
 .search-box span p:focus { outline: 0px solid transparent; }
 
+.rightclickable:hover { background-color: #add; cursor: pointer; }
+.rightclick-box { position: absolute; margin: 0; padding: 0; border: 2px solid #ddd; background-color: white; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 3; }
+.rightclick-box div { margin: 16px; }
+
 .checkbox-box { margin: 4px; }
 .checkbox-box input, label, hr { margin: 4px; }
 .checkbox-box label { font-size: 14px; }
@@ -183,7 +187,7 @@ footer {
 .range-box input { margin: 4px; font-size: 14px; }
 .range-box label { margin: 4px; font-size: 14px; }
 
-.listbox { margin: 0;  border: 2px solid #ddd; }
+.listbox { margin: 0; border: 2px solid #ddd; }
 .listbox div p { margin: 0; border: none; }
 .listbox-popup { height: 150px; overflow-y: auto; }
 
