@@ -21,7 +21,6 @@ tr:nth-child(even), tr:nth-child(even) td button { background-color: lightcyan; 
 .selected { background-color: #ccc; }
 .h-divider { margin: 0; border: 1px solid #ddd; }
 .v-divider { border: 1px solid #ddd; margin-top: 8px; margin-bottom: 8px; margin-left: 64px; }
-.bordered-box { border: 2px solid #ddd; margin: 32px; }
 
 .banner {
 	background: lightblue;
@@ -184,7 +183,8 @@ footer {
 .range-box input { margin: 4px; font-size: 14px; }
 .range-box label { margin: 4px; font-size: 14px; }
 
-.listbox { margin: 0; height: 150px; overflow-y: auto; border: 2px solid #ddd; }
+.listbox { margin: 0;  border: 2px solid #ddd; }
 .listbox div p { margin: 0; border: none; }
+.listbox-popup { height: 150px; overflow-y: auto; }
 
 

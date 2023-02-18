@@ -7,7 +7,7 @@ from camp import CampData, LevelSchedule, FastApiDatetime
 from main import app
 
 
-client = TestClient(app, cookies = app.test.cookies)
+client = TestClient(app, cookies = app.test.users.admin_cookies)
 all_camps_json = []
 
 

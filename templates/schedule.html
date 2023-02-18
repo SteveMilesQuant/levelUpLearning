@@ -33,7 +33,7 @@
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
     </div>
-    <div id='new-camp-program-list'>
+    <div id='new-camp-program-list' class='listbox listbox-popup'>
       <!-- List of programs inserted here -->
     </div>
     <div><strong>Primary instructor:</strong></div>
@@ -44,7 +44,7 @@
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
     </div>
-    <div id='new-camp-instructor-list'>
+    <div id='new-camp-instructor-list' class='listbox listbox-popup'>
       <!-- List of instructors inserted here -->
     </div>
     <div><strong>Start time:</strong></div>
@@ -96,7 +96,6 @@
     });
 
     let htmlProgramList = document.getElementById('new-camp-program-list');
-    htmlProgramList.classList.add('listbox');
     let programSearchBox = document.getElementById('new-camp-search-program');
     window.newCampProgramList = new SearchList(htmlProgramList, programSearchBox);
     http.get('/programs').then((programList) => {
@@ -106,12 +105,11 @@
     });
 
     let htmlInstructorList = document.getElementById('new-camp-instructor-list');
-    htmlInstructorList.classList.add('listbox');
     let instructorSearchBox = document.getElementById('new-camp-search-instructor');
     window.newCampInstructorList = new SearchList(htmlInstructorList, instructorSearchBox);
     http.get('/instructors').then((instructorList) => {
       for (const instructor of instructorList) {
-        window.newCampInstructorList.appendValue(instructor.id, instructor.full_name);
+        window.newCampInstructorList.appendValue(instructor.id, instructor.full_name + ' (' + instructor.primary_email + ')');
       }
     });
 

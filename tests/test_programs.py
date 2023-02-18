@@ -6,7 +6,7 @@ from program import ProgramData, LevelData
 from main import app
 
 
-client = TestClient(app, cookies = app.test.cookies)
+client = TestClient(app, cookies = app.test.users.instructor_cookies)
 all_programs_json = {}
 all_levels_json = {}
 

@@ -212,6 +212,17 @@ class Program(ProgramResponse):
             await move_level.update_basic(db = db)
 
 
-
+def load_all_programs(db: Any):
+    programs = []
+    select_stmt = f'''
+        SELECT id
+            FROM program
+    '''
+    result = execute_read(db, select_stmt)
+    for row in result or []:
+        program = Program(db = db, id = row['id'])
+        program_json = program.dict(include=ProgramResponse().dict())
+        programs.append(program_json)
+    return programs
 
 

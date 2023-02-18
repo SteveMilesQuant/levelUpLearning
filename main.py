@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from authentication import user_id_to_auth_token, auth_token_to_user_id
 from user import UserResponse, User, load_all_roles, load_all_instructors, load_all_users
 from student import StudentData, StudentResponse, Student
-from program import ProgramData, ProgramResponse, Program
+from program import ProgramData, ProgramResponse, Program, load_all_programs
 from program import LevelData, LevelResponse, Level
 from camp import CampData, CampResponse, Camp, LevelSchedule, load_all_camps
 
@@ -252,10 +252,13 @@ async def get_programs(request: Request, accept: Optional[str] = Header(None)):
         return templates.TemplateResponse("programs.html", {'request': request})
     else:
         user = get_authorized_user(request, '/programs')
-        program_list = []
-        for program_id in user.program_ids:
-            program = Program(db = app.db, id = program_id)
-            program_list.append(program.dict(include=ProgramResponse().dict()))
+        if 'ADMIN' in user.roles:
+            program_list = load_all_programs(app.db)
+        else:
+            program_list = []
+            for program_id in user.program_ids:
+                program = Program(db = app.db, id = program_id)
+                program_list.append(program.dict(include=ProgramResponse().dict()))
         return program_list
 
 
