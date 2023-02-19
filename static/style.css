@@ -174,7 +174,6 @@ footer {
 .search-box span p { width: 600px; margin: 0; border: none; }
 .search-box span p:focus { outline: 0px solid transparent; }
 
-.rightclickable:hover { background-color: #add; cursor: pointer; }
 .rightclick-box { position: absolute; margin: 0; padding: 0; border: 2px solid #ddd; background-color: white; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 3; }
 .rightclick-box div { margin: 16px; }
 

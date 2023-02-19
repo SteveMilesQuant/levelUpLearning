@@ -7,7 +7,7 @@
       <hr class='h-divider'></hr>
     </div>
     <div>
-      <span><strong>Program Title: </strong><span id='program-title'></span></span>
+      <span><strong>Program: </strong><span id='program-title' class='selectable'></span></span>
     </div>
     <div>
       <span><strong>Instructors: </strong></span>
@@ -71,6 +71,7 @@
     campId = getCampIdStr();
 
     colMeta = [];
+    colMeta.push(new FilterTableColumn('Level', DisplayType.Simple, 'list_index', null, false));
     colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'title', null, true));
     colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'levelSchedule.start_time', null, true));
     colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'levelSchedule.end_time', null, true));
@@ -81,7 +82,6 @@
     http.get('/camps/' + campId).then((camp) => {
       window.camp = camp;
       http.get('/programs/' + camp.program_id).then((program) => {
-        document.getElementById('program-title').innerText = program.title;
         http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
           for (let level of levelList) {
             http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
@@ -90,6 +90,9 @@
             });
           }
         });
+        let programTitle = document.getElementById('program-title');
+        programTitle.innerText = program.title;
+        programTitle.onclick = function () {  window.open('/programs/' + program.id, '_blank'); }
       });
 
       http.get('/camps/' + campId + '/instructors').then((instructorList) => {
@@ -107,7 +110,7 @@
         window.allInstructorsList.appendValue(instructor.id, instructor.full_name + ' (' + instructor.primary_email_address + ')');
       }
     });
-    
+
     document.addEventListener('click', function (event) {
       let contextmenu = document.getElementById('instructor-rightclick');
       contextmenu.hidden = true;
@@ -198,9 +201,10 @@
     let instructorBox = document.getElementById('instructors-box');
 
     let box = document.createElement('div');
-    box.classList.add('rightclickable');
+    box.classList.add('selectable');
     box.innerText = instructor.full_name + ' (' + instructor.primary_email_address + ')';
     box.instructor = instructor;
+    box.onclick = function () { window.open('/insructors/' + instructor.id, '_blank'); }
     if (instructor.is_primary) instructorBox.primaryInstructorBox = box;
     box.addEventListener('contextmenu', function (event) {
       event.preventDefault();
