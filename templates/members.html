@@ -27,7 +27,7 @@
     http.get('/roles').then((rolesList) => {
       colMeta = [];
       colMeta.push(new FilterTableColumn('Name', DisplayType.Simple, 'full_name', null, true));
-      colMeta.push(new FilterTableColumn('Email', DisplayType.Simple, 'primary_email', null, true));
+      colMeta.push(new FilterTableColumn('Email', DisplayType.Simple, 'primary_email_address', null, true));
       for (const role of rolesList) {
         let displayName = role.name.toLowerCase();
         displayName =  displayName.charAt(0).toUpperCase() + displayName.substring(1, displayName.length);
