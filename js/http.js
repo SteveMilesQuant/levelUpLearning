@@ -5,9 +5,10 @@ class EasyHTTP {
         window.location.href = url;
     }
 
-    async get(url, id = null) {
+    async get(url, id = null, queryParams = null) {
         let tgtUrl = url
-        if (id) { tgtUrl += '/' + id }
+        if (id) tgtUrl += '/' + id;
+        if (queryParams) tgtUrl += '?' + queryParams;
         const response = await fetch(tgtUrl, {
             method: 'GET',
             headers: {

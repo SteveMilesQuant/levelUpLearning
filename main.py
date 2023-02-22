@@ -252,7 +252,7 @@ async def get_programs(request: Request, accept: Optional[str] = Header(None)):
         return templates.TemplateResponse("programs.html", {'request': request})
     else:
         user = get_authorized_user(request, '/programs')
-        if 'ADMIN' in user.roles:
+        if request.query_params.get('getAll') == 'true' and 'ADMIN' in user.roles:
             program_list = load_all_programs(app.db)
         else:
             program_list = []
