@@ -74,9 +74,7 @@
     let searchBox = document.getElementById('search-box-text');
     window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, searchBox); // -1 for row shift - we have one extra final static row for "Add Program"
 
-    http.get('/programs', null, new URLSearchParams({ getAll: true })).then((programList) => {
-      for (const program of programList) addProgramToTable(program);
-    });
+    http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
   }
 
   function resetNewProgram() {
