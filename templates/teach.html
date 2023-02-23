@@ -1,13 +1,65 @@
 {% extends 'base.html' %}
 
 {% block content %}
-	<p>You are an instructor viewing and editing the camps you are currently teaching.</p>
+  <div class='content-body'>
+    <div><h1>Camps I'm Teaching</h1></div>
+    <div class='search-box'>
+      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><p contenteditable=true id='search-box-text'></p></span>
+      <span><button class='selectable' onclick='window.userTable.resetSearchBox();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
+    </div>
+    <div><table id='camps-table'>
+      <!-- Camps table rows inserted here -->
+    </table></div>
+  </div>
 {% endblock %}
 
 {% block script %}
+<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script>
-  window.onload = function () {
+  // One-time setup
+  window.onload = function() {
     commonOnLoad();
+
+    colMeta = [];
+    colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'program.title', null, true));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'first_level_schedule.start_time', null, true));
+
+    let htmlTable = document.getElementById('camps-table');
+    let tableSearchBox = document.getElementById('search-box-text');
+    window.userTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox);
+
+    http.get('/camps').then((campList) => {
+      for (let camp of campList) {
+        http.get('/programs/' + camp.program_id).then((program) => {
+          camp.program = program;
+          http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+            http.get('/camps/' + camp.id + '/levels/' + levelList[0].id).then((firstLevelSchedule) => {
+              camp.first_level_schedule = firstLevelSchedule;
+              http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
+                camp.primary_instructor = instructor;
+                addCampToTable(camp);
+              });
+            });
+          });
+        });
+      }
+    });
+  }
+
+  function addCampToTable(camp) {
+    let newRow = window.userTable.appendRow(camp);
+    newRow.classList.add('selectable');
+    newRow.campId = camp.id;
+
+    commonOnClick = function() {
+      row = this.parentNode;
+      window.open('/teach/' + row.campId, '_blank');
+    };
+    for (let col of newRow.childNodes) col.onclick = commonOnClick;
   }
 </script>
 {% endblock %}

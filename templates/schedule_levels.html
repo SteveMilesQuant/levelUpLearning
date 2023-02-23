@@ -125,8 +125,8 @@
   function addLevelToTable(level) {
     let campId = window.camp.id;
     let newRow = window.userTable.appendRow(level);
-    let startTime = newRow.cells[1].firstChild;
-    let endTime = newRow.cells[2].firstChild;
+    let startTime = newRow.cells[2].firstChild;
+    let endTime = newRow.cells[3].firstChild;
 
     // Add edit/confirm/cancel buttons off the right side
     let newCol = newRow.insertCell();

@@ -48,7 +48,7 @@ class UserResponse(UserData):
 
 class UserResponseForAdmin(UserResponse):
     primary_email_address: Optional[str]
-    
+
 
 class User(UserResponseForAdmin):
     google_id: Optional[int]
@@ -56,6 +56,7 @@ class User(UserResponseForAdmin):
     email_addresses: Optional[List[str]] = []
     student_ids: Optional[List[int]] = []
     program_ids: Optional[List[int]] = []
+    camp_ids: Optional[List[int]] = []
 
     def _load(self, db: Any) -> bool:
         if self.id is None:
@@ -119,6 +120,14 @@ class User(UserResponseForAdmin):
         '''
         result = execute_read(db, select_stmt)
         self.program_ids = [row['program_id'] for row in result or []]
+
+        select_stmt = f'''
+            SELECT camp_id
+                FROM camp_x_instructors
+                WHERE instructor_id = {self.id}
+        '''
+        result = execute_read(db, select_stmt)
+        self.camp_ids = [row['camp_id'] for row in result or []]
         return True
 
     def _create(self, db: Any):

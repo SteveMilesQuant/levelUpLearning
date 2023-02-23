@@ -242,8 +242,21 @@ async def delete_student(request: Request, student_id: int):
 
 
 @api_router.get("/teach")
-async def get_teach_page(request: Request):
-    return templates.TemplateResponse("teach.html", {'request': request})
+async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
+    if "text/html" in accept:
+        return templates.TemplateResponse("teach.html", {'request': request})
+    else:
+        user = get_authorized_user(request, '/teach')
+        camp_list = []
+        for camp_id in user.camp_ids:
+            camp = Camp(db = app.db, id = camp_id)
+            camp_list.append(camp.dict(include=CampResponse().dict()))
+        return camp_list
+
+
+@api_router.get("/teach/{camp_id}", response_class = HTMLResponse)
+async def get_teach_one(request: Request):
+    return templates.TemplateResponse("teach_levels.html", {'request': request})
 
 
 @api_router.get("/programs")

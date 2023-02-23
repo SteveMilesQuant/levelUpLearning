@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <span class='content-body'>
+    <div>
+      <h1><span>Camp</span></h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <div>
+      <span><strong>Program: </strong><span id='program-title' class='selectable'></span></span>
+    </div>
+    <div>
+      <span><strong>Instructors: </strong></span>
+    </div>
+    <div id='instructors-box' class='listbox'>
+      <!-- List of instructors assigned to this camp here -->
+    </div>
+    <div>
+      <span><strong>Enrolled students: </strong></span>
+    </div>
+    <div id='students-box' class='listbox'>
+      <!-- List of students enrolled in this camp here -->
+      <div><p>(None)</p></div>
+    </div>
+  </span>
+  <span class='content-body'>
+    <div class='content-item'><h1>Schedule</h1><hr class='h-divider'></hr></div>
+    <div class='content-item'><table id='levels-table'>
+      <!-- Levels table rows inserted here -->
+    </table></div>
+  </span>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
+<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script>
+  // One-time setup
+  window.onload = function() {
+    commonOnLoad();
+
+    campId = getCampIdStr();
+
+    colMeta = [];
+    colMeta.push(new FilterTableColumn('Level', DisplayType.Simple, 'list_index', null, false));
+    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'title', null, true));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'levelSchedule.start_time', null, true));
+    colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'levelSchedule.end_time', null, true));
+
+    let htmlTable = document.getElementById('levels-table');
+    window.userTable = new FilterTable(colMeta, htmlTable, 0, null, null);
+
+    http.get('/camps/' + campId).then((camp) => {
+      window.camp = camp;
+      http.get('/programs/' + camp.program_id).then((program) => {
+        http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+          for (let level of levelList) {
+            http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
+              level.levelSchedule = levelSchedule;
+              addLevelToTable(level);
+            });
+          }
+        });
+        let programTitle = document.getElementById('program-title');
+        programTitle.innerText = program.title;
+        programTitle.onclick = function () {  window.open('/programs/' + program.id, '_blank'); }
+      });
+
+      http.get('/camps/' + campId + '/instructors').then((instructorList) => {
+        for (const instructor of instructorList) {
+          addInstructorToList(instructor);
+        }
+      });
+    });
+  }
+
+  function getCampIdStr() {
+    const urlAsArray = document.URL.split("/");
+    return urlAsArray[urlAsArray.indexOf("teach")+1];
+  }
+
+  function addLevelToTable(level) {
+    let newRow = window.userTable.appendRow(level);
+  }
+
+  function addInstructorToList(instructor) {
+    let instructorBox = document.getElementById('instructors-box');
+
+    let box = document.createElement('div');
+    box.classList.add('selectable');
+    box.innerText = instructor.full_name + ' (' + instructor.primary_email_address + ')';
+    box.instructor = instructor;
+    box.onclick = function () { window.open('/insructors/' + instructor.id, '_blank'); }
+    if (instructor.is_primary) instructorBox.primaryInstructorBox = box;
+    box.addEventListener('contextmenu', function (event) {
+      event.preventDefault();
+
+      let contextmenu = document.getElementById('instructor-rightclick');
+      contextmenu.hidden = false;
+      contextmenu.style.left = event.x + 'px';
+      contextmenu.style.top = event.y + 'px';
+      let instructor = box.instructor;
+
+      let makePrimaryBox = contextmenu.firstElementChild;
+      makePrimaryBox.instructor = instructor;
+      if (instructor.is_primary) {
+        makePrimaryBox.hidden = true;
+      }
+      else {
+        makePrimaryBox.hidden = false;
+        makePrimaryBox.onclick = function () {
+          let instructorBox = document.getElementById('instructors-box');
+          let campId = window.camp.id;
+          let programId = window.camp.program_id;
+          let campData = new CampData(programId, this.instructor.id);
+          http.put('/camps', campId, campData).then((camp) => {
+            window.camp = camp;
+            instructorBox.primaryInstructorBox.instructor.is_primary = false;
+            instructor.is_primary = true;
+            instructorBox.primaryInstructorBox = this;
+          });
+
+          let contextmenu = document.getElementById('instructor-rightclick');
+          contextmenu.hidden = true;
+        }
+      }
+
+      let deleteBox = contextmenu.lastElementChild;
+      deleteBox.instructor = instructor;
+      deleteBox.onclick = function () {
+        let campId = window.camp.id;
+        http.delete('/camps/' + campId + '/instructors', this.instructor.id);
+        box.remove();
+
+        let contextmenu = document.getElementById('instructor-rightclick');
+        contextmenu.hidden = true;
+      }
+
+      return false;
+    }, false);
+    instructorBox.insertBefore(box, instructorBox.lastElementChild);
+  }
+</script>
+{% endblock %}
