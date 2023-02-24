@@ -72,6 +72,7 @@
     colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'program.title', null, true));
     colMeta.push(new FilterTableColumn('Primary Instructor', DisplayType.Simple, 'primary_instructor.full_name', FilterType.CheckBoxes, true));
     colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'first_level_schedule.start_time', null, true));
+    colMeta.push(new FilterTableColumn('Published?', DisplayType.Boolean, 'is_published', FilterType.CheckBoxes, false));
 
     let htmlTable = document.getElementById('camps-table');
     let sidebar = document.getElementById('sidebar');
@@ -163,7 +164,7 @@
 
     // TODO: create requirement for these values
     if (selectedProgram && selectedInstructor) {
-      campData = new CampData(selectedProgram.id, selectedInstructor.id);
+      campData = new CampData(selectedProgram.id, selectedInstructor.id, false);
       firstLevelScheduleData = new LevelSchedule(startDateTime, null);
       http.post('/camps', campData).then((camp) => {
         http.get('/programs/' + camp.program_id).then((program) => {

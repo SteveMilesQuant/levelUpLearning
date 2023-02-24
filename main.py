@@ -493,7 +493,8 @@ async def post_new_camp(request: Request, new_camp_data: CampData):
         db = app.db,
         id = None,
         program_id = new_camp_data.program_id,
-        primary_instructor_id = new_camp_data.primary_instructor_id
+        primary_instructor_id = new_camp_data.primary_instructor_id,
+        is_published = new_camp_data.is_published,
     )
     if new_camp.id is None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new camp failed")
@@ -511,6 +512,9 @@ async def put_update_camp(request: Request, camp_id: int, updated_camp_data: Cam
     if updated_camp_data.primary_instructor_id not in camp.instructor_ids:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={updated_camp_data.primary_instructor_id} does not exist for camp id={camp_id}")
     camp.make_instructor_primary(db = app.db, instructor_id = updated_camp_data.primary_instructor_id)
+    if camp.is_published != updated_camp_data.is_published:
+        camp.is_published = updated_camp_data.is_published
+        await camp.update_basic(db = app.db)
     return camp
 
 

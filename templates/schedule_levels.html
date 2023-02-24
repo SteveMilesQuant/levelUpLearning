@@ -16,6 +16,14 @@
       <!-- List of instructors assigned to this camp here -->
       <div class='selectable' onclick='unhide("add-instructor");'><p>+ Add Instructor</p></div>
     </div>
+    <div>
+      <button class='selectable' onclick="if (confirm('Are you sure you want to publish this camp?')) publishCamp(true);" id='camp-publish'>
+        <span><strong>Publish Camp for Enrollment</strong></span>
+      </button>
+      <button class='selectable' onclick="if (confirm('Are you sure you want to unpublish this camp?')) publishCamp(false);" id='camp-unpublish'>
+        <span><strong>Unpublish Camp</strong></span>
+      </button>
+    </div>
     <div id='camp-delete'>
       <button class='selectable' onclick="confirmDeleteCamp();">
         <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
@@ -81,6 +89,14 @@
 
     http.get('/camps/' + campId).then((camp) => {
       window.camp = camp;
+      if (camp.is_published) {
+        unhide('camp-unpublish');
+        hide('camp-publish');
+      }
+      else {
+        hide('camp-unpublish');
+        unhide('camp-publish');
+      }
       http.get('/programs/' + camp.program_id).then((program) => {
         http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
           for (let level of levelList) {
@@ -225,8 +241,9 @@
         makePrimaryBox.onclick = function () {
           let instructorBox = document.getElementById('instructors-box');
           let campId = window.camp.id;
+          let isPublished = window.camp.is_published;
           let programId = window.camp.program_id;
-          let campData = new CampData(programId, this.instructor.id);
+          let campData = new CampData(programId, this.instructor.id, isPublished);
           http.put('/camps', campId, campData).then((camp) => {
             window.camp = camp;
             instructorBox.primaryInstructorBox.instructor.is_primary = false;
@@ -253,6 +270,24 @@
       return false;
     }, false);
     instructorBox.insertBefore(box, instructorBox.lastElementChild);
+  }
+
+  function publishCamp(isPublished) {
+    let campId = window.camp.id;
+    let programId = window.camp.program_id;
+    let primaryInstructorId = window.camp.primary_instructor_id;
+    let campData = new CampData(programId, primaryInstructorId, isPublished);
+    http.put('/camps', campId, campData).then((camp) => {
+      window.camp = camp;
+      if (camp.is_published) {
+        unhide('camp-unpublish');
+        hide('camp-publish');
+      }
+      else {
+        hide('camp-unpublish');
+        unhide('camp-publish');
+      }
+    });
   }
 
   function postCampInstructor() {

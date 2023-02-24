@@ -91,6 +91,7 @@ DROP TABLE IF EXISTS camp;
 create table camp (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	program_id INTEGER,
+	is_published BOOL,
 	FOREIGN KEY (program_id) REFERENCES program(id)
 );
 

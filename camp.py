@@ -18,6 +18,7 @@ class LevelSchedule(BaseModel):
 class CampData(BaseModel):
     program_id: Optional[int]
     primary_instructor_id: Optional[int]
+    is_published: Optional[bool]
 
 
 class CampResponse(CampData):
@@ -39,6 +40,7 @@ class Camp(CampResponse):
             return False
         row = result[0] # should only be one
         self.program_id = row['program_id']
+        self.is_published = row['is_published']
 
         select_stmt = f'''
             SELECT instructor_id, is_primary
@@ -86,8 +88,8 @@ class Camp(CampResponse):
 
     def _create(self, db: Any):
         insert_stmt = f'''
-            INSERT INTO camp (program_id)
-                VALUES ({self.program_id});
+            INSERT INTO camp (program_id, is_published)
+                VALUES ({self.program_id}, {self.is_published});
         '''
         self.id = execute_write(db, insert_stmt)
         if self.id is None:
@@ -116,6 +118,14 @@ class Camp(CampResponse):
             self._create(db = db)
         elif not self._load(db = db):
             self.id = None
+
+    async def update_basic(self, db: Any):
+        update_stmt = f'''
+            UPDATE camp
+                SET is_published="{self.is_published}"
+                WHERE id = {self.id};
+        '''
+        execute_write(db, update_stmt)
 
     def delete(self, db: Any):
         delete_stmt = f'''

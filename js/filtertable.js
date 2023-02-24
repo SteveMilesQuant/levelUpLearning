@@ -5,7 +5,8 @@
 const DisplayType = {
     Simple: "Simple",
     Range: "Range",
-    Datetime: "Datetime"
+    Datetime: "Datetime",
+    Boolean: "Boolean"
 };
 
 // Column configuration
@@ -162,7 +163,7 @@ class FilterTable {
             for (let srcColItem of col.sourceCol.split('.')) {
                 srcData = srcData[srcColItem];
             }
-            if (!srcData) srcData = '';
+            if (srcData === null) srcData = '';
 
             // Create a column with this label
             let newCol = newRow.insertCell();
@@ -176,6 +177,9 @@ class FilterTable {
                     newInput.value = srcData;
                     newInput.disabled = true;
                     newCol.appendChild(newInput);
+                    break;
+                case DisplayType.Boolean:
+                    newCol.innerText = (srcData)? 'True' : 'False';
                     break;
                 case DisplayType.Simple:
                 default:
