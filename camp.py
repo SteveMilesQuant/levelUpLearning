@@ -40,7 +40,10 @@ class Camp(CampResponse):
             return False
         row = result[0] # should only be one
         self.program_id = row['program_id']
-        self.is_published = row['is_published']
+        if row['is_published'] == 'True':
+            self.is_published = True
+        else:
+            self.is_published = False
 
         select_stmt = f'''
             SELECT instructor_id, is_primary
