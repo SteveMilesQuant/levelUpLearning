@@ -81,7 +81,7 @@
     let tableSearchBox = document.getElementById('search-box-text');
     window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, tableSearchBox); // -1 for row shift - we have one extra final static row for "Add Camp"
 
-    http.get('/camps').then((campList) => {
+    http.get('/schedule').then((campList) => {
       for (let camp of campList) {
         http.get('/programs/' + camp.program_id).then((program) => {
           camp.program = program;

@@ -185,7 +185,7 @@ footer {
 .listbox div { margin: 16px; }
 .listbox-popup { height: 150px; overflow-y: auto; }
 
-.camp-row { border: 2px solid #ddd; }
+.camp-row { border: 2px solid #ddd; margin-bottom: 24px; }
 .camp-row div { margin: 24px; }
 .camp-row div span { margin-right: 16px; }
 .camp-row div span p { display: inline; }

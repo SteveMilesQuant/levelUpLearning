@@ -40,7 +40,7 @@ class Camp(CampResponse):
             return False
         row = result[0] # should only be one
         self.program_id = row['program_id']
-        if row['is_published'] == 'True':
+        if row['is_published'] == 1 or row['is_published'] == 'True':
             self.is_published = True
         else:
             self.is_published = False
@@ -228,6 +228,18 @@ def load_all_camps(db: Any) -> List[Camp]:
     select_stmt = f'''
         SELECT *
             FROM camp
+    '''
+    result = execute_read(db, select_stmt)
+    for row in result or []:
+        camps.append(Camp(db = db, id = row['id']))
+    return camps
+
+def load_all_published_camps(db: Any) -> List[Camp]:
+    camps = []
+    select_stmt = f'''
+        SELECT *
+            FROM camp
+            WHERE is_published = 1 or is_published = "True"
     '''
     result = execute_read(db, select_stmt)
     for row in result or []:

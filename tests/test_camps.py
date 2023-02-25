@@ -39,8 +39,8 @@ def test_get_camps_html(endpoint: str):
 
 # Test adding camps
 @pytest.mark.parametrize(('camp'), (
-    (CampData(program_id = program.id, primary_instructor_id=app.test.users.admin.id)),
-    (CampData(program_id = program.id, primary_instructor_id=app.test.users.instructor.id)),
+    (CampData(program_id = program.id, primary_instructor_id=app.test.users.admin.id, is_published=True)),
+    (CampData(program_id = program.id, primary_instructor_id=app.test.users.instructor.id, is_published=True)),
 ))
 def test_post_camp(camp: CampData):
     camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
@@ -202,7 +202,7 @@ def test_permission():
     for camp_json in all_camps_json:
         max_camp_id = max(max_camp_id, camp_json['id'])
     bad_camp_id = max_camp_id + 1
-    camp = CampData(program_id = program.id, primary_instructor_id=app.test.users.instructor.id)
+    camp = CampData(program_id = program.id, primary_instructor_id=app.test.users.instructor.id, is_published=True)
     camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
     camp_id = all_camps_json[1]['id']
     camp_error_json = {'detail': f'Camp id={bad_camp_id} not found.'}

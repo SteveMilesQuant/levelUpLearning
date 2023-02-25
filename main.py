@@ -12,7 +12,7 @@ from user import User, UserResponse, UserResponseForAdmin, load_all_roles, load_
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program, load_all_programs
 from program import LevelData, LevelResponse, Level
-from camp import CampData, CampResponse, Camp, LevelSchedule, load_all_camps
+from camp import CampData, CampResponse, Camp, LevelSchedule, load_all_camps, load_all_published_camps
 
 
 class Object(object):
@@ -250,7 +250,8 @@ async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
         camp_list = []
         for camp_id in user.camp_ids:
             camp = Camp(db = app.db, id = camp_id)
-            camp_list.append(camp.dict(include=CampResponse().dict()))
+            if camp.is_published:
+                camp_list.append(camp.dict(include=CampResponse().dict()))
         return camp_list
 
 
@@ -405,7 +406,7 @@ async def get_camps(request: Request, accept: Optional[str] = Header(None)):
         return templates.TemplateResponse("camps.html", {'request': request})
     else:
         user = get_authorized_user(request, '/camps')
-        camps = load_all_camps(db = app.db) # TODO: option to load all or load published
+        camps = load_all_published_camps(db = app.db)
         for i in range(len(camps)):
             camp = camps[i]
             camps[i] = camp.dict(include=CampResponse().dict())
@@ -475,9 +476,17 @@ async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int
 ###############################################################################
 
 
-@api_router.get("/schedule", response_class = HTMLResponse)
-async def get_schedule(request: Request):
-    return templates.TemplateResponse("schedule.html", {'request': request})
+@api_router.get("/schedule")
+async def get_schedule(request: Request, accept: Optional[str] = Header(None)):
+    if "text/html" in accept:
+        return templates.TemplateResponse("schedule.html", {'request': request})
+    else:
+        user = get_authorized_user(request, '/schedule')
+        camps = load_all_camps(db = app.db)
+        for i in range(len(camps)):
+            camp = camps[i]
+            camps[i] = camp.dict(include=CampResponse().dict())
+        return camps
 
 
 @api_router.get("/schedule/{camp_id}", response_class = HTMLResponse)
