@@ -405,7 +405,7 @@ async def get_camps(request: Request, accept: Optional[str] = Header(None)):
         return templates.TemplateResponse("camps.html", {'request': request})
     else:
         user = get_authorized_user(request, '/camps')
-        camps = load_all_camps(db = app.db)
+        camps = load_all_camps(db = app.db) # TODO: option to load all or load published
         for i in range(len(camps)):
             camp = camps[i]
             camps[i] = camp.dict(include=CampResponse().dict())

@@ -42,10 +42,10 @@
     campId = getCampIdStr();
 
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Level', DisplayType.Simple, 'list_index', null, false));
-    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'title', null, true));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'levelSchedule.start_time', null, true));
-    colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'levelSchedule.end_time', null, true));
+    colMeta.push(new FilterTableColumn('Level', DisplayType.Simple, 'tr', 'list_index', null, false));
+    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'tr', 'title', null, true));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'levelSchedule.start_time', null, true));
+    colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'tr', 'levelSchedule.end_time', null, true));
 
     let htmlTable = document.getElementById('levels-table');
     window.userTable = new FilterTable(colMeta, htmlTable, 0, null, null);

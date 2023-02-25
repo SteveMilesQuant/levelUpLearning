@@ -1,14 +1,106 @@
 {% extends 'base.html' %}
 
 {% block content %}
-	<p>You are a guardian finding a camp in which to enroll your students.</p>
+  <span class='sidebar' id='sidebar'>
+    <div>
+      <h1>Filters</h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <!-- Camp filters added here -->
+  </span>
+  <div class='content-body'>
+    <div><h1>Available Camps</h1></div>
+    <div class='search-box'>
+      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><p contenteditable=true id='search-box-text'></p></span>
+      <span><button class='selectable' onclick='window.userTable.resetSearchBox();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
+    </div>
+    <div><div id='camps-table'>
+      <!-- Camps table rows inserted here -->
+    </div></div>
+  </div>
 {% endblock %}
 
 {% block script %}
+<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script>
-  window.onload = function () {
+  // One-time setup
+  window.onload = function() {
     commonOnLoad();
+
+    colMeta = [];
+    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'h2', 'program.title', null, true));
+    colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'span', 'program.tags', FilterType.Tags, true));
+    colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'span', 'program.grade_range', FilterType.IntRange, false));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'span', 'first_level_schedule.start_time', null, true));
+
+    let htmlTable = document.getElementById('camps-table');
+    let sidebar = document.getElementById('sidebar');
+    let tableSearchBox = document.getElementById('search-box-text');
+    window.userTable = new FilterTable(colMeta, htmlTable, 0, sidebar, tableSearchBox);
+
+    http.get('/camps').then((campList) => {
+      for (let camp of campList) {
+        http.get('/programs/' + camp.program_id).then((program) => {
+          camp.program = program;
+          http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+            http.get('/camps/' + camp.id + '/levels/' + levelList[0].id).then((firstLevelSchedule) => {
+              camp.first_level_schedule = firstLevelSchedule;
+              http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
+                camp.primary_instructor = instructor;
+                addCampToTable(camp);
+              });
+            });
+          });
+        });
+      }
+    });
+  }
+
+  function addCampToTable(camp) {
+    let newRow = window.userTable.appendRow(camp);
+    newRow.classList.add('camp-row');
+    newRow.classList.add('selectable');
+    newRow.campId = camp.id;
+
+    let title = newRow.childNodes[0];
+    let tags = newRow.childNodes[1];
+    let grade_range = newRow.childNodes[2];
+    let start_time = newRow.childNodes[3];
+
+    let titleBox = document.createElement('div');
+    newRow.appendChild(titleBox);
+    let hLine = document.createElement('hr');
+    hLine.classList.add('h-divider');
+    titleBox.appendChild(title);
+    titleBox.appendChild(hLine);
+
+    let box = document.createElement('div');
+    box.appendChild(tags);
+    box.appendChild(grade_range);
+    box.appendChild(start_time);
+    newRow.appendChild(box);
+    
+    let label = document.createElement('strong');
+    label.innerText = 'Tags: ';
+    tags.insertBefore(label, tags.lastElementChild);
+    
+    label = document.createElement('strong');
+    label.innerText = 'Grades: ';
+    grade_range.insertBefore(label, grade_range.lastElementChild);
+    
+    label = document.createElement('strong');
+    label.innerText = 'Start time: ';
+    start_time.insertBefore(label, start_time.lastElementChild);
+
+    commonOnClick = function() {
+      row = this.parentNode;
+      window.open('/camps/' + row.campId, '_blank');
+    };
+    for (let col of newRow.childNodes) col.onclick = commonOnClick;
   }
 </script>
 {% endblock %}
-

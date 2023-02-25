@@ -15,6 +15,7 @@ th {
   background-color: lightblue;
   cursor: auto;
 }
+td p { margin: 0; padding: 0; }
 tr:nth-child(even), tr:nth-child(even) td button { background-color: lightcyan; }
 
 .selectable:hover { background-color: #ddd; cursor: pointer; }
@@ -190,4 +191,8 @@ footer {
 .listbox div p { margin: 0; border: none; }
 .listbox-popup { height: 150px; overflow-y: auto; }
 
-
+.camp-row { border: 2px solid #ddd; }
+.camp-row div { margin: 24px; }
+.camp-row div span { margin-right: 16px; }
+.camp-row div span p { margin: 0;  display: inline; }
+.camp-row div span input { margin: 0;  display: inline; }

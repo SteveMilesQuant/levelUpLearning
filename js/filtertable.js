@@ -11,9 +11,10 @@ const DisplayType = {
 
 // Column configuration
 class FilterTableColumn {
-    constructor(label, displayType, sourceCol, filterType, searchable) {
+    constructor(label, displayType, boxType, sourceCol, filterType, searchable) {
         this.label = label;
         this.displayType = displayType;
+        this.boxType = boxType;
         this.sourceCol = sourceCol;
         this.filterType = filterType;
         this.searchable = searchable;
@@ -30,6 +31,7 @@ class FilterTable {
         this.searchBox = searchBox;
         this.rows = [];
         this.filters = Array(colMeta.length).fill(null);
+        this.useTableContainer = (colMeta[0].boxType === 'tr');
 
         // Add keyup event for the search bar to search on searchable columns
         if (searchBox) {
@@ -43,13 +45,17 @@ class FilterTable {
         }
 
         // Create header row
-        let newRow = htmlTable.insertRow(htmlTable.rows.length + insertRowShiftIdx);
+        if (this.useTableContainer) {
+            var newRow = htmlTable.insertRow(htmlTable.rows.length + insertRowShiftIdx);
+        }
         for (let colIdx in colMeta) {
             const col = colMeta[colIdx];
 
-            let newCol = document.createElement('th');
-            newCol.innerHTML = col.label;
-            newRow.appendChild(newCol);
+            if (this.useTableContainer) {
+                let newCol = document.createElement('th');
+                newCol.innerHTML = col.label;
+                newRow.appendChild(newCol);
+            }
 
             // If this column is filterable, set up that filter
             if (col.filterType) {
@@ -118,7 +124,13 @@ class FilterTable {
     // Append a row to this filter table
     // Creates cross-references between filters, rows, and "filter values"
     appendRow(rawRow) {
-        let newRow = this.htmlTable.insertRow(this.htmlTable.rows.length + this.insertRowShiftIdx);
+        if (this.useTableContainer) {
+            var newRow = this.htmlTable.insertRow(this.htmlTable.rows.length + this.insertRowShiftIdx);
+        }
+        else {
+            var newRow = document.createElement('div');
+            this.htmlTable.appendChild(newRow); // don't account for insertRowShiftIdx here
+        }
         this.rows.push(newRow);
 
         // Initialize our special information for this row
@@ -166,10 +178,20 @@ class FilterTable {
             if (srcData === null) srcData = '';
 
             // Create a column with this label
-            let newCol = newRow.insertCell();
+            let newCol = null;
+            let newText = null;
+            if (this.useTableContainer) {
+                newCol = newRow.insertCell();
+            }
+            else {
+                newCol = document.createElement(col.boxType);
+                newRow.appendChild(newCol);
+            }
             switch(col.displayType) {
                 case DisplayType.Range:
-                    newCol.innerText = srcData[0] + ' to ' + srcData[1];
+                    newText = document.createElement('p');
+                    newText.innerText = srcData[0] + ' to ' + srcData[1];
+                    newCol.appendChild(newText);
                     break;
                 case DisplayType.Datetime:
                     let newInput = document.createElement('input');
@@ -179,11 +201,15 @@ class FilterTable {
                     newCol.appendChild(newInput);
                     break;
                 case DisplayType.Boolean:
-                    newCol.innerText = (srcData)? 'True' : 'False';
+                    newText = document.createElement('p');
+                    newText.innerText = (srcData)? 'True' : 'False';
+                    newCol.appendChild(newText);
                     break;
                 case DisplayType.Simple:
                 default:
-                    newCol.innerText = srcData;
+                    newText = document.createElement('p');
+                    newText.innerText = srcData;
+                    newCol.appendChild(newText);
                     break;
             }
 

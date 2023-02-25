@@ -65,9 +65,9 @@
     commonOnLoad();
 
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'title', null, true));
-    colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'tags', FilterType.Tags, true));
-    colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'grade_range', FilterType.IntRange, false));
+    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'tr', 'title', null, true));
+    colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'tr', 'tags', FilterType.Tags, true));
+    colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'tr', 'grade_range', FilterType.IntRange, false));
 
     let htmlTable = document.getElementById('programs-table');
     let sidebar = document.getElementById('sidebar');
