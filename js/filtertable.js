@@ -219,8 +219,8 @@ class FilterTable {
                 if (!newRow.filterValuesByCol[colIdx]) newRow.filterValuesByCol[colIdx] = [];
                 switch(filter.filterType) {
                     case FilterType.CheckBoxes:
-                        let checkBoxValue = filter.filterValues[newCol.innerHTML];
-                        if (!checkBoxValue) checkBoxValue = new CheckBoxValue(newCol.innerHTML, filter, colIdx);
+                        let checkBoxValue = filter.filterValues[newText.innerText];
+                        if (!checkBoxValue) checkBoxValue = new CheckBoxValue(newText.innerText, filter, colIdx);
                         checkBoxValue.appendRow(newRow);
                         break;
                     case FilterType.Tags:

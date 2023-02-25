@@ -3,7 +3,8 @@ html, body { margin: 0px; height: 100%; }
 body { overflow: hidden; }
 h1 { font-size: 20px; }
 h2 { font-size: 18px; }
-p, textarea, input[type=text], input[type=date], input[type=datetime-local], option { font-size: 16px }
+p, textarea, input[type=text], input[type=date], input[type=datetime-local], option { font-size: 16px; margin: 0; }
+a { text-decoration: none; }
 button { border: none; font-size: 16px; background-color: white; }
 
 table { width: 100%; border-collapse: collapse; }
@@ -15,7 +16,6 @@ th {
   background-color: lightblue;
   cursor: auto;
 }
-td p { margin: 0; padding: 0; }
 tr:nth-child(even), tr:nth-child(even) td button { background-color: lightcyan; }
 
 .selectable:hover { background-color: #ddd; cursor: pointer; }
@@ -109,9 +109,8 @@ footer {
 	transition: 0.5s;
 }
 .hamburger-nav div { margin: 32px; }
-.hamburger-nav div a { text-decoration: none; font-size: 18px; }
+.hamburger-nav a { font-size: 18px; }
 .hamburger-nav div div { margin-left: 32px; }
-.hamburger-nav div div a { text-decoration: none; font-size: 18px; }
 
 
 .dropdown {
@@ -140,7 +139,7 @@ footer {
 	right: 16px;
 }
 .dropdown-content div { margin: 16px; }
-.dropdown-content div a { text-decoration: none; font-size: 18px; }
+.dropdown-content div a { font-size: 18px; }
 .dropdown:hover .dropdown-content { display: block; }
 .dropdown:hover .dropdown-button { background-color: #f1f1f1; }
 
@@ -148,23 +147,21 @@ footer {
 .content-container { display: flex; height: 100%; width: 100%; }
 .content { height: 100%; width: 100%; display: flex; margin: 0px; }
 .content-body { height: 100%; margin: 32px; }
-.content-body a { text-decoration: none; }
 .content-body div { margin-top: 32px; margin-left: 32px; }
 .content-body div div { margin: 24px; }
 
 .sidebar { position: relative; top: 6px; height: 90%; min-width: 300px; box-shadow: 0px 4px 16px 3px rgba(0,0,0,0.2); overflow-y: scroll; }
 .sidebar::-webkit-scrollbar { display: none; }
 .sidebar div { margin: 32px; }
-.sidebar div a { text-decoration: none }
 .sidebar div div { margin: 0px; }
-.sidebar div p { margin: 0; font-size: 18px; margin-bottom: 8px; }
+.sidebar div p { font-size: 18px; margin-bottom: 8px; }
 .sidebar div button { margin: 0; font-size: 18px; }
 
 .small-button {height: 16px; width: 16px; }
 
 .pop-up { position: fixed; margin-left: 200px; z-index: 1; top: 128px; background-color: white; border: 2px solid #ddd; padding: 32px; }
 .pop-up div { margin: 16px; }
-.pop-up-textbox p { width: 600px; border: 2px solid #ddd; margin: 0; }
+.pop-up-textbox p { width: 600px; border: 2px solid #ddd; }
 
 .longtext-box { width: 800px; height: 500px; background-color: white; border: 2px solid #ddd; overflow: hidden; resize: none; }
 .longtext-box:focus, .form-input-longtext:focus { outline: none; }
@@ -172,7 +169,7 @@ footer {
 
 .search-box { border: 2px solid #ddd; margin-top: 32px; margin-left: 32px; }
 .search-box span { margin: 4px; display: inline-block; }
-.search-box span p { width: 600px; margin: 0; border: none; }
+.search-box span p { width: 600px; border: none; }
 .search-box span p:focus { outline: 0px solid transparent; }
 
 .rightclick-box { position: absolute; margin: 0; padding: 0; border: 2px solid #ddd; background-color: white; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 3; }
@@ -188,11 +185,11 @@ footer {
 .range-box label { margin: 4px; font-size: 14px; }
 
 .listbox { margin: 0; border: 2px solid #ddd; }
-.listbox div p { margin: 0; border: none; }
+.listbox div p { border: none; }
 .listbox-popup { height: 150px; overflow-y: auto; }
 
 .camp-row { border: 2px solid #ddd; }
 .camp-row div { margin: 24px; }
 .camp-row div span { margin-right: 16px; }
-.camp-row div span p { margin: 0;  display: inline; }
+.camp-row div span p { display: inline; }
 .camp-row div span input { margin: 0;  display: inline; }
