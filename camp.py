@@ -18,7 +18,7 @@ class LevelSchedule(BaseModel):
 class CampData(BaseModel):
     program_id: Optional[int]
     primary_instructor_id: Optional[int]
-    is_published: Optional[bool]
+    is_published: Optional[bool] = False
 
 
 class CampResponse(CampData):
