@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <span class='sidebar' id='sidebar'>
-    <div>
+  <span class='sidebar'>
+    <div class='sidebar-item'>
       <h1>Filters</h1>
       <hr class='h-divider'></hr>
     </div>
-    <!-- Program filters added here -->
+    <div class='sidebar-item' id='filters-box'>
+      <!-- Program filters added here -->
+    </div>
   </span>
   <div class='content-body'>
     <div class='content-item'>
@@ -70,9 +72,9 @@
     colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'tr', 'grade_range', FilterType.IntRange, false));
 
     let htmlTable = document.getElementById('programs-table');
-    let sidebar = document.getElementById('sidebar');
+    let filtersBox = document.getElementById('filters-box');
     let searchBox = document.getElementById('search-box-text');
-    window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, searchBox); // -1 for row shift - we have one extra final static row for "Add Program"
+    window.userTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, searchBox); // -1 for row shift - we have one extra final static row for "Add Program"
 
     http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
   }

@@ -2,13 +2,13 @@
 
 {% block content %}
   <span class='sidebar' id='sidebar'>
-    <div>
+    <div class='sidebar-item'>
       <h1><a class='selectable' href='javascript:"/programs/" + getProgramIdStr();' id='sidebar-program-title'></a></h1>
       <hr class='h-divider'></hr>
     </div>
     <!-- Levels added here -->
-    <div id='add-level-box' class='selectable' onclick="unhide('new-level');"><p>+ Add Level</p></div>
-    <div><a class='selectable' href="/programs"><strong>Back to programs</strong></a></div>
+    <div id='add-level-box' class='sidebar-item selectable' onclick="unhide('new-level');"><p>+ Add Level</p></div>
+    <div class='sidebar-item'><a class='selectable' href="/programs"><strong>Back to programs</strong></a></div>
   </span>
   <span class='content-body' id='program-content-left'>
     <div class='content-item'>
@@ -222,6 +222,7 @@
   function addLevelToSidebar(level) {
     newDiv = document.createElement('div');
     newDiv.classList.add('selectable');
+    newDiv.classList.add('sidebar-item');
     newDiv.onclick = function() { getLevel(level.id); };
     newDiv.id = 'sidebar-level-' + level.id;
 

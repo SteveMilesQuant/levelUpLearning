@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <span class='sidebar' id='sidebar'>
+    <div class='sidebar-item'>
+      <h1 class='selectable' id='program-title'></h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <div class='sidebar-item'>
+      <strong>Levels</strong>
+      <div id='levels-list'>
+        <!-- List of levels listed here -->
+      </div>
+    </div>
+    <div class='sidebar-item'>
+      <span><strong>Instructors</strong></span>
+    </div>
+    <div class='sidebar-item'><div id='instructors-box' class='listbox'>
+      <!-- List of instructors assigned to this camp here -->
+    </div></div>
+  </span>
+  <span class='content-body'>
+  </span>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script>
+  // One-time setup
+  window.onload = function() {
+    commonOnLoad();
+
+    campId = getCampIdStr();
+
+    http.get('/camps/' + campId).then((camp) => {
+      window.camp = camp;
+      http.get('/programs/' + camp.program_id).then((program) => {
+        http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+          for (let level of levelList) {
+            http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
+              level.levelSchedule = levelSchedule;
+            });
+          }
+        });
+        let programTitle = document.getElementById('program-title');
+        programTitle.innerText = program.title;
+      });
+
+      http.get('/camps/' + campId + '/instructors').then((instructorList) => {
+        for (const instructor of instructorList) {
+          addInstructorToList(instructor);
+        }
+      });
+    });
+  }
+
+  function getCampIdStr() {
+    const urlAsArray = document.URL.split("/");
+    return urlAsArray[urlAsArray.indexOf("camps")+1];
+  }
+
+  function addInstructorToList(instructor) {
+    let instructorBox = document.getElementById('instructors-box');
+
+    let box = document.createElement('div');
+    box.classList.add('selectable');
+    box.onclick = function () { window.open('/insructors/' + instructor.id, '_blank'); }
+    if (instructor.is_primary) {
+      instructorBox.insertBefore(box, instructorBox.firstElementChild);
+    }
+    else {
+      instructorBox.appendChild(box);
+    }
+
+    let text = null;
+    if (instructor.is_primary) {
+      text = document.createElement('strong');
+      text.innerText = instructor.full_name + ' (primary)';
+    }
+    else {
+      text = document.createElement('p');
+      text.innerText = instructor.full_name;
+    }
+    
+    box.appendChild(text);
+  }
+
+</script>
+{% endblock %}

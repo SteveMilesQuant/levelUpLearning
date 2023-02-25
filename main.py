@@ -413,13 +413,16 @@ async def get_camps(request: Request, accept: Optional[str] = Header(None)):
         return camps
 
 
-@api_router.get("/camps/{camp_id}", response_model = CampResponse)
-async def get_camp(request: Request, camp_id: int):
-    user = get_authorized_user(request, '/camps')
-    camp = Camp(db = app.db, id = camp_id)
-    if camp.id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-    return camp
+@api_router.get("/camps/{camp_id}")
+async def get_camp(request: Request, camp_id: int, accept: Optional[str] = Header(None)):
+    if "text/html" in accept:
+        return templates.TemplateResponse("camp.html", {'request': request})
+    else:
+        user = get_authorized_user(request, '/camps')
+        camp = Camp(db = app.db, id = camp_id)
+        if camp.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+        return camp.dict(include=CampResponse().dict())
 
 
 @api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelSchedule)

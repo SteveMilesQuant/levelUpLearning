@@ -151,9 +151,7 @@ footer {
 
 .sidebar { position: relative; top: 6px; height: 90%; min-width: 300px; box-shadow: 0px 4px 16px 3px rgba(0,0,0,0.2); overflow-y: scroll; }
 .sidebar::-webkit-scrollbar { display: none; }
-.sidebar div { margin: 32px; }
-.sidebar div div { margin: 0px; }
-.sidebar div p { font-size: 18px; margin-bottom: 8px; }
+.sidebar-item { margin: 32px; }
 
 .small-button {height: 16px; width: 16px; }
 
@@ -163,6 +161,9 @@ footer {
 
 .longtext-box { width: 800px; height: 500px; background-color: white; border: 2px solid #ddd; overflow: hidden; resize: none; }
 .longtext-box:focus, .form-input-longtext:focus { outline: none; }
+
+.filter-box { margin-bottom: 32px; }
+.filter-box div { margin-bottom: 8px; }
 
 .search-box { border: 2px solid #ddd; }
 .search-box span { margin: 4px; display: inline-block; }

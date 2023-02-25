@@ -61,12 +61,15 @@ class FilterTable {
             if (col.filterType) {
                 // Create html container for filter, label, and values
                 let filterBox = document.createElement('div');
+                filterBox.classList.add('filter-box');
                 htmlFilterBox.appendChild(filterBox);
 
                 // Create html for filter title (column name)
+                let filterTitleBox = document.createElement('div');
                 let filterTitle = document.createElement('p');
                 filterTitle.innerText = col.label;
-                filterBox.appendChild(filterTitle);
+                filterTitleBox.appendChild(filterTitle);
+                filterBox.appendChild(filterTitleBox);
 
                 // Initialize filter
                 let newFilter = new Filter(col.filterType, colIdx, filterBox);

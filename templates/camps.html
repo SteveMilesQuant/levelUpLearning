@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <span class='sidebar' id='sidebar'>
-    <div>
+  <span class='sidebar'>
+    <div class='sidebar-item'>
       <h1>Filters</h1>
       <hr class='h-divider'></hr>
     </div>
-    <!-- Camp filters added here -->
+    <div class='sidebar-item' id='filters-box'>
+      <!-- Camp filters added here -->
+    </div>
   </span>
   <div class='content-body'>
     <div class='content-item'><h1>Available Camps</h1></div>
@@ -38,9 +40,9 @@
     colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'span', 'first_level_schedule.start_time', null, true));
 
     let htmlTable = document.getElementById('camps-table');
-    let sidebar = document.getElementById('sidebar');
+    let filtersBox = document.getElementById('filters-box');
     let tableSearchBox = document.getElementById('search-box-text');
-    window.userTable = new FilterTable(colMeta, htmlTable, 0, sidebar, tableSearchBox);
+    window.userTable = new FilterTable(colMeta, htmlTable, 0, filtersBox, tableSearchBox);
 
     http.get('/camps').then((campList) => {
       for (let camp of campList) {

@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-	<span class='sidebar' id='sidebar'>
-    <div>
+	<span class='sidebar'>
+    <div class='sidebar-item'>
       <h1>Filters</h1>
       <hr class='h-divider'></hr>
     </div>
-    <!-- Camp filters added here -->
+    <div class='sidebar-item' id='filters-box'>
+      <!-- Camp filters added here -->
+    </div>
   </span>
   <div class='content-body'>
     <div class='content-item'><h1>Camps</h1></div>
@@ -77,9 +79,9 @@
     colMeta.push(new FilterTableColumn('Published?', DisplayType.Boolean, 'tr', 'is_published', FilterType.CheckBoxes, false));
 
     let htmlTable = document.getElementById('camps-table');
-    let sidebar = document.getElementById('sidebar');
+    let filtersBox = document.getElementById('filters-box');
     let tableSearchBox = document.getElementById('search-box-text');
-    window.userTable = new FilterTable(colMeta, htmlTable, -1, sidebar, tableSearchBox); // -1 for row shift - we have one extra final static row for "Add Camp"
+    window.userTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, tableSearchBox); // -1 for row shift - we have one extra final static row for "Add Camp"
 
     http.get('/schedule').then((campList) => {
       for (let camp of campList) {

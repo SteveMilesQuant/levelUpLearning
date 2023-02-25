@@ -2,12 +2,14 @@
 
 {% block content %}
   <span class='sidebar' id='sidebar'>
-    <div>
+    <div class='sidebar-item'>
       <h1><a class='selectable' href='/students'>My Students</a></h1>
       <hr class='h-divider'></hr>
     </div>
     <!-- Students added here -->
-    <div class='selectable' onclick="unhide('new-student')"><p>+ Add Student</p></div>
+    <div class='sidebar-item'>
+      <div class='selectable' onclick="unhide('new-student')"><p>+ Add Student</p></div>
+    </div>
   </span>
   <span class='content-body' id='content-body-1' hidden>
     <div class='content-item'>
@@ -117,6 +119,7 @@
   function addStudentToSidebar(student) {
     newDiv = document.createElement('div');
     newDiv.classList.add('selectable');
+    newDiv.classList.add('sidebar-item');
     newDiv.onclick = function() { getStudent(student.id); };
 
     newText = document.createElement('p');
