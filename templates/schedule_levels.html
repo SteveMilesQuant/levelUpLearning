@@ -2,21 +2,21 @@
 
 {% block content %}
   <span class='content-body'>
-    <div>
+    <div class='content-item'>
       <h1><span>Camp</span></h1>
       <hr class='h-divider'></hr>
     </div>
-    <div>
+    <div class='content-item'>
       <span><strong>Program: </strong><span id='program-title' class='selectable'></span></span>
     </div>
-    <div>
+    <div class='content-item'>
       <span><strong>Instructors: </strong></span>
     </div>
-    <div id='instructors-box' class='listbox'>
+    <div class='content-item'><div id='instructors-box' class='listbox'>
       <!-- List of instructors assigned to this camp here -->
       <div class='selectable' onclick='unhide("add-instructor");'><p>+ Add Instructor</p></div>
-    </div>
-    <div>
+    </div></div>
+    <div class='content-item'>
       <button class='selectable' onclick="if (confirm('Are you sure you want to publish this camp?')) publishCamp(true);" id='camp-publish'>
         <span><strong>Publish Camp for Enrollment</strong></span>
       </button>
@@ -24,7 +24,7 @@
         <span><strong>Unpublish Camp</strong></span>
       </button>
     </div>
-    <div id='camp-delete'>
+    <div class='content-item' id='camp-delete'>
       <button class='selectable' onclick="confirmDeleteCamp();">
         <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
         <span><strong>Delete Camp</strong></span>

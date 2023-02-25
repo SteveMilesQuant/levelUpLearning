@@ -10,7 +10,7 @@
     <div class='selectable' onclick="unhide('new-student')"><p>+ Add Student</p></div>
   </span>
   <span class='content-body' id='content-body-1' hidden>
-    <div>
+    <div class='content-item'>
       <h1>
         <span>Student Profile</span>
         <span><button class='selectable' id='student-edit' onclick='edit(["student-name", "student-birthdate", "student-grade"]); hide(["student-edit", "student-delete"]); unhide(["student-submit", "student-cancel"]);'>
@@ -25,16 +25,16 @@
       </h1>
       <hr class='h-divider'></hr>
     </div>
-    <div hidden>
+    <div class='content-item' hidden>
       <span><strong>ID: </strong><span id='student-id'></span></span>
     </div>
-    <div>
-      <span><strong>Name: </strong><span class='shorttext-box' id='student-name'></span></span>
+    <div class='content-item'>
+      <span><strong>Name: </strong><span id='student-name'></span></span>
     </div>
-    <div>
+    <div class='content-item'>
       <span><strong>Birthdate: </strong><input type='date' id='student-birthdate'></span>
     </div>
-    <div>
+    <div class='content-item'>
       <span>
         <strong>Current grade level: </strong>
         <select type='select' id='student-grade'>
@@ -45,7 +45,7 @@
         </select>
       </span>
     </div>
-    <div id='student-delete'>
+    <div class='content-item' id='student-delete'>
       <button class='selectable' onclick="if (confirm('Are you sure you want to delete this student?')) { deleteStudent(); }">
         <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
         <span><strong>Delete Student</strong></span>
@@ -54,7 +54,7 @@
   </span>
   <div class="v-divider" id='content-body-2' hidden></div>
   <span class='content-body' id='content-body-3' hidden>
-    <div>
+    <div class='content-item'>
       <h1>Enrolled Camps</h1>
       <hr class='h-divider'></hr>
     </div>

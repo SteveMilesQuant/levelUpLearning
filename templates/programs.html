@@ -9,17 +9,17 @@
     <!-- Program filters added here -->
   </span>
   <div class='content-body'>
-    <div>
+    <div class='content-item'>
       <h1>Programs</h1>
     </div>
-    <div class='search-box'>
+    <div class='content-item'><div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
       <span><button class='selectable' onclick='window.userTable.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
-    </div>
-    <div><table id='programs-table'>
+    </div></div>
+    <div class='content-item'><table id='programs-table'>
       <tr class='selectable' onclick='unhide("new-program");'><td>+ Add Program</td></tr>
     </table></div>
   </div>

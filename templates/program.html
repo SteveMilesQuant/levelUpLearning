@@ -11,7 +11,7 @@
     <div><a class='selectable' href="/programs"><strong>Back to programs</strong></a></div>
   </span>
   <span class='content-body' id='program-content-left'>
-    <div>
+    <div class='content-item'>
       <h1>
         <span>Program</span>
         <span><button class='selectable' id='program-edit' onclick='edit(["program-title", "program-tags", "program-from-grade", "program-to-grade", "program-description"]); hide(["program-edit", "program-delete"]); unhide(["program-submit", "program-cancel"]);'>
@@ -26,16 +26,16 @@
       </h1>
       <hr class='h-divider'></hr>
     </div>
-    <div hidden>
+    <div class='content-item' hidden>
       <span><strong>ID: </strong><span id='program-id'></span></span>
     </div>
-    <div>
+    <div class='content-item'>
       <span><strong>Title: </strong><span id='program-title'></span></span>
     </div>
-    <div>
+    <div class='content-item'>
       <span><strong>Tags: </strong><span id='program-tags'></span></span>
     </div>
-    <div>
+    <div class='content-item'>
       <strong>Grade range: </strong>
       <select type='select' id='program-from-grade'>
         <option value="0">K</option>
@@ -51,7 +51,7 @@
         {% endfor %}
       </select>
     </div>
-    <div id='program-delete'>
+    <div class='content-item' id='program-delete'>
       <button class='selectable' onclick="confirmDeleteProgram();">
         <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
         <span><strong>Delete Program</strong></span>
@@ -59,7 +59,7 @@
     </div>
   </span>
   <span class='content-body' id='level-content-left' hidden>
-    <div>
+    <div class='content-item'>
       <h1>
         <span id='level-header-text'>Level X</span>
         <span><button class='selectable' id='level-edit' onclick='edit(["level-title", "level-list-index", "level-description"]); hide(["level-edit", "level-delete"]); unhide(["level-submit", "level-cancel"]);'>
@@ -74,19 +74,19 @@
       </h1>
       <hr class='h-divider'></hr>
     </div>
-    <div hidden>
+    <div class='content-item' hidden>
       <span><strong>ID: </strong><span id='level-id'></span></span>
     </div>
-    <div>
+    <div class='content-item'>
       <span><strong>Title: </strong><span id='level-title'></span></span>
     </div>
-    <div>
+    <div class='content-item'>
       <strong>Index: </strong>
       <select type='select' id='level-list-index'>
         <option value="1">1</option>
       </select>
     </div>
-    <div id='level-delete'>
+    <div class='content-item' id='level-delete'>
       <button class='selectable' onclick="confirmDeleteLevel();">
         <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
         <span><strong>Delete Level</strong></span>
@@ -95,18 +95,18 @@
   </span>
   <div class="v-divider"></div>
   <span class='content-body' id='program-content-right'>
-    <div>
+    <div class='content-item'>
       <strong>Description: </strong>
     </div>
-    <div>
+    <div class='content-item'>
       <textarea wrap='soft' class='longtext-box' id='program-description'></textarea>
     </div>
   </span>
   <span class='content-body' id='level-content-right' hidden>
-    <div>
+    <div class='content-item'>
       <strong>Description: </strong>
     </div>
-    <div>
+    <div class='content-item'>
       <textarea wrap='soft' class='longtext-box' id='level-description'></textarea>
     </div>
   </span>

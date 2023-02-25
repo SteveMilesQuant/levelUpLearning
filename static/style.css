@@ -147,8 +147,7 @@ footer {
 .content-container { display: flex; height: 100%; width: 100%; }
 .content { height: 100%; width: 100%; display: flex; margin: 0px; }
 .content-body { height: 100%; margin: 32px; }
-.content-body div { margin-top: 32px; margin-left: 32px; }
-.content-body div div { margin: 24px; }
+.content-item { margin-top: 32px; margin-left: 32px; }
 
 .sidebar { position: relative; top: 6px; height: 90%; min-width: 300px; box-shadow: 0px 4px 16px 3px rgba(0,0,0,0.2); overflow-y: scroll; }
 .sidebar::-webkit-scrollbar { display: none; }
@@ -164,9 +163,8 @@ footer {
 
 .longtext-box { width: 800px; height: 500px; background-color: white; border: 2px solid #ddd; overflow: hidden; resize: none; }
 .longtext-box:focus, .form-input-longtext:focus { outline: none; }
-.shorttext-box { border: 2px solid #ddd; padding-left: 5px; padding-right: 5px; padding-top: 2px; padding-bottom: 2px; }
 
-.search-box { border: 2px solid #ddd; margin-top: 32px; margin-left: 32px; }
+.search-box { border: 2px solid #ddd; }
 .search-box span { margin: 4px; display: inline-block; }
 .search-box span p { width: 600px; border: none; }
 .search-box span p:focus { outline: 0px solid transparent; }
@@ -183,12 +181,11 @@ footer {
 .range-box input { margin: 4px; font-size: 14px; }
 .range-box label { margin: 4px; font-size: 14px; }
 
-.listbox { margin: 0; border: 2px solid #ddd; }
-.listbox div p { border: none; }
+.listbox { border: 2px solid #ddd; }
+.listbox div { margin: 16px; }
 .listbox-popup { height: 150px; overflow-y: auto; }
 
 .camp-row { border: 2px solid #ddd; }
 .camp-row div { margin: 24px; }
 .camp-row div span { margin-right: 16px; }
 .camp-row div span p { display: inline; }
-.camp-row div span input { margin: 0;  display: inline; }

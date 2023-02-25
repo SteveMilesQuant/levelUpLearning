@@ -2,26 +2,28 @@
 
 {% block content %}
   <span class='content-body'>
-    <div>
+    <div class='content-item'>
       <h1><span>Camp</span></h1>
       <hr class='h-divider'></hr>
     </div>
-    <div>
+    <div class='content-item'>
       <span><strong>Program: </strong><span id='program-title' class='selectable'></span></span>
     </div>
-    <div>
+    <div class='content-item'>
       <span><strong>Instructors: </strong></span>
     </div>
-    <div id='instructors-box' class='listbox'>
-      <!-- List of instructors assigned to this camp here -->
+    <div class='content-item'>
+      <div id='instructors-box' class='listbox'>
+        <!-- List of instructors assigned to this camp here -->
+      </div>
     </div>
-    <div>
+    <div class='content-item'>
       <span><strong>Enrolled students: </strong></span>
     </div>
-    <div id='students-box' class='listbox'>
+    <div class='content-item'><div id='students-box' class='listbox'>
       <!-- List of students enrolled in this camp here -->
       <div><p>(None)</p></div>
-    </div>
+    </div></div>
   </span>
   <span class='content-body'>
     <div class='content-item'><h1>Schedule</h1><hr class='h-divider'></hr></div>

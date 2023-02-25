@@ -2,17 +2,17 @@
 
 {% block content %}
 	<span class='content-body'>
-    <div>
+    <div class='content-item'>
       <h1><span>Members</span></h1>
     </div>
-    <div class='search-box'>
+    <div class='content-item'><div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
       <span><button class='selectable' onclick='window.userTable.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </button></span>
-    </div>
-    <div><table id='members-table'>
+    </div></div>
+    <div class='content-item'><table id='members-table'>
       <!-- Member table rows inserted here -->
     </table></div>
   </div>
