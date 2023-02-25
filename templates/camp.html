@@ -3,23 +3,50 @@
 {% block content %}
   <span class='sidebar' id='sidebar'>
     <div class='sidebar-item'>
-      <h1 class='selectable' id='program-title'></h1>
+      <h1 id='program-title'></h1>
       <hr class='h-divider'></hr>
     </div>
     <div class='sidebar-item'>
-      <strong>Levels</strong>
-      <div id='levels-list'>
+      <h2>Levels</h2>
+      <div class='listbox' id='levels-list'>
         <!-- List of levels listed here -->
       </div>
     </div>
     <div class='sidebar-item'>
-      <span><strong>Instructors</strong></span>
+      <h2>Instructors</h2>
     </div>
     <div class='sidebar-item'><div id='instructors-box' class='listbox'>
       <!-- List of instructors assigned to this camp here -->
     </div></div>
   </span>
   <span class='content-body'>
+    <div class='content-item'>
+      <h2>Description</h2>
+      <hr class='h-divider'></hr>
+    </div>
+    <div class='content-item'>
+      <textarea wrap='soft' class='longtext-box' id='program-description' readonly></textarea>
+    </div>
+    <div class='content-item'>
+      <div><strong>Grade Range: </strong><span id='program-grade-range'></span></div>
+    </div>
+    <div class='content-item'>
+      <div><strong>Tags: </strong><span id='program-tags'></span></div>
+    </div>
+  </span>
+  <div class="v-divider"></div>
+  <span class='content-body'>
+    <div class='content-item'>
+      <h2>Calendar</h2>
+      <hr class='h-divider'></hr>
+    </div>
+    <div class='content-item hidden-level' hidden>
+      <h2 id='level-title'>Level 1</h2>
+      <hr class='h-divider'></hr>
+    </div>
+    <div class='content-item hidden-level' hidden>
+      <textarea wrap='soft' class='longtext-box' id='level-description' readonly></textarea>
+    </div>
   </span>
 {% endblock %}
 
@@ -31,19 +58,27 @@
     commonOnLoad();
 
     campId = getCampIdStr();
+    document.campId = campId;
 
     http.get('/camps/' + campId).then((camp) => {
-      window.camp = camp;
+      document.camp = camp;
       http.get('/programs/' + camp.program_id).then((program) => {
         http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
           for (let level of levelList) {
             http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
-              level.levelSchedule = levelSchedule;
+              addLevelToSidebar(level);
             });
           }
         });
+
         let programTitle = document.getElementById('program-title');
         programTitle.innerText = program.title;
+        let programDesc = document.getElementById('program-description');
+        programDesc.innerText = program.description;
+        let programTags = document.getElementById('program-tags');
+        programTags.innerText = program.tags;
+        let programGradeRange = document.getElementById('program-grade-range');
+        programGradeRange.innerText = program.grade_range[0] + ' to ' + program.grade_range[1];
       });
 
       http.get('/camps/' + campId + '/instructors').then((instructorList) => {
@@ -81,8 +116,43 @@
       text = document.createElement('p');
       text.innerText = instructor.full_name;
     }
-    
+
     box.appendChild(text);
+  }
+
+  function addLevelToSidebar(level) {
+    newDiv = document.createElement('div');
+    newDiv.classList.add('selectable');
+    newDiv.levelId = level.id;
+    newDiv.onclick = function() {
+      let programId = document.camp.program_id;
+      http.get('/programs/' + programId + '/levels/' + this.levelId).then((level) => {
+        displayLevel(level);
+      });
+    };
+    newDiv.id = 'sidebar-level-' + level.id;
+
+    newText = document.createElement('strong');
+    newText.innerText = level.list_index.toString() + ': ' + level.title;
+    newDiv.appendChild(newText);
+
+    levelsList = document.getElementById('levels-list');
+    levelsList.appendChild(newDiv);
+  }
+  
+  function displayLevel(level) {
+    let levelTitle = document.getElementById('level-title');
+    levelTitle.innerText = 'Level ' + level.list_index + ': ' + level.title;
+    let levelDesc = document.getElementById('level-description');
+    levelDesc.innerText = level.description;
+    
+    let elemList = document.getElementsByClassName('hidden-level');
+    for (elem of elemList) {
+      elem.hidden = false;
+    }
+    for (elem of elemList) {
+      elem.classList.remove('hidden-level');
+    }
   }
 
 </script>

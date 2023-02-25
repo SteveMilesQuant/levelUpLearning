@@ -226,7 +226,7 @@
     newDiv.onclick = function() { getLevel(level.id); };
     newDiv.id = 'sidebar-level-' + level.id;
 
-    newText = document.createElement('p');
+    newText = document.createElement('h2');
     newText.innerText = level.list_index.toString() + ': ' + level.title;
     newDiv.appendChild(newText);
 

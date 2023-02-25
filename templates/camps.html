@@ -67,6 +67,9 @@
     newRow.classList.add('camp-row');
     newRow.classList.add('selectable');
     newRow.campId = camp.id;
+    newRow.onclick = function() {
+      window.open('/camps/' + camp.id, '_blank');
+    }
 
     let title = newRow.childNodes[0];
     let tags = newRow.childNodes[1];
@@ -97,12 +100,6 @@
     label = document.createElement('strong');
     label.innerText = 'Start time: ';
     start_time.insertBefore(label, start_time.lastElementChild);
-
-    commonOnClick = function() {
-      row = this.parentNode;
-      window.open('/camps/' + row.campId, '_blank');
-    };
-    for (let col of newRow.childNodes) col.onclick = commonOnClick;
   }
 </script>
 {% endblock %}

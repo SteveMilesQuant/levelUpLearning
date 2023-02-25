@@ -159,7 +159,7 @@ footer {
 .pop-up div { margin: 16px; }
 .pop-up-textbox p { width: 600px; border: 2px solid #ddd; }
 
-.longtext-box { width: 800px; height: 500px; background-color: white; border: 2px solid #ddd; overflow: hidden; resize: none; }
+.longtext-box { width: 600px; height: 250px; background-color: white; border: 2px solid #ddd; overflow: hidden; resize: none; }
 .longtext-box:focus, .form-input-longtext:focus { outline: none; }
 
 .filter-box { margin-bottom: 32px; }
