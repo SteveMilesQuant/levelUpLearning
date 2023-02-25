@@ -6,9 +6,9 @@
     <div class='content-item'><div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
-      <span><button class='selectable' onclick='window.userTable.resetSearchBox();'>
+      <span><span class='selectable' onclick='window.userTable.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
-      </button></span>
+      </span></span>
     </div></div>
     <div class='content-item'><table id='camps-table'>
       <!-- Camps table rows inserted here -->

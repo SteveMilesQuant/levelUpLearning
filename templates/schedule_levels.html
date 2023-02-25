@@ -14,7 +14,7 @@
     </div>
     <div class='content-item'><div id='instructors-box' class='listbox'>
       <!-- List of instructors assigned to this camp here -->
-      <div class='selectable' onclick='unhide("add-instructor");'><p>+ Add Instructor</p></div>
+      <div><button class='selectable' onclick='unhide("add-instructor");'><strong>+ Add Instructor</strong></button></div>
     </div></div>
     <div class='content-item'>
       <button class='selectable' onclick="if (confirm('Are you sure you want to publish this camp?')) publishCamp(true);" id='camp-publish'>
@@ -46,9 +46,9 @@
     <div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='add-instructor-search'></p></span>
-      <span><button class='selectable' onclick='window.allInstructorsList.resetSearchBox();'>
+      <span><span class='selectable' onclick='window.allInstructorsList.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
-      </button></span>
+      </span></span>
     </div>
     <div id='add-instructor-list' class='listbox listbox-popup'>
       <!-- List of all possible instructors inserted here -->

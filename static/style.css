@@ -5,7 +5,7 @@ h1 { font-size: 20px; }
 h2 { font-size: 18px; }
 p, textarea, input[type=text], input[type=date], input[type=datetime-local], option { font-size: 16px; margin: 0; }
 a { text-decoration: none; }
-button { border: none; font-size: 16px; background-color: white; }
+button { background-color: white; box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.2); border: none; }
 
 table { width: 100%; border-collapse: collapse; }
 td, th { border: 1px solid #ddd; padding: 8px; }
@@ -16,7 +16,7 @@ th {
   background-color: lightblue;
   cursor: auto;
 }
-tr:nth-child(even), tr:nth-child(even) td button { background-color: lightcyan; }
+tr:nth-child(even), tr:nth-child(even) td { background-color: lightcyan; }
 
 .selectable:hover { background-color: #ddd; cursor: pointer; }
 .selected { background-color: #ccc; }

@@ -17,12 +17,12 @@
     <div class='content-item'><div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
-      <span><button class='selectable' onclick='window.userTable.resetSearchBox();'>
+      <span><span class='selectable' onclick='window.userTable.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
-      </button></span>
+      </span></span>
     </div></div>
     <div class='content-item'><table id='programs-table'>
-      <tr class='selectable' onclick='unhide("new-program");'><td>+ Add Program</td></tr>
+      <tr><td><button class='selectable' onclick='unhide("new-program");'><strong>+ Add Program</strong></button></td></tr>
     </table></div>
   </div>
   <div class='pop-up' id='new-program' hidden>
@@ -103,7 +103,6 @@
     let newCol = newRow.insertCell();
     let newButton = document.createElement('button');
     newButton.classList.add('selectable');
-    newButton.innerText = 'Delete';
     newButton.onclick = function () {
       let row = this.parentNode.parentNode;
       let programTitle = row.cells[0].innerText;
@@ -113,6 +112,10 @@
       }
     }
     newCol.appendChild(newButton);
+
+    let text = document.createElement('strong');
+    text.innerText = 'Delete';
+    newButton.appendChild(text);
   }
 
   function postProgram() {
