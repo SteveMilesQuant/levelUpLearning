@@ -35,6 +35,7 @@
 
     colMeta = [];
     colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'h2', 'program.title', null, true));
+    colMeta.push(new FilterTableColumn('Primary Instructor', DisplayType.Simple, 'span', 'primary_instructor.full_name', FilterType.CheckBoxes, true));
     colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'span', 'program.tags', FilterType.Tags, true));
     colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'span', 'program.grade_range', FilterType.IntRange, false));
     colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'span', 'first_level_schedule.start_time', null, true));
@@ -72,31 +73,35 @@
     }
 
     let title = newRow.childNodes[0];
-    let tags = newRow.childNodes[1];
-    let grade_range = newRow.childNodes[2];
-    let start_time = newRow.childNodes[3];
+    let instructor = newRow.childNodes[1];
+    let tags = newRow.childNodes[2];
+    let grade_range = newRow.childNodes[3];
+    let start_time = newRow.childNodes[4];
 
-    let titleBox = document.createElement('div');
-    newRow.appendChild(titleBox);
+    instructor.innerText = ' with ' + instructor.innerText;
     let hLine = document.createElement('hr');
     hLine.classList.add('h-divider');
-    titleBox.appendChild(title);
-    titleBox.appendChild(hLine);
+
+    let headerBox = document.createElement('div');
+    headerBox.appendChild(title);
+    headerBox.appendChild(instructor);
+    headerBox.appendChild(hLine);
+    newRow.appendChild(headerBox);
 
     let box = document.createElement('div');
     box.appendChild(tags);
     box.appendChild(grade_range);
     box.appendChild(start_time);
     newRow.appendChild(box);
-    
+
     let label = document.createElement('strong');
     label.innerText = 'Tags: ';
     tags.insertBefore(label, tags.lastElementChild);
-    
+
     label = document.createElement('strong');
     label.innerText = 'Grades: ';
     grade_range.insertBefore(label, grade_range.lastElementChild);
-    
+
     label = document.createElement('strong');
     label.innerText = 'Start time: ';
     start_time.insertBefore(label, start_time.lastElementChild);
