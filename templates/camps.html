@@ -68,15 +68,16 @@
     newRow.classList.add('camp-row');
     newRow.classList.add('selectable');
     newRow.campId = camp.id;
-    newRow.onclick = function() {
-      window.open('/camps/' + camp.id, '_blank');
-    }
 
     let title = newRow.childNodes[0];
     let instructor = newRow.childNodes[1];
     let tags = newRow.childNodes[2];
     let grade_range = newRow.childNodes[3];
     let start_time = newRow.childNodes[4];
+
+    let link = document.createElement('a');
+    link.href = '/camps/' + camp.id;
+    newRow.appendChild(link);
 
     instructor.innerText = ' with ' + instructor.innerText;
     let hLine = document.createElement('hr');
@@ -86,13 +87,13 @@
     headerBox.appendChild(title);
     headerBox.appendChild(instructor);
     headerBox.appendChild(hLine);
-    newRow.appendChild(headerBox);
+    link.appendChild(headerBox);
 
     let box = document.createElement('div');
     box.appendChild(tags);
     box.appendChild(grade_range);
     box.appendChild(start_time);
-    newRow.appendChild(box);
+    link.appendChild(box);
 
     let label = document.createElement('strong');
     label.innerText = 'Tags: ';

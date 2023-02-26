@@ -3,11 +3,8 @@
 {% block content %}
   <span class='content-body'>
     <div class='content-item'>
-      <h1>Camp</h1>
+      <h1 class='selectable'><a id='program-title'/></h1>
       <hr class='h-divider'></hr>
-    </div>
-    <div class='content-item'>
-      <span><strong>Program: </strong><span id='program-title' class='selectable'></span></span>
     </div>
     <div class='content-item'>
       <span><strong>Instructors: </strong></span>
@@ -115,7 +112,7 @@
         });
         let programTitle = document.getElementById('program-title');
         programTitle.innerText = program.title;
-        programTitle.onclick = function () {  window.open('/programs/' + program.id, '_blank'); }
+        programTitle.href = '/programs/' + program.id;
       });
 
       http.get('/camps/' + campId + '/instructors').then((instructorList) => {
@@ -140,7 +137,7 @@
     window.allInstructorsList = new SearchList(htmlInstructorList, instructorSearchBox);
     http.get('/instructors').then((instructorList) => {
       for (const instructor of instructorList) {
-        window.allInstructorsList.appendValue(instructor.id, instructor.full_name + ' (' + instructor.primary_email_address + ')');
+        window.allInstructorsList.appendValue(instructor.id, instructor.full_name);
       }
     });
 
@@ -235,10 +232,13 @@
 
     let box = document.createElement('div');
     box.classList.add('selectable');
-    box.innerText = instructor.full_name + ' (' + instructor.primary_email_address + ')';
+    box.innerText = instructor.full_name;
     box.instructor = instructor;
-    box.onclick = function () { window.open('/insructors/' + instructor.id, '_blank'); }
-    if (instructor.is_primary) instructorBox.primaryInstructorBox = box;
+    box.onclick = function () { http.redirect('/insructors/' + instructor.id); }
+    if (instructor.is_primary) {
+      instructorBox.primaryInstructorBox = box;
+      box.innerText += ' (primary)';
+    }
     box.addEventListener('contextmenu', function (event) {
       event.preventDefault();
 

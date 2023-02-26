@@ -130,16 +130,6 @@
   function addInstructorToList(instructor) {
     let instructorBox = document.getElementById('instructors-box');
 
-    let box = document.createElement('div');
-    box.classList.add('selectable');
-    box.onclick = function () { window.open('/insructors/' + instructor.id, '_blank'); }
-    if (instructor.is_primary) {
-      instructorBox.insertBefore(box, instructorBox.firstElementChild);
-    }
-    else {
-      instructorBox.appendChild(box);
-    }
-
     let text = null;
     if (instructor.is_primary) {
       text = document.createElement('strong');
@@ -150,7 +140,19 @@
       text.innerText = instructor.full_name;
     }
 
-    box.appendChild(text);
+    let link = document.createElement('a');
+    link.classList.add('selectable');
+    link.href = '/insructors/' + instructor.id;
+    link.appendChild(text);
+
+    let box = document.createElement('div');
+    box.appendChild(link);
+    if (instructor.is_primary) {
+      instructorBox.insertBefore(box, instructorBox.firstElementChild);
+    }
+    else {
+      instructorBox.appendChild(box);
+    }
   }
 
   function addLevelToSidebar(level) {
@@ -192,12 +194,12 @@
     hide('enroll-student');
     window.enrollStudentList.reset();
   }
-  
-  
+
+
   function enrollStudent() {
     let campId = window.camp.id;
     let selectedStudent = window.enrollStudentList.selectedRow;
-    
+
     // TODO: create requirement for this value
     if (selectedStudent) {
       http.post('/camps/' + campId + '/students/' + selectedStudent.id, null).then((student) => {

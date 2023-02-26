@@ -128,7 +128,7 @@
 
     commonOnClick = function() {
       row = this.parentNode;
-      window.open('/schedule/' + row.campId, '_blank');
+      http.redirect('/schedule/' + row.campId);
     };
     for (let col of newRow.childNodes) col.onclick = commonOnClick;
 

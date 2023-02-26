@@ -7,7 +7,7 @@
       <hr class='h-divider'></hr>
     </div>
     <div class='content-item'>
-      <span><strong>Program: </strong><span id='program-title' class='selectable'></span></span>
+      <span><strong>Program: </strong><span class='selectable'><a id='program-title'/></span></span>
     </div>
     <div class='content-item'>
       <span><strong>Instructors: </strong></span>
@@ -66,7 +66,7 @@
         });
         let programTitle = document.getElementById('program-title');
         programTitle.innerText = program.title;
-        programTitle.onclick = function () {  window.open('/programs/' + program.id, '_blank'); }
+        programTitle.href = '/programs/' + program.id;
       });
 
       http.get('/camps/' + campId + '/instructors').then((instructorList) => {
@@ -99,59 +99,14 @@
   function addInstructorToList(instructor) {
     let instructorBox = document.getElementById('instructors-box');
 
+    let link = document.createElement('a');
+    link.innerText = instructor.full_name + ' (' + instructor.primary_email_address + ')';
+    link.href = '/insructors/' + instructor.id;
+
     let box = document.createElement('div');
     box.classList.add('selectable');
-    box.innerText = instructor.full_name + ' (' + instructor.primary_email_address + ')';
-    box.instructor = instructor;
-    box.onclick = function () { window.open('/insructors/' + instructor.id, '_blank'); }
-    if (instructor.is_primary) instructorBox.primaryInstructorBox = box;
-    box.addEventListener('contextmenu', function (event) {
-      event.preventDefault();
-
-      let contextmenu = document.getElementById('instructor-rightclick');
-      contextmenu.hidden = false;
-      contextmenu.style.left = event.x + 'px';
-      contextmenu.style.top = event.y + 'px';
-      let instructor = box.instructor;
-
-      let makePrimaryBox = contextmenu.firstElementChild;
-      makePrimaryBox.instructor = instructor;
-      if (instructor.is_primary) {
-        makePrimaryBox.hidden = true;
-      }
-      else {
-        makePrimaryBox.hidden = false;
-        makePrimaryBox.onclick = function () {
-          let instructorBox = document.getElementById('instructors-box');
-          let campId = window.camp.id;
-          let programId = window.camp.program_id;
-          let campData = new CampData(programId, this.instructor.id);
-          http.put('/camps', campId, campData).then((camp) => {
-            window.camp = camp;
-            instructorBox.primaryInstructorBox.instructor.is_primary = false;
-            instructor.is_primary = true;
-            instructorBox.primaryInstructorBox = this;
-          });
-
-          let contextmenu = document.getElementById('instructor-rightclick');
-          contextmenu.hidden = true;
-        }
-      }
-
-      let deleteBox = contextmenu.lastElementChild;
-      deleteBox.instructor = instructor;
-      deleteBox.onclick = function () {
-        let campId = window.camp.id;
-        http.delete('/camps/' + campId + '/instructors', this.instructor.id);
-        box.remove();
-
-        let contextmenu = document.getElementById('instructor-rightclick');
-        contextmenu.hidden = true;
-      }
-
-      return false;
-    }, false);
-    instructorBox.insertBefore(box, instructorBox.lastElementChild);
+    box.appendChild(link);
+    instructorBox.appendChild(box);
   }
 
   function addStudentToList(student) {

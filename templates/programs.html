@@ -95,7 +95,7 @@
 
     commonOnClick = function() {
       row = this.parentNode;
-      window.open('/programs/' + row.programId, '_blank');
+      http.redirect('/programs/' + row.programId);
     };
     for (let col of newRow.childNodes) col.onclick = commonOnClick;
 
@@ -134,7 +134,7 @@
         resetNewProgram();
         addProgramToTable(program);
         http.post('/programs/' + program.id + '/levels', levelData).then((firstLevel) => {
-          window.open('/programs/' + program.id, '_blank');
+          http.redirect('/programs/' + program.id);
         });
       });
     }
