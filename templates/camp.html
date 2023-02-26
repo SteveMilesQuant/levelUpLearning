@@ -18,6 +18,9 @@
     <div class='sidebar-item'><div id='instructors-box' class='listbox'>
       <!-- List of instructors assigned to this camp here -->
     </div></div>
+    <div class='sidebar-item'>
+      <button class='selectable big-button' onclick='unhide("enroll-student");'><h2>Enroll Student</h2></button>
+    </div>
   </span>
   <span class='content-body'>
     <div class='content-item'>
@@ -48,9 +51,28 @@
       <textarea wrap='soft' class='longtext-box' id='level-description' readonly></textarea>
     </div>
   </span>
+  <div class='pop-up' id='enroll-student' hidden>
+    <div>
+      <h1>Enroll Student</h1>
+      <hr class='h-divider'></hr>
+    </div>
+    <div><strong>Camp grade range </strong><strong id='enroll-camp-grade-range'></strong></div>
+    <div id='enroll-student-list' class='listbox listbox-popup'>
+      <!-- List of all possible students inserted here -->
+    </div>
+    <div>
+      <span><button class='selectable' onclick='enrollStudent(); resetEnrollStudent();'>
+        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+      </button></span>
+      <span><button class='selectable' onclick='resetEnrollStudent();'>
+        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+      </button></span>
+    </div>
+  </div>
 {% endblock %}
 
 {% block script %}
+<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script>
   // One-time setup
@@ -58,10 +80,9 @@
     commonOnLoad();
 
     campId = getCampIdStr();
-    document.campId = campId;
 
     http.get('/camps/' + campId).then((camp) => {
-      document.camp = camp;
+      window.camp = camp;
       http.get('/programs/' + camp.program_id).then((program) => {
         http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
           for (let level of levelList) {
@@ -78,7 +99,11 @@
         let programTags = document.getElementById('program-tags');
         programTags.innerText = program.tags;
         let programGradeRange = document.getElementById('program-grade-range');
-        programGradeRange.innerText = program.grade_range[0] + ' to ' + program.grade_range[1];
+        let gradeRange = program.grade_range[0] + ' to ' + program.grade_range[1];
+        programGradeRange.innerText = gradeRange;
+
+        let enrollGradeRange = document.getElementById('enroll-camp-grade-range');
+        enrollGradeRange.innerText = gradeRange;
       });
 
       http.get('/camps/' + campId + '/instructors').then((instructorList) => {
@@ -86,6 +111,14 @@
           addInstructorToList(instructor);
         }
       });
+    });
+
+    let htmlStudentList = document.getElementById('enroll-student-list');
+    window.enrollStudentList = new SearchList(htmlStudentList, null);
+    http.get('/students').then((studentList) => {
+      for (const student of studentList) {
+        window.enrollStudentList.appendValue(student.id, student.name + ' (Grade ' + student.grade_level + ')');
+      }
     });
   }
 
@@ -125,7 +158,7 @@
     newDiv.classList.add('selectable');
     newDiv.levelId = level.id;
     newDiv.onclick = function() {
-      let programId = document.camp.program_id;
+      let programId = window.camp.program_id;
       http.get('/programs/' + programId + '/levels/' + this.levelId).then((level) => {
         displayLevel(level);
       });
@@ -139,19 +172,37 @@
     levelsList = document.getElementById('levels-list');
     levelsList.appendChild(newDiv);
   }
-  
+
   function displayLevel(level) {
     let levelTitle = document.getElementById('level-title');
     levelTitle.innerText = 'Level ' + level.list_index + ': ' + level.title;
     let levelDesc = document.getElementById('level-description');
     levelDesc.innerText = level.description;
-    
+
     let elemList = document.getElementsByClassName('hidden-level');
     for (elem of elemList) {
       elem.hidden = false;
     }
     for (elem of elemList) {
       elem.classList.remove('hidden-level');
+    }
+  }
+
+  function resetEnrollStudent() {
+    hide('enroll-student');
+    window.enrollStudentList.reset();
+  }
+  
+  
+  function enrollStudent() {
+    let campId = window.camp.id;
+    let selectedStudent = window.enrollStudentList.selectedRow;
+    
+    // TODO: create requirement for this value
+    if (selectedStudent) {
+      http.post('/camps/' + campId + '/students/' + selectedStudent.id, null).then((student) => {
+        // TODO: display feedback that this succeeded
+      });
     }
   }
 

@@ -27,6 +27,7 @@ class CampResponse(CampData):
 
 class Camp(CampResponse):
     instructor_ids: Optional[List[int]] = []
+    student_ids: Optional[List[int]] = []
     level_schedules: Optional[Dict[int, LevelSchedule]] = {}
 
     def _load(self, db: Any) -> bool:
@@ -58,6 +59,17 @@ class Camp(CampResponse):
             self.instructor_ids.append(instructor_id)
             if row['is_primary']:
                 self.primary_instructor_id = instructor_id
+
+        select_stmt = f'''
+            SELECT student_id
+                FROM camp_x_students
+                WHERE camp_id = {self.id}
+        '''
+        result = execute_read(db, select_stmt)
+        self.student_ids = []
+        for row in result or []:
+            student_id = row['student_id']
+            self.student_ids.append(student_id)
 
         select_stmt = f'''
             SELECT level_id, start_time, end_time
@@ -202,6 +214,38 @@ class Camp(CampResponse):
         '''
         execute_write(db, update_stmt)
         self.primary_instructor_id = instructor_id
+
+    def add_student(self, db: Any, student_id: int):
+        if student_id in self.student_ids:
+            return
+
+        # Check for valid user id
+        select_stmt = f'''
+            SELECT id
+                FROM student
+                WHERE id = {student_id}
+        '''
+        result = execute_read(db, select_stmt)
+        if result is None:
+            return
+
+        # Insert
+        self.student_ids.append(student_id)
+        insert_stmt = f'''
+            INSERT INTO camp_x_students (camp_id, student_id)
+                VALUES ({self.id}, {student_id});
+        '''
+        execute_write(db, insert_stmt)
+
+    def remove_student(self, db: Any, student_id: int):
+        if student_id not in self.student_ids:
+            return
+        delete_stmt = f'''
+            DELETE FROM camp_x_students
+                WHERE camp_id = {self.id} and student_id = {student_id};
+        '''
+        execute_write(db, delete_stmt)
+        self.student_ids.remove(student_id)
 
     def update_level_schedule(self, db: Any, level_id: int, level_schedule: LevelSchedule):
         if self.level_schedules.get(level_id) is None:

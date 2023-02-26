@@ -5,7 +5,8 @@ h1 { font-size: 20px; }
 h2 { font-size: 18px; }
 p, textarea, input[type=text], input[type=date], input[type=datetime-local], option { font-size: 16px; margin: 0; }
 a { text-decoration: none; }
-button { background-color: white; box-shadow: 0px 1px 2px 0px rgba(0,0,0,0.2); border: none; }
+button { background-color: white; box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.2); border: none; border-radius: 4px; padding-left: 8px; padding-right: 8px; padding-top: 4px; padding-bottom: 4px; }
+.big-button { background-color: white; box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.2); border: 1px solid #ddd; border-radius: 16px; padding-left: 12px; padding-right: 12px; }
 
 table { width: 100%; border-collapse: collapse; }
 td, th { border: 1px solid #ddd; padding: 8px; }
@@ -16,7 +17,7 @@ th {
   background-color: lightblue;
   cursor: auto;
 }
-tr:nth-child(even), tr:nth-child(even) td { background-color: lightcyan; }
+tr:nth-child(even), tr:nth-child(even) { background-color: lightcyan; }
 
 .selectable:hover { background-color: #ddd; cursor: pointer; }
 .selected { background-color: #ccc; }
@@ -184,9 +185,10 @@ footer {
 
 .listbox { border: 2px solid #ddd; }
 .listbox div { margin: 16px; }
-.listbox-popup { height: 150px; overflow-y: auto; }
+.listbox span { margin-right: 8px; display: inline-block; }
+.listbox-popup { height: 150px; overflow-y: auto; width: 600px; }
 
-.camp-row { border: 2px solid #ddd; margin-bottom: 24px; }
+.camp-row { border: 2px solid #ddd; margin-bottom: 24px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); }
 .camp-row div { margin: 24px; }
 .camp-row div span { margin-right: 16px; }
 .camp-row div span p { display: inline; }

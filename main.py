@@ -394,9 +394,24 @@ async def delete_level(request: Request, program_id: int, level_id: int):
     await program.remove_level(db = app.db, level_id = level_id)
 
 
+@api_router.get("/camps/{camp_id}/students")
+async def get_camp_students(request: Request, camp_id: int):
+    user = get_authorized_user(request, '/teach')
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
+    if 'ADMIN' not in user.roles and camp.id not in user.camp_ids:
+        raise HTTPException(status_code=status.HTTP_403_NOT_FOUND, detail=f"User not authorized for camp id={camp_id}.")
+    students = []
+    for student_id in camp.student_ids:
+        student = Student(db = app.db, id = student_id)
+        student_response = student.dict(include=StudentResponse().dict())
+        students.append(student_response)
+    return students
+
 
 ###############################################################################
-# VIEW CAMPS (READ SIDE OF CAMPS)
+# VIEW CAMPS (READ SIDE OF CAMPS) AND STUDENT ENROLLMENT
 ###############################################################################
 
 
@@ -472,6 +487,19 @@ async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int
         instructor_response = instructor.dict(include=UserResponse().dict())
     return instructor_response
 
+
+@api_router.post("/camps/{camp_id}/students/{student_id}", response_model = StudentResponse, status_code = status.HTTP_201_CREATED)
+async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int):
+    user = get_authorized_user(request, '/camps')
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+    if not camp.is_published:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp_id} is not yet published for enrollment.")
+    if student_id not in user.student_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={student_id} does not belong to this user.")
+    camp.add_student(db = app.db, student_id = student_id)
+    return Student(db = app.db, id = student_id)
 
 
 ###############################################################################
@@ -562,6 +590,17 @@ async def remove_instructor_from_camp(request: Request, camp_id: int, instructor
     camp.remove_instructor(db = app.db, instructor_id = instructor_id)
 
 
+@api_router.delete("/camps/{camp_id}/students/{student_id}")
+async def remove_student_from_camp(request: Request, camp_id: int, student_id: int):
+    user = get_authorized_user(request, '/schedule')
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+    if not camp.is_published:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp_id} is not yet published for enrollment.")
+    camp.remove_student(db = app.db, student_id = student_id)
+
+
 @api_router.put("/camps/{camp_id}/levels/{level_id}", response_model = LevelSchedule)
 async def camp_update_level_schedule(request: Request, camp_id: int, level_id: int, updated_level_schedule: LevelSchedule):
     user = get_authorized_user(request, '/schedule')
@@ -579,7 +618,6 @@ async def camp_update_level_schedule(request: Request, camp_id: int, level_id: i
 async def get_all_possible_instructors(request: Request):
     user = get_authorized_user(request, '/schedule')
     return load_all_instructors(app.db)
-
 
 
 ###############################################################################

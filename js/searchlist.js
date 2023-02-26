@@ -54,22 +54,26 @@ class SearchList {
         this.selectedRow = null;
 
         // Add keyup event for the search bar to search on searchable columns
-        searchBox.rows = this.rows;
-        searchBox.addEventListener('keyup', (event) => {
-            if (event.isComposing || event.keyCode === 229) {
-                return;
-            }
-            this.checkSearchBox();
-        });
+        if (searchBox) {
+            searchBox.rows = this.rows;
+            searchBox.addEventListener('keyup', (event) => {
+                if (event.isComposing || event.keyCode === 229) {
+                    return;
+                }
+                this.checkSearchBox();
+            });
+        }
     }
 
     appendValue(id, value) {
         var row = new ListRow(id, value, this);
         this.rows.push(row);
+        return row;
     }
 
     // Reset the search box
     resetSearchBox() {
+        if (!this.searchBox) return;
         this.searchBox.innerText = '';
         for (var row of this.searchBox.rows) {
             row.unhide();
@@ -87,6 +91,7 @@ class SearchList {
 
     // Check each row against the current value of the search box
     checkSearchBox() {
+        if (!this.searchBox) return;
         const keysToCheck = this.searchBox.innerText.trim().toLowerCase().split(' ');
         for (var row of this.searchBox.rows) {
             if (keysToCheck.length === 0) {

@@ -74,6 +74,16 @@
           addInstructorToList(instructor);
         }
       });
+
+      http.get('/camps/' + campId + '/students').then((studentList) => {
+        if (studentList.length > 0) {
+          let studentsBox = document.getElementById('students-box');
+          studentsBox.firstElementChild.remove();
+        }
+        for (const student of studentList) {
+          addStudentToList(student);
+        }
+      });
     });
   }
 
@@ -143,5 +153,17 @@
     }, false);
     instructorBox.insertBefore(box, instructorBox.lastElementChild);
   }
+
+  function addStudentToList(student) {
+    let text = document.createElement('p');
+    text.innerText = student.name;
+
+    let box = document.createElement('div');
+    box.appendChild(text);
+
+    let studentsBox = document.getElementById('students-box');
+    studentsBox.appendChild(box);
+  }
+
 </script>
 {% endblock %}

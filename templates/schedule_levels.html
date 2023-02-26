@@ -17,6 +17,13 @@
       <div><button class='selectable' onclick='unhide("add-instructor");'><strong>+ Add Instructor</strong></button></div>
     </div></div>
     <div class='content-item'>
+      <span><strong>Enrolled students: </strong></span>
+    </div>
+    <div class='content-item'><div id='students-box' class='listbox'>
+      <!-- List of students enrolled in this camp here -->
+      <div><p>(None)</p></div>
+    </div></div>
+    <div class='content-item'>
       <button class='selectable' onclick="if (confirm('Are you sure you want to publish this camp?')) publishCamp(true);" id='camp-publish'>
         <span><strong>Publish Camp for Enrollment</strong></span>
       </button>
@@ -114,6 +121,16 @@
       http.get('/camps/' + campId + '/instructors').then((instructorList) => {
         for (const instructor of instructorList) {
           addInstructorToList(instructor);
+        }
+      });
+
+      http.get('/camps/' + campId + '/students').then((studentList) => {
+        if (studentList.length > 0) {
+          let studentsBox = document.getElementById('students-box');
+          studentsBox.firstElementChild.hidden = true;
+        }
+        for (const student of studentList) {
+          addStudentToList(student);
         }
       });
     });
@@ -270,6 +287,44 @@
       return false;
     }, false);
     instructorBox.insertBefore(box, instructorBox.lastElementChild);
+  }
+
+  function addStudentToList(student) {
+    let box = document.createElement('div'); // top-level box
+
+    let text = document.createElement('p');
+    text.innerText = student.name;
+    let textBox = document.createElement('span');
+    textBox.appendChild(text);
+
+    let deleteImage = document.createElement('img');
+    deleteImage.classList.add('small-button');
+    deleteImage.src = "{{ url_for('images', path='/cancel.png') }}";
+    deleteImage.alt = 'Remove Student';
+
+    let button = document.createElement('button');
+    button.classList.add('selectable');
+    button.student = student;
+    button.onclick = function() {
+      if (confirm('Are you sure you want to remove ' + text.innerText + ' from this camp?')) {
+        let campId = window.camp.id;
+        http.delete('/camps/' + campId + '/students', this.student.id);
+        if (box.parentNode.childElementCount === 2) {
+          box.parentNode.firstElementChild.hidden = false;
+        }
+        box.remove();
+      }
+    }
+    button.appendChild(deleteImage);
+
+    let buttonBox = document.createElement('span');
+    buttonBox.appendChild(button);
+
+    box.appendChild(textBox);
+    box.appendChild(buttonBox);
+
+    let studentsBox = document.getElementById('students-box');
+    studentsBox.appendChild(box);
   }
 
   function publishCamp(isPublished) {
