@@ -60,6 +60,8 @@
       <h1>Enrolled Camps</h1>
       <hr class='h-divider'></hr>
     </div>
+    <div class='content-item' id='camps-list'>
+    </div>
   </span>
   <div class='pop-up' id='new-student' hidden>
     <div>
@@ -92,6 +94,8 @@
 <script>
   window.onload = function () {
     commonOnLoad();
+
+    getStudentList();
   }
 
   function displayStudent(student) {
@@ -133,7 +137,7 @@
 
   function resetNewStudent() {
     hide("new-student");
-    document.getElementById('new-student-name').innerHTML = "";
+    document.getElementById('new-student-name').innerText = "";
     document.getElementById('new-student-birthdate').value = "";
     document.getElementById('new-student-grade').selectedIndex = 6;
   }
@@ -143,11 +147,64 @@
       for (const student of studentList) { addStudentToSidebar(student); }
     });
   }
-  getStudentList(); // we do this once
+
+  function addCampToList(camp) {
+    let title = document.createElement('p');
+    title.innerText = camp.program.title;
+    let titleBox = document.createElement('h2');
+    titleBox.appendChild(title);
+
+    let instructor = document.createElement('p');
+    instructor.innerText = camp.primary_instructor.full_name;
+    let instructorBox = document.createElement('span');
+    instructorBox.appendChild(instructor);
+
+    let tags = document.createElement('p');
+    tags.innerText = camp.program.tags;
+    let tagsBox = document.createElement('span');
+    tagsBox.appendChild(tags);
+
+    let gradeRange = document.createElement('p');
+    gradeRange.innerText = camp.program.grade_range[0] + ' to ' + camp.program.grade_range[1];
+    let gradeRangeBox = document.createElement('span');
+    gradeRangeBox.appendChild(gradeRange);
+
+    let startTime = document.createElement('input');
+    startTime.setAttribute('type', 'datetime-local');
+    startTime.value = camp.first_level_schedule.start_time;
+    startTime.disabled = true;
+    let startTimeBox = document.createElement('span');
+    startTimeBox.appendChild(startTime);
+
+    let newRow = document.createElement('div');
+    let campsList = document.getElementById('camps-list');
+    campsList.appendChild(newRow);
+    insertCampRowContent(camp.id, newRow, titleBox, instructorBox, tagsBox, gradeRangeBox, startTimeBox);
+  }
 
   function getStudent(id) {
     if (!id) { id = document.getElementById('student-id').innerHTML; }
-    http.get('/students', id).then((student) => {displayStudent(student);});
+    document.getElementById('camps-list').innerHTML = ""; // reset
+
+    http.get('/students', id).then((student) => {
+      displayStudent(student);
+      http.get('/students/' + id + '/camps').then((campList) => {
+        for (let camp of campList) {
+          http.get('/programs/' + camp.program_id).then((program) => {
+            camp.program = program;
+            http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+              http.get('/camps/' + camp.id + '/levels/' + levelList[0].id).then((firstLevelSchedule) => {
+                camp.first_level_schedule = firstLevelSchedule;
+                http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
+                  camp.primary_instructor = instructor;
+                  addCampToList(camp);
+                });
+              });
+            });
+          });
+        }
+      });
+    });
   }
 
   function postStudent() {

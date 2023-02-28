@@ -89,7 +89,7 @@
     colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'tr', 'levelSchedule.end_time', null, true));
 
     let htmlTable = document.getElementById('levels-table');
-    window.userTable = new FilterTable(colMeta, htmlTable, 0, null, null);
+    window.leveslTable = new FilterTable(colMeta, htmlTable, 0, null, null);
 
     http.get('/camps/' + campId).then((camp) => {
       window.camp = camp;
@@ -154,7 +154,7 @@
 
   function addLevelToTable(level) {
     let campId = window.camp.id;
-    let newRow = window.userTable.appendRow(level);
+    let newRow = window.leveslTable.appendRow(level);
     let startTime = newRow.cells[2].firstChild;
     let endTime = newRow.cells[3].firstChild;
 

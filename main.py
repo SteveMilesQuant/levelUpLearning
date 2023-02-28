@@ -235,6 +235,15 @@ async def delete_student(request: Request, student_id: int):
     user.remove_student(db = app.db, student_id = student_id)
 
 
+@api_router.get("/students/{student_id}/camps")
+async def get_student_camps(request: Request, student_id: int):
+    user = get_authorized_user(request, '/students')
+    if student_id not in user.student_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
+    student = Student(db = app.db, id = student_id)
+    return student.get_camps(db = app.db)
+
+
 
 ###############################################################################
 # PROGRAMS/TEACH

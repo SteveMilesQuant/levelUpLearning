@@ -6,7 +6,7 @@
     <div class='content-item'><div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
-      <span><span class='selectable' onclick='window.userTable.resetSearchBox();'>
+      <span><span class='selectable' onclick='window.campsTable.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </span></span>
     </div></div>
@@ -30,7 +30,7 @@
 
     let htmlTable = document.getElementById('camps-table');
     let tableSearchBox = document.getElementById('search-box-text');
-    window.userTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox);
+    window.campsTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox);
 
     http.get('/teach').then((campList) => {
       for (let camp of campList) {
@@ -51,7 +51,7 @@
   }
 
   function addCampToTable(camp) {
-    let newRow = window.userTable.appendRow(camp);
+    let newRow = window.campsTable.appendRow(camp);
     newRow.classList.add('selectable');
     newRow.campId = camp.id;
 

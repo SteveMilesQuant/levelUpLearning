@@ -15,7 +15,7 @@
     <div class='content-item'><div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
-      <span><span class='selectable' onclick='window.userTable.resetSearchBox();'>
+      <span><span class='selectable' onclick='window.campsTable.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </span></span>
     </div></div>
@@ -81,7 +81,7 @@
     let htmlTable = document.getElementById('camps-table');
     let filtersBox = document.getElementById('filters-box');
     let tableSearchBox = document.getElementById('search-box-text');
-    window.userTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, tableSearchBox); // -1 for row shift - we have one extra final static row for "Add Camp"
+    window.campsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, tableSearchBox); // -1 for row shift - we have one extra final static row for "Add Camp"
 
     http.get('/schedule').then((campList) => {
       for (let camp of campList) {
@@ -122,7 +122,7 @@
   }
 
   function addCampToTable(camp) {
-    let newRow = window.userTable.appendRow(camp);
+    let newRow = window.campsTable.appendRow(camp);
     newRow.classList.add('selectable');
     newRow.campId = camp.id;
 

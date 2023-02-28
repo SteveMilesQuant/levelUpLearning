@@ -17,7 +17,7 @@
     <div class='content-item'><div class='search-box'>
       <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
-      <span><span class='selectable' onclick='window.userTable.resetSearchBox();'>
+      <span><span class='selectable' onclick='window.programsTable.resetSearchBox();'>
         <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
       </span></span>
     </div></div>
@@ -74,7 +74,7 @@
     let htmlTable = document.getElementById('programs-table');
     let filtersBox = document.getElementById('filters-box');
     let searchBox = document.getElementById('search-box-text');
-    window.userTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, searchBox); // -1 for row shift - we have one extra final static row for "Add Program"
+    window.programsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, searchBox); // -1 for row shift - we have one extra final static row for "Add Program"
 
     http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
   }
@@ -89,7 +89,7 @@
   }
 
   function addProgramToTable(program) {
-    let newRow = window.userTable.appendRow(program);
+    let newRow = window.programsTable.appendRow(program);
     newRow.programId = program.id;
     newRow.classList.add('selectable');
 

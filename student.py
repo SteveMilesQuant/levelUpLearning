@@ -2,6 +2,7 @@ from db import execute_read, execute_write
 from pydantic import BaseModel
 from typing import Dict, List, Optional, Any
 from datetime import date
+from camp import Camp, CampResponse
 
 class FastApiDate(date):
     def __str__(self) -> str:
@@ -68,5 +69,22 @@ class Student(StudentResponse):
                 WHERE id = {self.id};
         '''
         execute_write(db, delete_stmt)
+        
+    def get_camps(self, db: Any):
+        select_stmt = f'''
+            SELECT camp_id
+                FROM camp_x_students
+                WHERE student_id = {self.id}
+        '''
+        result = execute_read(db, select_stmt)
+        
+        camps = []
+        for result_row in result or []:
+            camp_id = result_row['camp_id']
+            camp = Camp(db = db, id = camp_id)
+            camps.append(camp.dict(include=CampResponse().dict()))
+            
+        return camps
+        
 
 
