@@ -66,10 +66,6 @@
       </button></span>
     </div>
   </div>
-  <div id='instructor-rightclick' class='rightclick-box' hidden>
-    <div class='selectable'><p>Make primary</p></div>
-    <div class='selectable'><p>Delete</p></div>
-  </div>
 {% endblock %}
 
 {% block script %}
@@ -228,65 +224,85 @@
   }
 
   function addInstructorToList(instructor) {
-    let instructorBox = document.getElementById('instructors-box');
+    let instLink = document.createElement('a');
+    instLink.classList.add('selectable');
+    instLink.href = '/instructors/' + instructor.id;
+    instLink.innerText = instructor.full_name;
+    let instBox = document.createElement('span');
+    instBox.appendChild(instLink);
 
-    let box = document.createElement('div');
-    box.classList.add('selectable');
-    box.innerText = instructor.full_name;
-    box.instructor = instructor;
-    box.onclick = function () { http.redirect('/insructors/' + instructor.id); }
-    if (instructor.is_primary) {
-      instructorBox.primaryInstructorBox = box;
-      box.innerText += ' (primary)';
+    let makePrimaryImg = document.createElement('img');
+    makePrimaryImg.classList.add('small-button');
+    makePrimaryImg.src = '{{ url_for("images", path="/levelup.png") }}';
+    makePrimaryImg.alt = 'Make primary';
+    let makePrimaryBtn = document.createElement('button');
+    makePrimaryBtn.classList.add('selectable');
+    makePrimaryBtn.appendChild(makePrimaryImg);
+    makePrimaryBtn.instructor = instructor;
+    makePrimaryBtn.instructorName = instLink;
+    makePrimaryBtn.onclick = function() {
+      if (confirm('Make ' + this.instructor.full_name + ' primary?')) {
+        let campId = window.camp.id;
+        let isPublished = window.camp.is_published;
+        let programId = window.camp.program_id;
+        let campData = new CampData(programId, this.instructor.id, isPublished);
+        http.put('/camps', campId, campData).then((camp) => {
+          window.camp = camp;
+          let instructorsBox = document.getElementById('instructors-box');
+          instructorsBox.primaryInstructor.instructor.is_primary = false;
+          instructorsBox.primaryInstructor.instructorName.innerText = this.instructor.full_name;
+          instructorsBox.primaryInstructor.parentNode.hidden = false;
+          instructorsBox.primaryInstructor.hidden = false;
+          instructorsBox.primaryInstructor.removeBtn.parentNode.hidden = false;
+          instructorsBox.primaryInstructor.removeBtn.hidden = false;
+          this.instructor.is_primary = true;
+          this.instructorName.innerText += ' (primary)';
+          this.parentNode.hidden = true;
+          this.hidden = true;
+          this.removeBtn.parentNode.hidden = true;
+          this.removeBtn.hidden = true;
+          instructorsBox.primaryInstructor = this;
+        });
+      }
     }
-    box.addEventListener('contextmenu', function (event) {
-      event.preventDefault();
+    let makePrimary = document.createElement('span');
+    makePrimary.appendChild(makePrimaryBtn);
 
-      let contextmenu = document.getElementById('instructor-rightclick');
-      contextmenu.hidden = false;
-      contextmenu.style.left = event.x + 'px';
-      contextmenu.style.top = event.y + 'px';
-      let instructor = box.instructor;
-
-      let makePrimaryBox = contextmenu.firstElementChild;
-      makePrimaryBox.instructor = instructor;
-      if (instructor.is_primary) {
-        makePrimaryBox.hidden = true;
-      }
-      else {
-        makePrimaryBox.hidden = false;
-        makePrimaryBox.onclick = function () {
-          let instructorBox = document.getElementById('instructors-box');
-          let campId = window.camp.id;
-          let isPublished = window.camp.is_published;
-          let programId = window.camp.program_id;
-          let campData = new CampData(programId, this.instructor.id, isPublished);
-          http.put('/camps', campId, campData).then((camp) => {
-            window.camp = camp;
-            instructorBox.primaryInstructorBox.instructor.is_primary = false;
-            instructor.is_primary = true;
-            instructorBox.primaryInstructorBox = this;
-          });
-
-          let contextmenu = document.getElementById('instructor-rightclick');
-          contextmenu.hidden = true;
-        }
-      }
-
-      let deleteBox = contextmenu.lastElementChild;
-      deleteBox.instructor = instructor;
-      deleteBox.onclick = function () {
+    let removeImg = document.createElement('img');
+    removeImg.classList.add('small-button');
+    removeImg.src = '{{ url_for("images", path="/cancel.png") }}';
+    removeImg.alt = 'Remove';
+    let removeBtn = document.createElement('button');
+    removeBtn.classList.add('selectable');
+    removeBtn.instructor = instructor;
+    removeBtn.appendChild(removeImg);
+    removeBtn.onclick = function() {
+      if (confirm('Remove ' + this.instructor.full_name + ' as instructor?')) {
         let campId = window.camp.id;
         http.delete('/camps/' + campId + '/instructors', this.instructor.id);
-        box.remove();
-
-        let contextmenu = document.getElementById('instructor-rightclick');
-        contextmenu.hidden = true;
+        this.parentNode.parentNode.remove();
       }
+    }
+    makePrimaryBtn.removeBtn = removeBtn;
+    let remove = document.createElement('span');
+    remove.appendChild(removeBtn);
 
-      return false;
-    }, false);
-    instructorBox.insertBefore(box, instructorBox.lastElementChild);
+    let box = document.createElement('div');
+    box.appendChild(instBox);
+    box.appendChild(makePrimary);
+    box.appendChild(remove);
+
+    let instructorsBox = document.getElementById('instructors-box');
+    instructorsBox.insertBefore(box, instructorsBox.lastElementChild);
+
+    if (instructor.is_primary) {
+      instructorsBox.primaryInstructor = makePrimaryBtn;
+      instLink.innerText += ' (primary)';
+      makePrimary.hidden = true;
+      makePrimary.firstElementChild.hidden = true;
+      remove.hidden = true;
+      remove.firstElementChild.hidden = true;
+    }
   }
 
   function addStudentToList(student) {
