@@ -1,40 +1,26 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <span class='sidebar' id='sidebar'>
-    <div class='sidebar-item'>
-      <h1 id='program-title'></h1>
-      <hr class='h-divider'></hr>
-    </div>
-    <div class='sidebar-item'>
-      <h2>Levels</h2>
-      <div class='listbox' id='levels-list'>
-        <!-- List of levels listed here -->
-      </div>
-    </div>
-    <div class='sidebar-item'>
-      <h2>Instructors</h2>
-    </div>
-    <div class='sidebar-item'><div id='instructors-box' class='listbox'>
-      <!-- List of instructors assigned to this camp here -->
-    </div></div>
-    <div class='sidebar-item'>
-      <button class='selectable big-button' onclick='unhide("enroll-student");'><h2>Enroll Student</h2></button>
-    </div>
-  </span>
   <span class='content-body'>
     <div class='content-item'>
-      <h2>Description</h2>
+      <h1 id='program-title'></h1>
       <hr class='h-divider'></hr>
     </div>
     <div class='content-item'>
       <textarea wrap='soft' class='longtext-box' id='program-description' readonly></textarea>
     </div>
     <div class='content-item'>
-      <div><strong>Grade Range: </strong><span id='program-grade-range'></span></div>
+      <span><strong>Grade Range: </strong><span id='program-grade-range'></span></span>
+      <span><strong>Tags: </strong><span id='program-tags'></span></span>
     </div>
     <div class='content-item'>
-      <div><strong>Tags: </strong><span id='program-tags'></span></div>
+      <h2>Instructors</h2>
+    </div>
+    <div class='content-item'><div id='instructors-box' class='listbox'>
+      <!-- List of instructors assigned to this camp here -->
+    </div></div>
+    <div class='content-item'>
+      <button class='selectable big-button' onclick='unhide("enroll-student");'><h2>Enroll Student</h2></button>
     </div>
   </span>
   <div class="v-divider"></div>
@@ -100,7 +86,6 @@
       http.get('/programs/' + camp.program_id).then((program) => {
         http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
           for (let level of levelList) {
-            addLevelToSidebar(level);
             http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
               let eventBox = window.levelsCalendar.addEvent(level.title, levelSchedule.start_time, levelSchedule.end_time);
               eventBox.levelId = level.id;
@@ -176,26 +161,6 @@
     else {
       instructorBox.appendChild(box);
     }
-  }
-
-  function addLevelToSidebar(level) {
-    newDiv = document.createElement('div');
-    newDiv.classList.add('selectable');
-    newDiv.levelId = level.id;
-    newDiv.onclick = function() {
-      let programId = window.camp.program_id;
-      http.get('/programs/' + programId + '/levels/' + this.levelId).then((level) => {
-        displayLevel(level);
-      });
-    };
-    newDiv.id = 'sidebar-level-' + level.id;
-
-    newText = document.createElement('strong');
-    newText.innerText = level.list_index.toString() + ': ' + level.title;
-    newDiv.appendChild(newText);
-
-    levelsList = document.getElementById('levels-list');
-    levelsList.appendChild(newDiv);
   }
 
   function displayLevel(level) {
