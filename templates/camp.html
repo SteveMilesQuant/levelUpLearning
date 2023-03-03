@@ -40,8 +40,19 @@
   <div class="v-divider"></div>
   <span class='content-body'>
     <div class='content-item'>
-      <h2>Calendar</h2>
+      <h2>Schedule</h2>
       <hr class='h-divider'></hr>
+    </div>
+    <div class='content-item calendar'>
+      <ul class='calendar-header'>
+        <li>M</li>
+        <li>Tu</li>
+        <li>W</li>
+        <li>Th</li>
+        <li>F</li>
+      </ul>
+      <ul class='calendar-body' id='levels-calendar'>
+      </ul>
     </div>
     <div class='content-item hidden-level' hidden>
       <h2 id='level-title'>Level 1</h2>
@@ -74,6 +85,7 @@
 {% block script %}
 <script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script src="{{ url_for('js', path='/calendar.js') }}"></script>
 <script>
   // One-time setup
   window.onload = function() {
@@ -81,13 +93,23 @@
 
     campId = getCampIdStr();
 
+    let calendarBox = document.getElementById('levels-calendar');
+    window.levelsCalendar = new Calendar(calendarBox, startDay=1, skipDays=[0, 7]);
     http.get('/camps/' + campId).then((camp) => {
       window.camp = camp;
       http.get('/programs/' + camp.program_id).then((program) => {
         http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
           for (let level of levelList) {
+            addLevelToSidebar(level);
             http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
-              addLevelToSidebar(level);
+              let eventBox = window.levelsCalendar.addEvent(level.title, levelSchedule.start_time, levelSchedule.end_time);
+              eventBox.levelId = level.id;
+              eventBox.onclick = function() {
+                let programId = window.camp.program_id;
+                http.get('/programs/' + programId + '/levels/' + this.levelId).then((level) => {
+                  displayLevel(level);
+                });
+              };
             });
           }
         });
@@ -137,6 +159,7 @@
     }
     else {
       text = document.createElement('p');
+      text.classList.add('selectable');
       text.innerText = instructor.full_name;
     }
 
