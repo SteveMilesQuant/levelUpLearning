@@ -25,8 +25,8 @@
     commonOnLoad();
 
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'tr', 'program.title', null, true));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'first_level_schedule.start_time', null, true));
+    colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'tr', 'program.title', filterType=null, searchable=true));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'first_level_schedule.start_time', filterType=null, searchable=true));
 
     let htmlTable = document.getElementById('camps-table');
     let tableSearchBox = document.getElementById('search-box-text');

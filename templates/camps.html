@@ -34,11 +34,11 @@
     commonOnLoad();
 
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'h2', 'program.title', null, true));
-    colMeta.push(new FilterTableColumn('Primary Instructor', DisplayType.Simple, 'span', 'primary_instructor.full_name', FilterType.CheckBoxes, true));
-    colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'span', 'program.tags', FilterType.Tags, true));
-    colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'span', 'program.grade_range', FilterType.IntRange, false));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'span', 'first_level_schedule.start_time', null, true));
+    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'h2', 'program.title', filterType=null, true));
+    colMeta.push(new FilterTableColumn('Primary Instructor', DisplayType.Simple, 'span', 'primary_instructor.full_name', filterType=FilterType.CheckBoxes, true));
+    colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'span', 'program.tags', filterType=FilterType.Tags, true));
+    colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'span', 'program.grade_range', filterType=FilterType.IntRange, false));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'span', 'first_level_schedule.start_time', filterType=null, true));
 
     let htmlTable = document.getElementById('camps-table');
     let filtersBox = document.getElementById('filters-box');

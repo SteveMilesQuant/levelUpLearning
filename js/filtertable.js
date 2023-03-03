@@ -1,7 +1,7 @@
 // Class for a filterable and searchable table
 
 
-// Currently supported types of filters
+// Currently supported display types
 const DisplayType = {
     Simple: "Simple",
     Range: "Range",
@@ -9,15 +9,23 @@ const DisplayType = {
     Boolean: "Boolean"
 };
 
+// Currently supported types of filters
+const FilterType = {
+    CheckBoxes: "CheckBoxes",
+    Tags: "Tags",
+    IntRange: "IntRange"
+};
+
 // Column configuration
 class FilterTableColumn {
-    constructor(label, displayType, boxType, sourceCol, filterType, searchable) {
+    constructor(label, displayType, boxType, sourceCol, filterType=null, searchable=false, sortable=false) {
         this.label = label;
         this.displayType = displayType;
         this.boxType = boxType;
         this.sourceCol = sourceCol;
         this.filterType = filterType;
         this.searchable = searchable;
+        this.sortable = sortable;
     }
 }
 
@@ -384,13 +392,6 @@ class FilterValue {
         }
     }
 }
-
-// Currently supported types of filters
-const FilterType = {
-    CheckBoxes: "CheckBoxes",
-    Tags: "Tags",
-    IntRange: "IntRange"
-};
 
 // Checkbox filterable value class
 class CheckBoxValue extends FilterValue {

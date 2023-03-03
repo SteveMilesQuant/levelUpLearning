@@ -73,10 +73,10 @@
     commonOnLoad();
 
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'tr', 'program.title', null, true));
-    colMeta.push(new FilterTableColumn('Primary Instructor', DisplayType.Simple, 'tr', 'primary_instructor.full_name', FilterType.CheckBoxes, true));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'first_level_schedule.start_time', null, true));
-    colMeta.push(new FilterTableColumn('Published?', DisplayType.Boolean, 'tr', 'is_published', FilterType.CheckBoxes, false));
+    colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'tr', 'program.title', filterType=null, searchable=true));
+    colMeta.push(new FilterTableColumn('Primary Instructor', DisplayType.Simple, 'tr', 'primary_instructor.full_name', filterType=FilterType.CheckBoxes, searchable=true));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'first_level_schedule.start_time', filterType=null, searchable=true));
+    colMeta.push(new FilterTableColumn('Published?', DisplayType.Boolean, 'tr', 'is_published', filterType=FilterType.CheckBoxes, searchable=false));
 
     let htmlTable = document.getElementById('camps-table');
     let filtersBox = document.getElementById('filters-box');
