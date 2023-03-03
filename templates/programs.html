@@ -67,14 +67,14 @@
     commonOnLoad();
 
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'tr', 'title', filterType=null, searchable=true));
-    colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'tr', 'tags', filterType=FilterType.Tags, searchable=true));
-    colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'tr', 'grade_range', filterType=FilterType.IntRange, searchable=false));
+    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'tr', 'title', filterType=null, searchable=true, sortable=true));
+    colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'tr', 'tags', filterType=FilterType.Tags, searchable=true, sortable=false));
+    colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'tr', 'grade_range', filterType=FilterType.IntRange, searchable=false, sortable=true));
 
     let htmlTable = document.getElementById('programs-table');
     let filtersBox = document.getElementById('filters-box');
     let searchBox = document.getElementById('search-box-text');
-    window.programsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, searchBox); // -1 for row shift - we have one extra final static row for "Add Program"
+    window.programsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, searchBox, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']); // -1 for row shift - we have one extra final static row for "Add Program"
 
     http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
   }

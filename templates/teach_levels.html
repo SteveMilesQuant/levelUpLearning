@@ -45,13 +45,13 @@
     campId = getCampIdStr();
 
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Level', DisplayType.Simple, 'tr', 'list_index', filterType=null, searchable=false));
-    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'tr', 'title', filterType=null, searchable=true));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'levelSchedule.start_time', filterType=null, searchable=true));
-    colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'tr', 'levelSchedule.end_time', filterType=null, searchable=true));
+    colMeta.push(new FilterTableColumn('Level', DisplayType.Simple, 'tr', 'list_index', filterType=null, searchable=false, sortable=true));
+    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'tr', 'title', filterType=null, searchable=true, sortable=true));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'levelSchedule.start_time', filterType=null, searchable=true, sortable=false));
+    colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'tr', 'levelSchedule.end_time', filterType=null, searchable=true, sortable=false));
 
     let htmlTable = document.getElementById('levels-table');
-    window.levelsTable = new FilterTable(colMeta, htmlTable, 0, null, null);
+    window.levelsTable = new FilterTable(colMeta, htmlTable, 0, null, null, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']);
 
     http.get('/camps/' + campId).then((camp) => {
       window.camp = camp;

@@ -29,9 +29,19 @@ class FilterTableColumn {
     }
 }
 
+class SortColumn {
+    constructor(colIdx, upButton, downButton, ascending=true) {
+        this.colIdx = colIdx;
+        this.ascending = ascending;
+        this.upButton = upButton;
+        this.downButton = downButton;
+    }
+}
+
+
 // Filterable and searchable table class
 class FilterTable {
-    constructor(colMeta, htmlTable, insertRowShiftIdx, htmlFilterBox, searchBox) {
+    constructor(colMeta, htmlTable, insertRowShiftIdx, htmlFilterBox, searchBox, sortImages) {
         if (colMeta.constructor !== Array) colMeta = [colMeta];
         this.colMeta = colMeta;
         this.htmlTable = htmlTable;
@@ -40,6 +50,7 @@ class FilterTable {
         this.rows = [];
         this.filters = Array(colMeta.length).fill(null);
         this.useTableContainer = (colMeta[0].boxType === 'tr');
+        this.sortCol = null;
 
         // Add keyup event for the search bar to search on searchable columns
         if (searchBox) {
@@ -60,9 +71,61 @@ class FilterTable {
             const col = colMeta[colIdx];
 
             if (this.useTableContainer) {
+                let colLabelText = document.createElement('span');
+                colLabelText.innerHTML = col.label;
                 let newCol = document.createElement('th');
-                newCol.innerHTML = col.label;
+                newCol.appendChild(colLabelText);
                 newRow.appendChild(newCol);
+
+                // If this column is sortable, add sort buttons
+                if (col.sortable) {
+                    let upImage = document.createElement('img');
+                    upImage.classList.add('small-button');
+                    upImage.src = sortImages[0];
+                    upImage.alt = 'Sort (ascending)';
+
+                    let upButton = document.createElement('button');
+                    upButton.classList.add('selectable');
+                    upButton.filterTable = this;
+                    upButton.colIdx = colIdx;
+                    upButton.appendChild(upImage);
+                    newCol.appendChild(upButton);
+
+                    let downImage = document.createElement('img');
+                    downImage.classList.add('small-button');
+                    downImage.src = sortImages[1];
+                    downImage.alt = 'Sort (descending)';
+
+                    let downButton = document.createElement('button');
+                    downButton.classList.add('selectable');
+                    downButton.filterTable = this;
+                    downButton.colIdx = colIdx;
+                    downButton.appendChild(downImage);
+                    newCol.appendChild(downButton);
+
+                    upButton.upButton = upButton;
+                    upButton.downButton = downButton;
+                    downButton.upButton = upButton;
+                    downButton.downButton = downButton;
+                    upButton.onclick = function () {
+                        if (!this.disabled) {
+                            let filterTable = this.filterTable;
+                            let sortCol = filterTable.sortCol;
+                            sortCol.upButton.disabled = false;
+                            sortCol.downButton.disabled = false;
+
+                            this.disabled = true;
+                            filterTable.sortCol = new SortColumn(this.colIdx, this.upButton, this.downButton, (this === this.upButton));
+                            filterTable.sort();
+                        }
+                    }
+                    downButton.onclick = upButton.onclick;
+
+                    if (!this.sortCol) {
+                        upButton.disabled = true;
+                        this.sortCol = new SortColumn(colIdx, upButton, downButton);
+                    }
+                }
             }
 
             // If this column is filterable, set up that filter
@@ -176,6 +239,7 @@ class FilterTable {
                 }
             }
         }
+        if (this.sortCol) newRow.sortVals = Array(this.colMeta.length).fill(null);
 
         // Append this row to the table, one column at a time
         for (let colIdx in this.colMeta) {
@@ -203,6 +267,7 @@ class FilterTable {
                     newText = document.createElement('p');
                     newText.innerText = srcData[0] + ' to ' + srcData[1];
                     newCol.appendChild(newText);
+                    if (col.sortable) newRow.sortVals[colIdx] = srcData[0];
                     break;
                 case DisplayType.Datetime:
                     let newInput = document.createElement('input');
@@ -210,17 +275,20 @@ class FilterTable {
                     newInput.value = srcData;
                     newInput.disabled = true;
                     newCol.appendChild(newInput);
+                    if (col.sortable) newRow.sortVals[colIdx] = Date.parse(srcData);
                     break;
                 case DisplayType.Boolean:
                     newText = document.createElement('p');
                     newText.innerText = (srcData)? 'True' : 'False';
                     newCol.appendChild(newText);
+                    if (col.sortable) newRow.sortVals[colIdx] = srcData;
                     break;
                 case DisplayType.Simple:
                 default:
                     newText = document.createElement('p');
                     newText.innerText = srcData;
                     newCol.appendChild(newText);
+                    if (col.sortable) newRow.sortVals[colIdx] = srcData;
                     break;
             }
 
@@ -262,6 +330,9 @@ class FilterTable {
         // Check search box and filter values, to perhaps hide a row that was already searched or filtered out
         this.checkSearchBox();
 
+        // Finally, if sorting, perhaps move this row into position
+        this.sort();
+
         return newRow;
     }
 
@@ -298,6 +369,28 @@ class FilterTable {
                 }
             }
             row.filterSetHidden();
+        }
+    }
+
+    // Sort the rows
+    sort() {
+        if (this.sortCol) {
+            var sortColIdx = this.sortCol.colIdx;
+            var sortDirection = (this.sortCol.ascending)? -1 : 1;
+            this.rows.sort(function doCompare(a, b) {
+                let a_val = a.sortVals[sortColIdx];
+                let b_val = b.sortVals[sortColIdx];
+                if (a_val < b_val) return sortDirection;
+                else if (a_val > b_val) return -sortDirection;
+                else return 0;
+            });
+            let tableBody = this.htmlTable.firstElementChild;
+            for (const row of this.rows) {
+                tableBody.appendChild(row);
+            }
+            for (let i = 0; i > this.insertRowShiftIdx; i--) {
+                tableBody.appendChild(tableBody.children[1]);
+            }
         }
     }
 }

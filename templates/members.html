@@ -26,8 +26,8 @@
 
     http.get('/roles').then((rolesList) => {
       colMeta = [];
-      colMeta.push(new FilterTableColumn('Name', DisplayType.Simple, 'tr', 'full_name', filterType=null, searchable=true));
-      colMeta.push(new FilterTableColumn('Email', DisplayType.Simple, 'tr', 'primary_email_address', filterType=null, searchable=true));
+      colMeta.push(new FilterTableColumn('Name', DisplayType.Simple, 'tr', 'full_name', filterType=null, searchable=true, sortable=true));
+      colMeta.push(new FilterTableColumn('Email', DisplayType.Simple, 'tr', 'primary_email_address', filterType=null, searchable=true, sortable=true));
       for (const role of rolesList) {
         let displayName = role.name.toLowerCase();
         displayName =  displayName.charAt(0).toUpperCase() + displayName.substring(1, displayName.length);
@@ -36,7 +36,7 @@
 
       let htmlTable = document.getElementById('members-table');
       let tableSearchBox = document.getElementById('search-box-text');
-      window.membersTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox);
+      window.membersTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']);
 
       http.get('/users').then((userList) => {
         let yesOnClick = function () {

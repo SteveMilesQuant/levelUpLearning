@@ -18,8 +18,10 @@ th {
 	cursor: auto;
 }
 tr:nth-child(even), tr:nth-child(even) { background-color: lightcyan; }
+th button { margin-right: 8px; }
 
 .selectable:hover { background-color: #ddd; cursor: pointer; }
+.selectable:disabled, .selectable[disabled] { background-color: #ddd; cursor: auto; }
 .selected { background-color: #ccc; }
 .h-divider { margin: 0; border: 1px solid #ddd; }
 .v-divider { border: 1px solid #ddd; margin-top: 8px; margin-bottom: 8px; margin-left: 64px; }

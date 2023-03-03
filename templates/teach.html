@@ -25,12 +25,12 @@
     commonOnLoad();
 
     colMeta = [];
-    colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'tr', 'program.title', filterType=null, searchable=true));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'first_level_schedule.start_time', filterType=null, searchable=true));
+    colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'tr', 'program.title', filterType=null, searchable=true, sortable=true));
+    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'first_level_schedule.start_time', filterType=null, searchable=true, sortable=true));
 
     let htmlTable = document.getElementById('camps-table');
     let tableSearchBox = document.getElementById('search-box-text');
-    window.campsTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox);
+    window.campsTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']);
 
     http.get('/teach').then((campList) => {
       for (let camp of campList) {
