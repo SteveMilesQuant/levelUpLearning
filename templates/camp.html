@@ -77,13 +77,30 @@
   window.onload = function() {
     commonOnLoad();
 
-    campId = getCampIdStr();
+    let campId = getCampIdStr();
 
     let calendarBox = document.getElementById('levels-calendar');
     window.levelsCalendar = new Calendar(calendarBox, startDay=1, skipDays=[0, 7]);
     http.get('/camps/' + campId).then((camp) => {
       window.camp = camp;
       http.get('/programs/' + camp.program_id).then((program) => {
+        let htmlStudentList = document.getElementById('enroll-student-list');
+        window.enrollStudentList = new SearchList(htmlStudentList, null);
+        http.get('/students').then((studentList) => {
+          for (const student of studentList) {
+            http.get('/students/' + student.id + '/camps').then((campList) => {
+              if (campList.find(element => element.id === camp.id) === undefined) {
+                let studentNameText = student.name;
+                if (student.grade_level < program.grade_range[0] || student.grade_level > program.grade_range[1]) {
+                  studentNameText += ' (Grade ' + student.grade_level;
+                  studentNameText += ' - Special Approval Required)';
+                }
+                window.enrollStudentList.appendValue(student.id, studentNameText);
+              }
+            });
+          }
+        });
+
         http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
           for (let level of levelList) {
             http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
@@ -120,13 +137,7 @@
       });
     });
 
-    let htmlStudentList = document.getElementById('enroll-student-list');
-    window.enrollStudentList = new SearchList(htmlStudentList, null);
-    http.get('/students').then((studentList) => {
-      for (const student of studentList) {
-        window.enrollStudentList.appendValue(student.id, student.name + ' (Grade ' + student.grade_level + ')');
-      }
-    });
+
   }
 
   function getCampIdStr() {
