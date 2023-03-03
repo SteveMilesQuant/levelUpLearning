@@ -25,14 +25,14 @@ class Calendar {
             eventBox.classList.add('selectable');
             eventBox.startTime = startTime;
             let wasInserted = false;
-            for (const child of dateBox.childNodes) {
+            for (const child of dateBox.eventsBox.childNodes) {
                 if (child.startTime > startTime) {
-                    dateBox.insertBefore(eventBox, child);
+                    dateBox.eventsBox.insertBefore(eventBox, child);
                     wasInserted = true;
                     break;
                 }
             }
-            if (!wasInserted) dateBox.appendChild(eventBox);
+            if (!wasInserted) dateBox.eventsBox.appendChild(eventBox);
 
             let titleBox = document.createElement('p');
             titleBox.innerText = title;
@@ -75,6 +75,9 @@ class Calendar {
                     dateNumber.classList.add('calendar-body-header');
                     dateNumber.innerText = addDate.getUTCDate();
                     dateBox.appendChild(dateNumber);
+                    
+                    dateBox.eventsBox = document.createElement('div');
+                    dateBox.appendChild(dateBox.eventsBox);
                 }
             }
             this.startDate = newStartDate;
@@ -101,6 +104,9 @@ class Calendar {
                     dateNumber.classList.add('calendar-body-header');
                     dateNumber.innerText = addDate.getUTCDate();
                     dateBox.appendChild(dateNumber);
+                    
+                    dateBox.eventsBox = document.createElement('div');
+                    dateBox.appendChild(dateBox.eventsBox);
                 }
             }
             this.endDate = newEndDate;
