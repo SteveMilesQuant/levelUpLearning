@@ -1,5 +1,76 @@
 // Class for a filterable and searchable table
 
+class FilterTableColumn {
+    constructor(box, elem) {
+        this.box = box;
+        this.elem = elem;
+        this.value = null;
+        this.sortValue = null;
+        this.searchKey = null;
+        box.appendChild(elem);
+    }
+
+    setValue(value) {
+        this.value = value;
+    }
+}
+
+class FilterTableText extends FilterTableColumn {
+    constructor(box) {
+        let elem = document.createElement('p');
+        super(box, elem);
+    }
+
+    setValue(inValue) {
+        super.setValue(inValue);
+        this.elem.innerText = inValue;
+        this.sortValue = inValue;
+    }
+}
+
+class FilterTableRange extends FilterTableColumn {
+    constructor(box) {
+        let elem = document.createElement('p');
+        super(box, elem);
+    }
+
+    setValue(inValue) {
+        super.setValue(inValue);
+        let rangeText = inValue[0] + ' to ' + inValue[1];
+        this.elem.innerText = rangeText;
+        this.sortValue = inValue[0];
+    }
+}
+
+class FilterTableDatetime extends FilterTableColumn {
+    constructor(box) {
+        let elem = document.createElement('input');
+        elem.setAttribute('type', 'datetime-local');
+        elem.disabled = true;
+        super(box, elem);
+    }
+
+    setValue(inValue) {
+        super.setValue(Date.parse(inValue));
+        this.elem.value = inValue;
+        this.sortValue = inValue;
+    }
+}
+
+class FilterTableBoolean extends FilterTableColumn {
+    constructor(box) {
+        let elem = document.createElement('p');
+        super(box, elem);
+    }
+
+    setValue(inValue) {
+        super.setValue(inValue);
+        let boolText = (inValue)? 'True' : 'False';
+        this.elem.innerText = boolText;
+        this.sortValue = inValue;
+    }
+}
+
 
 // Currently supported display types
 const DisplayType = {
@@ -17,12 +88,11 @@ const FilterType = {
 };
 
 // Column configuration
-class FilterTableColumn {
-    constructor(label, displayType, boxType, sourceCol, filterType=null, searchable=false, sortable=false) {
+class FilterTableColumnConfig {
+    constructor(label, displayType, boxType, filterType=null, searchable=false, sortable=false) {
         this.label = label;
         this.displayType = displayType;
         this.boxType = boxType;
-        this.sourceCol = sourceCol;
         this.filterType = filterType;
         this.searchable = searchable;
         this.sortable = sortable;
@@ -197,7 +267,7 @@ class FilterTable {
 
     // Append a row to this filter table
     // Creates cross-references between filters, rows, and "filter values"
-    appendRow(rawRow) {
+    appendEmptyRow() {
         if (this.useTableContainer) {
             var newRow = this.htmlTable.insertRow(this.htmlTable.rows.length + this.insertRowShiftIdx);
         }
@@ -210,7 +280,6 @@ class FilterTable {
         // Initialize our special information for this row
         // Since we want to replace remove(), we'll just put our extra stuff here
         //        instead of creating new row class that contains the html row
-        newRow.searchKey = '';
         newRow.filterValuesByCol = Array(this.colMeta.length).fill(null);
         newRow.origRemove = newRow.remove;
         newRow.remove = function () {
@@ -239,80 +308,65 @@ class FilterTable {
                 }
             }
         }
-        if (this.sortCol) newRow.sortVals = Array(this.colMeta.length).fill(null);
+        newRow.filterTable = this;
 
-        // Append this row to the table, one column at a time
-        for (let colIdx in this.colMeta) {
-            const col = this.colMeta[colIdx];
-
-            // Collect all the source values into an array
-            let srcData = rawRow;
-            for (let srcColItem of col.sourceCol.split('.')) {
-                srcData = srcData[srcColItem];
-            }
-            if (srcData === null) srcData = '';
-
-            // Create a column with this label
-            let newCol = null;
-            let newText = null;
+        newRow.filterTableColumns = []
+        for (const col of this.colMeta) {
+            let box = null;
             if (this.useTableContainer) {
-                newCol = newRow.insertCell();
+                box = newRow.insertCell();
             }
             else {
-                newCol = document.createElement(col.boxType);
-                newRow.appendChild(newCol);
+                box = document.createElement(col.boxType);
+                newRow.appendChild(box);
             }
+
             switch(col.displayType) {
                 case DisplayType.Range:
-                    newText = document.createElement('p');
-                    newText.innerText = srcData[0] + ' to ' + srcData[1];
-                    newCol.appendChild(newText);
-                    if (col.sortable) newRow.sortVals[colIdx] = srcData[0];
+                    newRow.filterTableColumns.push(new FilterTableRange(box));
                     break;
                 case DisplayType.Datetime:
-                    let newInput = document.createElement('input');
-                    newInput.setAttribute('type', 'datetime-local');
-                    newInput.value = srcData;
-                    newInput.disabled = true;
-                    newCol.appendChild(newInput);
-                    if (col.sortable) newRow.sortVals[colIdx] = Date.parse(srcData);
+                    newRow.filterTableColumns.push(new FilterTableDatetime(box));
                     break;
                 case DisplayType.Boolean:
-                    newText = document.createElement('p');
-                    newText.innerText = (srcData)? 'True' : 'False';
-                    newCol.appendChild(newText);
-                    if (col.sortable) newRow.sortVals[colIdx] = srcData;
+                    newRow.filterTableColumns.push(new FilterTableBoolean(box));
                     break;
                 case DisplayType.Simple:
                 default:
-                    newText = document.createElement('p');
-                    newText.innerText = srcData;
-                    newCol.appendChild(newText);
-                    if (col.sortable) newRow.sortVals[colIdx] = srcData;
+                    newRow.filterTableColumns.push(new FilterTableText(box));
                     break;
             }
+        }
+
+        newRow.setColValue = function(colIdx, value) {
+            let filterTable = this.filterTable;
+            const colMeta = filterTable.colMeta[colIdx];
+
+            let col = this.filterTableColumns[colIdx];
+            col.setValue(value);
+            if (colMeta.searchable) col.searchKey = col.value.trim().toLowerCase();
 
             // Process filter: add cross references between row, filter, and filter value
-            if (col.filterType) {
-                let filter = this.filters[colIdx];
-                if (!newRow.filterValuesByCol[colIdx]) newRow.filterValuesByCol[colIdx] = [];
+            if (colMeta.filterType) {
+                let filter = filterTable.filters[colIdx];
+                if (!this.filterValuesByCol[colIdx]) this.filterValuesByCol[colIdx] = [];
                 switch(filter.filterType) {
                     case FilterType.CheckBoxes:
-                        let checkBoxValue = filter.filterValues[newText.innerText];
-                        if (!checkBoxValue) checkBoxValue = new CheckBoxValue(newText.innerText, filter, colIdx);
-                        checkBoxValue.appendRow(newRow);
+                        let checkBoxValue = filter.filterValues[col.value];
+                        if (!checkBoxValue) checkBoxValue = new CheckBoxValue(col.value, filter, colIdx);
+                        checkBoxValue.appendRow(this);
                         break;
                     case FilterType.Tags:
-                        for (const word of srcData.split(" ")) {
+                        for (const word of col.value.split(" ")) {
                             let checkBoxValue = filter.filterValues[word];
                             if (!checkBoxValue) checkBoxValue = new CheckBoxValue(word, filter, colIdx);
-                            checkBoxValue.appendRow(newRow);
+                            checkBoxValue.appendRow(this);
                         }
                         break;
                     case FilterType.IntRange:
-                        let rangeValue = filter.filterValues[srcData];
-                        if (!rangeValue) rangeValue = new IntRangeValue(srcData, filter, colIdx);
-                        rangeValue.appendRow(newRow);
+                        let rangeValue = filter.filterValues[col.value];
+                        if (!rangeValue) rangeValue = new IntRangeValue(col.value, filter, colIdx);
+                        rangeValue.appendRow(this);
                         break;
                     default:
                         // Do nothing
@@ -320,18 +374,8 @@ class FilterTable {
                 }
             }
 
-            // For searchable columns, add value to search key
-            if (col.searchable) {
-                if (newRow.searchKey.length === 0) newRow.searchKey = srcData.trim().toLowerCase();
-                else newRow.searchKey += ' ' + srcData.trim().toLowerCase();
-            }
-        } // loop on columns
-
-        // Check search box and filter values, to perhaps hide a row that was already searched or filtered out
-        this.checkSearchBox();
-
-        // Finally, if sorting, perhaps move this row into position
-        this.sort();
+            return col;
+        }
 
         return newRow;
     }
@@ -355,17 +399,18 @@ class FilterTable {
                 // Nothing searched - include all rows
                 row.selectedBySearch = true;
             }
-            else if (row.searchKey.length === 0) {
-                // Somehow no search key - never include
-                row.selectedBySearch = false;
-            }
             else {
-                row.selectedBySearch = true;
-                for (const key of keysToCheck) {
-                    if (row.searchKey.indexOf(key) === -1) {
-                        row.selectedBySearch = false;
-                        break;
+                row.selectedBySearch = false;
+                for (const col of row.filterTableColumns) {
+                    if (col.searchKey) {
+                        for (const key of keysToCheck) {
+                            if (col.searchKey.indexOf(key) !== -1) {
+                                row.selectedBySearch = true;
+                                break;
+                            }
+                        }
                     }
+                    if (row.selectedBySearch) break;
                 }
             }
             row.filterSetHidden();
@@ -378,8 +423,8 @@ class FilterTable {
             var sortColIdx = this.sortCol.colIdx;
             var sortDirection = (this.sortCol.ascending)? -1 : 1;
             this.rows.sort(function doCompare(a, b) {
-                let a_val = a.sortVals[sortColIdx];
-                let b_val = b.sortVals[sortColIdx];
+                let a_val = a.filterTableColumns[sortColIdx].sortValue;
+                let b_val = b.filterTableColumns[sortColIdx].sortValue;
                 if (a_val < b_val) return sortDirection;
                 else if (a_val > b_val) return -sortDirection;
                 else return 0;

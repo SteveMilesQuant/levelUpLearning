@@ -29,34 +29,47 @@
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script>
-  // One-time setup
+  const CampTblColIdx = {
+      Title: 0,
+      Instructor: 1,
+      Tags: 2,
+      GradeRange: 3,
+      StartTime: 4
+  };
+
   window.onload = function() {
     commonOnLoad();
 
-    colMeta = [];
-    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'h2', 'program.title', filterType=null, searchable=true, sortable=false));
-    colMeta.push(new FilterTableColumn('Primary Instructor', DisplayType.Simple, 'span', 'primary_instructor.full_name', filterType=FilterType.CheckBoxes, searchable=true, sortable=false));
-    colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'span', 'program.tags', filterType=FilterType.Tags, searchable=true, sortable=false));
-    colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'span', 'program.grade_range', filterType=FilterType.IntRange, searchable=false, sortable=false));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'span', 'first_level_schedule.start_time', filterType=null, searchable=true, sortable=false));
+    colMeta = Array(Object.keys(CampTblColIdx).length).fill(null);
+    colMeta[CampTblColIdx.Title] = new FilterTableColumnConfig('Title', DisplayType.Simple, 'h2', filterType=null, searchable=true, sortable=false);
+    colMeta[CampTblColIdx.Instructor] = new FilterTableColumnConfig('Primary Instructor', DisplayType.Simple, 'span', filterType=FilterType.CheckBoxes, searchable=true, sortable=false);
+    colMeta[CampTblColIdx.Tags] = new FilterTableColumnConfig('Tags', DisplayType.Simple, 'span', filterType=FilterType.Tags, searchable=true, sortable=false);
+    colMeta[CampTblColIdx.GradeRange] = new FilterTableColumnConfig('Grade Range', DisplayType.Range, 'span', filterType=FilterType.IntRange, searchable=false, sortable=false);
+    colMeta[CampTblColIdx.StartTime] = new FilterTableColumnConfig('Start Time', DisplayType.Datetime, 'span', filterType=null, searchable=false, sortable=false);
 
     let htmlTable = document.getElementById('camps-table');
     let filtersBox = document.getElementById('filters-box');
     let tableSearchBox = document.getElementById('search-box-text');
-    window.campsTable = new FilterTable(colMeta, htmlTable, 0, filtersBox, tableSearchBox, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']);
+    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    window.campsTable = new FilterTable(colMeta, htmlTable, 0, filtersBox, tableSearchBox, sortImages);
 
     http.get('/camps').then((campList) => {
-      for (let camp of campList) {
+      for (const camp of campList) {
+        let campRow = addCampToTable(camp);
+
         http.get('/programs/' + camp.program_id).then((program) => {
-          camp.program = program;
-          http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
-            http.get('/camps/' + camp.id + '/levels/' + levelList[0].id).then((firstLevelSchedule) => {
-              camp.first_level_schedule = firstLevelSchedule;
-              http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
-                camp.primary_instructor = instructor;
-                addCampToTable(camp);
-              });
-            });
+          campRow.setColValue(CampTblColIdx.Title, program.title);
+          campRow.setColValue(CampTblColIdx.Tags, program.tags);
+          campRow.setColValue(CampTblColIdx.GradeRange, program.grade_range);
+        });
+
+        http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
+          campRow.setColValue(CampTblColIdx.Instructor, instructor.full_name);
+        });
+
+        http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+          http.get('/camps/' + camp.id + '/levels/' + levelList[0].id).then((firstLevelSchedule) => {
+            campRow.setColValue(CampTblColIdx.StartTime, firstLevelSchedule.start_time);
           });
         });
       }
@@ -64,14 +77,16 @@
   }
 
   function addCampToTable(camp) {
-    let newRow = window.campsTable.appendRow(camp);
+    let newRow = window.campsTable.appendEmptyRow();
 
-    let title = newRow.childNodes[0];
-    let instructor = newRow.childNodes[1];
-    let tags = newRow.childNodes[2];
-    let grade_range = newRow.childNodes[3];
-    let start_time = newRow.childNodes[4];
+    let title = newRow.filterTableColumns[CampTblColIdx.Title].box;
+    let instructor = newRow.filterTableColumns[CampTblColIdx.Instructor].box;
+    let tags = newRow.filterTableColumns[CampTblColIdx.Tags].box;
+    let grade_range = newRow.filterTableColumns[CampTblColIdx.GradeRange].box;
+    let start_time = newRow.filterTableColumns[CampTblColIdx.StartTime].box;
     insertCampRowContent(camp.id, newRow, title, instructor, tags, grade_range, start_time);
+
+    return newRow;
   }
 </script>
 {% endblock %}

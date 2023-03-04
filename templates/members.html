@@ -21,27 +21,36 @@
 {% block script %}
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script>
+
+  const UserTblColIdx = {
+      Name: 0,
+      Email: 1,
+      FirstRole: 2
+  };
+
   window.onload = function () {
     commonOnLoad();
 
     http.get('/roles').then((rolesList) => {
-      colMeta = [];
-      colMeta.push(new FilterTableColumn('Name', DisplayType.Simple, 'tr', 'full_name', filterType=null, searchable=true, sortable=true));
-      colMeta.push(new FilterTableColumn('Email', DisplayType.Simple, 'tr', 'primary_email_address', filterType=null, searchable=true, sortable=true));
-      for (const role of rolesList) {
+      colMeta = Array(Object.keys(UserTblColIdx).length - 1).fill(null);
+      colMeta[UserTblColIdx.Name] = new FilterTableColumnConfig('Name', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
+      colMeta[UserTblColIdx.Email] = new FilterTableColumnConfig('Email', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
+      for (const roleIdx in rolesList) {
+        const role = rolesList[roleIdx];
         let displayName = role.name.toLowerCase();
         displayName =  displayName.charAt(0).toUpperCase() + displayName.substring(1, displayName.length);
-        colMeta.push(new FilterTableColumn(displayName, DisplayType.Simple, 'tr', role.name, filterType=null, searchable=true));
+        colMeta.push(new FilterTableColumnConfig(displayName, DisplayType.Simple, 'tr', filterType=null, searchable=false, sortable=false));
       }
 
       let htmlTable = document.getElementById('members-table');
       let tableSearchBox = document.getElementById('search-box-text');
-      window.membersTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']);
+      let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+      window.membersTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox, sortImages);
 
       http.get('/users').then((userList) => {
         let yesOnClick = function () {
           let role = this.userRole;
-          let user = this.parentNode.user;
+          let user = this.user;
           if (confirm('Disable the ' + role.name + ' role for ' + user.full_name + '?')) {
             http.delete('/users/' + user.id + '/roles', role.name);
             this.innerText = 'No';
@@ -50,7 +59,7 @@
         }
         let noOnClick = function () {
           let role = this.userRole;
-          let user = this.parentNode.user;
+          let user = this.user;
           if (confirm('Enable the ' + role.name + ' role for ' + user.full_name + '?')) {
             http.post('/users/' + user.id + '/roles/' + role.name, null).then((role_name) => {
               this.innerText = 'Yes';
@@ -60,32 +69,35 @@
         }
 
         for (let user of userList) {
-          for (const role of rolesList) {
-            user[role.name] = 'No';
-          }
-          for (const role of user.roles) {
-            user[role] = 'Yes';
-          }
-          newRow = window.membersTable.appendRow(user);
-          newRow.user = user;
+          newRow = window.membersTable.appendEmptyRow(user);
+          newRow.setColValue(UserTblColIdx.Name, user.full_name);
+          newRow.setColValue(UserTblColIdx.Email, user.primary_email_address);
 
           let roleIdx = 0;
-          for (let colIdx = 2; colIdx < newRow.childNodes.length; colIdx++, roleIdx++) {
-            let col = newRow.childNodes[colIdx];
-            col.classList.add('selectable');
-            col.userRole = rolesList[roleIdx];
-            col.yesOnClick = yesOnClick;
-            col.noOnClick = noOnClick;
+          for (let colIdx = UserTblColIdx.FirstRole; colIdx < newRow.childNodes.length; colIdx++, roleIdx++) {
+            let role = rolesList[roleIdx];
+            let userHasRole = user.roles.find(elem => elem === role.name);
 
-            if (col.innerText === 'Yes') {
-              col.onclick = col.yesOnClick;
+            let col = null;
+            if (userHasRole) {
+              col = newRow.setColValue(colIdx, 'Yes');
+              col.box.onclick = yesOnClick;
             }
             else {
-              col.onclick = col.noOnClick;
+              col = newRow.setColValue(colIdx, 'No');
+              col.box.onclick = noOnClick;
             }
+
+            col.box.classList.add('selectable');
+            col.box.userRole = role;
+            col.box.user = user;
+            col.box.yesOnClick = yesOnClick;
+            col.box.noOnClick = noOnClick;
           }
         }
       });
+
+      window.membersTable.sort();
     });
   }
 </script>

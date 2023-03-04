@@ -68,36 +68,54 @@
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script>
-  // One-time setup
+  const CampTblColIdx = {
+      Title: 0,
+      Instructor: 1,
+      StartTime: 2,
+      Published: 3
+  };
+
   window.onload = function() {
     commonOnLoad();
 
-    colMeta = [];
-    colMeta.push(new FilterTableColumn('Program Title', DisplayType.Simple, 'tr', 'program.title', filterType=null, searchable=true, sortable=true));
-    colMeta.push(new FilterTableColumn('Primary Instructor', DisplayType.Simple, 'tr', 'primary_instructor.full_name', filterType=FilterType.CheckBoxes, searchable=true, sortable=true));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'first_level_schedule.start_time', filterType=null, searchable=true, sortable=true));
-    colMeta.push(new FilterTableColumn('Published?', DisplayType.Boolean, 'tr', 'is_published', filterType=FilterType.CheckBoxes, searchable=false));
+    colMeta = Array(Object.keys(CampTblColIdx).length).fill(null);
+    colMeta[CampTblColIdx.Title] = new FilterTableColumnConfig('Program Title', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
+    colMeta[CampTblColIdx.Instructor] = new FilterTableColumnConfig('Primary Instructor', DisplayType.Simple, 'tr', filterType=FilterType.CheckBoxes, searchable=true, sortable=true);
+    colMeta[CampTblColIdx.StartTime] = new FilterTableColumnConfig('Start Time', DisplayType.Datetime, 'tr', filterType=null, searchable=false, sortable=true);
+    colMeta[CampTblColIdx.Published] = new FilterTableColumnConfig('Published?', DisplayType.Boolean, 'tr', filterType=FilterType.CheckBoxes, searchable=false);
 
     let htmlTable = document.getElementById('camps-table');
     let filtersBox = document.getElementById('filters-box');
     let tableSearchBox = document.getElementById('search-box-text');
-    window.campsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, tableSearchBox, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']); // -1 for row shift - we have one extra final static row for "Add Camp"
+    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    window.campsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, tableSearchBox, sortImages); // -1 for row shift - we have one extra final static row for "Add Camp"
+
+    // We're not going to sort at first, so enable the sort up button
+    let sortUpButton = htmlTable.firstElementChild.firstElementChild.firstElementChild.children[1]; // TODO: make this less ugly
+    sortUpButton.disabled = false;
 
     http.get('/schedule').then((campList) => {
-      for (let camp of campList) {
+      for (const camp of campList) {
+        let campRow = addCampToTable(camp);
+
         http.get('/programs/' + camp.program_id).then((program) => {
-          camp.program = program;
-          http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
-            http.get('/camps/' + camp.id + '/levels/' + levelList[0].id).then((firstLevelSchedule) => {
-              camp.first_level_schedule = firstLevelSchedule;
-              http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
-                camp.primary_instructor = instructor;
-                addCampToTable(camp);
-              });
-            });
+          campRow.setColValue(CampTblColIdx.Title, program.title);
+        });
+
+        http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
+          campRow.setColValue(CampTblColIdx.Instructor, instructor.full_name);
+        });
+
+        http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+          http.get('/camps/' + camp.id + '/levels/' + levelList[0].id).then((firstLevelSchedule) => {
+            campRow.setColValue(CampTblColIdx.StartTime, firstLevelSchedule.start_time);
           });
         });
+
+        campRow.setColValue(CampTblColIdx.Published, camp.is_published);
       }
+
+      // Don't sort at first
     });
 
     let htmlProgramList = document.getElementById('new-camp-program-list');
@@ -122,7 +140,7 @@
   }
 
   function addCampToTable(camp) {
-    let newRow = window.campsTable.appendRow(camp);
+    let newRow = window.campsTable.appendEmptyRow(camp);
     newRow.classList.add('selectable');
     newRow.campId = camp.id;
 
@@ -146,10 +164,12 @@
     }
     newCol.appendChild(newButton);
 
-    
+
     let text = document.createElement('strong');
     text.innerHTML = 'Delete';
     newButton.appendChild(text);
+
+    return newRow;
   }
 
   function resetNewCamp() {
@@ -175,18 +195,13 @@
       campData = new CampData(selectedProgram.id, selectedInstructor.id, false);
       firstLevelScheduleData = new LevelSchedule(startDateTime, null);
       http.post('/camps', campData).then((camp) => {
-        http.get('/programs/' + camp.program_id).then((program) => {
-          camp.program = program;
-          http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
-            firstLevelId = levelList[0].id;
-            http.put('/camps/' + camp.id + '/levels', firstLevelId, firstLevelScheduleData).then((firstLevelSchedule) => {
-              firstLevelSchedule.start_date = firstLevelSchedule.start_time.split('T')[0];
-              camp.first_level_schedule = firstLevelSchedule;
-              http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
-                camp.primary_instructor = instructor;
-                addCampToTable(camp);
-              });
-            });
+        let programGetPromise = http.get('/programs/' + camp.program_id);
+
+        http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+          firstLevelId = levelList[0].id;
+          levelPutPromise = http.put('/camps/' + camp.id + '/levels', firstLevelId, firstLevelScheduleData)
+          Promise.all([programGetPromise, levelPutPromise]).then((values) => {
+            http.redirect('/schedule/' + values[0].id);
           });
         });
       });

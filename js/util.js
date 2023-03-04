@@ -58,8 +58,11 @@ function insertCampRowContent(campId, rowBox, titleBox, instructorBox, tagsBox, 
     let link = document.createElement('a');
     link.href = '/camps/' + campId;
     rowBox.appendChild(link);
+    
+    let withText = document.createElement('p');
+    withText.innerText = 'with ';
+    instructorBox.insertBefore(withText, instructorBox.firstElementChild);
 
-    instructorBox.innerText = ' with ' + instructorBox.innerText;
     let hLine = document.createElement('hr');
     hLine.classList.add('h-divider');
 

@@ -62,21 +62,30 @@
 {% block script %}
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script>
-  // One-time setup
+  const ProgramTblColIdx = {
+      Title: 0,
+      Tags: 1,
+      GradeRange: 2
+  };
+
   window.onload = function() {
     commonOnLoad();
 
-    colMeta = [];
-    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'tr', 'title', filterType=null, searchable=true, sortable=true));
-    colMeta.push(new FilterTableColumn('Tags', DisplayType.Simple, 'tr', 'tags', filterType=FilterType.Tags, searchable=true, sortable=false));
-    colMeta.push(new FilterTableColumn('Grade Range', DisplayType.Range, 'tr', 'grade_range', filterType=FilterType.IntRange, searchable=false, sortable=true));
+    colMeta = Array(Object.keys(ProgramTblColIdx).length).fill(null);
+    colMeta[ProgramTblColIdx.Title] = new FilterTableColumnConfig('Title', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
+    colMeta[ProgramTblColIdx.Tags] = new FilterTableColumnConfig('Tags', DisplayType.Simple, 'tr', filterType=FilterType.Tags, searchable=true, sortable=false);
+    colMeta[ProgramTblColIdx.GradeRange] = new FilterTableColumnConfig('Grade Range', DisplayType.Range, 'tr', filterType=FilterType.IntRange, searchable=false, sortable=true);
 
     let htmlTable = document.getElementById('programs-table');
     let filtersBox = document.getElementById('filters-box');
     let searchBox = document.getElementById('search-box-text');
-    window.programsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, searchBox, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']); // -1 for row shift - we have one extra final static row for "Add Program"
+    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    window.programsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, searchBox, sortImages); // -1 for row shift - we have one extra final static row for "Add Program"
 
-    http.get('/programs').then((programList) => { for (const program of programList) addProgramToTable(program); });
+    http.get('/programs').then((programList) => {
+      for (const program of programList) addProgramToTable(program);
+      window.programsTable.sort();
+    });
   }
 
   function resetNewProgram() {
@@ -89,7 +98,12 @@
   }
 
   function addProgramToTable(program) {
-    let newRow = window.programsTable.appendRow(program);
+    let newRow = window.programsTable.appendEmptyRow();
+
+    newRow.setColValue(ProgramTblColIdx.Title, program.title);
+    newRow.setColValue(ProgramTblColIdx.Tags, program.tags);
+    newRow.setColValue(ProgramTblColIdx.GradeRange, program.grade_range);
+
     newRow.programId = program.id;
     newRow.classList.add('selectable');
 
@@ -131,9 +145,7 @@
       levelData = new LevelData('First Level', 1, '');
 
       http.post('/programs', programData).then((program) => {
-        resetNewProgram();
-        addProgramToTable(program);
-        http.post('/programs/' + program.id + '/levels', levelData).then((firstLevel) => {
+        http.post('/programs/' + program.id + '/levels', levelData).then((level) => {
           http.redirect('/programs/' + program.id);
         });
       });

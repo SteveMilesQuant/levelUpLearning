@@ -3,7 +3,7 @@
 {% block content %}
   <span class='content-body'>
     <div class='content-item'>
-      <h1 class='selectable'><a id='program-title'/></h1>
+      <h1 class='selectable'><a id='program-title'></a></h1>
       <hr class='h-divider'></hr>
     </div>
     <div class='content-item'>
@@ -72,20 +72,27 @@
 <script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script>
-  // One-time setup
+  const LvlTblColIdx = {
+      Level: 0,
+      Title: 1,
+      StartTime: 2,
+      EndTime: 3
+  };
+
   window.onload = function() {
     commonOnLoad();
 
     campId = getCampIdStr();
 
-    colMeta = [];
-    colMeta.push(new FilterTableColumn('Level', DisplayType.Simple, 'tr', 'list_index', filterType=null, searchable=false, sortable=true));
-    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'tr', 'title', filterType=null, searchable=true, sortable=true));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'levelSchedule.start_time', filterType=null, searchable=true, sortable=false));
-    colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'tr', 'levelSchedule.end_time', filterType=null, searchable=true, sortable=false));
+    colMeta = Array(Object.keys(LvlTblColIdx).length).fill(null);
+    colMeta[LvlTblColIdx.Level] = new FilterTableColumnConfig('Level', DisplayType.Simple, 'tr', filterType=null, searchable=false, sortable=true);
+    colMeta[LvlTblColIdx.Title] = new FilterTableColumnConfig('Title', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
+    colMeta[LvlTblColIdx.StartTime] = new FilterTableColumnConfig('Start Time', DisplayType.Datetime, 'tr', filterType=null, searchable=false, sortable=false);
+    colMeta[LvlTblColIdx.EndTime] = new FilterTableColumnConfig('End Time', DisplayType.Datetime, 'tr', filterType=null, searchable=false, sortable=false);
 
     let htmlTable = document.getElementById('levels-table');
-    window.leveslTable = new FilterTable(colMeta, htmlTable, 0, null, null, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']);
+    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    window.leveslTable = new FilterTable(colMeta, htmlTable, 0, null, null, sortImages);
 
     http.get('/camps/' + campId).then((camp) => {
       window.camp = camp;
@@ -97,18 +104,44 @@
         hide('camp-unpublish');
         unhide('camp-publish');
       }
+
       http.get('/programs/' + camp.program_id).then((program) => {
-        http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
-          for (let level of levelList) {
-            http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
-              level.levelSchedule = levelSchedule;
-              addLevelToTable(level);
-            });
-          }
-        });
         let programTitle = document.getElementById('program-title');
         programTitle.innerText = program.title;
         programTitle.href = '/programs/' + program.id;
+      });
+
+      http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+        let levelPromises = [];
+        let levelRows = [];
+        for (const level of levelList) {
+          levelPromises.push(http.get('/camps/' + campId + '/levels/' + level.id));
+
+          let levelRow = addLevelToTable(level);
+          levelRows.push(levelRow);
+
+          let levelCol = levelRow.filterTableColumns[LvlTblColIdx.Level];
+          levelCol.setValue(level.list_index);
+
+          let levelTitle = levelRow.filterTableColumns[LvlTblColIdx.Title];
+          levelTitle.setValue(level.title);
+        }
+        for (const levelIdx in levelList) {
+          let level = levelList[levelIdx];
+          let levelRow = levelRows[levelIdx];
+
+          const levelPromise = levelPromises[levelIdx];
+          levelPromise.then((levelSchedule) => {
+            let startTimeCol = levelRow.filterTableColumns[LvlTblColIdx.StartTime];
+            startTimeCol.setValue(levelSchedule.start_time);
+
+            let endTimeCol = levelRow.filterTableColumns[LvlTblColIdx.EndTime];
+            endTimeCol.setValue(levelSchedule.end_time);
+          });
+        }
+        Promise.all(levelPromises).then((levelSchedules) => {
+          window.leveslTable.sort();
+        });
       });
 
       http.get('/camps/' + campId + '/instructors').then((instructorList) => {
@@ -144,14 +177,9 @@
   }
 
   function addLevelToTable(level) {
-    let campId = window.camp.id;
-    let newRow = window.leveslTable.appendRow(level);
-    let startTime = newRow.cells[2].firstChild;
-    let endTime = newRow.cells[3].firstChild;
+    let newRow = window.leveslTable.appendEmptyRow();
 
     // Add edit/confirm/cancel buttons off the right side
-    let newCol = newRow.insertCell();
-
     let editButton = document.createElement('button');
     let editImage = document.createElement('img');
     editButton.classList.add('selectable');
@@ -178,44 +206,68 @@
     cancelImage.alt = 'Cancel';
     cancelButton.appendChild(cancelImage);
 
+    editButton.levelRow = newRow;
     editButton.onclick = function () {
       editButton.hidden = true;
       confirmButton.hidden = false;
       cancelButton.hidden = false;
-      startTime.disabled = false;
-      endTime.disabled = false;
+
+      let levelRow = this.levelRow;
+      let startTimeCol = levelRow.filterTableColumns[LvlTblColIdx.StartTime];
+      let endTimeCol = levelRow.filterTableColumns[LvlTblColIdx.EndTime];
+      startTimeCol.elem.disabled = false;
+      endTimeCol.elem.disabled = false;
     }
 
+    confirmButton.levelRow = newRow;
+    confirmButton.level = level;
     confirmButton.onclick = function () {
+
       confirmButton.hidden = true;
       cancelButton.hidden = true;
-      startTime.disabled = true;
-      endTime.disabled = true;
 
-      let levelScheduleData = new LevelSchedule(startTime.value, endTime.value);
-      http.put('/camps/' + campId + '/levels', level.id, levelScheduleData).then((levelSchedule) => {
-        startTime.value = levelSchedule.start_time;
-        endTime.value = levelSchedule.end_time;
+      let campId = window.camp.id;
+      let levelRow = this.levelRow;
+      let startTime = levelRow.filterTableColumns[LvlTblColIdx.StartTime];
+      let endTime = levelRow.filterTableColumns[LvlTblColIdx.EndTime];
+      let levelScheduleData = new LevelSchedule(startTime.elem.value, endTime.elem.value);
+      http.put('/camps/' + campId + '/levels', this.level.id, levelScheduleData).then((levelSchedule) => {
+        let startTimeCol = levelRow.setColValue(LvlTblColIdx.StartTime, levelSchedule.start_time);
+        startTimeCol.elem.disabled = true;;
+
+        let endTimeCol = levelRow.setColValue(LvlTblColIdx.EndTime, levelSchedule.end_time);
+        endTimeCol.elem.disabled = true;
+
         editButton.hidden = false;
       });
     }
 
+    cancelButton.levelRow = newRow;
+    cancelButton.level = level;
     cancelButton.onclick = function () {
+      let levelRow = this.levelRow;
       confirmButton.hidden = true;
       cancelButton.hidden = true;
-      startTime.disabled = true;
-      endTime.disabled = true;
 
-      http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
-        startTime.value = levelSchedule.start_time;
-        endTime.value = levelSchedule.end_time;
+      let campId = window.camp.id;
+      let row = this.levelRow;
+      http.get('/camps/' + campId + '/levels/' + this.level.id).then((levelSchedule) => {
+        let startTimeCol = levelRow.setColValue(LvlTblColIdx.StartTime, levelSchedule.start_time);
+        startTimeCol.elem.disabled = true;;
+
+        let endTimeCol = levelRow.setColValue(LvlTblColIdx.EndTime, levelSchedule.end_time);
+        endTimeCol.elem.disabled = true;
+
         editButton.hidden = false;
       });
     }
 
+    let newCol = newRow.insertCell();
     newCol.appendChild(editButton);
     newCol.appendChild(confirmButton);
     newCol.appendChild(cancelButton);
+
+    return newRow;
   }
 
   function addInstructorToList(instructor) {

@@ -38,35 +38,48 @@
 <script src="{{ url_for('js', path='/searchlist.js') }}"></script>
 <script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script>
-  // One-time setup
+  const LevelTblColIdx = {
+      Level: 0,
+      Title: 1,
+      StartTime: 2,
+      EndTime: 3
+  };
+
   window.onload = function() {
     commonOnLoad();
 
     campId = getCampIdStr();
 
-    colMeta = [];
-    colMeta.push(new FilterTableColumn('Level', DisplayType.Simple, 'tr', 'list_index', filterType=null, searchable=false, sortable=true));
-    colMeta.push(new FilterTableColumn('Title', DisplayType.Simple, 'tr', 'title', filterType=null, searchable=true, sortable=true));
-    colMeta.push(new FilterTableColumn('Start Time', DisplayType.Datetime, 'tr', 'levelSchedule.start_time', filterType=null, searchable=true, sortable=false));
-    colMeta.push(new FilterTableColumn('End Time', DisplayType.Datetime, 'tr', 'levelSchedule.end_time', filterType=null, searchable=true, sortable=false));
+    colMeta = Array(Object.keys(LevelTblColIdx).length).fill(null);
+    colMeta[LevelTblColIdx.Level] = new FilterTableColumnConfig('Level', DisplayType.Simple, 'tr', filterType=null, searchable=false, sortable=true);
+    colMeta[LevelTblColIdx.Title] = new FilterTableColumnConfig('Title', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
+    colMeta[LevelTblColIdx.StartTime] = new FilterTableColumnConfig('Start Time', DisplayType.Datetime, 'tr', filterType=null, searchable=false, sortable=false);
+    colMeta[LevelTblColIdx.EndTime] = new FilterTableColumnConfig('End Time', DisplayType.Datetime, 'tr', filterType=null, searchable=false, sortable=false);
 
     let htmlTable = document.getElementById('levels-table');
-    window.levelsTable = new FilterTable(colMeta, htmlTable, 0, null, null, sortImages=['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}']);
+    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    window.levelsTable = new FilterTable(colMeta, htmlTable, 0, null, null, sortImages);
 
     http.get('/camps/' + campId).then((camp) => {
       window.camp = camp;
       http.get('/programs/' + camp.program_id).then((program) => {
-        http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
-          for (let level of levelList) {
-            http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
-              level.levelSchedule = levelSchedule;
-              addLevelToTable(level);
-            });
-          }
-        });
         let programTitle = document.getElementById('program-title');
         programTitle.innerText = program.title;
         programTitle.href = '/programs/' + program.id;
+      });
+
+      http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+        for (const level of levelList) {
+          let levelRow = window.levelsTable.appendEmptyRow();
+          http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
+            levelRow.setColValue(LevelTblColIdx.StartTime, levelSchedule.start_time);
+            levelRow.setColValue(LevelTblColIdx.EndTime, levelSchedule.end_time);
+          });
+
+          levelRow.setColValue(LevelTblColIdx.Level, level.list_index);
+          levelRow.setColValue(LevelTblColIdx.Title, level.title);
+        }
+        window.levelsTable.sort();
       });
 
       http.get('/camps/' + campId + '/instructors').then((instructorList) => {
@@ -90,10 +103,6 @@
   function getCampIdStr() {
     const urlAsArray = document.URL.split("/");
     return urlAsArray[urlAsArray.indexOf("teach")+1];
-  }
-
-  function addLevelToTable(level) {
-    let newRow = window.levelsTable.appendRow(level);
   }
 
   function addInstructorToList(instructor) {

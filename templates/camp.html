@@ -70,7 +70,6 @@
 
 {% block script %}
 <script src="{{ url_for('js', path='/searchlist.js') }}"></script>
-<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
 <script src="{{ url_for('js', path='/calendar.js') }}"></script>
 <script>
   // One-time setup
@@ -105,13 +104,15 @@
           for (let level of levelList) {
             http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
               let eventBox = window.levelsCalendar.addEvent(level.title, levelSchedule.start_time, levelSchedule.end_time);
-              eventBox.levelId = level.id;
-              eventBox.onclick = function() {
-                let programId = window.camp.program_id;
-                http.get('/programs/' + programId + '/levels/' + this.levelId).then((level) => {
-                  displayLevel(level);
-                });
-              };
+              if (eventBox) {
+                eventBox.levelId = level.id;
+                eventBox.onclick = function() {
+                  let programId = window.camp.program_id;
+                  http.get('/programs/' + programId + '/levels/' + this.levelId).then((level) => {
+                    displayLevel(level);
+                  });
+                };
+              }
             });
           }
         });

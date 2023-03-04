@@ -188,22 +188,34 @@
 
     http.get('/students', id).then((student) => {
       displayStudent(student);
-      http.get('/students/' + id + '/camps').then((campList) => {
-        for (let camp of campList) {
-          http.get('/programs/' + camp.program_id).then((program) => {
-            camp.program = program;
-            http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
-              http.get('/camps/' + camp.id + '/levels/' + levelList[0].id).then((firstLevelSchedule) => {
-                camp.first_level_schedule = firstLevelSchedule;
-                http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id).then((instructor) => {
-                  camp.primary_instructor = instructor;
-                  addCampToList(camp);
-                });
-              });
-            });
+    });
+
+    http.get('/students/' + id + '/camps').then((campList) => {
+      for (let camp of campList) {
+        const programPromise = http.get('/programs/' + camp.program_id);
+        programPromise.then((program) => {
+          camp.program = program;
+        });
+
+        let levelPromise = http.get('/programs/' + camp.program_id + '/levels');
+        var levelSchedulePromise = null;
+        levelPromise.then((levelList) => {
+          levelSchedulePromise = http.get('/camps/' + camp.id + '/levels/' + levelList[0].id);
+          levelSchedulePromise.then((firstLevelSchedule) => {
+            camp.first_level_schedule = firstLevelSchedule;
           });
-        }
-      });
+        });
+        
+        const instructorPromise = http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id);
+        instructorPromise.then((instructor) => {
+          camp.primary_instructor = instructor;
+          
+        });
+        
+        Promise.all([programPromise, levelPromise, instructorPromise, levelSchedulePromise]).then((values) => {
+          addCampToList(camp);
+        });
+      }
     });
   }
 
