@@ -55,7 +55,11 @@
     </div>
     <div><strong>Camp grade range </strong><strong id='enroll-camp-grade-range'></strong></div>
     <div id='enroll-student-list' class='listbox listbox-popup'>
-      <!-- List of all possible students inserted here -->
+      <!-- List of all the user's students which haven't been enrolled inserted here -->
+    </div>
+    <div id='already-enrolled-students' hidden>
+      <strong>Already enrolled: </strong>
+      <!-- List of all the user's students which are already enrolled inserted here -->
     </div>
     <div>
       <span><button class='selectable' onclick='enrollStudent(); resetEnrollStudent();'>
@@ -82,41 +86,10 @@
     window.levelsCalendar = new Calendar(calendarBox, startDay=1, skipDays=[0, 7]);
     http.get('/camps/' + campId).then((camp) => {
       window.camp = camp;
-      http.get('/programs/' + camp.program_id).then((program) => {
-        let htmlStudentList = document.getElementById('enroll-student-list');
-        window.enrollStudentList = new SearchList(htmlStudentList, null);
-        http.get('/students').then((studentList) => {
-          for (const student of studentList) {
-            http.get('/students/' + student.id + '/camps').then((campList) => {
-              if (campList.find(element => element.id === camp.id) === undefined) {
-                let studentNameText = student.name;
-                if (student.grade_level < program.grade_range[0] || student.grade_level > program.grade_range[1]) {
-                  studentNameText += ' (Grade ' + student.grade_level;
-                  studentNameText += ' - Special Approval Required)';
-                }
-                window.enrollStudentList.appendValue(student.id, studentNameText);
-              }
-            });
-          }
-        });
 
-        http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
-          for (let level of levelList) {
-            http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
-              let eventBox = window.levelsCalendar.addEvent(level.title, levelSchedule.start_time, levelSchedule.end_time);
-              if (eventBox) {
-                eventBox.levelId = level.id;
-                eventBox.onclick = function() {
-                  let programId = window.camp.program_id;
-                  http.get('/programs/' + programId + '/levels/' + this.levelId).then((level) => {
-                    displayLevel(level);
-                  });
-                };
-              }
-            });
-          }
-        });
-
+      // Display the program information
+      const programPromise = http.get('/programs/' + camp.program_id);
+      programPromise.then((program) => {
         let programTitle = document.getElementById('program-title');
         programTitle.innerText = program.title;
         let programDesc = document.getElementById('program-description');
@@ -131,13 +104,60 @@
         enrollGradeRange.innerText = gradeRange;
       });
 
-      http.get('/camps/' + campId + '/instructors').then((instructorList) => {
-        for (const instructor of instructorList) {
-          addInstructorToList(instructor);
+      // Add students to "enroll student" popup
+      const studentPromise = http.get('/students');
+      Promise.all([studentPromise, programPromise]).then((values) => {
+        const studentList = values[0];
+        const program = values[1];
+
+        let htmlStudentList = document.getElementById('enroll-student-list');
+        window.enrollStudentList = new SearchList(htmlStudentList, null);
+
+        for (const student of studentList) {
+          http.get('/students/' + student.id + '/camps').then((campList) => {
+            if (campList.find(element => element.id === camp.id) === undefined) {
+              // Student not already in this camp
+              let studentNameText = student.name;
+              if (student.grade_level < program.grade_range[0] || student.grade_level > program.grade_range[1]) {
+                studentNameText += ' (Grade ' + student.grade_level;
+                studentNameText += ' - Special Approval Required)';
+              }
+              window.enrollStudentList.appendValue(student.id, studentNameText);
+            }
+            else {
+              // Student already in this camp
+              addEnrolledStudent(student);
+            }
+          });
         }
       });
+
+      // Get program levels
+      http.get('/programs/' + camp.program_id + '/levels').then((levelList) => {
+        for (let level of levelList) {
+          http.get('/camps/' + campId + '/levels/' + level.id).then((levelSchedule) => {
+            let eventBox = window.levelsCalendar.addEvent(level.title, levelSchedule.start_time, levelSchedule.end_time);
+            if (eventBox) {
+              eventBox.levelId = level.id;
+              eventBox.onclick = function() {
+                let programId = window.camp.program_id;
+                http.get('/programs/' + programId + '/levels/' + this.levelId).then((level) => {
+                  displayLevel(level);
+                });
+              };
+            }
+          });
+        }
+      });
+
     });
 
+    // Get list of instructors
+    http.get('/camps/' + campId + '/instructors').then((instructorList) => {
+      for (const instructor of instructorList) {
+        addInstructorToList(instructor);
+      }
+    });
 
   }
 
@@ -190,6 +210,19 @@
     }
   }
 
+  function addEnrolledStudent(student) {
+    let studentNameBox = document.createElement('strong');
+    studentNameBox.innerText = student.name;
+
+    let enrolledStudentsList = document.getElementById('already-enrolled-students');
+    enrolledStudentsList.appendChild(studentNameBox);
+
+    if (!enrolledStudentsList.hidden) {
+      studentNameBox.innerText = ', ' + studentNameBox.innerText;
+    }
+    enrolledStudentsList.hidden = false;
+  }
+
   function resetEnrollStudent() {
     hide('enroll-student');
     window.enrollStudentList.reset();
@@ -203,7 +236,9 @@
     // TODO: create requirement for this value
     if (selectedStudent) {
       http.post('/camps/' + campId + '/students/' + selectedStudent.id, null).then((student) => {
-        // TODO: display feedback that this succeeded
+        selectedStudent.remove();
+        addEnrolledStudent(student);
+        alert('Successfully enrolled ' + student.name);
       });
     }
   }

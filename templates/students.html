@@ -197,22 +197,17 @@
           camp.program = program;
         });
 
-        let levelPromise = http.get('/programs/' + camp.program_id + '/levels');
-        var levelSchedulePromise = null;
-        levelPromise.then((levelList) => {
-          levelSchedulePromise = http.get('/camps/' + camp.id + '/levels/' + levelList[0].id);
-          levelSchedulePromise.then((firstLevelSchedule) => {
-            camp.first_level_schedule = firstLevelSchedule;
-          });
+        let levelSchedulePromise = http.get('/camps/' + camp.program_id + '/levels');
+        levelSchedulePromise.then((levelScheduleList) => {
+          camp.first_level_schedule = levelScheduleList[0];
         });
-        
+
         const instructorPromise = http.get('/camps/' + camp.id + '/instructors/' + camp.primary_instructor_id);
         instructorPromise.then((instructor) => {
           camp.primary_instructor = instructor;
-          
         });
-        
-        Promise.all([programPromise, levelPromise, instructorPromise, levelSchedulePromise]).then((values) => {
+
+        Promise.all([programPromise, instructorPromise, levelSchedulePromise]).then((values) => {
           addCampToList(camp);
         });
       }

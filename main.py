@@ -461,6 +461,20 @@ async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int)
     return level_schedule
 
 
+@api_router.get("/camps/{camp_id}/levels")
+async def get_camp_level_schedules(request: Request, camp_id: int):
+    user = get_authorized_user(request, '/camps')
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
+    level_schedules = []
+    for level_id, level_schedule in camp.level_schedules.items():
+        level_schedule_response = level_schedule.dict()
+        level_schedule_response['level_id'] = level_id
+        level_schedules.append(level_schedule_response)
+    return level_schedules
+
+
 @api_router.get("/camps/{camp_id}/instructors")
 async def get_camp_instructors(request: Request, camp_id: int):
     user = get_authorized_user(request, '/camps')

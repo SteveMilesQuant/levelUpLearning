@@ -43,6 +43,12 @@ class ListRow {
     unselect() {
         this.htmlBox.classList.remove('selected');
     }
+
+    remove() {
+        this.htmlBox.remove();
+        let index = this.searchList.rows.indexOf(this);
+        if (index != -1) this.searchList.rows.splice(index, 1);
+    }
 }
 
 
