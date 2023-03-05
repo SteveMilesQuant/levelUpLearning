@@ -71,7 +71,7 @@
   window.onload = function() {
     commonOnLoad();
 
-    colMeta = Array(Object.keys(ProgramTblColIdx).length).fill(null);
+    let colMeta = Array(Object.keys(ProgramTblColIdx).length).fill(null);
     colMeta[ProgramTblColIdx.Title] = new FilterTableColumnConfig('Title', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
     colMeta[ProgramTblColIdx.Tags] = new FilterTableColumnConfig('Tags', DisplayType.Simple, 'tr', filterType=FilterType.Tags, searchable=true, sortable=false);
     colMeta[ProgramTblColIdx.GradeRange] = new FilterTableColumnConfig('Grade Range', DisplayType.Range, 'tr', filterType=FilterType.IntRange, searchable=false, sortable=true);

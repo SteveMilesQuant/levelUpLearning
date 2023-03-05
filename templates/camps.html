@@ -40,7 +40,7 @@
   window.onload = function() {
     commonOnLoad();
 
-    colMeta = Array(Object.keys(CampTblColIdx).length).fill(null);
+    let colMeta = Array(Object.keys(CampTblColIdx).length).fill(null);
     colMeta[CampTblColIdx.Title] = new FilterTableColumnConfig('Title', DisplayType.Simple, 'h2', filterType=null, searchable=true, sortable=false);
     colMeta[CampTblColIdx.Instructor] = new FilterTableColumnConfig('Primary Instructor', DisplayType.Simple, 'span', filterType=FilterType.CheckBoxes, searchable=true, sortable=false);
     colMeta[CampTblColIdx.Tags] = new FilterTableColumnConfig('Tags', DisplayType.Simple, 'span', filterType=FilterType.Tags, searchable=true, sortable=false);

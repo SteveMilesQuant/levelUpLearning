@@ -50,7 +50,7 @@
 
     campId = getCampIdStr();
 
-    colMeta = Array(Object.keys(LevelTblColIdx).length).fill(null);
+    let colMeta = Array(Object.keys(LevelTblColIdx).length).fill(null);
     colMeta[LevelTblColIdx.Level] = new FilterTableColumnConfig('Level', DisplayType.Simple, 'tr', filterType=null, searchable=false, sortable=true);
     colMeta[LevelTblColIdx.Title] = new FilterTableColumnConfig('Title', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
     colMeta[LevelTblColIdx.StartTime] = new FilterTableColumnConfig('Start Time', DisplayType.Datetime, 'tr', filterType=null, searchable=false, sortable=false);
@@ -122,8 +122,13 @@
     let text = document.createElement('p');
     text.innerText = student.name;
 
+    let link = document.createElement('a');
+    link.href = '/teach/' + window.camp.id + '/students/' + student.id;
+    link.appendChild(text);
+
     let box = document.createElement('div');
-    box.appendChild(text);
+    box.classList.add('selectable');
+    box.appendChild(link);
 
     let studentsBox = document.getElementById('students-box');
     studentsBox.appendChild(box);

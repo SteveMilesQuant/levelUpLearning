@@ -32,7 +32,7 @@
     commonOnLoad();
 
     http.get('/roles').then((rolesList) => {
-      colMeta = Array(Object.keys(UserTblColIdx).length - 1).fill(null);
+      let colMeta = Array(Object.keys(UserTblColIdx).length - 1).fill(null);
       colMeta[UserTblColIdx.Name] = new FilterTableColumnConfig('Name', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
       colMeta[UserTblColIdx.Email] = new FilterTableColumnConfig('Email', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
       for (const roleIdx in rolesList) {

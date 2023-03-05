@@ -78,7 +78,7 @@
   window.onload = function() {
     commonOnLoad();
 
-    colMeta = Array(Object.keys(CampTblColIdx).length).fill(null);
+    let colMeta = Array(Object.keys(CampTblColIdx).length).fill(null);
     colMeta[CampTblColIdx.Title] = new FilterTableColumnConfig('Program Title', DisplayType.Simple, 'tr', filterType=null, searchable=true, sortable=true);
     colMeta[CampTblColIdx.Instructor] = new FilterTableColumnConfig('Primary Instructor', DisplayType.Simple, 'tr', filterType=FilterType.CheckBoxes, searchable=true, sortable=true);
     colMeta[CampTblColIdx.StartTime] = new FilterTableColumnConfig('Start Time', DisplayType.Datetime, 'tr', filterType=null, searchable=false, sortable=true);

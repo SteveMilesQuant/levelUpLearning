@@ -269,6 +269,11 @@ async def get_teach_one(request: Request):
     return templates.TemplateResponse("teach_levels.html", {'request': request})
 
 
+@api_router.get("/teach/{camp_id}/students/{student_id}", response_class = HTMLResponse)
+async def get_teach_student(request: Request):
+    return templates.TemplateResponse("student.html", {'request': request})
+
+
 @api_router.get("/programs")
 async def get_programs(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
@@ -417,6 +422,51 @@ async def get_camp_students(request: Request, camp_id: int):
         student_response = student.dict(include=StudentResponse().dict())
         students.append(student_response)
     return students
+
+
+@api_router.get("/camps/{camp_id}/students/{student_id}", response_model = StudentResponse)
+async def get_camp_student(request: Request, camp_id: int, student_id: int):
+    user = get_authorized_user(request, '/teach')
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
+    if 'ADMIN' not in user.roles and camp.id not in user.camp_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
+    if student_id not in camp.student_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
+    return Student(db = app.db, id = student_id)
+
+
+@api_router.get("/camps/{camp_id}/students/{student_id}/camps")
+async def get_camp_student_camps(request: Request, camp_id: int, student_id: int):
+    user = get_authorized_user(request, '/teach')
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
+    if 'ADMIN' not in user.roles and camp.id not in user.camp_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
+    if student_id not in camp.student_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
+    student = Student(db = app.db, id = student_id)
+    return student.get_camps(db = app.db)
+    
+
+@api_router.get("/camps/{camp_id}/students/{student_id}/guardians")
+async def get_camp_student_guardians(request: Request, camp_id: int, student_id: int):
+    user = get_authorized_user(request, '/teach')
+    camp = Camp(db = app.db, id = camp_id)
+    if camp.id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
+    if 'ADMIN' not in user.roles and camp.id not in user.camp_ids:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
+    if student_id not in camp.student_ids:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
+    student = Student(db = app.db, id = student_id)
+    guardians = []
+    for user_id in student.get_guardian_ids(db = app.db):
+        guardian = User(db = app.db, id = user_id)
+        guardians.append(guardian.dict(include=UserResponseForAdmin().dict()))
+    return guardians
 
 
 ###############################################################################

@@ -69,7 +69,7 @@ class Student(StudentResponse):
                 WHERE id = {self.id};
         '''
         execute_write(db, delete_stmt)
-        
+
     def get_camps(self, db: Any):
         select_stmt = f'''
             SELECT camp_id
@@ -77,14 +77,27 @@ class Student(StudentResponse):
                 WHERE student_id = {self.id}
         '''
         result = execute_read(db, select_stmt)
-        
+
         camps = []
         for result_row in result or []:
             camp_id = result_row['camp_id']
             camp = Camp(db = db, id = camp_id)
             camps.append(camp.dict(include=CampResponse().dict()))
-            
+
         return camps
-        
+
+    def get_guardian_ids(self, db: Any):
+        select_stmt = f'''
+            SELECT user_id
+                FROM user_x_students
+                WHERE student_id = {self.id}
+        '''
+        result = execute_read(db, select_stmt)
+
+        guardian_ids = []
+        for result_row in result or []:
+            guardian_ids.append(result_row['user_id'])
+
+        return guardian_ids
 
 
