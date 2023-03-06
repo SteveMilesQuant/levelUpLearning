@@ -142,7 +142,7 @@ class FilterTable {
 
             if (this.useTableContainer) {
                 let colLabelText = document.createElement('span');
-                colLabelText.innerHTML = col.label;
+                colLabelText.innerText = col.label;
                 let newCol = document.createElement('th');
                 newCol.appendChild(colLabelText);
                 newRow.appendChild(newCol);

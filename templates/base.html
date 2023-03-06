@@ -58,6 +58,11 @@
 <script src="{{ url_for('js', path='/util.js') }}"></script>
 <script>
   function commonOnLoad() {
+    const params = new Proxy(new URLSearchParams(window.location.search), {
+      get: (searchParams, prop) => searchParams.get(prop),
+    });
+    if (params.message) alert(params.message);
+
     http.get('/user').then((user) => {
       if (user) {
         hide('dropdown-no-user');

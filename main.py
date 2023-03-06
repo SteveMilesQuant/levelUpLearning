@@ -67,7 +67,7 @@ def get_authorized_user(request, permission_url_path, required = True) -> Option
         user = None
     if required:
         if not user:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not logged in.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Auth: User not logged in.")
         for role_name in user.roles:
             role = app.roles[role_name]
             if permission_url_path == '/' or permission_url_path in role.permissible_endpoints:
@@ -139,8 +139,11 @@ async def signin_callback_get(request: Request, code):
 
 
 @api_router.get("/signout", response_class = RedirectResponse)
-async def signout_get(request: Request):
-    response = RedirectResponse(url='/')
+async def signout_get(request: Request, message: Optional[str]):
+    tgtUrl = '/'
+    if message is not None:
+        tgtUrl = tgtUrl + '?message="' + message + '"'
+    response = RedirectResponse(url=tgtUrl)
     response.delete_cookie(key = app.config.jwt_cookie_name)
     return response
 
@@ -174,8 +177,15 @@ async def get_user_roles(request: Request):
 
 
 @api_router.get("/instructors/{user_id}")
-async def instructor_get_one(request: Request, user_id: int):
-    return templates.TemplateResponse("instructor.html", {'request': request})
+async def instructor_get_one(request: Request, user_id: int, accept: Optional[str] = Header(None)):
+    if "text/html" in accept:
+        return templates.TemplateResponse("instructor.html", {'request': request})
+    else:
+        user = get_authorized_user(request, '/')
+        instructor = User(db = app.db, id = user_id)
+        if instructor.id is None or 'INSTRUCTOR' not in instructor.roles:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={user_id} does not exist.")
+        return user.dict(include=UserResponse().dict())
 
 
 

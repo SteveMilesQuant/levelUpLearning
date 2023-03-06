@@ -1,8 +1,19 @@
 // Simple HTTP interface
 
 class EasyHTTP {
-    async redirect(url) {
+    redirect(url) {
         window.location.href = url;
+    }
+
+    checkStatusCode(response, resData) {
+        if (response.status === 403) {
+            if (resData.detail.slice(0, 6) === 'Auth: ') {
+                this.redirect('/signout?message=' + resData.detail.slice(6, resData.detail.length-6));
+            }
+            else {
+                this.redirect('/?message=' + resData.detail);
+            }
+        }
     }
 
     async get(url, id = null) {
@@ -15,7 +26,7 @@ class EasyHTTP {
             }
         });
         const resData = await response.json();
-        if (response.status === 403) this.redirect('/signout');
+        this.checkStatusCode(response, resData);
         return resData;
     }
 
@@ -40,7 +51,7 @@ class EasyHTTP {
             body: bodyJson
         });
         const resData = await response.json();
-        if (response.status === 403) this.redirect('/signout');
+        this.checkStatusCode(response, resData);
         return resData;
     }
 
@@ -54,7 +65,7 @@ class EasyHTTP {
             body: bodyJson
         });
         const resData = await response.json();
-        if (response.status === 403) this.redirect('/signout');
+        this.checkStatusCode(response, resData);
         return resData;
     }
 }

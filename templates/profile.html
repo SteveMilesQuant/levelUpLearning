@@ -128,10 +128,10 @@
   }
 
   function putUser() {
-    let fullName = document.getElementById('profile-name').innerHTML;
+    let fullName = document.getElementById('profile-name').innerText;
     let emailAddress = document.getElementById('profile-email').value;
     let phoneNumber = document.getElementById('profile-phone-number').value;
-    let instructorSubjects = document.getElementById('instructor-subjects').innerHTML;
+    let instructorSubjects = document.getElementById('instructor-subjects').innerText;
     let instructorDescription = document.getElementById('instructor-description').value;
 
     userData = new UserData(fullName, emailAddress, phoneNumber, instructorSubjects, instructorDescription);
