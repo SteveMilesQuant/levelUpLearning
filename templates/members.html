@@ -71,7 +71,7 @@
         for (let user of userList) {
           newRow = window.membersTable.appendEmptyRow(user);
           newRow.setColValue(UserTblColIdx.Name, user.full_name);
-          newRow.setColValue(UserTblColIdx.Email, user.primary_email_address);
+          newRow.setColValue(UserTblColIdx.Email, user.email_address);
 
           let roleIdx = 0;
           for (let colIdx = UserTblColIdx.FirstRole; colIdx < newRow.childNodes.length; colIdx++, roleIdx++) {

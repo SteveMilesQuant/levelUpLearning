@@ -36,24 +36,20 @@ def load_all_roles(db: Any) -> Dict[str, Role]:
 
 
 class UserData(BaseModel):
-    given_name: Optional[str]
-    family_name: Optional[str]
-    full_name: Optional[str]
-    picture: Optional[str]
+    full_name: Optional[str] = ''
+    email_address: Optional[str] = ''
+    phone_number: Optional[str] = ''
+    instructor_subjects: Optional[str] = ''
+    instructor_description: Optional[str] = ''
 
 
 class UserResponse(UserData):
     id: Optional[int]
 
 
-class UserResponseForAdmin(UserResponse):
-    primary_email_address: Optional[str]
-
-
-class User(UserResponseForAdmin):
+class User(UserResponse):
     google_id: Optional[int]
     roles: Optional[List[str]] = []
-    email_addresses: Optional[List[str]] = []
     student_ids: Optional[List[int]] = []
     program_ids: Optional[List[int]] = []
     camp_ids: Optional[List[int]] = []
@@ -80,10 +76,11 @@ class User(UserResponseForAdmin):
             return False
         row = result[0] # should only be one
         self.google_id = row['google_id']
-        self.given_name = row['given_name']
-        self.family_name = row['family_name']
         self.full_name = row['full_name']
-        self.picture = row['picture']
+        self.email_address = row['email_address']
+        self.phone_number = row['phone_number']
+        self.instructor_subjects = row['instructor_subjects']
+        self.instructor_description = row['instructor_description']
 
         select_stmt = f'''
             SELECT role
@@ -92,18 +89,6 @@ class User(UserResponseForAdmin):
         '''
         result = execute_read(db, select_stmt)
         self.roles = [row['role'] for row in result or []]
-
-        select_stmt = f'''
-            SELECT email_address, is_primary
-                FROM user_x_email_addresses
-                WHERE user_id = {self.id}
-        '''
-        result = execute_read(db, select_stmt)
-        self.email_addresses.clear()
-        for row_idx, row in enumerate(result or []):
-            self.email_addresses.append(row['email_address'])
-            if row['is_primary']:
-                self.primary_email_address = row['email_address']
 
         select_stmt = f'''
             SELECT student_id
@@ -132,8 +117,8 @@ class User(UserResponseForAdmin):
 
     def _create(self, db: Any):
         insert_stmt = f'''
-            INSERT INTO user (google_id, given_name, family_name, full_name, picture)
-                VALUES ({self.google_id}, "{self.given_name}", "{self.family_name}", "{self.full_name}", "{self.picture}");
+            INSERT INTO user (google_id, full_name, email_address, phone_number, instructor_subjects, instructor_description)
+                VALUES ({self.google_id}, "{self.full_name}", "{self.email_address}", "{self.phone_number}", "{self.instructor_subjects}", "{self.instructor_description}");
         '''
         self.id = execute_write(db, insert_stmt)
 
@@ -159,24 +144,13 @@ class User(UserResponseForAdmin):
         if not self._load(db = db):
             self._create(db = db)
 
-    def update_basic(self, db: Any,
-            given_name: Optional[str] = None,
-            family_name: Optional[str] = None,
-            full_name: Optional[str] = None,
-            picture: Optional[str] = None
-        ):
-        if given_name is not None:
-            self.given_name = given_name
-        if family_name is not None:
-            self.family_name = family_name
-        if full_name is not None:
-            self.full_name = full_name
-        if picture is not None:
-            self.picture = picture
+    async def update_basic(self, db: Any):
         update_stmt = f'''
             UPDATE user
-                SET given_name="{self.given_name}", family_name="{self.family_name}",
-                    full_name="{self.full_name}", picture="{self.picture}"
+                SET full_name="{self.full_name}", email_address="{self.email_address}",
+                    phone_number="{self.phone_number}",
+                    instructor_subjects="{self.instructor_subjects}",
+                    instructor_description="{self.instructor_description}"
                 WHERE id = {self.id};
         '''
         execute_write(db, update_stmt)
@@ -184,11 +158,6 @@ class User(UserResponseForAdmin):
     def delete(self, db: Any):
         delete_stmt = f'''
             DELETE FROM user_x_roles
-                WHERE user_id = {self.id};
-        '''
-        execute_write(db, delete_stmt)
-        delete_stmt = f'''
-            DELETE FROM user_x_email_addresses
                 WHERE user_id = {self.id};
         '''
         execute_write(db, delete_stmt)
@@ -217,48 +186,6 @@ class User(UserResponseForAdmin):
             self.roles.remove(role)
             delete_stmt = f'''
                 DELETE FROM user_x_roles WHERE user_id={self.id} and role="{role}";
-            '''
-            execute_write(db, delete_stmt)
-
-    def make_email_address_primary(self, db: Any, email_address: str):
-        try:
-            old_primary_address = self.primary_email_address
-            email_address_index = self.email_addresses.index(email_address)
-            update_stmt = f'''
-                UPDATE user
-                    SET is_primary=FALSE
-                    WHERE ser_id={self.id} and email_address="{old_primary_address}";
-            '''
-            execute_write(db, update_stmt)
-            update_stmt = f'''
-                UPDATE user
-                    SET is_primary=TRUE
-                    WHERE ser_id={self.id} and email_address="{email_address}";
-            '''
-            execute_write(db, update_stmt)
-            self.primary_email_address = self.email_addresses[email_address_index]
-        except ValueError:
-            pass # not found - do nothing
-
-    def add_email_address(self, db: Any, email_address: str):
-        if email_address not in self.email_addresses:
-            if len(self.email_addresses) == 0:
-                is_primary = True
-                self.primary_email_address = email_address
-            else:
-                is_primary = False
-            self.email_addresses.append(email_address)
-            insert_stmt = f'''
-                INSERT INTO user_x_email_addresses (user_id, email_address, is_primary)
-                    VALUES ({self.id}, "{email_address}", {is_primary});
-            '''
-            execute_write(db, insert_stmt)
-
-    def remove_email_address(self, db: Any, email_address: str):
-        del_email_address = self.email_addresses.pop(email_address)
-        if del_email_address is not None:
-            delete_stmt = f'''
-                DELETE FROM user_x_email_addresses WHERE user_id={self.id} and email_address="{email_address}";
             '''
             execute_write(db, delete_stmt)
 
@@ -343,7 +270,7 @@ def load_all_instructors(db: Any):
     result = execute_read(db, select_stmt)
     for row in result or []:
         instructor = User(db = db, id = row['user_id'])
-        instructor_json = instructor.dict(include=UserResponseForAdmin().dict())
+        instructor_json = instructor.dict(include=UserResponse().dict())
         instructors.append(instructor_json)
     return instructors
 
@@ -356,7 +283,7 @@ def load_all_users(db: Any):
     result = execute_read(db, select_stmt)
     for row in result or []:
         user = User(db = db, id = row['id'])
-        user_json = user.dict(include=UserResponseForAdmin().dict())
+        user_json = user.dict(include=UserResponse().dict())
         user_json['roles'] = user.roles
         users.append(user_json)
     return users

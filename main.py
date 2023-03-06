@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
 from authentication import user_id_to_auth_token, auth_token_to_user_id
-from user import User, UserResponse, UserResponseForAdmin, load_all_roles, load_all_instructors, load_all_users
+from user import UserData, UserResponse, User, load_all_roles, load_all_instructors, load_all_users
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program, load_all_programs
 from program import LevelData, LevelResponse, Level
@@ -70,7 +70,7 @@ def get_authorized_user(request, permission_url_path, required = True) -> Option
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not logged in.")
         for role_name in user.roles:
             role = app.roles[role_name]
-            if permission_url_path in role.permissible_endpoints:
+            if permission_url_path == '/' or permission_url_path in role.permissible_endpoints:
                 return user
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for {permission_url_path}")
     else:
@@ -121,12 +121,9 @@ async def signin_callback_get(request: Request, code):
     user = User(
         db = app.db,
         google_id = user_info_json["sub"],
-        given_name = user_info_json["given_name"],
-        family_name = user_info_json["family_name"],
         full_name = user_info_json["name"],
-        picture = user_info_json["picture"]
+        email_address = user_info_json["email"]
     )
-    user.add_email_address(db = app.db, email_address = user_info_json["email"])
 
     user_token, token_expiration = user_id_to_auth_token(app, user.id)
     response = RedirectResponse(url = '/')
@@ -153,13 +150,22 @@ async def profile_get(request: Request):
     return templates.TemplateResponse("profile.html", {'request': request})
 
 
-@api_router.get("/user")
-async def profile_get(request: Request) -> Optional[UserResponse]:
-    return get_authorized_user(request, '/', required = False)
+@api_router.get("/user", response_model = Optional[UserResponse])
+async def get_user(request: Request):
+    user = get_authorized_user(request, '/', required = False)
+    return user
+
+
+@api_router.put("/user", response_model = UserResponse)
+async def put_user(request: Request, updated_user: UserData):
+    user = get_authorized_user(request, '/', required = True)
+    user = user.copy(update=updated_user.dict(exclude_unset=True))
+    await user.update_basic(db = app.db)
+    return user
 
 
 @api_router.get("/user/roles")
-async def profile_get(request: Request):
+async def get_user_roles(request: Request):
     user = get_authorized_user(request, '/', required = False)
     if user is None:
         return []
@@ -191,7 +197,7 @@ async def get_students(request: Request, accept: Optional[str] = Header(None)):
         return student_list
 
 
-@api_router.get("/students/{student_id}", response_model=StudentResponse)
+@api_router.get("/students/{student_id}", response_model = StudentResponse)
 async def get_student(request: Request, student_id: int):
     user = get_authorized_user(request, '/students')
     if student_id not in user.student_ids:
@@ -206,7 +212,7 @@ async def put_update_student(request: Request, student_id: int, updated_student:
     if student_id not in user.student_ids:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
     student = Student(db = app.db, id = student_id).copy(update=updated_student.dict(exclude_unset=True))
-    await student.update_basic(app.db)
+    await student.update_basic(db = app.db)
     return student
 
 
@@ -449,7 +455,7 @@ async def get_camp_student_camps(request: Request, camp_id: int, student_id: int
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
     student = Student(db = app.db, id = student_id)
     return student.get_camps(db = app.db)
-    
+
 
 @api_router.get("/camps/{camp_id}/students/{student_id}/guardians")
 async def get_camp_student_guardians(request: Request, camp_id: int, student_id: int):
@@ -465,7 +471,7 @@ async def get_camp_student_guardians(request: Request, camp_id: int, student_id:
     guardians = []
     for user_id in student.get_guardian_ids(db = app.db):
         guardian = User(db = app.db, id = user_id)
-        guardians.append(guardian.dict(include=UserResponseForAdmin().dict()))
+        guardians.append(guardian.dict(include=UserResponse().dict()))
     return guardians
 
 
@@ -528,17 +534,13 @@ async def get_camp_level_schedules(request: Request, camp_id: int):
 @api_router.get("/camps/{camp_id}/instructors")
 async def get_camp_instructors(request: Request, camp_id: int):
     user = get_authorized_user(request, '/camps')
-    for_admin = ('ADMIN' in user.roles)
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
     instructors = []
     for instructor_id in camp.instructor_ids:
         instructor = User(db = app.db, id = instructor_id)
-        if for_admin:
-            instructor_response = instructor.dict(include=UserResponseForAdmin().dict())
-        else:
-            instructor_response = instructor.dict(include=UserResponse().dict())
+        instructor_response = instructor.dict(include=UserResponse().dict())
         instructor_response['is_primary'] = (instructor_id == camp.primary_instructor_id)
         instructors.append(instructor_response)
     return instructors
@@ -547,17 +549,13 @@ async def get_camp_instructors(request: Request, camp_id: int):
 @api_router.get("/camps/{camp_id}/instructors/{instructor_id}")
 async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int):
     user = get_authorized_user(request, '/camps')
-    for_admin = ('ADMIN' in user.roles)
     camp = Camp(db = app.db, id = camp_id)
     if camp.id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
     if instructor_id not in camp.instructor_ids:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} does not exist for camp id={camp_id}")
     instructor = User(db = app.db, id = instructor_id)
-    if for_admin:
-        instructor_response = instructor.dict(include=UserResponseForAdmin().dict())
-    else:
-        instructor_response = instructor.dict(include=UserResponse().dict())
+    instructor_response = instructor.dict(include=UserResponse().dict())
     return instructor_response
 
 
@@ -640,7 +638,7 @@ async def delete_camp(request: Request, camp_id: int):
     camp.delete(db = app.db)
 
 
-@api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponseForAdmin, status_code = status.HTTP_201_CREATED)
+@api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
 async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: int):
     user = get_authorized_user(request, '/schedule')
     camp = Camp(db = app.db, id = camp_id)

@@ -109,7 +109,7 @@
     let instructorBox = document.getElementById('instructors-box');
 
     let link = document.createElement('a');
-    link.innerText = instructor.full_name + ' (' + instructor.primary_email_address + ')';
+    link.innerText = instructor.full_name + ' (' + instructor.email_address + ')';
     link.href = '/insructors/' + instructor.id;
 
     let box = document.createElement('div');

@@ -3,7 +3,7 @@ html, body { margin: 0px; height: 100%; }
 body { overflow: hidden; }
 h1 { font-size: 20px; }
 h2 { font-size: 18px; }
-p, textarea, input[type=text], input[type=date], input[type=datetime-local], option { font-size: 16px; margin: 0; }
+p, textarea, input[type=text], input[type=date], input[type=datetime-local], input[type=email], input[type=tel], option { font-size: 16px; margin: 0; }
 a { text-decoration: none; }
 button { background-color: white; box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.2); border: none; border-radius: 4px; padding: 6px; }
 .big-button { background-color: white; box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.2); border: 1px solid #ddd; border-radius: 16px; padding: 0 12px; }

@@ -1,6 +1,16 @@
 // Classes for sending down data to server
 // Responses will be effectively these plus an ID
 
+class UserData {
+    constructor(full_name, email_address, phone_number, instructor_subjects, instructor_description) {
+        this.full_name = full_name;
+        this.email_address = email_address;
+        this.phone_number = phone_number;
+        this.instructor_subjects = instructor_subjects;
+        this.instructor_description = instructor_description;
+    }
+}
+
 class StudentData {
     constructor(name, birthdate, gradeLevel) {
         this.name = name;

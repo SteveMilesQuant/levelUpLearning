@@ -1,7 +1,7 @@
 import pytest, json
 from fastapi import status
 from fastapi.testclient import TestClient
-from user import User, UserResponseForAdmin
+from user import User, UserResponse
 from program import Program, ProgramResponse, Level
 from camp import CampData, LevelSchedule, FastApiDatetime
 from main import app
@@ -90,7 +90,7 @@ def test_add_instructor_to_camp(camp_index: int, instructor: User):
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     new_instructor_json = response.json()
-    instructor_json = json.loads(json.dumps(instructor.dict(include=UserResponseForAdmin().dict()), indent=4, sort_keys=True, default=str))
+    instructor_json = json.loads(json.dumps(instructor.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
     assert new_instructor_json == instructor_json
 
 
@@ -100,9 +100,9 @@ def test_getting_camp_instructors():
     camp_json = all_camps_json[0]
     camp_id = camp_json['id']
     primary_instructor_id = camp_json['primary_instructor_id']
-    admin_user_json = json.loads(json.dumps(app.test.users.admin.dict(include=UserResponseForAdmin().dict()), indent=4, sort_keys=True, default=str))
+    admin_user_json = json.loads(json.dumps(app.test.users.admin.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
     admin_user_json['is_primary'] = (admin_user_json['id'] == primary_instructor_id)
-    instructor_user_json = json.loads(json.dumps(app.test.users.instructor.dict(include=UserResponseForAdmin().dict()), indent=4, sort_keys=True, default=str))
+    instructor_user_json = json.loads(json.dumps(app.test.users.instructor.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
     instructor_user_json['is_primary'] = (instructor_user_json['id'] == primary_instructor_id)
     instructors_json = [admin_user_json, instructor_user_json]
     response = client.get(f'/camps/{camp_id}/instructors')

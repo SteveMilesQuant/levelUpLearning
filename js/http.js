@@ -29,8 +29,10 @@ class EasyHTTP {
     }
 
     async put(url, id, data) {
+        let tgtUrl = url
+        if (id) { tgtUrl += '/' + id }
         const bodyJson = JSON.stringify(data);
-        const response = await fetch(url + '/' + id, {
+        const response = await fetch(tgtUrl, {
             method: 'PUT',
             headers: {
                 'Content-type': 'application/json'

@@ -2,10 +2,11 @@ DROP TABLE IF EXISTS user;
 CREATE TABLE user (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	google_id BIGINT NOT NULL,
-	given_name TEXT,
-	family_name TEXT,
 	full_name TEXT,
-	picture TEXT
+	email_address TEXT,
+	phone_number TEXT,
+	instructor_subjects TEXT,
+	instructor_description TEXT
 );
 
 DROP TABLE IF EXISTS role_permissions;
@@ -26,14 +27,6 @@ DROP TABLE IF EXISTS user_x_roles;
 create table user_x_roles (
 	user_id INTEGER NOT NULL,
 	role TEXT,
-	FOREIGN KEY (user_id) REFERENCES user(id)
-);
-
-DROP TABLE IF EXISTS user_x_email_addresses;
-create table user_x_email_addresses (
-	user_id INTEGER NOT NULL,
-	email_address TEXT,
-	is_primary BOOL,
 	FOREIGN KEY (user_id) REFERENCES user(id)
 );
 

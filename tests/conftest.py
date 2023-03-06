@@ -16,12 +16,9 @@ def pytest_sessionstart(session):
     app.test.users.admin = User(
         db = app.db,
         google_id = 1,
-        given_name = 'Steve',
-        family_name = 'Admin',
         full_name = 'Steve Admin',
-        picture = ''
+        email_address = 'steve.admin@fake.com'
     )
-    app.test.users.admin.add_email_address(app.db, 'steve.admin@fake.com')
     auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.admin.id)
     app.test.users.admin_cookies = httpx.Cookies()
     app.test.users.admin_cookies.set(app.config.jwt_cookie_name, auth_token)
@@ -29,10 +26,7 @@ def pytest_sessionstart(session):
     app.test.users.instructor = User(
         db = app.db,
         google_id = 2,
-        given_name = 'Steve',
-        family_name = 'Instructor',
-        full_name = 'Steve Instructor',
-        picture = ''
+        full_name = 'Steve Instructor'
     )
     app.test.users.instructor.add_role(app.db, 'INSTRUCTOR')
     auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.instructor.id)
@@ -42,10 +36,7 @@ def pytest_sessionstart(session):
     app.test.users.guardian = User(
         db = app.db,
         google_id = 3,
-        given_name = 'Steve',
-        family_name = 'Guardian',
-        full_name = 'Steve Guardian',
-        picture = ''
+        full_name = 'Steve Guardian'
     )
     auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.guardian.id)
     app.test.users.guardian_cookies = httpx.Cookies()
