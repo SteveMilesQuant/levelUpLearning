@@ -139,8 +139,9 @@ async def signin_callback_get(request: Request, code):
 
 
 @api_router.get("/signout", response_class = RedirectResponse)
-async def signout_get(request: Request, message: Optional[str]):
+async def signout_get(request: Request):
     tgtUrl = '/'
+    message = request.query_params.get('message')
     if message is not None:
         tgtUrl = tgtUrl + '?message="' + message + '"'
     response = RedirectResponse(url=tgtUrl)
