@@ -1,8 +1,7 @@
-from db import execute_read, execute_write
-from pydantic import BaseModel
+from db import StudentDb
+from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from datetime import date
-from camp import Camp, CampResponse
 
 class FastApiDate(date):
     def __str__(self) -> str:
@@ -19,85 +18,45 @@ class StudentResponse(StudentData):
 
 
 class Student(StudentResponse):
-    def _load(self, db: Any) -> bool:
-        select_stmt = f'''
-            SELECT *
-                FROM student
-                WHERE id = {self.id}
-        '''
-        result = execute_read(db, select_stmt)
-        if result is None:
-            return False;
-        row = result[0] # should only be one
-        self.name = row['name']
-        year, month, day = row['birthdate'].split('-')
-        self.birthdate = FastApiDate(int(year), int(month), int(day))
-        self.grade_level = row['grade_level']
-        return True
+    _db_obj: Optional[StudentDb] = PrivateAttr()
 
-    def _create(self, db: Any):
-        insert_stmt = f'''
-            INSERT INTO student (name, birthdate, grade_level)
-                VALUES ("{self.name}", "{self.birthdate}", {self.grade_level});
-        '''
-        self.id = execute_write(db, insert_stmt)
-
-    def __init__(self, db: Any, **data):
+    def __init__(self, db_obj: Optional[StudentDb] = None, **data):
         super().__init__(**data)
-        if self.id is None:
-            self._create(db = db)
-        elif not self._load(db = db):
-            self.id = None
+        self._db_obj = db_obj
 
-    async def update_basic(self, db: Any):
-        update_stmt = f'''
-            UPDATE student
-                SET name="{self.name}", birthdate="{self.birthdate}",
-                    grade_level={self.grade_level}
-                WHERE id = {self.id};
-        '''
-        execute_write(db, update_stmt)
+    async def create(self, session: Optional[Any]):
+        if self._db_obj is None and self.id is not None:
+            # Get by ID
+            self._db_obj = await session.get(StudentDb, [self.id])
+            if self._db_obj is None:
+                self.id = None
+                return
 
-    def delete(self, db: Any):
-        delete_stmt = f'''
-            DELETE FROM user_x_students
-                WHERE student_id = {self.id};
-        '''
-        execute_write(db, delete_stmt)
-        delete_stmt = f'''
-            DELETE FROM student
-                WHERE id = {self.id};
-        '''
-        execute_write(db, delete_stmt)
+        if self._db_obj is None:
+            # If none found, create new
+            student_data = self.dict(include=StudentData().dict())
+            self._db_obj = StudentDb(**student_data)
+            session.add(self._db_obj)
+            await session.commit()
+            self.id = self._db_obj.id
+        else:
+            # Otherwise, update attributes from fetched object
+            for key, value in StudentResponse():
+                setattr(self, key, getattr(self._db_obj, key))
 
-    def get_camps(self, db: Any):
-        select_stmt = f'''
-            SELECT camp_id
-                FROM camp_x_students
-                WHERE student_id = {self.id}
-        '''
-        result = execute_read(db, select_stmt)
+    async def update(self, session: Any):
+        for key, value in StudentData():
+            setattr(self._db_obj, key, getattr(self, key))
+        await session.commit()
 
-        camps = []
-        for result_row in result or []:
-            camp_id = result_row['camp_id']
-            camp = Camp(db = db, id = camp_id)
-            camps.append(camp.dict(include=CampResponse().dict()))
+    async def delete(self, session: Any):
+        await session.delete(self._db_obj)
+        await session.commit()
 
-        return camps
+    async def camps(self, session: Any) -> List[Any]:
+        return [] # TODO
 
-    def get_guardian_ids(self, db: Any):
-        select_stmt = f'''
-            SELECT user_id
-                FROM user_x_students
-                WHERE student_id = {self.id}
-        '''
-        result = execute_read(db, select_stmt)
-
-        guardian_ids = []
-        for result_row in result or []:
-            guardian_ids.append(result_row['user_id'])
-
-        return guardian_ids
+    async def guardians(self, session: Any) -> List[Any]:
+        return [] # TODO
 
 

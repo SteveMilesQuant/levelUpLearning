@@ -241,8 +241,9 @@
 
   function deleteStudent() {
     studentId = document.getElementById('student-id').innerText;
-    http.delete('/students', studentId);
-    http.redirect('/students');
+    http.delete('/students', studentId).then(() => {
+      http.redirect('/students');
+    });
   }
 </script>
 {% endblock %}

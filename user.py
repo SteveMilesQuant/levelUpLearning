@@ -1,38 +1,41 @@
-from db import execute_read, execute_write
-from pydantic import BaseModel
+from db import UserDb, RoleDb, EndpointDb
+from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
+from sqlalchemy import select
 from student import Student
 from program import Program
 
 
 class Role(BaseModel):
-    name: str
-    permissible_endpoints: Optional[Dict[str, str]] = {}
+    name: Optional[str] = ''
+    permissible_endpoints: Optional[Dict[str, str]]
+    _db_obj: Optional[RoleDb] = PrivateAttr()
 
-    def __init__(self, db: Any, **data):
+    def __init__(self, db_obj: Optional[RoleDb] = None, **data):
         super().__init__(**data)
-        self.permissible_endpoints.clear()
-        select_stmt = f'''
-            SELECT endpoint, endpoint_title
-                FROM role_permissions
-                WHERE role = "{self.name}"
-        '''
-        result = execute_read(db, select_stmt)
-        for row in result:
-            self.permissible_endpoints[row['endpoint']] = row['endpoint_title']
+        self._db_obj = db_obj
+
+    async def create(self, session: Optional[Any]):
+        if self._db_obj is None:
+            self._db_obj = await session.get(RoleDb, [self.name])
+        self.name = self._db_obj.name
+
+        await session.refresh(self._db_obj, ['endpoints'])
+        self.permissible_endpoints = {}
+        for endpoint in self._db_obj.endpoints:
+            self.permissible_endpoints[endpoint.url] = endpoint.title
 
 
-def load_all_roles(db: Any) -> Dict[str, Role]:
-    all_roles = {}
-    select_stmt = f'''
-        SELECT DISTINCT role
-            FROM role_permissions
-    '''
-    result = execute_read(db, select_stmt)
-    for row in result:
-        role_name = row['role']
-        all_roles[role_name] = Role(db = db, name = role_name)
-    return all_roles
+async def init_roles(session: Any):
+    stmt = select(RoleDb)
+    result = await session.execute(stmt)
+    if not result.first():
+        session.add_all([
+            RoleDb(name='GUARDIAN', endpoints=[EndpointDb(url='/students', title='My Students'), EndpointDb(url='/camps', title='Find Camps')]),
+            RoleDb(name='INSTRUCTOR', endpoints=[EndpointDb(url='/teach', title='My Camps'), EndpointDb(url='/programs', title='Design Programs')]),
+            RoleDb(name='ADMIN', endpoints=[EndpointDb(url='/schedule', title='Schedule Camps'), EndpointDb(url='/members', title='Manage Members')])
+        ])
+        await session.commit()
 
 
 class UserData(BaseModel):
@@ -48,244 +51,127 @@ class UserResponse(UserData):
 
 
 class User(UserResponse):
-    google_id: Optional[int]
-    roles: Optional[List[str]] = []
-    student_ids: Optional[List[int]] = []
-    program_ids: Optional[List[int]] = []
-    camp_ids: Optional[List[int]] = []
+    google_id: Optional[str] = ''
+    _db_obj: Optional[UserDb] = PrivateAttr()
 
-    def _load(self, db: Any) -> bool:
-        if self.id is None:
-            select_stmt = f'''
-                SELECT *
-                    FROM user
-                    WHERE google_id = {self.google_id}
-            '''
-            result = execute_read(db, select_stmt)
-            if result is not None:
-                row = result[0] # should only be one
-                self.id = row['id']
-        else:
-            select_stmt = f'''
-                SELECT *
-                    FROM user
-                    WHERE id = {self.id}
-            '''
-            result = execute_read(db, select_stmt)
-        if result is None:
-            return False
-        row = result[0] # should only be one
-        self.google_id = row['google_id']
-        self.full_name = row['full_name']
-        self.email_address = row['email_address']
-        self.phone_number = row['phone_number']
-        self.instructor_subjects = row['instructor_subjects']
-        self.instructor_description = row['instructor_description']
-
-        select_stmt = f'''
-            SELECT role
-                FROM user_x_roles
-                WHERE user_id = {self.id}
-        '''
-        result = execute_read(db, select_stmt)
-        self.roles = [row['role'] for row in result or []]
-
-        select_stmt = f'''
-            SELECT student_id
-                FROM user_x_students
-                WHERE user_id = {self.id}
-        '''
-        result = execute_read(db, select_stmt)
-        self.student_ids = [row['student_id'] for row in result or []]
-
-        select_stmt = f'''
-            SELECT program_id
-                FROM user_x_programs
-                WHERE user_id = {self.id}
-        '''
-        result = execute_read(db, select_stmt)
-        self.program_ids = [row['program_id'] for row in result or []]
-
-        select_stmt = f'''
-            SELECT camp_id
-                FROM camp_x_instructors
-                WHERE instructor_id = {self.id}
-        '''
-        result = execute_read(db, select_stmt)
-        self.camp_ids = [row['camp_id'] for row in result or []]
-        return True
-
-    def _create(self, db: Any):
-        insert_stmt = f'''
-            INSERT INTO user (google_id, full_name, email_address, phone_number, instructor_subjects, instructor_description)
-                VALUES ({self.google_id}, "{self.full_name}", "{self.email_address}", "{self.phone_number}", "{self.instructor_subjects}", "{self.instructor_description}");
-        '''
-        self.id = execute_write(db, insert_stmt)
-
-        if self.id == 1:
-            # first user gets all roles
-            self.roles = ["GUARDIAN", "INSTRUCTOR", "ADMIN"]
-            insert_stmt = f'''
-                INSERT INTO user_x_roles (user_id, role)
-                    VALUES ({self.id}, "GUARDIAN"), ({self.id}, "INSTRUCTOR"), ({self.id}, "ADMIN");
-            '''
-            execute_write(db, insert_stmt)
-        else:
-            # new users are only guardians - admin must upgrade them
-            self.roles = ["GUARDIAN"]
-            insert_stmt = f'''
-                INSERT INTO user_x_roles (user_id, role)
-                    VALUES ({self.id}, "GUARDIAN");
-            '''
-            execute_write(db, insert_stmt)
-
-    def __init__(self, db: Any, **data):
+    def __init__(self, db_obj: Optional[UserDb] = None, **data):
         super().__init__(**data)
-        if not self._load(db = db):
-            self._create(db = db)
+        self._db_obj = db_obj
 
-    async def update_basic(self, db: Any):
-        update_stmt = f'''
-            UPDATE user
-                SET full_name="{self.full_name}", email_address="{self.email_address}",
-                    phone_number="{self.phone_number}",
-                    instructor_subjects="{self.instructor_subjects}",
-                    instructor_description="{self.instructor_description}"
-                WHERE id = {self.id};
-        '''
-        execute_write(db, update_stmt)
+    async def create(self, session: Optional[Any]):
+        if self._db_obj is None and self.id is not None:
+            # Get by ID
+            self._db_obj = await session.get(UserDb, [self.id])
+            if self._db_obj is None:
+                self.id = None
+                return
+        else:
+            # Get by google id
+            stmt = select(UserDb).where(UserDb.google_id == self.google_id)
+            results = await session.execute(stmt)
+            result = results.first()
+            if result:
+                self._db_obj = result[0]
 
-    def delete(self, db: Any):
-        delete_stmt = f'''
-            DELETE FROM user_x_roles
-                WHERE user_id = {self.id};
-        '''
-        execute_write(db, delete_stmt)
-        delete_stmt = f'''
-            DELETE FROM user_x_students
-                WHERE user_id = {self.id};
-        '''
-        execute_write(db, delete_stmt)
-        delete_stmt = f'''
-            DELETE FROM user
-                WHERE id = {self.id};
-        '''
-        execute_write(db, delete_stmt)
+        if self._db_obj is None:
+            # If none found, create new user
+            data = self.dict(include=UserData().dict())
+            data['google_id'] = self.google_id
+            self._db_obj = UserDb(**data)
+            session.add(self._db_obj)
+            await session.commit()
 
-    def add_role(self, db: Any, role: str):
-        if role not in self.roles:
-            self.roles.append(role)
-            insert_stmt = f'''
-                INSERT INTO user_x_roles (user_id, role)
-                    VALUES ({self.id}, "{role}");
-            '''
-            execute_write(db, insert_stmt)
+            # Create initial role(s)
+            guardian_role = Role(name = 'GUARDIAN')
+            await guardian_role.create(session)
+            await self.add_role(session, guardian_role)
+            if self._db_obj.id == 1:
+                instructor_role = Role(name = 'INSTRUCTOR')
+                admin_role = Role(name = 'ADMIN')
+                await instructor_role.create(session)
+                await admin_role.create(session) # TODO: await the pair together
+                await self.add_role(session, instructor_role)
+                await self.add_role(session, admin_role) # TODO: await the pair together
 
-    def remove_role(self, db: Any, role: str):
-        if role in self.roles:
-            self.roles.remove(role)
-            delete_stmt = f'''
-                DELETE FROM user_x_roles WHERE user_id={self.id} and role="{role}";
-            '''
-            execute_write(db, delete_stmt)
+        else:
+            # Otherwise, update attributes from fetched object
+            for key, value in UserResponse():
+                setattr(self, key, getattr(self._db_obj, key))
+            self.google_id = self._db_obj.google_id
 
-    def add_student(self, db: Any, student_id: int):
-        if student_id not in self.student_ids:
-            self.student_ids.append(student_id)
-            insert_stmt = f'''
-                INSERT INTO user_x_students (user_id, student_id)
-                    VALUES ({self.id}, "{student_id}");
-            '''
-            execute_write(db, insert_stmt)
+        # A couple cases require the id from the database (new or lookup by google_id)
+        self.id = self._db_obj.id
 
-    def remove_student(self, db: Any, student_id: int):
-        try:
-            self.student_ids.remove(student_id)
-        except ValueError:
-            return # not there is ok - just don't delete
+    async def update(self, session: Any):
+        for key, value in UserData():
+            setattr(self._db_obj, key, getattr(self, key))
+        await session.commit()
 
-        delete_stmt = f'''
-            DELETE FROM user_x_students
-                WHERE user_id = {self.id} and student_id = {student_id};
-        '''
-        execute_write(db, delete_stmt)
+    async def delete(self, session: Any):
+        await session.delete(self._db_obj)
+        await session.commit()
 
-        # If no other guardians have this student, fully delete them
-        select_stmt = f'''
-            SELECT student_id
-                FROM user_x_students
-                WHERE student_id = {student_id}
-        '''
-        result = execute_read(db, select_stmt)
-        if result is None:
-            student = Student(db = db, id = student_id)
-            student.delete(db = db)
+    async def add_role(self, session: Any, role: Role):
+        await session.refresh(self._db_obj, ['roles'])
+        for db_role in self._db_obj.roles:
+            if db_role.name == role.name:
+                return
+        self._db_obj.roles.append(role._db_obj)
+        await session.commit()
 
-    def add_program(self, db: Any, program_id: int):
-        if program_id not in self.program_ids:
-            self.program_ids.append(program_id)
-            insert_stmt = f'''
-                INSERT INTO user_x_programs (user_id, program_id)
-                    VALUES ({self.id}, "{program_id}");
-            '''
-            execute_write(db, insert_stmt)
+    async def remove_role(self, session: Any, role: Role):
+        await session.refresh(self._db_obj, ['roles'])
+        self._db_obj.roles.remove(role._db_obj)
+        await session.commit()
 
-    def remove_program(self, db: Any, program_id: int):
-        try:
-            self.program_ids.remove(program_id)
-        except ValueError:
-            return # not found is okay, but we should leave
+    async def roles(self, session: Any) -> List[Role]:
+        await session.refresh(self._db_obj, ['roles'])
+        roles = []
+        for db_role in self._db_obj.roles:
+            role = Role(db_obj=db_role)
+            await role.create(session) # TODO: create tasks and await the group
+            roles.append(role)
+        return roles
 
-        delete_stmt = f'''
-            DELETE FROM user_x_programs
-                WHERE user_id = {self.id} and program_id = {program_id};
-        '''
-        execute_write(db, delete_stmt)
+    async def add_student(self, session: Any, student: Student):
+        await session.refresh(self._db_obj, ['students'])
+        for db_student in self._db_obj.students:
+            if db_student.id == student.id:
+                return
+        self._db_obj.students.append(student._db_obj)
+        await session.commit()
 
-        # If no other instructors and no other camps have this program, fully delete it
-        select_stmt = f'''
-            SELECT program_id
-                FROM user_x_programs
-                WHERE program_id = {program_id}
-        '''
-        result_instructors = execute_read(db, select_stmt)
-        select_stmt = f'''
-            SELECT program_id
-                FROM camp
-                WHERE program_id = {program_id}
-        '''
-        result_camps = execute_read(db, select_stmt)
-        if result_instructors is None and result_camps is None:
-            program = Program(db = db, id = program_id)
-            program.delete(db = db)
+    async def remove_student(self, session: Any, student: Student):
+        await session.refresh(self._db_obj, ['students'])
+        self._db_obj.students.remove(student._db_obj)
+        await session.refresh(student._db_obj, ['guardians'])
+        if len(student._db_obj.guardians) == 0:
+            await student.delete(session)
+        await session.commit()
+
+    async def students(self, session: Any) -> List[Student]:
+        await session.refresh(self._db_obj, ['students'])
+        students = []
+        for db_student in self._db_obj.students:
+            student = Student(db_obj=db_student)
+            await student.create(session) # TODO: create tasks and await the group
+            students.append(student)
+        return students
+
+    async def add_program(self, session: Any, program: Program):
+        pass
+
+    async def remove_program(self, session: Any, program: Program):
+        pass
+
+    async def programs(self, session: Any) -> List[Program]:
+        return [] # TODO
 
 
-def load_all_instructors(db: Any):
-    instructors = []
-    select_stmt = f'''
-        SELECT user_id
-            FROM user_x_roles
-            WHERE role = "INSTRUCTOR"
-    '''
-    result = execute_read(db, select_stmt)
-    for row in result or []:
-        instructor = User(db = db, id = row['user_id'])
-        instructor_json = instructor.dict(include=UserResponse().dict())
-        instructors.append(instructor_json)
-    return instructors
+async def load_all_instructors(session: Any):
+    pass
 
-def load_all_users(db: Any):
-    users = []
-    select_stmt = f'''
-        SELECT id
-            FROM user
-    '''
-    result = execute_read(db, select_stmt)
-    for row in result or []:
-        user = User(db = db, id = row['id'])
-        user_json = user.dict(include=UserResponse().dict())
-        user_json['roles'] = user.roles
-        users.append(user_json)
-    return users
+async def load_all_users(session: Any):
+    pass
 
 

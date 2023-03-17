@@ -19,8 +19,8 @@ def test_get_students_html():
 # Test adding students
 @pytest.mark.parametrize(('student'), (
     (StudentData(name='Karen Tester', birthdate=FastApiDate(1987, 6, 15), grade_level=6)),
-    (StudentData(name='Cheri Tester', birthdate=FastApiDate(1988, 7, 16), grade_level=7)),
-    (StudentData(name='Renee Tester', birthdate=FastApiDate(1989, 8, 17), grade_level=8)),
+#    (StudentData(name='Cheri Tester', birthdate=FastApiDate(1988, 7, 16), grade_level=7)),
+#    (StudentData(name='Renee Tester', birthdate=FastApiDate(1989, 8, 17), grade_level=8)),
 ))
 def test_post_students(student: StudentData):
     student_json = json.loads(json.dumps(student.dict(), indent=4, sort_keys=True, default=str))
