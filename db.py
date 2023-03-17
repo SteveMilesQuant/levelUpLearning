@@ -1,9 +1,10 @@
 from datetime import date
-from typing import List
+from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
 from sqlalchemy import BigInteger, Text, String
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.pool import NullPool
 
 
 class Base(DeclarativeBase):
@@ -67,8 +68,11 @@ class StudentDb(Base):
     guardians: Mapped[List[UserDb]] = relationship(secondary=user_x_students, back_populates='students', lazy='raise')
 
 
-async def init_db(db_user: str, db_password: str, db_url: str, db_port: str, db_schema_name: str):
-    engine = create_async_engine(f'mysql+aiomysql://{db_user}:{db_password}@{db_url}:{db_port}/{db_schema_name}?charset=utf8mb4')
+async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):
+    if for_pytest:
+        engine = create_async_engine(f'mysql+aiomysql://{user}:{password}@{url}:{port}/{schema_name}?charset=utf8mb4', poolclass=NullPool)
+    else:
+        engine = create_async_engine(f'mysql+aiomysql://{user}:{password}@{url}:{port}/{schema_name}?charset=utf8mb4')
     sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

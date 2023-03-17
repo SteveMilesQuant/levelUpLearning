@@ -28,22 +28,28 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
 app.mount("/js", StaticFiles(directory="js"), name="js")
 
-app.config = Object()
-app.config.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
-app.config.GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
-app.config.GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
-app.config.GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
-app.config.jwt_cookie_name = "authToken"
-app.config.jwt_lifetime = timedelta(minutes=30)
-app.config.jwt_algorithm = "HS256"
-app.config.jwt_subject = "access"
-
-app.google_client = WebApplicationClient(app.config.GOOGLE_CLIENT_ID)
-
-
 @app.on_event('startup')
 async def startup():
-    app.db_engine, app.db_sessionmaker = await init_db('stmile', 'FertileHydra43', os.environ.get("WSL_IP"), '3306', 'test')
+    app.config = Object()
+    app.config.secret_key = os.environ.get("SECRET_KEY") or os.urandom(24)
+    app.config.GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
+    app.config.GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
+    app.config.GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
+    app.config.jwt_cookie_name = "authToken"
+    app.config.jwt_lifetime = timedelta(minutes=30)
+    app.config.jwt_algorithm = "HS256"
+    app.config.jwt_subject = "access"
+
+    app.google_client = WebApplicationClient(app.config.GOOGLE_CLIENT_ID)
+
+    app.db_engine, app.db_sessionmaker = await init_db(
+        user = os.environ.get('DB_USER'),
+        password = os.environ.get('DB_PASSWORD'),
+        url = os.environ.get('WSL_IP'),
+        port = os.environ.get('DB_PORT'),
+        schema_name = os.environ.get('DB_SCHEMA_NAME'),
+        for_pytest = (os.environ.get('PYTEST_RUN') == '1')
+    )
     async with app.db_sessionmaker() as session:
         await init_roles(session)
 

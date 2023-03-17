@@ -1,4 +1,4 @@
-import httpx, asyncio
+import httpx, asyncio, os
 from user import User, Role
 from authentication import user_id_to_auth_token
 from main import app, Object
@@ -6,6 +6,8 @@ from fastapi.testclient import TestClient
 
 
 async def startup():
+    os.environ['PYTEST_RUN'] = '1'
+    os.environ['DB_SCHEMA_NAME'] = 'test'
     await app.router.on_startup[0]()
     async with app.db_sessionmaker() as session:
         app.test = Object()
