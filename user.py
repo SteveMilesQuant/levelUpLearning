@@ -89,10 +89,9 @@ class User(UserResponse):
                 instructor_role = Role(name = 'INSTRUCTOR')
                 admin_role = Role(name = 'ADMIN')
                 await instructor_role.create(session)
-                await admin_role.create(session) # TODO: await the pair together
+                await admin_role.create(session)
                 await self.add_role(session, instructor_role)
-                await self.add_role(session, admin_role) # TODO: await the pair together
-
+                await self.add_role(session, admin_role) # it would be nice to gather, but pytest has some issues with this
         else:
             # Otherwise, update attributes from fetched object
             for key, value in UserResponse():
@@ -129,8 +128,8 @@ class User(UserResponse):
         roles = []
         for db_role in self._db_obj.roles:
             role = Role(db_obj=db_role)
-            await role.create(session) # TODO: create tasks and await the group
             roles.append(role)
+            await role.create(session) # not really async when we use db_obj
         return roles
 
     async def add_student(self, session: Any, student: Student):
@@ -154,8 +153,8 @@ class User(UserResponse):
         students = []
         for db_student in self._db_obj.students:
             student = Student(db_obj=db_student)
-            await student.create(session) # TODO: create tasks and await the group
             students.append(student)
+            await student.create(session) # not really async when we use db_obj
         return students
 
     async def add_program(self, session: Any, program: Program):
