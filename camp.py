@@ -45,6 +45,12 @@ class LevelSchedule(LevelScheduleResponse):
         await session.commit()
 
     async def delete(self, session: Any):
+        await session.refresh(self._db_obj, ['program'])
+        db_program = self._db_obj.program
+        await session.refresh(self._db_obj, ['levels'])
+        for db_level in db_program.levels:
+            if db_level.list_index > self.list_index:
+               db_level.list_index -= 1
         await session.delete(self._db_obj)
         await session.commit()
 

@@ -117,6 +117,10 @@ class Program(ProgramResponse):
 
     async def delete(self, session: Any):
         await session.refresh(self._db_obj, ['levels', 'camps'])
+        for db_level in self._db_obj.levels:
+            await session.refresh(db_level, ['level_schedules'])
+        for db_camp in self._db_obj.camps:
+            await session.refresh(db_camp, ['level_schedules'])
         await session.delete(self._db_obj)
         await session.commit()
 

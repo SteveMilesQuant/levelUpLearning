@@ -1,4 +1,4 @@
-from db import UserDb, RoleDb, EndpointDb, StudentDb, ProgramDb
+from db import UserDb, RoleDb, EndpointDb, StudentDb, ProgramDb, CampDb
 from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from sqlalchemy import select
@@ -16,6 +16,9 @@ class Role(BaseModel):
     async def create(self, session: Optional[Any]):
         if self._db_obj is None:
             self._db_obj = await session.get(RoleDb, [self.name])
+            if self._db_obj is None:
+                self.name = None
+                return
         self.name = self._db_obj.name
 
         await session.refresh(self._db_obj, ['endpoints'])
@@ -167,6 +170,10 @@ class User(UserResponse):
     async def programs(self, session: Any) -> List[ProgramDb]:
         await session.refresh(self._db_obj, ['programs'])
         return self._db_obj.programs
+        
+    async def camps(self, session: Any) -> List[CampDb]:
+        await session.refresh(self._db_obj, ['camps'])
+        return self._db_obj.camps
 
 
 async def all_users(session: Any, by_role: Optional[str] = None):
@@ -175,7 +182,7 @@ async def all_users(session: Any, by_role: Optional[str] = None):
         role = Role(name = by_role)
         await role.create(session)
         await session.refresh(role._db_obj, ['users'])
-        for db_user in role.users:
+        for db_user in role._db_obj.users:
             user = User(db_obj = db_user)
             await user.create(session)
             users.append(user.dict(include=UserResponse().dict()))
@@ -185,7 +192,10 @@ async def all_users(session: Any, by_role: Optional[str] = None):
         for db_user in result.scalars():
             user = User(db_obj = db_user)
             await user.create(session)
-            users.append(user.dict(include=UserResponse().dict()))
+            user_response = user.dict(include=UserResponse().dict())
+            await session.refresh(user._db_obj, ['roles'])
+            user_response['roles'] = [role.name for role in user._db_obj.roles]
+            users.append(user_response)
     return users
 
 

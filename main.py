@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
 from authentication import user_id_to_auth_token, auth_token_to_user_id
-from user import UserData, UserResponse, User, init_roles, all_users
+from user import UserData, UserResponse, User, Role, init_roles, all_users
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program, all_programs
 from program import LevelData, LevelResponse, Level
@@ -201,7 +201,9 @@ async def instructor_get_one(request: Request, user_id: int, accept: Optional[st
             user = await get_authorized_user(request, session, '/')
             instructor = User(id = user_id)
             await instructor.create(session)
-            if instructor.id is None or 'INSTRUCTOR' not in instructor.roles:
+            role = Role(name = 'INSTRUCTOR')
+            await role.create(session)
+            if instructor.id is None or role not in await instructor.roles(session):
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={user_id} does not exist.")
             return user.dict(include=UserResponse().dict())
 
@@ -293,7 +295,12 @@ async def get_student_camps(request: Request, student_id: int):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
                 await student.create(session)
-                return [camp.dict(include=CampResponse().dict()) for camp in await student.camps(session)]
+                camps = []
+                for db_camp in await student.camps(session):
+                    camp = Camp(db_obj = db_camp)
+                    await camp.create(session)
+                    camps.append(camp.dict(include=CampResponse().dict()))
+                return camps
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
 
 
@@ -312,8 +319,9 @@ async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/teach')
             camp_list = []
-            for camp_id in user.camp_ids:
-                camp = Camp(session = session, id = camp_id)
+            for db_camp in await user.camps(session):
+                camp = Camp(db_obj = db_camp)
+                await camp.create(session)
                 if camp.is_published:
                     camp_list.append(camp.dict(include=CampResponse().dict()))
             return camp_list
@@ -898,8 +906,9 @@ async def users_get_all(request: Request):
 
 @api_router.get("/roles")
 async def roles_get_all(request: Request):
-    user = await get_authorized_user(request, session, '/members')
-    return [role.dict() for role in await user.roles(session)] # cheating a little here - admin (i.e. this) user will have all roles
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/members')
+        return [role.dict() for role in await user.roles(session)] # cheating a little here - admin (i.e. this) user will have all roles
 
 
 @api_router.post("/users/{user_id}/roles/{role_name}")
@@ -908,7 +917,13 @@ async def user_add_role(request: Request, user_id: int, role_name: str):
         user = await get_authorized_user(request, session, '/members')
         tgt_user = User(id = user_id)
         await tgt_user.create(session)
-        await tgt_user.add_role(session = session, role = role_name)
+        if tgt_user.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User id={tgt_user.id} not found.")
+        role = Role(name = role_name)
+        await role.create(session)
+        if role.name is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role={role_name} not found.")
+        await tgt_user.add_role(session = session, role = role)
         return role_name
 
 
