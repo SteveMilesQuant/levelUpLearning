@@ -159,8 +159,8 @@ class User(UserResponse):
     async def remove_program(self, session: Any, program: Any):
         await session.refresh(self._db_obj, ['programs'])
         self._db_obj.programs.remove(program._db_obj)
-        await session.refresh(program._db_obj, ['designers'])
-        if len(program._db_obj.designers) == 0: # TODO: also check camps
+        await session.refresh(program._db_obj, ['designers', 'camps'])
+        if len(program._db_obj.designers) == 0 and len(program._db_obj.camps) == 0:
             await program.delete(session)
         await session.commit()
 

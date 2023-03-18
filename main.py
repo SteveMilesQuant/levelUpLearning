@@ -467,12 +467,12 @@ async def post_new_level(request: Request, program_id: int, new_level_data: Leve
                 # TODO: there's got to be a slicker way to do this
                 new_level = Level(
                     id = None,
+                    program_id = program_id,
                     title = new_level_data.title,
                     description = new_level_data.description,
                     list_index = await program.get_next_level_index(session)
                 )
                 await new_level.create(session)
-                await program.add_level(session = session, level = new_level)
                 return new_level
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
 
@@ -489,7 +489,7 @@ async def delete_level(request: Request, program_id: int, level_id: int):
                     if db_level.id == level_id:
                         level = Level(db_obj = db_level)
                         await level.create(session)
-                        await program.remove_level(session = session, level = level)
+                        await level.delete(session)
                         return
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")

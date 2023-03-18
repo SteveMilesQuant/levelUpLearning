@@ -12,6 +12,7 @@ class LevelData(BaseModel):
 
 class LevelResponse(LevelData):
     id: Optional[int]
+    program_id: Optional[int]
 
 
 class Level(LevelResponse):
@@ -31,7 +32,7 @@ class Level(LevelResponse):
 
         if self._db_obj is None:
             # If none found, create new
-            level_data = self.dict(include=LevelData().dict())
+            level_data = self.dict(include=LevelResponse().dict())
             self._db_obj = LevelDb(**level_data)
             session.add(self._db_obj)
             await session.commit()
@@ -42,11 +43,12 @@ class Level(LevelResponse):
                 setattr(self, key, getattr(self._db_obj, key))
 
     async def update(self, session: Any):
-        for key, value in LevelData():
+        for key, value in LevelResponse():
             setattr(self._db_obj, key, getattr(self, key))
         await session.commit()
 
     async def delete(self, session: Any):
+        await session.refresh(self._db_obj, ['level_schedules'])
         await session.delete(self._db_obj)
         await session.commit()
 
@@ -103,21 +105,8 @@ class Program(ProgramResponse):
         await session.commit()
 
     async def delete(self, session: Any):
-        await session.refresh(self._db_obj, ['levels'])
+        await session.refresh(self._db_obj, ['levels', 'camps'])
         await session.delete(self._db_obj)
-        await session.commit()
-
-    async def add_level(self, session: Any, level: Any):
-        await session.refresh(self._db_obj, ['levels'])
-        for db_level in self._db_obj.levels:
-            if db_level.id == level.id:
-                return
-        self._db_obj.levels.append(level._db_obj)
-        await session.commit()
-
-    async def remove_level(self, session: Any, level: Any):
-        await session.refresh(self._db_obj, ['levels'])
-        self._db_obj.levels.remove(level._db_obj)
         await session.commit()
 
     async def levels(self, session: Any) -> List[LevelDb]:
@@ -130,6 +119,7 @@ class Program(ProgramResponse):
             next_index = max(next_index, db_level.list_index + 1)
         return next_index
 
+    # TODO: move this into Level.update(session)
     async def move_level_index(self, session: Any, level: Level, new_list_index: int):
         if level.list_index == new_list_index:
             return

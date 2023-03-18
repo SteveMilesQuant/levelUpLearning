@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
 from sqlalchemy import BigInteger, Text, String
@@ -18,14 +18,12 @@ user_x_roles = Table(
     Column('role', ForeignKey('role.name'), primary_key=True),
 )
 
-
 user_x_students = Table(
     'user_x_students',
     Base.metadata,
     Column('user_id', ForeignKey('user.id'), primary_key=True),
     Column('student_id', ForeignKey('student.id'), primary_key=True),
 )
-
 
 user_x_programs = Table(
     'user_x_programs',
@@ -34,11 +32,18 @@ user_x_programs = Table(
     Column('program_id', ForeignKey('program.id'), primary_key=True),
 )
 
-program_x_levels = Table(
-    'program_x_levels',
+camp_x_instructors = Table(
+    'camp_x_instructors',
     Base.metadata,
-    Column('program_id', ForeignKey('program.id'), primary_key=True),
-    Column('level_id', ForeignKey('level.id'), primary_key=True),
+    Column('camp_id', ForeignKey('camp.id'), primary_key=True),
+    Column('instructor_id', ForeignKey('user.id'), primary_key=True),
+)
+
+camp_x_students = Table(
+    'camp_x_students',
+    Base.metadata,
+    Column('camp_id', ForeignKey('camp.id'), primary_key=True),
+    Column('student_id', ForeignKey('student.id'), primary_key=True),
 )
 
 
@@ -73,6 +78,7 @@ class UserDb(Base):
     roles: Mapped[List[RoleDb]] = relationship(secondary=user_x_roles, back_populates='users', lazy='raise')
     students: Mapped[List['StudentDb']] = relationship(secondary=user_x_students, back_populates='guardians', lazy='raise')
     programs: Mapped[List['ProgramDb']] = relationship(secondary=user_x_programs, back_populates='designers', lazy='raise')
+    camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_instructors, back_populates='instructors', lazy='raise')
 
 
 class StudentDb(Base):
@@ -84,6 +90,7 @@ class StudentDb(Base):
     grade_level: Mapped[int] = mapped_column(nullable=True)
 
     guardians: Mapped[List['UserDb']] = relationship(secondary=user_x_students, back_populates='students', lazy='raise')
+    camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_students, back_populates='students', lazy='raise')
 
 
 class ProgramDb(Base):
@@ -96,30 +103,59 @@ class ProgramDb(Base):
     tags: Mapped[str] = mapped_column(Text)
     description: Mapped[str] = mapped_column(Text)
 
-    levels: Mapped[List['LevelDb']] = relationship(secondary=program_x_levels, lazy='raise', cascade='all, delete')
+    levels: Mapped[List['LevelDb']] = relationship(back_populates='program', lazy='raise', cascade='all, delete')
     designers: Mapped[List['UserDb']] = relationship(secondary=user_x_programs, back_populates='programs', lazy='raise')
+    camps: Mapped[List['CampDb']] = relationship(back_populates='program', lazy='raise', cascade='all, delete')
 
 
 class LevelDb(Base):
     __tablename__ = 'level'
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    program_id: Mapped[int] = mapped_column(ForeignKey('program.id'))
     title: Mapped[str] = mapped_column(Text)
     description: Mapped[str] = mapped_column(Text)
     list_index: Mapped[int] = mapped_column(nullable=True)
 
+    level_schedules: Mapped[List['LevelScheduleDb']] = relationship(back_populates='level', lazy='raise', cascade='all, delete')
+    program: Mapped['ProgramDb'] = relationship(back_populates='levels', lazy='raise')
+
+
+class CampDb(Base):
+    __tablename__ = 'camp'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    program_id: Mapped[int] = mapped_column(ForeignKey('program.id'))
+    is_published: Mapped[bool]
+
+    program: Mapped['ProgramDb'] = relationship(back_populates='camps', lazy='raise')
+    level_schedules: Mapped[List['LevelScheduleDb']] = relationship(back_populates='camp', lazy='raise', cascade='all, delete')
+    instructors: Mapped[List['UserDb']] = relationship(secondary=camp_x_instructors, back_populates='camps', lazy='raise')
+    students: Mapped[List['StudentDb']] = relationship(secondary=camp_x_students, back_populates='camps', lazy='raise')
+
+
+class LevelScheduleDb(Base):
+    __tablename__ = 'level_schedule'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
+    level_id: Mapped[int] = mapped_column(ForeignKey('level.id'))
+    start_time: Mapped[datetime] = mapped_column(nullable=True)
+    end_time: Mapped[datetime] = mapped_column(nullable=True)
+
+    camp: Mapped['CampDb'] = relationship(back_populates='level_schedules', lazy='raise')
+    level: Mapped['LevelDb'] = relationship(back_populates='level_schedules', lazy='raise')
+
 
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):
     if for_pytest:
+        # Workaround for pytest issues
         engine = create_async_engine(f'mysql+aiomysql://{user}:{password}@{url}:{port}/{schema_name}?charset=utf8mb4', poolclass=NullPool)
     else:
         engine = create_async_engine(f'mysql+aiomysql://{user}:{password}@{url}:{port}/{schema_name}?charset=utf8mb4')
     sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    async with sessionmaker() as session:
-        pass
-        # TODO: if zero observations in roles, add initial roles
     return engine, sessionmaker
 
 

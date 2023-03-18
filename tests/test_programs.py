@@ -90,6 +90,7 @@ def test_post_level(level: LevelData):
     assert response.status_code == status.HTTP_201_CREATED, f'Error posting {level_json}'
     new_level_json = response.json()
     level_json['id'] = new_level_json['id']
+    level_json['program_id'] = program_id
     level_json['list_index'] = new_level_json['list_index']
     assert level_json == new_level_json, f'Returned level {new_level_json} does not match posted level {level_json}.'
     all_levels_json[level.title] = new_level_json
@@ -135,6 +136,7 @@ def test_put_level(level: LevelData):
     assert response.status_code == status.HTTP_200_OK, f'Error putting {level_json}'
     new_level_json = response.json()
     level_json['id'] = level_id
+    level_json['program_id'] = program_id
     assert level_json == new_level_json, f'Returned level {new_level_json} does not match put level {level_json}.'
 
     # Also test post-put get
