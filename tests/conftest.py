@@ -1,4 +1,4 @@
-import httpx, asyncio, os
+import httpx, asyncio, os, pymysql
 from user import User, Role
 from authentication import user_id_to_auth_token
 from main import app, Object
@@ -8,6 +8,8 @@ from fastapi.testclient import TestClient
 async def startup():
     os.environ['PYTEST_RUN'] = '1'
     os.environ['DB_SCHEMA_NAME'] = 'test'
+    create_schema()
+
     await app.router.on_startup[0]()
     async with app.db_sessionmaker() as session:
         app.test = Object()
@@ -52,9 +54,45 @@ def pytest_sessionstart(session):
 
 async def shutdown():
     await app.router.on_shutdown[0]()
+    delete_schema()
 
 
 def pytest_sessionfinish(session, exitstatus):
     asyncio.run(shutdown())
 
+
+def create_schema():
+    connection = pymysql.connect(
+        host=os.environ.get('DB_HOST'),
+        user=os.environ.get('DB_USER'),
+        password=os.environ.get('DB_PASSWORD'),
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    try:
+        cursor = connection.cursor()
+        stmt = f'CREATE DATABASE {os.environ["DB_SCHEMA_NAME"]};'
+        cursor.execute(stmt)
+    except Exception as e:
+        pass
+    finally:
+        connection.close()
+
+
+def delete_schema():
+    connection = pymysql.connect(
+        host=os.environ.get('DB_HOST'),
+        user=os.environ.get('DB_USER'),
+        password=os.environ.get('DB_PASSWORD'),
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    try:
+        cursor = connection.cursor()
+        stmt = f'DROP DATABASE {os.environ["DB_SCHEMA_NAME"]};'
+        cursor.execute(stmt)
+    except Exception as e:
+        pass
+    finally:
+        connection.close()
 

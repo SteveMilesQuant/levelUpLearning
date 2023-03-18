@@ -3,9 +3,11 @@ from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from datetime import date
 
+
 class FastApiDate(date):
     def __str__(self) -> str:
         return self.strftime('%Y-%m-%d')
+
 
 class StudentData(BaseModel):
     name: Optional[str] = None

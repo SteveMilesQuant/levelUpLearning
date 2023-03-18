@@ -171,6 +171,7 @@ class User(UserResponse):
 async def load_all_instructors(session: Any):
     pass
 
+
 async def load_all_users(session: Any):
     pass
 
