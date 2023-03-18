@@ -1,9 +1,7 @@
-from db import UserDb, RoleDb, EndpointDb
+from db import UserDb, RoleDb, EndpointDb, StudentDb
 from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from sqlalchemy import select
-from student import Student
-from program import Program
 
 
 class Role(BaseModel):
@@ -132,7 +130,7 @@ class User(UserResponse):
             await role.create(session) # not really async when we use db_obj
         return roles
 
-    async def add_student(self, session: Any, student: Student):
+    async def add_student(self, session: Any, student: Any):
         await session.refresh(self._db_obj, ['students'])
         for db_student in self._db_obj.students:
             if db_student.id == student.id:
@@ -140,7 +138,7 @@ class User(UserResponse):
         self._db_obj.students.append(student._db_obj)
         await session.commit()
 
-    async def remove_student(self, session: Any, student: Student):
+    async def remove_student(self, session: Any, student: Any):
         await session.refresh(self._db_obj, ['students'])
         self._db_obj.students.remove(student._db_obj)
         await session.refresh(student._db_obj, ['guardians'])
@@ -148,22 +146,17 @@ class User(UserResponse):
             await student.delete(session)
         await session.commit()
 
-    async def students(self, session: Any) -> List[Student]:
+    async def students(self, session: Any) -> List[StudentDb]:
         await session.refresh(self._db_obj, ['students'])
-        students = []
-        for db_student in self._db_obj.students:
-            student = Student(db_obj=db_student)
-            students.append(student)
-            await student.create(session) # not really async when we use db_obj
-        return students
+        return self._db_obj.students
 
-    async def add_program(self, session: Any, program: Program):
+    async def add_program(self, session: Any, program: Any):
         pass
 
-    async def remove_program(self, session: Any, program: Program):
+    async def remove_program(self, session: Any, program: Any):
         pass
 
-    async def programs(self, session: Any) -> List[Program]:
+    async def programs(self, session: Any) -> List[Any]:
         return [] # TODO
 
 

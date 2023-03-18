@@ -219,15 +219,22 @@ async def get_students(request: Request, accept: Optional[str] = Header(None)):
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/students')
-            return [student.dict(include=StudentResponse().dict()) for student in await user.students(session)]
+            students = []
+            for db_student in await user.students(session):
+                student = Student(db_obj = db_student)
+                await student.create(session) # not really async when using db_obj
+                students.append(student.dict(include=StudentResponse().dict()))
+            return students
 
 
 @api_router.get("/students/{student_id}", response_model = StudentResponse)
 async def get_student(request: Request, student_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/students')
-        for student in await user.students(session):
-            if student.id == student_id:
+        for db_student in await user.students(session):
+            if db_student.id == student_id:
+                student = Student(db_obj = db_student)
+                await student.create(session) # not really async when using db_obj
                 return student
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
 
@@ -236,8 +243,10 @@ async def get_student(request: Request, student_id: int):
 async def put_update_student(request: Request, student_id: int, updated_student: StudentData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/students')
-        for student in await user.students(session):
-            if student.id == student_id:
+        for db_student in await user.students(session):
+            if db_student.id == student_id:
+                student = Student(db_obj = db_student)
+                await student.create(session) # not really async when using db_obj
                 student = student.copy(update=updated_student.dict(exclude_unset=True))
                 await student.update(session = session)
                 return student
@@ -266,8 +275,10 @@ async def post_new_student(request: Request, new_student_data: StudentData):
 async def delete_student(request: Request, student_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/students')
-        for student in await user.students(session):
-            if student.id == student_id:
+        for db_student in await user.students(session):
+            if db_student.id == student_id:
+                student = Student(db_obj = db_student)
+                await student.create(session) # not really async when using db_obj
                 await user.remove_student(session = session, student = student)
                 return
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
@@ -278,8 +289,10 @@ async def delete_student(request: Request, student_id: int):
 async def get_student_camps(request: Request, student_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/students')
-        for student in await user.students(session):
-            if student.id == student_id:
+        for db_student in await user.students(session):
+            if db_student.id == student_id:
+                student = Student(db_obj = db_student)
+                await student.create(session) # not really async when using db_obj
                 return [camp.dict(include=CampResponse().dict()) for camp in await student.camps(session)]
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
 
@@ -522,7 +535,12 @@ async def get_camp_student_guardians(request: Request, camp_id: int, student_id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
         student = Student(id = student_id)
         await student.create(session)
-        return [guardian.dict(include=UserResponse().dict()) for guardian in await student.guardians(session)]
+        guardians = []
+        for db_guardian in await student.guardians(session):
+            guardian = User(db_obj = db_guardian)
+            await guardian.create(session)
+            guardians.append(guardian.dict(include=UserResponse().dict()))
+        return guardians
 
 
 ###############################################################################
@@ -626,8 +644,10 @@ async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
         if not camp.is_published:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp_id} is not yet published for enrollment.")
-        for student in await user.students(session):
-            if student.id == student_id:
+        for db_student in await user.students(session):
+            if db_student.id == student_id:
+                student = Student(db_obj = db_student)
+                await student.create(session) # not really async when using db_obj
                 camp.add_student(session = session, student_id = student_id)
                 return student
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={student_id} does not belong to this user.")

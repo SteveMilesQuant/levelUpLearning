@@ -1,4 +1,4 @@
-from db import StudentDb
+from db import StudentDb, UserDb
 from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from datetime import date
@@ -58,7 +58,8 @@ class Student(StudentResponse):
     async def camps(self, session: Any) -> List[Any]:
         return [] # TODO
 
-    async def guardians(self, session: Any) -> List[Any]:
-        return [] # TODO
+    async def guardians(self, session: Any) -> List[UserDb]:
+        await session.refresh(self._db_obj, ['guardians'])
+        return self._db_obj.guardians
 
 
