@@ -1,4 +1,4 @@
-from db import UserDb, RoleDb, EndpointDb, StudentDb
+from db import UserDb, RoleDb, EndpointDb, StudentDb, ProgramDb
 from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from sqlalchemy import select
@@ -80,16 +80,14 @@ class User(UserResponse):
             await session.commit()
 
             # Create initial role(s)
-            guardian_role = Role(name = 'GUARDIAN')
-            await guardian_role.create(session)
-            await self.add_role(session, guardian_role)
+            roles = [Role(name = 'GUARDIAN')]
             if self._db_obj.id == 1:
-                instructor_role = Role(name = 'INSTRUCTOR')
-                admin_role = Role(name = 'ADMIN')
-                await instructor_role.create(session)
-                await admin_role.create(session)
-                await self.add_role(session, instructor_role)
-                await self.add_role(session, admin_role) # it would be nice to gather, but pytest has some issues with this
+                roles.append(Role(name = 'INSTRUCTOR'))
+                roles.append(Role(name = 'ADMIN'))
+            for role in roles:
+                # TODO: use asyncio.gather (figure out problem with pytest)
+                await role.create(session)
+                await self.add_role(session, role)
         else:
             # Otherwise, update attributes from fetched object
             for key, value in UserResponse():
@@ -151,20 +149,43 @@ class User(UserResponse):
         return self._db_obj.students
 
     async def add_program(self, session: Any, program: Any):
-        pass
+        await session.refresh(self._db_obj, ['programs'])
+        for db_program in self._db_obj.programs:
+            if db_program.id == program.id:
+                return
+        self._db_obj.programs.append(program._db_obj)
+        await session.commit()
 
     async def remove_program(self, session: Any, program: Any):
-        pass
+        await session.refresh(self._db_obj, ['programs'])
+        self._db_obj.programs.remove(program._db_obj)
+        await session.refresh(program._db_obj, ['designers'])
+        if len(program._db_obj.designers) == 0: # TODO: also check camps
+            await program.delete(session)
+        await session.commit()
 
-    async def programs(self, session: Any) -> List[Any]:
-        return [] # TODO
+    async def programs(self, session: Any) -> List[ProgramDb]:
+        await session.refresh(self._db_obj, ['programs'])
+        return self._db_obj.programs
 
 
-async def load_all_instructors(session: Any):
-    pass
-
-
-async def load_all_users(session: Any):
-    pass
+async def all_users(session: Any, by_role: Optional[str] = None):
+    users = []
+    if by_role:
+        role = Role(name = by_role)
+        await role.create(session)
+        await session.refresh(role._db_obj, ['users'])
+        for db_user in role.users:
+            user = User(db_obj = db_user)
+            await user.create(session)
+            users.append(user.dict(include=UserResponse().dict()))
+    else:
+        stmt = select(UserDb)
+        result = await session.execute(stmt)
+        for db_user in result.scalars():
+            user = User(db_obj = db_user)
+            await user.create(session)
+            users.append(user.dict(include=UserResponse().dict()))
+    return users
 
 

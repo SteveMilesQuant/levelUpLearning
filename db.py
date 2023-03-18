@@ -11,7 +11,6 @@ class Base(DeclarativeBase):
     pass
 
 
-
 user_x_roles = Table(
     'user_x_roles',
     Base.metadata,
@@ -27,6 +26,22 @@ user_x_students = Table(
     Column('student_id', ForeignKey('student.id'), primary_key=True),
 )
 
+
+user_x_programs = Table(
+    'user_x_programs',
+    Base.metadata,
+    Column('user_id', ForeignKey('user.id'), primary_key=True),
+    Column('program_id', ForeignKey('program.id'), primary_key=True),
+)
+
+program_x_levels = Table(
+    'program_x_levels',
+    Base.metadata,
+    Column('program_id', ForeignKey('program.id'), primary_key=True),
+    Column('level_id', ForeignKey('level.id'), primary_key=True),
+)
+
+
 class EndpointDb(Base):
     __tablename__ = 'endpoint'
 
@@ -41,6 +56,8 @@ class RoleDb(Base):
     name: Mapped[str] = mapped_column(String(32), primary_key=True)
     endpoints: Mapped[List[EndpointDb]] = relationship(lazy='raise')
 
+    users: Mapped[List['UserDb']] = relationship(secondary=user_x_roles, back_populates='roles', lazy='raise')
+
 
 class UserDb(Base):
     __tablename__ = 'user'
@@ -53,8 +70,9 @@ class UserDb(Base):
     instructor_subjects: Mapped[str] = mapped_column(Text, nullable=True)
     instructor_description: Mapped[str] = mapped_column(Text, nullable=True)
 
-    roles: Mapped[List[RoleDb]] = relationship(secondary=user_x_roles, lazy='raise')
+    roles: Mapped[List[RoleDb]] = relationship(secondary=user_x_roles, back_populates='users', lazy='raise')
     students: Mapped[List['StudentDb']] = relationship(secondary=user_x_students, back_populates='guardians', lazy='raise')
+    programs: Mapped[List['ProgramDb']] = relationship(secondary=user_x_programs, back_populates='designers', lazy='raise')
 
 
 class StudentDb(Base):
@@ -65,7 +83,30 @@ class StudentDb(Base):
     birthdate: Mapped[date] = mapped_column(nullable=True)
     grade_level: Mapped[int] = mapped_column(nullable=True)
 
-    guardians: Mapped[List[UserDb]] = relationship(secondary=user_x_students, back_populates='students', lazy='raise')
+    guardians: Mapped[List['UserDb']] = relationship(secondary=user_x_students, back_populates='students', lazy='raise')
+
+
+class ProgramDb(Base):
+    __tablename__ = 'program'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(Text)
+    from_grade: Mapped[int] = mapped_column(nullable=True)
+    to_grade: Mapped[int] = mapped_column(nullable=True)
+    tags: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(Text)
+
+    levels: Mapped[List['LevelDb']] = relationship(secondary=program_x_levels, lazy='raise', cascade='all, delete')
+    designers: Mapped[List['UserDb']] = relationship(secondary=user_x_programs, back_populates='programs', lazy='raise')
+
+
+class LevelDb(Base):
+    __tablename__ = 'level'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(Text)
+    description: Mapped[str] = mapped_column(Text)
+    list_index: Mapped[int] = mapped_column(nullable=True)
 
 
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):

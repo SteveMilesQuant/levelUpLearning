@@ -9,9 +9,9 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
 from authentication import user_id_to_auth_token, auth_token_to_user_id
-from user import UserData, UserResponse, User, init_roles, load_all_instructors, load_all_users
+from user import UserData, UserResponse, User, init_roles, all_users
 from student import StudentData, StudentResponse, Student
-from program import ProgramData, ProgramResponse, Program, load_all_programs
+from program import ProgramData, ProgramResponse, Program, all_programs
 from program import LevelData, LevelResponse, Level
 from camp import CampData, CampResponse, Camp, LevelSchedule, load_all_camps, load_all_published_camps
 
@@ -336,13 +336,14 @@ async def get_programs(request: Request, accept: Optional[str] = Header(None)):
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/programs')
-            if 'ADMIN' in user.roles:
-                program_list = load_all_programs(session)
-            else:
-                program_list = []
-                for program_id in user.program_ids:
-                    program = Program(session = session, id = program_id)
-                    program_list.append(program.dict(include=ProgramResponse().dict()))
+            for role in await user.roles(session):
+                if role.name == 'ADMIN':
+                    return await all_programs(session)
+            program_list = []
+            for db_program in await user.programs(session):
+                program = Program(db_obj = db_program)
+                await program.create(session)
+                program_list.append(program.dict(include=ProgramResponse().dict()))
             return program_list
 
 
@@ -353,7 +354,8 @@ async def get_program(request: Request, program_id: int, accept: Optional[str] =
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
-            program = Program(session = session, id = program_id)
+            program = Program(id = program_id)
+            await program.create(session)
             if program.id is None:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
             return program
@@ -361,12 +363,16 @@ async def get_program(request: Request, program_id: int, accept: Optional[str] =
 
 @api_router.put("/programs/{program_id}", response_model = ProgramResponse)
 async def put_update_program(request: Request, program_id: int, updated_program: ProgramData):
-    user = await get_authorized_user(request, session, '/programs')
-    if program_id not in user.program_ids:
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/programs')
+        for db_program in await user.programs(session):
+            if db_program.id == program_id:
+                program = Program(db_obj = db_program)
+                await program.create(session)
+                program = program.copy(update=updated_program.dict(exclude_unset=True))
+                await program.update(session)
+                return program
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
-    program = Program(session = session, id = program_id).copy(update=updated_program.dict(exclude_unset=True))
-    await program.update(session)
-    return program
 
 
 @api_router.post("/programs", response_model = ProgramResponse, status_code = status.HTTP_201_CREATED)
@@ -375,16 +381,16 @@ async def post_new_program(request: Request, new_program_data: ProgramData):
         user = await get_authorized_user(request, session, '/programs')
         # TODO: there's got to be a slicker way to do this
         new_program = Program(
-            session = session,
             id = None,
             title = new_program_data.title,
             grade_range = new_program_data.grade_range,
             tags = new_program_data.tags,
             description = new_program_data.description
         )
+        await new_program.create(session)
         if new_program.id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new program failed")
-        user.add_program(session = session, program_id = new_program.id)
+        await user.add_program(session = session, program = new_program)
         return new_program
 
 
@@ -392,19 +398,24 @@ async def post_new_program(request: Request, new_program_data: ProgramData):
 async def delete_program(request: Request, program_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/programs')
-        if program_id not in user.program_ids:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
-        user.remove_program(session = session, program_id = program_id)
+        for db_program in await user.programs(session):
+            if db_program.id == program_id:
+                program = Program(db_obj = db_program)
+                await user.remove_program(session = session, program = program)
+                return
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
 
 
 @api_router.get("/programs/{program_id}/levels")
 async def get_levels(request: Request, program_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
-        program = Program(session = session, id = program_id)
+        program = Program(id = program_id)
+        await program.create(session)
         level_list = []
-        for level_id in program.level_ids:
-            level = Level(session = session, id = level_id)
+        for db_level in await program.levels(session):
+            level = Level(db_obj = db_level)
+            await level.create(session)
             level_list.append(level.dict(include=LevelResponse().dict()))
         return level_list
 
@@ -413,63 +424,75 @@ async def get_levels(request: Request, program_id: int):
 async def get_level(request: Request, program_id: int, level_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
-        program = Program(session = session, id = program_id)
+        program = Program(id = program_id)
+        await program.create(session)
         if program.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
-        if level_id not in program.level_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
-        return Level(session = session, id = level_id)
+        for db_level in await program.levels(session):
+            if db_level.id == level_id:
+                level = Level(db_obj = db_level)
+                await level.create(session)
+                return level
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
 
 
 @api_router.put("/programs/{program_id}/levels/{level_id}", response_model = LevelResponse)
 async def put_update_level(request: Request, program_id: int, level_id: int, updated_level: LevelData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/programs')
-        if program_id not in user.program_ids:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
-        program = Program(session = session, id = program_id)
-        if level_id not in program.level_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
-        level = Level(session = session, id = level_id)
-        new_list_index = updated_level.list_index
-        updated_level.list_index = level.list_index
-        level = level.copy(update=updated_level.dict(exclude_unset=True))
-        await level.update(session)
-        if new_list_index != level.list_index:
-            await program.move_level_index(session = session, level_id = level.id, new_list_index = new_list_index)
-            level.list_index = new_list_index
-        return level
+        for db_program in await user.programs(session):
+            if db_program.id == program_id:
+                program = Program(db_obj = db_program)
+                await program.create(session)
+                for db_level in await program.levels(session):
+                    if db_level.id == level_id:
+                        level = Level(db_obj = db_level)
+                        await level.create(session)
+                        await program.move_level_index(session = session, level = level, new_list_index = updated_level.list_index)
+                        level = level.copy(update=updated_level.dict(exclude_unset=True))
+                        await level.update(session)
+                        return level
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
 
 
 @api_router.post("/programs/{program_id}/levels", response_model = LevelResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_level(request: Request, program_id: int, new_level_data: LevelData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/programs')
-        if program_id not in user.program_ids:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
-        program = Program(session = session, id = program_id)
-        # TODO: there's got to be a slicker way to do this
-        new_level = Level(
-            session = session,
-            id = None,
-            title = new_level_data.title,
-            description = new_level_data.description,
-            list_index = program.get_next_level_index()
-        )
-        program.add_level(session = session, level_id = new_level.id)
-        return new_level
+        for db_program in await user.programs(session):
+            if db_program.id == program_id:
+                program = Program(db_obj = db_program)
+                await program.create(session)
+                # TODO: there's got to be a slicker way to do this
+                new_level = Level(
+                    id = None,
+                    title = new_level_data.title,
+                    description = new_level_data.description,
+                    list_index = await program.get_next_level_index(session)
+                )
+                await new_level.create(session)
+                await program.add_level(session = session, level = new_level)
+                return new_level
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
 
 
 @api_router.delete("/programs/{program_id}/levels/{level_id}")
 async def delete_level(request: Request, program_id: int, level_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/programs')
-        if program_id not in user.program_ids:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
-        program = Program(session = session, id = program_id)
-        if level_id not in program.level_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
-        await program.remove_level(session = session, level_id = level_id)
+        for db_program in await user.programs(session):
+            if db_program.id == program_id:
+                program = Program(db_obj = db_program)
+                await program.create(session)
+                for db_level in await program.levels(session):
+                    if db_level.id == level_id:
+                        level = Level(db_obj = db_level)
+                        await level.create(session)
+                        await program.remove_level(session = session, level = level)
+                        return
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
 
 
 @api_router.get("/camps/{camp_id}/students")
@@ -780,7 +803,7 @@ async def camp_update_level_schedule(request: Request, camp_id: int, level_id: i
 async def get_all_possible_instructors(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
-        return [instructor.dict(include=UserInResponse().dict()) for instructor in await load_all_instructors(session)]
+        return await all_users(session, by_role = 'INSTRUCTOR')
 
 
 ###############################################################################
@@ -797,7 +820,7 @@ async def members_get(request: Request):
 async def users_get_all(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/members')
-        return [user.dict(include=UserInResponse().dict()) for user in await load_all_users(session)]
+        return await all_users(session)
 
 
 @api_router.get("/roles")

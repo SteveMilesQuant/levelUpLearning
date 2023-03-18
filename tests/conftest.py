@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 async def startup():
     os.environ['PYTEST_RUN'] = '1'
-    os.environ['DB_SCHEMA_NAME'] = 'test'
+    os.environ['DB_SCHEMA_NAME'] = 'pytest'
     create_schema()
 
     await app.router.on_startup[0]()
