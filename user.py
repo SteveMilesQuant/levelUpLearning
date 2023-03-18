@@ -119,7 +119,7 @@ class User(UserResponse):
         self._db_obj.roles.remove(role._db_obj)
         await session.commit()
 
-    async def roles(self, session: Any) -> List[Role]:
+    async def roles(self, session: Any) -> List[Role]: # TODO: maybe this should be List[RoleDb] to be consistent
         await session.refresh(self._db_obj, ['roles'])
         roles = []
         for db_role in self._db_obj.roles:
@@ -139,8 +139,8 @@ class User(UserResponse):
     async def remove_student(self, session: Any, student: Any):
         await session.refresh(self._db_obj, ['students'])
         self._db_obj.students.remove(student._db_obj)
-        await session.refresh(student._db_obj, ['guardians'])
-        if len(student._db_obj.guardians) == 0:
+        await session.refresh(student._db_obj, ['guardians', 'camps'])
+        if len(student._db_obj.guardians) == 0 and len(student._db_obj.camps) == 0:
             await student.delete(session)
         await session.commit()
 

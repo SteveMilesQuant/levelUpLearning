@@ -1,4 +1,4 @@
-import pytest, json
+import pytest, json, asyncio
 from fastapi import status
 from fastapi.testclient import TestClient
 from user import User, UserResponse
@@ -12,18 +12,26 @@ all_camps_json = []
 
 
 # Seed program and level for use with camps tests
-program = Program(db = app.db, title='Creative Writing Workshop', grade_range=(6,8), tags='writing creative', description='Creative writing description.')
+program = Program(title='Creative Writing Workshop', grade_range=(6,8), tags='writing creative', description='Creative writing description.')
 levels = [
-    Level(db = app.db, title='Creative Writing 101', description='First desc.', list_index = 1),
-    Level(db = app.db, title='Creative Writing 102', description='Second desc.', list_index = 2),
-    Level(db = app.db, title='Creative Writing 103', description='Third desc.', list_index = 3),
+    Level(title='Creative Writing 101', description='First desc.', list_index = 1),
+    Level(title='Creative Writing 102', description='Second desc.', list_index = 2),
+    Level(title='Creative Writing 103', description='Third desc.', list_index = 3),
 ]
-for level in levels:
-    program.add_level(db = app.db, level_id = level.id)
+alt_program = Program(title='Mathletes Anonymous', grade_range=(6,8), tags='math', description='Math anon description.')
+alt_level = Level(title='Math 101', description='First desc.', list_index = 1)
+async def seed_program():
+    async with app.db_sessionmaker() as session:
+        await program.create(session)
+        for level in levels:
+            level.program_id = program.id
+            await level.create(session)
 
-alt_program = Program(db = app.db, title='Mathletes Anonymous', grade_range=(6,8), tags='math', description='Math anon description.')
-alt_level = Level(db = app.db, title='Math 101', description='First desc.', list_index = 1)
-alt_program.add_level(db = app.db, level_id = alt_level.id)
+        await alt_program.create(session)
+        alt_level.program_id = alt_program.id
+        await alt_level.create(session)
+asyncio.run(seed_program())
+
 
 # Test webpage reads
 @pytest.mark.parametrize(('endpoint'), (
@@ -159,6 +167,8 @@ def test_update_level_schedules(camp_index: int, level_index: int, level_schedul
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     new_level_schedule_json = response.json()
+    level_schedule_json['camp_id'] = camp_id
+    level_schedule_json['level_id'] = level.id
     assert new_level_schedule_json == level_schedule_json
 
     response = client.get(f'/camps/{camp_id}/levels/{level.id}')

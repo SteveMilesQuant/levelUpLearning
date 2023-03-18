@@ -13,7 +13,7 @@ from user import UserData, UserResponse, User, init_roles, all_users
 from student import StudentData, StudentResponse, Student
 from program import ProgramData, ProgramResponse, Program, all_programs
 from program import LevelData, LevelResponse, Level
-from camp import CampData, CampResponse, Camp, LevelSchedule, load_all_camps, load_all_published_camps
+from camp import CampData, CampResponse, Camp, LevelScheduleData, LevelScheduleResponse, LevelSchedule, all_camps
 
 
 class Object(object):
@@ -222,7 +222,7 @@ async def get_students(request: Request, accept: Optional[str] = Header(None)):
             students = []
             for db_student in await user.students(session):
                 student = Student(db_obj = db_student)
-                await student.create(session) # not really async when using db_obj
+                await student.create(session)
                 students.append(student.dict(include=StudentResponse().dict()))
             return students
 
@@ -234,7 +234,7 @@ async def get_student(request: Request, student_id: int):
         for db_student in await user.students(session):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
-                await student.create(session) # not really async when using db_obj
+                await student.create(session)
                 return student
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
 
@@ -246,7 +246,7 @@ async def put_update_student(request: Request, student_id: int, updated_student:
         for db_student in await user.students(session):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
-                await student.create(session) # not really async when using db_obj
+                await student.create(session)
                 student = student.copy(update=updated_student.dict(exclude_unset=True))
                 await student.update(session = session)
                 return student
@@ -278,7 +278,7 @@ async def delete_student(request: Request, student_id: int):
         for db_student in await user.students(session):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
-                await student.create(session) # not really async when using db_obj
+                await student.create(session)
                 await user.remove_student(session = session, student = student)
                 return
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
@@ -292,7 +292,7 @@ async def get_student_camps(request: Request, student_id: int):
         for db_student in await user.students(session):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
-                await student.create(session) # not really async when using db_obj
+                await student.create(session)
                 return [camp.dict(include=CampResponse().dict()) for camp in await student.camps(session)]
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
 
@@ -305,7 +305,7 @@ async def get_student_camps(request: Request, student_id: int):
 
 
 @api_router.get("/teach")
-async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
+async def get_teach_all(request: Request, accept: Optional[str] = Header(None)): # TODO: update this
     if "text/html" in accept:
         return templates.TemplateResponse("teach.html", {'request': request})
     else:
@@ -499,17 +499,27 @@ async def delete_level(request: Request, program_id: int, level_id: int):
 async def get_camp_students(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/teach')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        if 'ADMIN' not in user.roles and camp.id not in user.camp_ids:
+        user_permitted = False
+        for role in await user.roles(session):
+            if role.name == 'ADMIN':
+                user_permitted = True
+                break
+        if not user_permitted:
+            for db_instructor in await camp.instructors(session):
+                if db_instructor.id == user.id:
+                    user_permitted = True
+                    break
+        if not user_permitted:
             raise HTTPException(status_code=status.HTTP_403_NOT_FOUND, detail=f"User not authorized for camp id={camp_id}.")
         students = []
-        for student_id in camp.student_ids:
-            student = Student(id = student_id)
+        for db_student in await camp.students(session):
+            student = Student(db_obj = db_student)
             await student.create(session)
-            student_response = student.dict(include=StudentResponse().dict())
-            students.append(student_response)
+            students.append(student.dict(include=StudentResponse().dict()))
         return students
 
 
@@ -517,53 +527,94 @@ async def get_camp_students(request: Request, camp_id: int):
 async def get_camp_student(request: Request, camp_id: int, student_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/teach')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        if 'ADMIN' not in user.roles and camp.id not in user.camp_ids:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
-        if student_id not in camp.student_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
-        student = Student(id = student_id)
-        await student.create(session)
-        return student
+        user_permitted = False
+        for role in await user.roles(session):
+            if role.name == 'ADMIN':
+                user_permitted = True
+                break
+        if not user_permitted:
+            for db_instructor in await camp.instructors(session): # TODO: for all of these, try user._db_obj not in await camp.instructors(session)
+                if db_instructor.id == user.id:
+                    user_permitted = True
+                    break
+        if not user_permitted:
+            raise HTTPException(status_code=status.HTTP_403_NOT_FOUND, detail=f"User not authorized for camp id={camp_id}.")
+        for db_student in await camp.students(session):
+            if db_student.id == student_id:
+                student = Student(db_obj = db_student)
+                await student.create(session)
+                return student
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
 
 
 @api_router.get("/camps/{camp_id}/students/{student_id}/camps")
 async def get_camp_student_camps(request: Request, camp_id: int, student_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/teach')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        if 'ADMIN' not in user.roles and camp.id not in user.camp_ids:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
-        if student_id not in camp.student_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
-        student = Student(id = student_id)
-        await student.create(session)
-        return [camp.dict(include=CampResponse().dict()) for camp in await student.camps]
+        user_permitted = False
+        for role in await user.roles(session):
+            if role.name == 'ADMIN':
+                user_permitted = True
+                break
+        if not user_permitted:
+            for db_instructor in await camp.instructors(session):
+                if db_instructor.id == user.id:
+                    user_permitted = True
+                    break
+        if not user_permitted:
+            raise HTTPException(status_code=status.HTTP_403_NOT_FOUND, detail=f"User not authorized for camp id={camp_id}.")
+        for db_student in await camp.students(session):
+            if db_student.id == student_id:
+                student = Student(db_obj = db_student)
+                await student.create(session)
+                camps = []
+                for db_camp in await student.camps(session):
+                    camp_i = Camp(db_obj = db_camp)
+                    await camp_i.create(session)
+                    camps.append(camp_i.dict(include=CampResponse().dict()))
+                return camps
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
 
 
 @api_router.get("/camps/{camp_id}/students/{student_id}/guardians")
 async def get_camp_student_guardians(request: Request, camp_id: int, student_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/teach')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        if 'ADMIN' not in user.roles and camp.id not in user.camp_ids:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
-        if student_id not in camp.student_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
-        student = Student(id = student_id)
-        await student.create(session)
-        guardians = []
-        for db_guardian in await student.guardians(session):
-            guardian = User(db_obj = db_guardian)
-            await guardian.create(session)
-            guardians.append(guardian.dict(include=UserResponse().dict()))
-        return guardians
+        user_permitted = False
+        for role in await user.roles(session):
+            if role.name == 'ADMIN':
+                user_permitted = True
+                break
+        if not user_permitted:
+            for db_instructor in await camp.instructors(session):
+                if db_instructor.id == user.id:
+                    user_permitted = True
+                    break
+        if not user_permitted:
+            raise HTTPException(status_code=status.HTTP_403_NOT_FOUND, detail=f"User not authorized for camp id={camp_id}.")
+        for db_student in await camp.students(session):
+            if db_student.id == student_id:
+                student = Student(db_obj = db_student)
+                await student.create(session)
+                guardians = []
+                for db_guardian in await student.guardians(session):
+                    guardian = User(db_obj = db_guardian)
+                    await guardian.create(session)
+                    guardians.append(guardian.dict(include=UserResponse().dict()))
+                return guardians
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
 
 
 ###############################################################################
@@ -578,11 +629,7 @@ async def get_camps(request: Request, accept: Optional[str] = Header(None)):
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/camps')
-            camps = load_all_published_camps(session = session)
-            for i in range(len(camps)):
-                camp = camps[i]
-                camps[i] = camp.dict(include=CampResponse().dict())
-            return camps
+            return await all_camps(session = session, published = True)
 
 
 @api_router.get("/camps/{camp_id}")
@@ -592,37 +639,42 @@ async def get_camp(request: Request, camp_id: int, accept: Optional[str] = Heade
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/camps')
-            camp = Camp(session = session, id = camp_id)
+            camp = Camp(id = camp_id)
+            await camp.create(session)
             if camp.id is None:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
             return camp.dict(include=CampResponse().dict())
 
 
-@api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelSchedule)
+@api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
 async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        level_schedule = camp.level_schedules.get(level_id)
-        if level_schedule is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} not found for camp id={camp_id}")
-        return level_schedule
+        for db_level_schedule in await camp.level_schedules(session):
+            if db_level_schedule.level_id == level_id:
+                level_schedule = LevelSchedule(db_obj = db_level_schedule)
+                await level_schedule.create(session)
+                return level_schedule
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} not found for camp id={camp_id}")
 
 
 @api_router.get("/camps/{camp_id}/levels")
 async def get_camp_level_schedules(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
         level_schedules = []
-        for level_id, level_schedule in camp.level_schedules.items():
-            level_schedule_response = level_schedule.dict()
-            level_schedule_response['level_id'] = level_id
-            level_schedules.append(level_schedule_response)
+        for db_level_schedule in await camp.level_schedules(session):
+            level_schedule = LevelSchedule(db_obj = db_level_schedule)
+            await level_schedule.create(session)
+            level_schedules.append(level_schedule.dict(include=(LevelScheduleResponse().dict())))
         return level_schedules
 
 
@@ -630,15 +682,16 @@ async def get_camp_level_schedules(request: Request, camp_id: int):
 async def get_camp_instructors(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
         instructors = []
-        for instructor_id in camp.instructor_ids:
-            instructor = User(id = instructor_id)
+        for db_instructor in await camp.instructors(session):
+            instructor = User(db_obj = db_instructor)
             await instructor.create(session)
             instructor_response = instructor.dict(include=UserResponse().dict())
-            instructor_response['is_primary'] = (instructor_id == camp.primary_instructor_id)
+            instructor_response['is_primary'] = (db_instructor.id == camp.primary_instructor_id)
             instructors.append(instructor_response)
         return instructors
 
@@ -647,22 +700,25 @@ async def get_camp_instructors(request: Request, camp_id: int):
 async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        if instructor_id not in camp.instructor_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} does not exist for camp id={camp_id}")
-        instructor = User(id = instructor_id)
-        await instructor.create(session)
-        instructor_response = instructor.dict(include=UserResponse().dict())
-        return instructor_response
+        for db_instructor in await camp.instructors(session):
+            if db_instructor.id == instructor_id:
+                instructor = User(db_obj = db_instructor)
+                await instructor.create(session)
+                return instructor.dict(include=UserResponse().dict())
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} does not exist for camp id={camp_id}")
+
 
 
 @api_router.post("/camps/{camp_id}/students/{student_id}", response_model = StudentResponse, status_code = status.HTTP_201_CREATED)
 async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
         if not camp.is_published:
@@ -670,8 +726,8 @@ async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int
         for db_student in await user.students(session):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
-                await student.create(session) # not really async when using db_obj
-                camp.add_student(session = session, student_id = student_id)
+                await student.create(session)
+                await camp.add_student(session = session, student = student)
                 return student
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={student_id} does not belong to this user.")
 
@@ -689,11 +745,7 @@ async def get_schedule(request: Request, accept: Optional[str] = Header(None)):
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/schedule')
-            camps = load_all_camps(session = session)
-            for i in range(len(camps)):
-                camp = camps[i]
-                camps[i] = camp.dict(include=CampResponse().dict())
-            return camps
+            return await all_camps(session = session)
 
 
 @api_router.get("/schedule/{camp_id}", response_class = HTMLResponse)
@@ -705,16 +757,21 @@ async def get_schedule(request: Request):
 async def post_new_camp(request: Request, new_camp_data: CampData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
+        instructor = User(id = new_camp_data.primary_instructor_id)
+        await instructor.create(session)
+        if instructor.id is None:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Instructor id={new_camp_data.primary_instructor_id} does not exist.")
         # TODO: there's got to be a slicker way to do this
         new_camp = Camp(
-            session = session,
             id = None,
             program_id = new_camp_data.program_id,
             primary_instructor_id = new_camp_data.primary_instructor_id,
             is_published = new_camp_data.is_published,
         )
+        await new_camp.create(session)
         if new_camp.id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new camp failed")
+        await new_camp.add_instructor(session, instructor)
         return new_camp
 
 
@@ -722,17 +779,18 @@ async def post_new_camp(request: Request, new_camp_data: CampData):
 async def put_update_camp(request: Request, camp_id: int, updated_camp_data: CampData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
         if updated_camp_data.program_id != camp.program_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Once created, the program cannot be changed for a camp. Schedule a new camp, instead.")
-        if updated_camp_data.primary_instructor_id not in camp.instructor_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={updated_camp_data.primary_instructor_id} does not exist for camp id={camp_id}")
-        camp.make_instructor_primary(session = session, instructor_id = updated_camp_data.primary_instructor_id)
-        if camp.is_published != updated_camp_data.is_published:
-            camp.is_published = updated_camp_data.is_published
-            await camp.update(session = session)
+        instructor = User(id = updated_camp_data.primary_instructor_id)
+        await instructor.create(session)
+        if instructor.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={updated_camp_data.primary_instructor_id} not found.")
+        camp = camp.copy(update=updated_camp_data.dict(exclude_unset=True))
+        await camp.update(session = session)
         return camp
 
 
@@ -740,24 +798,27 @@ async def put_update_camp(request: Request, camp_id: int, updated_camp_data: Cam
 async def delete_camp(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        camp.delete(session = session)
+        await camp.delete(session = session)
 
 
 @api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
 async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        camp.add_instructor(session = session, instructor_id = instructor_id)
-        if instructor_id not in camp.instructor_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} not found.")
         instructor = User(id = instructor_id)
         await instructor.create(session)
+        if instructor.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor_id id={instructor_id} not found.")
+        await instructor.create(session)
+        await camp.add_instructor(session = session, instructor = instructor)
         return instructor
 
 
@@ -765,38 +826,50 @@ async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: 
 async def remove_instructor_from_camp(request: Request, camp_id: int, instructor_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        if instructor_id not in camp.instructor_ids:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} not found in camp id={camp_id}.")
-        camp.remove_instructor(session = session, instructor_id = instructor_id)
+        instructor = User(id = instructor_id)
+        await instructor.create(session)
+        if instructor.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor_id id={instructor_id} not found.")
+        await camp.remove_instructor(session = session, instructor = instructor)
 
 
 @api_router.delete("/camps/{camp_id}/students/{student_id}")
 async def remove_student_from_camp(request: Request, camp_id: int, student_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
         if not camp.is_published:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp_id} is not yet published for enrollment.")
-        camp.remove_student(session = session, student_id = student_id)
+        student = Student(id = student_id)
+        await student.create(session)
+        if student.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} not found.")
+        await camp.remove_student(session = session, student = student)
 
 
-@api_router.put("/camps/{camp_id}/levels/{level_id}", response_model = LevelSchedule)
-async def camp_update_level_schedule(request: Request, camp_id: int, level_id: int, updated_level_schedule: LevelSchedule):
+@api_router.put("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
+async def camp_update_level_schedule(request: Request, camp_id: int, level_id: int, updated_level_schedule: LevelScheduleData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
-        camp = Camp(session = session, id = camp_id)
+        camp = Camp(id = camp_id)
+        await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        level_schedule = camp.level_schedules.get(level_id)
-        if level_schedule is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for camp id={camp_id}")
-        camp.update_level_schedule(session = session, level_id = level_id, level_schedule = updated_level_schedule)
-        return camp.level_schedules.get(level_id)
+        for db_level_schedule in await camp.level_schedules(session):
+            if db_level_schedule.level_id == level_id:
+                level_schedule = LevelSchedule(db_obj = db_level_schedule)
+                await level_schedule.create(session)
+                level_schedule = level_schedule.copy(update=updated_level_schedule.dict(exclude_unset=True))
+                await level_schedule.update(session)
+                return level_schedule
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for camp id={camp_id}")
 
 
 @api_router.get("/instructors")
