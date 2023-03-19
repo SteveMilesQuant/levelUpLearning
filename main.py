@@ -497,12 +497,7 @@ async def get_camp_students(request: Request, camp_id: int):
             if role.name == 'ADMIN':
                 user_permitted = True
                 break
-        if not user_permitted:
-            for db_instructor in await camp.instructors(session):
-                if db_instructor.id == user.id:
-                    user_permitted = True
-                    break
-        if not user_permitted:
+        if not user_permitted or user._db_obj not in await camp.instructors(session):
             raise HTTPException(status_code=status.HTTP_403_NOT_FOUND, detail=f"User not authorized for camp id={camp_id}.")
         students = []
         for db_student in await camp.students(session):
@@ -525,12 +520,7 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
             if role.name == 'ADMIN':
                 user_permitted = True
                 break
-        if not user_permitted:
-            for db_instructor in await camp.instructors(session): # TODO: for all of these, try user._db_obj not in await camp.instructors(session)
-                if db_instructor.id == user.id:
-                    user_permitted = True
-                    break
-        if not user_permitted:
+        if not user_permitted or user._db_obj not in await camp.instructors(session):
             raise HTTPException(status_code=status.HTTP_403_NOT_FOUND, detail=f"User not authorized for camp id={camp_id}.")
         for db_student in await camp.students(session):
             if db_student.id == student_id:
@@ -553,12 +543,7 @@ async def get_camp_student_camps(request: Request, camp_id: int, student_id: int
             if role.name == 'ADMIN':
                 user_permitted = True
                 break
-        if not user_permitted:
-            for db_instructor in await camp.instructors(session):
-                if db_instructor.id == user.id:
-                    user_permitted = True
-                    break
-        if not user_permitted:
+        if not user_permitted or user._db_obj not in await camp.instructors(session):
             raise HTTPException(status_code=status.HTTP_403_NOT_FOUND, detail=f"User not authorized for camp id={camp_id}.")
         for db_student in await camp.students(session):
             if db_student.id == student_id:
@@ -586,12 +571,7 @@ async def get_camp_student_guardians(request: Request, camp_id: int, student_id:
             if role.name == 'ADMIN':
                 user_permitted = True
                 break
-        if not user_permitted:
-            for db_instructor in await camp.instructors(session):
-                if db_instructor.id == user.id:
-                    user_permitted = True
-                    break
-        if not user_permitted:
+        if not user_permitted or user._db_obj not in await camp.instructors(session):
             raise HTTPException(status_code=status.HTTP_403_NOT_FOUND, detail=f"User not authorized for camp id={camp_id}.")
         for db_student in await camp.students(session):
             if db_student.id == student_id:
