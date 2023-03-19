@@ -1,5 +1,4 @@
-import os, aiohttp, json, db, asyncio
-from db import init_db, close_db
+import os, aiohttp, json, asyncio
 from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -8,12 +7,13 @@ from oauthlib.oauth2 import WebApplicationClient
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
-from authentication import user_id_to_auth_token, auth_token_to_user_id
-from user import UserData, UserResponse, User, Role, init_roles, all_users
-from student import StudentData, StudentResponse, Student
-from program import ProgramData, ProgramResponse, Program, all_programs
-from program import LevelData, LevelResponse, Level
-from camp import CampData, CampResponse, Camp, LevelScheduleData, LevelScheduleResponse, LevelSchedule, all_camps
+from app.db import init_db, close_db
+from app.authentication import user_id_to_auth_token, auth_token_to_user_id
+from app.user import UserData, UserResponse, User, Role, init_roles, all_users
+from app.student import StudentData, StudentResponse, Student
+from app.program import ProgramData, ProgramResponse, Program, all_programs
+from app.program import LevelData, LevelResponse, Level
+from app.camp import CampData, CampResponse, Camp, LevelScheduleData, LevelScheduleResponse, LevelSchedule, all_camps
 
 
 class Object(object):

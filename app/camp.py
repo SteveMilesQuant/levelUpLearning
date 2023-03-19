@@ -1,6 +1,6 @@
 from pydantic import BaseModel, PrivateAttr
 from typing import Optional, Any, List, Dict
-from db import LevelScheduleDb, CampDb, UserDb, StudentDb
+from app.db import LevelScheduleDb, CampDb, UserDb, StudentDb
 from datetime import datetime
 from sqlalchemy import select
 

@@ -1,7 +1,7 @@
 import httpx, asyncio, os, pymysql
-from user import User, Role
-from authentication import user_id_to_auth_token
-from main import app, Object
+from app.user import User, Role
+from app.authentication import user_id_to_auth_token
+from app.main import app, Object
 from fastapi.testclient import TestClient
 
 

@@ -1,9 +1,9 @@
 import pytest, json
 from fastapi import status
 from fastapi.testclient import TestClient
-from user import User
-from student import StudentData, FastApiDate
-from main import app
+from app.user import User
+from app.student import StudentData, FastApiDate
+from app.main import app
 
 client = TestClient(app, cookies = app.test.users.guardian_cookies)
 all_students_json = {}

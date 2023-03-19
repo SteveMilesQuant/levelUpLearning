@@ -1,11 +1,11 @@
 import pytest, json, asyncio
 from fastapi import status
 from fastapi.testclient import TestClient
-from user import User, UserResponse
-from program import Program, ProgramResponse, Level
-from student import StudentData, FastApiDate
-from camp import CampData, LevelSchedule, FastApiDatetime
-from main import app
+from app.user import User, UserResponse
+from app.program import Program, ProgramResponse, Level
+from app.student import StudentData, FastApiDate
+from app.camp import CampData, LevelSchedule, FastApiDatetime
+from app.main import app
 
 
 client = TestClient(app, cookies = app.test.users.admin_cookies)
