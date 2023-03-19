@@ -259,13 +259,7 @@ async def put_update_student(request: Request, student_id: int, updated_student:
 async def post_new_student(request: Request, new_student_data: StudentData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/students')
-        # TODO: there's got to be a slicker way to do this
-        new_student = Student(
-            id = None,
-            name = new_student_data.name,
-            birthdate = new_student_data.birthdate,
-            grade_level = new_student_data.grade_level
-        )
+        new_student = Student(**new_student_data.dict())
         await new_student.create(session)
         if new_student.id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new student failed")
@@ -387,14 +381,7 @@ async def put_update_program(request: Request, program_id: int, updated_program:
 async def post_new_program(request: Request, new_program_data: ProgramData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/programs')
-        # TODO: there's got to be a slicker way to do this
-        new_program = Program(
-            id = None,
-            title = new_program_data.title,
-            grade_range = new_program_data.grade_range,
-            tags = new_program_data.tags,
-            description = new_program_data.description
-        )
+        new_program = Program(**new_program_data.dict())
         await new_program.create(session)
         if new_program.id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new program failed")
@@ -471,14 +458,9 @@ async def post_new_level(request: Request, program_id: int, new_level_data: Leve
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
                 await program.create(session)
-                # TODO: there's got to be a slicker way to do this
-                new_level = Level(
-                    id = None,
-                    program_id = program_id,
-                    title = new_level_data.title,
-                    description = new_level_data.description,
-                    list_index = await program.get_next_level_index(session)
-                )
+                new_level = Level(**new_level_data.dict())
+                new_level.program_id = program_id
+                new_level.list_index = await program.get_next_level_index(session)
                 await new_level.create(session)
                 return new_level
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
@@ -768,13 +750,7 @@ async def post_new_camp(request: Request, new_camp_data: CampData):
         await instructor.create(session)
         if instructor.id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Instructor id={new_camp_data.primary_instructor_id} does not exist.")
-        # TODO: there's got to be a slicker way to do this
-        new_camp = Camp(
-            id = None,
-            program_id = new_camp_data.program_id,
-            primary_instructor_id = new_camp_data.primary_instructor_id,
-            is_published = new_camp_data.is_published,
-        )
+        new_camp = Camp(**new_camp_data.dict())
         await new_camp.create(session)
         if new_camp.id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new camp failed")
