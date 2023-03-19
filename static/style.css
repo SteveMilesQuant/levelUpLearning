@@ -156,6 +156,7 @@ footer {
 .sidebar { position: relative; top: 6px; height: 90%; min-width: 300px; box-shadow: 0px 4px 16px 3px rgba(0,0,0,0.2); overflow-y: scroll; }
 .sidebar::-webkit-scrollbar { display: none; }
 .sidebar-item { margin: 32px; }
+.sidebar-subitem { margin-bottom: 32px; }
 
 .small-button {height: 16px; width: 16px; }
 

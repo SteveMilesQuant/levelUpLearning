@@ -54,12 +54,26 @@ class Level(LevelResponse):
                 setattr(self, key, getattr(self._db_obj, key))
 
     async def update(self, session: Any):
+        if self.list_index != self._db_obj.list_index:
+            await session.refresh(self._db_obj, ['program'])
+            db_program = self._db_obj.program
+            await session.refresh(db_program, ['levels'])
+            for db_level in db_program.levels:
+                if self._db_obj.list_index < db_level.list_index <= self.list_index:
+                    db_level.list_index -= 1
+                elif self.list_index <= db_level.list_index < self._db_obj.list_index:
+                    db_level.list_index += 1
         for key, value in LevelResponse():
             setattr(self._db_obj, key, getattr(self, key))
         await session.commit()
 
     async def delete(self, session: Any):
-        await session.refresh(self._db_obj, ['level_schedules'])
+        await session.refresh(self._db_obj, ['program', 'level_schedules'])
+        db_program = self._db_obj.program
+        await session.refresh(db_program, ['levels'])
+        for level in db_program.levels:
+            if level.list_index > self.list_index:
+                level.list_index -= 1
         await session.delete(self._db_obj)
         await session.commit()
 
@@ -133,18 +147,6 @@ class Program(ProgramResponse):
         for db_level in await self.levels(session):
             next_index = max(next_index, db_level.list_index + 1)
         return next_index
-
-    # TODO: move this into Level.update(session)
-    async def move_level_index(self, session: Any, level: Level, new_list_index: int):
-        if level.list_index == new_list_index:
-            return
-        # await session.refresh(self._db_obj, ['levels']) -- there isn't currently a context where we need to do this
-        for db_level in self._db_obj.levels:
-            if level.list_index < db_level.list_index <= new_list_index:
-                db_level.list_index -= 1
-            elif new_list_index <= db_level.list_index < level.list_index:
-                db_level.list_index += 1
-        await session.commit()
 
 
 async def all_programs(session: Any):

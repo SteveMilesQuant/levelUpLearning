@@ -1,7 +1,14 @@
-from db import UserDb, RoleDb, EndpointDb, StudentDb, ProgramDb, CampDb
 from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
+from enum import Enum
 from sqlalchemy import select
+from db import UserDb, RoleDb, EndpointDb, StudentDb, ProgramDb, CampDb
+
+
+class RoleEnum(Enum):
+    GUARDIAN = 0
+    INSTRUCTOR = 1
+    ADMIN = 2
 
 
 class Role(BaseModel):
@@ -25,6 +32,12 @@ class Role(BaseModel):
         self.permissible_endpoints = {}
         for endpoint in self._db_obj.endpoints:
             self.permissible_endpoints[endpoint.url] = endpoint.title
+
+    def __eq__(self, other):
+        return (self.name == other.name)
+
+    def __lt__(self, other):
+        return (RoleEnum[self.name].value < RoleEnum[other.name].value)
 
 
 async def init_roles(session: Any):
@@ -87,10 +100,16 @@ class User(UserResponse):
             if self._db_obj.id == 1:
                 roles.append(Role(name = 'INSTRUCTOR'))
                 roles.append(Role(name = 'ADMIN'))
+            task_list = []
             for role in roles:
-                # TODO: use asyncio.gather (figure out problem with pytest)
-                await role.create(session)
-                await self.add_role(session, role)
+                task_list.append(role.create(session))
+            for task in task_list: # poor man's asyncio.gather, since gather had trouble with pytest
+                await task
+            task_list = []
+            for role in roles:
+                task_list.append(self.add_role(session, role))
+            for task in task_list: # poor man's asyncio.gather, since gather had trouble with pytest
+                await task
         else:
             # Otherwise, update attributes from fetched object
             for key, value in UserResponse():
@@ -122,13 +141,14 @@ class User(UserResponse):
         self._db_obj.roles.remove(role._db_obj)
         await session.commit()
 
-    async def roles(self, session: Any) -> List[Role]: # TODO: maybe this should be List[RoleDb] to be consistent
+    async def roles(self, session: Any) -> List[Role]: # note this is not List[RoleDb] like the others
         await session.refresh(self._db_obj, ['roles'])
         roles = []
         for db_role in self._db_obj.roles:
             role = Role(db_obj=db_role)
             roles.append(role)
             await role.create(session) # not really async when we use db_obj
+        roles.sort()
         return roles
 
     async def add_student(self, session: Any, student: Any):
@@ -170,7 +190,7 @@ class User(UserResponse):
     async def programs(self, session: Any) -> List[ProgramDb]:
         await session.refresh(self._db_obj, ['programs'])
         return self._db_obj.programs
-        
+
     async def camps(self, session: Any) -> List[CampDb]:
         await session.refresh(self._db_obj, ['camps'])
         return self._db_obj.camps

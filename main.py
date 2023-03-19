@@ -312,7 +312,7 @@ async def get_student_camps(request: Request, student_id: int):
 
 
 @api_router.get("/teach")
-async def get_teach_all(request: Request, accept: Optional[str] = Header(None)): # TODO: update this
+async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
         return templates.TemplateResponse("teach.html", {'request': request})
     else:
@@ -456,7 +456,6 @@ async def put_update_level(request: Request, program_id: int, level_id: int, upd
                     if db_level.id == level_id:
                         level = Level(db_obj = db_level)
                         await level.create(session)
-                        await program.move_level_index(session = session, level = level, new_list_index = updated_level.list_index)
                         level = level.copy(update=updated_level.dict(exclude_unset=True))
                         await level.update(session)
                         return level

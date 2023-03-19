@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <span class='sidebar' id='sidebar'>
+  <span class='sidebar'>
     <div class='sidebar-item'>
       <h1 class='selectable' id='sidebar-program-title' onclick='getProgram();'></h1>
       <hr class='h-divider'></hr>
     </div>
-    <!-- Levels added here -->
-    <div class='sidebar-item' id='add-level-box'><button class='selectable' onclick="unhide('new-level');"><strong>+ Add Level</strong></button></div>
+    <div class='sidebar-item' id='sidebar-levels-box'>
+      <!-- Levels added here -->
+    </div>
+    <div class='sidebar-item'><button class='selectable' onclick="unhide('new-level');"><strong>+ Add Level</strong></button></div>
   </span>
   <span class='content-body' id='program-content-left'>
     <div class='content-item'>
@@ -133,9 +135,8 @@
   window.onload = function() {
     commonOnLoad();
 
-    programId = getProgramIdStr();
-    document.getElementById('program-id').innerText = programId;
-    document.getElementById('sidebar-program-title').href = '/programs/' + programId;
+    window.programId = getProgramIdStr();
+    document.getElementById('sidebar-program-title').href = '/programs/' + window.programId;
 
     getProgram();
     getLevels();
@@ -219,68 +220,81 @@
   }
 
   function addLevelToSidebar(level) {
-    newDiv = document.createElement('div');
+    let newDiv = document.createElement('div');
     newDiv.classList.add('selectable');
-    newDiv.classList.add('sidebar-item');
+    newDiv.classList.add('sidebar-subitem');
     newDiv.onclick = function() { getLevel(level.id); };
     newDiv.id = 'sidebar-level-' + level.id;
+    newDiv.sortValue = level.list_index;
 
-    newText = document.createElement('h2');
+    let newText = document.createElement('h2');
     newText.innerText = level.list_index.toString() + ': ' + level.title;
     newDiv.appendChild(newText);
 
-    sidebar = document.getElementById('sidebar');
-    sidebarTail = document.getElementById('add-level-box');
-    sidebar.insertBefore(newDiv, sidebarTail);
+    let levelsBox = document.getElementById('sidebar-levels-box');
+    levelsBox.appendChild(newDiv);
+  }
+  
+  function sortLevels() {
+    let levelsBox = document.getElementById('sidebar-levels-box');
+    let levelsArray = [];
+    for (let level of levelsBox.children) {
+      levelsArray.push(level);
+    }
+    levelsArray.sort(function doCompare(a, b) {
+        let a_val = a.sortValue;
+        let b_val = b.sortValue;
+        if (a_val < b_val) return -1;
+        else if (a_val > b_val) return 1;
+        else return 0;
+    });
+    for (let level of levelsArray) {
+      levelsBox.appendChild(level);
+    }
   }
 
   function getProgram() {
-    programId = document.getElementById('program-id').innerText;
-    http.get('/programs/' + programId).then((program) => { displayProgram(program); })
+    http.get('/programs/' + window.programId).then((program) => { displayProgram(program); })
   }
 
   function putProgram() {
-    programId = document.getElementById('program-id').innerText;
     programTitle = document.getElementById('program-title').innerText;
     programTags = document.getElementById('program-tags').innerText;
     programFromGrade = document.getElementById('program-from-grade').selectedIndex;
     programToGrade = document.getElementById('program-to-grade').selectedIndex;
     programDesc = document.getElementById('program-description').value;
     programData = new ProgramData(programTitle, programTags, [programFromGrade, programToGrade], programDesc);
-    http.put('/programs', programId, programData).then((program) => { displayProgram(program); })
+    http.put('/programs', window.programId, programData).then((program) => { displayProgram(program); })
   }
 
   function confirmDeleteProgram() {
-    programId = document.getElementById('program-id').innerText;
     programTitle = document.getElementById('program-title').innerText;
     if (confirm('Are you sure you want to delete program "' + programTitle + '"?')) {
-      http.delete('/programs', programId);
+      http.delete('/programs', window.programId);
       http.redirect('/programs');
     }
   }
 
   function getLevels() {
-    programId = document.getElementById('program-id').innerText;
-    http.get('/programs/' + programId + '/levels').then((levelList) => {
+    http.get('/programs/' + window.programId + '/levels').then((levelList) => {
       extendLevelIndex(levelList.length);
       for (const level of levelList) { addLevelToSidebar(level); }
+      sortLevels();
     })
   }
 
   function getLevel(id) {
     if (!id) { id = document.getElementById('level-id').innerText; }
-    programId = document.getElementById('program-id').innerText;
-    http.get('/programs/' + programId + '/levels', id).then((level) => { displayLevel(level); });
+    http.get('/programs/' + window.programId + '/levels', id).then((level) => { displayLevel(level); });
   }
 
   function putLevel() {
-    programId = document.getElementById('program-id').innerText;
     levelId = document.getElementById('level-id').innerText;
     levelTitle = document.getElementById('level-title').innerText;
     levelIndex = document.getElementById('level-list-index').value;
     levelDesc = document.getElementById('level-description').value;
     levelData = new LevelData(levelTitle, levelIndex, levelDesc);
-    http.put('/programs/' + programId + '/levels', levelId, levelData).then((level) => {
+    http.put('/programs/' + window.programId + '/levels', levelId, levelData).then((level) => {
       origLevelIndex = document.getElementById('level-list-index').previousValue;
       if (origLevelIndex < level.list_index) {
         // Moving forward
@@ -297,7 +311,7 @@
 
         insertBeforeLevel = sidebarLevel.nextSibling;
         moveLevel = document.getElementById('sidebar-level-' + levelId);
-        document.getElementById('sidebar').insertBefore(moveLevel, insertBeforeLevel);
+        document.getElementById('sidebar-levels-box').insertBefore(moveLevel, insertBeforeLevel);
       }
       else if (origLevelIndex > level.list_index) {
         // Moving backwards
@@ -314,38 +328,36 @@
 
         insertBeforeLevel = sidebarLevel;
         moveLevel = document.getElementById('sidebar-level-' + levelId);
-        document.getElementById('sidebar').insertBefore(moveLevel, insertBeforeLevel);
+        document.getElementById('sidebar-levels-box').insertBefore(moveLevel, insertBeforeLevel);
       }
       displayLevel(level);
     })
   }
 
   function postLevel() {
-    programId = document.getElementById('program-id').innerText;
     levelTitle = document.getElementById('new-level-title').innerText;
 
     // TODO: create requirement for this value
     if (levelTitle != "") {
       levelData = new LevelData(levelTitle, 0, '');
-      http.post('/programs/' + programId + '/levels', levelData).then((level) => { addLevelToSidebar(level); displayLevel(level); });
+      http.post('/programs/' + window.programId + '/levels', levelData).then((level) => { addLevelToSidebar(level); displayLevel(level); });
     }
   }
 
   function confirmDeleteLevel() {
-    programId = document.getElementById('program-id').innerText;
     levelId = document.getElementById('level-id').innerText;
     levelTitle = document.getElementById('level-title').innerText;
     if (confirm('Are you sure you want to delete level "' + levelTitle + '"?')) {
-      http.delete('/programs/' + programId + '/levels', levelId);
+      http.delete('/programs/' + window.programId + '/levels', levelId);
       strinkLevelIndex();
       sidebarLevelStr = 'sidebar-level-';
       removeSidebarLevel = document.getElementById(sidebarLevelStr + levelId);
       incrementSidebarLevel = removeSidebarLevel.nextSibling;
       while (incrementSidebarLevel) {
         if (incrementSidebarLevel.id.substr(0, sidebarLevelStr.length) != sidebarLevelStr) break;
-        splitLevel = incrementSidebarLevel.innerText.split(':');
+        splitLevel = incrementSidebarLevel.firstChild.innerText.split(':');
         splitLevel[0] = (parseInt(splitLevel[0]) - 1).toString();
-        incrementSidebarLevel.innerText = splitLevel.join(':');
+        incrementSidebarLevel.firstChild.innerText = splitLevel.join(':');
         incrementSidebarLevel = incrementSidebarLevel.nextSibling;
       }
       removeSidebarLevel.remove();
