@@ -7,6 +7,7 @@ p, textarea, input[type=text], input[type=date], input[type=datetime-local], inp
 a { text-decoration: none; }
 button { background-color: white; box-shadow: 0px 2px 4px 0px rgba(0,0,0,0.2); border: none; border-radius: 4px; padding: 6px; }
 .big-button { background-color: white; box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.2); border: 1px solid #ddd; border-radius: 16px; padding: 0 12px; }
+.small-button {height: 16px; width: 16px; }
 
 table { width: 100%; border-collapse: collapse; }
 td, th { border: 1px solid #ddd; padding: 8px; }
@@ -157,8 +158,6 @@ footer {
 .sidebar::-webkit-scrollbar { display: none; }
 .sidebar-item { margin: 32px; }
 .sidebar-subitem { margin-bottom: 32px; }
-
-.small-button {height: 16px; width: 16px; }
 
 .pop-up { position: fixed; margin-left: 200px; z-index: 1; top: 128px; background-color: white; border: 2px solid #ddd; padding: 32px; }
 .pop-up div { margin: 16px; }
