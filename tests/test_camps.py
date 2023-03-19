@@ -3,6 +3,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from user import User, UserResponse
 from program import Program, ProgramResponse, Level
+from student import StudentData, FastApiDate
 from camp import CampData, LevelSchedule, FastApiDatetime
 from main import app
 
@@ -176,6 +177,55 @@ def test_update_level_schedules(camp_index: int, level_index: int, level_schedul
     assert 'application/json' in content_type
     get_level_schedule_json = response.json()
     assert get_level_schedule_json == level_schedule_json
+
+
+# Test enrolling, getting, and disenrolling students
+@pytest.mark.parametrize(('camp_index', 'student'), (
+    (0, StudentData(name='Karen Tester', birthdate=FastApiDate(1987, 6, 15), grade_level=6)),
+    (1, StudentData(name='Cheri Tester', birthdate=FastApiDate(1988, 7, 16), grade_level=7)),
+))
+def test_camp_student(camp_index: int, student: StudentData):
+    camp_json = all_camps_json[camp_index]
+    camp_id = camp_json['id']
+
+    student_data_json = json.loads(json.dumps(student.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post(f'/students', json=student_data_json)
+    student_json = response.json()
+    student_id = student_json['id']
+
+    response = client.post(f'/camps/{camp_id}/students/{student_id}', json={})
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    new_student_json = response.json()
+    assert new_student_json == student_json
+
+    response = client.get(f'/camps/{camp_id}/students/{student_id}')
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    get_student_json = response.json()
+    assert get_student_json == student_json
+
+    response = client.get(f'/camps/{camp_id}/students')
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    student_list_json = response.json()
+    assert student_list_json[0] == student_json
+
+    response = client.get(f'/students/{student_id}/camps')
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    camp_list_json = response.json()
+    assert camp_list_json[0] == camp_json
+
+    response = client.delete(f'/camps/{camp_id}/students/{student_id}')
+    assert response.status_code == status.HTTP_200_OK, f'Error deleting {camp_json}'
+    response = client.get(f'/camps/{camp_id}/students/{student_id}')
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    response = client.get(f'/camps/{camp_id}/students')
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    assert response.json() == []
 
 
 # Test removing instructors
