@@ -113,4 +113,4 @@ AWS has some nice consoles you can set this all up from, but note that any of th
 	* Open Amazon API gateway
 	* Choose to "create" or "build" a REST API
 	* Click on "New API", create a name for it (e.g. LevelUpLearningAPI), and click "Create API"
-	* Now that it's created, click on Actions -> Create method and choose "GET" and the check mark
+	* Now that it's created, click on Actions -> Create method and choose "GET" and the check mark 
