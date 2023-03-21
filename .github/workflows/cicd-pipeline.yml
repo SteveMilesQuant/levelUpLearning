@@ -27,7 +27,7 @@ jobs:
 
       # Step-2 Install Python Virtual ENV
       - name: Install Python Virtual ENV
-        run: python3 -m pip install upgrade && python3 -m pip install virtualenv
+        run: python3 -m pip install --upgrade pip && python3 -m pip install virtualenv
 
       # Step-3 Setup Virtual ENV
       # https://docs.github.com/en/actions/guides/caching-dependencies-to-speed-up-workflows
