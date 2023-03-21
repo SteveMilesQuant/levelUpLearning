@@ -4,16 +4,17 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import WebApplicationClient
+from mangum import Mangum
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
-from app.db import init_db, close_db
-from app.authentication import user_id_to_auth_token, auth_token_to_user_id
-from app.user import UserData, UserResponse, User, Role, init_roles, all_users
-from app.student import StudentData, StudentResponse, Student
-from app.program import ProgramData, ProgramResponse, Program, all_programs
-from app.program import LevelData, LevelResponse, Level
-from app.camp import CampData, CampResponse, Camp, LevelScheduleData, LevelScheduleResponse, LevelSchedule, all_camps
+from api.db import init_db, close_db
+from api.authentication import user_id_to_auth_token, auth_token_to_user_id
+from api.user import UserData, UserResponse, User, Role, init_roles, all_users
+from api.student import StudentData, StudentResponse, Student
+from api.program import ProgramData, ProgramResponse, Program, all_programs
+from api.program import LevelData, LevelResponse, Level
+from api.camp import CampData, CampResponse, Camp, LevelScheduleData, LevelScheduleResponse, LevelSchedule, all_camps
 
 
 class Object(object):
@@ -897,4 +898,5 @@ async def user_remove_role(request: Request, user_id: int, role_name: str):
 
 
 app.include_router(api_router)
+handler = Mangum(app)
 

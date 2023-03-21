@@ -1,9 +1,9 @@
 from enum import Enum
 from pydantic import BaseModel, PrivateAttr
 from typing import List, Tuple, Optional, Any
-from app.db import ProgramDb, LevelDb
 from sqlalchemy import select
-from app.camp import LevelSchedule
+from api.db import ProgramDb, LevelDb
+from api.camp import LevelSchedule
 
 
 class LevelData(BaseModel):

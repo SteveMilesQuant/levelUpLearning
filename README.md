@@ -42,7 +42,7 @@ The following instructions will guide you on running a developer's instance of t
 		* This bit of code in DB_HOST is meant to get the IP address of your localhost from the perspective of Ubuntu
 		* You can also find this value from Windows by running the command ipconfig, then under "Ethernet adapter vEthernet (WSL)" the value is to the right of "IPv4 Address"
 7. Run the application
-	* uvicorn app.main:app --reload --port 8080 --ssl-keyfile=./localhost-key.pem --ssl-certfile=./localhost.pem
+	* uvicorn api.main:app --reload --port 8080 --ssl-keyfile=./localhost-key.pem --ssl-certfile=./localhost.pem
 	* Navigate to https://localhost:8080/
 8. For testing the API, just run pytest
 	* Note that pytest will create, use, and delete a schema called "pytest". Feel free to change this name in ./tests/conftest.py.
