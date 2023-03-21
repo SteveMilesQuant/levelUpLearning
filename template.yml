@@ -15,7 +15,7 @@ Globals:
     TracingEnabled: true
 
 Resources:
-  HelloWorldFunction:
+  LevelUpWriting:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: api/
@@ -57,7 +57,7 @@ Outputs:
   #HelloWorldApi:
   #  Description: API Gateway endpoint URL for Prod stage for Hello World function
   #  Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  level-up-writing:
+  LevelUpWriting:
     Description: Level Up Writing Lambda Function ARN
     Value: !GetAtt level-up-writing.Arn
   level-up-writing-role-lxz49f2j:
