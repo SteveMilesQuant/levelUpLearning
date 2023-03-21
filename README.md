@@ -106,6 +106,7 @@ AWS has some nice consoles you can set this all up from, but note that any of th
 		* AWS_ACCESS_KEY_ID - from the IAM User steps above, the access key
 		* AWS_SECRET_ACCESS_KEY - from the IAM User steps above, the secret key
 		* AWS_DEFAULT_REGION - from the S3 bucket steps above, the AWS region
+	* source virt/bin/activate
 	* zip -g ./api.zip -r . -x tests/**\* .git/**\* .github/**\* *.pem *.txt
 	* aws s3 cp api.zip s3://leveluplearning-s3bucket/api.zip
 	* aws lambda update-function-code --function-name leveluplearning-lambdafunction --s3-bucket leveluplearning-s3bucket --s3-key api.zip
