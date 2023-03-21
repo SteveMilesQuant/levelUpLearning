@@ -17,7 +17,7 @@ jobs:
           python-version: 3.8
 
       - name: Install Python Virtual ENV
-        run: python3 -m pip install --upgrade pip && python3 -m pip install virtualenv
+        run: python3 -m pip install virtualenv
 
       - name:  Virtual ENV
         uses: actions/cache@v2
