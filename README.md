@@ -47,3 +47,70 @@ The following instructions will guide you on running a developer's instance of t
 8. For testing the API, just run pytest
 	* Note that pytest will create, use, and delete a schema called "pytest". Feel free to change this name in ./tests/conftest.py.
 
+## Deployment to AWS
+
+AWS has some nice consoles you can set this all up from, but note that any of these could incur a cost. I've suggested as many of the free operations as possible, but higher usage in those tiers can still cost you.
+
+### MySQL Database
+
+1. Create MySQL server in Amazon
+	* Open Amazon RDS
+	* Click on "Create database"
+	* Select "MySQL" from "Engine options"
+	* Select "Free tier" from "Templates"
+	* Create a master username and password, noting these values for later steps, including the env variables DB_USER and DB_PASSWORD
+	* Under "Public access", select "Yes". You can pick "No" if you don't want to connect from your desktop or set up a CI/CD flow in github.
+	* Click "Create database"
+	* Click on this database now and note the "Endpoint" for later env variable DB_HOST and the "Port" for DB_PORT
+2. Connect and configure from your desktop
+	* Open MySQL Workbench on your PC (or any other database/SQL interface program)
+	* Create a new connection using the host name you noted above, user, and password
+	* Create a new schema, choosing the name yourself (don't forget to use charset utf8mb4). Note this name for later env variable DB_SCHEMA_NAME.
+
+### API
+
+1. Create AWS resources for this API
+	* IAM User
+		* Open Amazon IAM
+		* Click on "Add users"
+		* Create a user name
+		* Probably don't need to change any other settings, so just keep clicking through "next" and finally "create user"
+		* Click on this user, click on "Security credentials" tab, scroll down to "Access keys"
+		* Create an access key, following the prompts and noting the access key and secret for env variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY below
+	* S3 bucket
+		* Open Amazon S3
+		* Click on Create bucket
+		* Choose a name for your bucket (e.g. leveluplearning-s3bucket)
+		* Note your AWS Region, for setting env variable AWS_DEFAULT_REGION below
+		* Probably don't need to change any other settings, so click "Create bucket"
+	* Lambda function
+		* Open Amazon Lambda
+		* Create
+			* Click on "Create function"
+			* Create a function name (e.g. leveluplearning-lambdafunction)
+			* Under "Runtime", choose a version of Python
+			* Probably don't need to change any other settings, so click "Create function"
+		* Change handler
+			* Now click on the function you just created and scroll down to "Runtime settings"
+			* Edit it those settings to change the handler to "api.main.handler"
+		* Create env variables
+			* Click on the "Configuration" tab, then "Environment variables", then edit
+			* Add the following environment variables
+				* DB_HOST - the user host from when you created the MySQL server
+				* DB_USER - the user from when you created the MySQL server
+				* DB_PASSWORD - the user password from when you created the MySQL server
+				* DB_PORT - 3306 (or perhaps something different - go to your database in RDS to find out)
+				* DB_SCHEMA_NAME - the schema you created when configuring your MySQL server
+2. Use AWS CLI to deploy
+	* Set up env variables (in Ubuntu)
+		* AWS_ACCESS_KEY_ID - from the IAM User steps above, the access key
+		* AWS_SECRET_ACCESS_KEY - from the IAM User steps above, the secret key
+		* AWS_DEFAULT_REGION - from the S3 bucket steps above, the AWS region
+	* zip -g ./api.zip -r . -x tests/**\* .git/**\* .github/**\* *.pem *.txt
+	* aws s3 cp api.zip s3://leveluplearning-s3bucket/api.zip
+	* aws lambda update-function-code --function-name leveluplearning-lambdafunction --s3-bucket leveluplearning-s3bucket --s3-key api.zip
+3. Create your API gateway
+	* Open Amazon API gateway
+	* Choose to "create" or "build" a REST API
+	* Click on "New API", create a name for it (e.g. LevelUpLearningAPI), and click "Create API"
+	* Now that it's created, click on Actions -> Create method and choose "GET" and the check mark
