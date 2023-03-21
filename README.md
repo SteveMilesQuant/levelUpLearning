@@ -88,7 +88,7 @@ AWS has some nice consoles you can set this all up from, but note that any of th
 		* Create
 			* Click on "Create function"
 			* Create a function name (e.g. leveluplearning-lambdafunction)
-			* Under "Runtime", choose a version of Python
+			* Under "Runtime", choose a version of Python - IMPORTANT! This version must match the version you're using, so you may have to update your python.
 			* Probably don't need to change any other settings, so click "Create function"
 		* Change handler
 			* Now click on the function you just created and scroll down to "Runtime settings"
@@ -107,6 +107,9 @@ AWS has some nice consoles you can set this all up from, but note that any of th
 		* AWS_SECRET_ACCESS_KEY - from the IAM User steps above, the secret key
 		* AWS_DEFAULT_REGION - from the S3 bucket steps above, the AWS region
 	* source virt/bin/activate
+	* cd ./virt/lib/python3.9/site-packages
+	* zip -r9 ../../../../api.zip .
+	* cd ../../../..
 	* zip -g ./api.zip -r . -x tests/**\* .git/**\* .github/**\* *.pem *.txt
 	* aws s3 cp api.zip s3://leveluplearning-s3bucket/api.zip
 	* aws lambda update-function-code --function-name leveluplearning-lambdafunction --s3-bucket leveluplearning-s3bucket --s3-key api.zip
