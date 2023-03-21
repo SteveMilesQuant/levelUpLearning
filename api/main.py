@@ -97,7 +97,8 @@ async def homepage_get(request: Request):
 async def signin_get(request: Request):
     google_provider_cfg = await get_google_provider_cfg()
     authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-    redirect_uri = 'https://' + request.url.netloc + request.url.path + '/callback'
+    redirect_uri = f'{request.url}/callback'
+    print(redirect_uri)
     request_uri = app.google_client.prepare_request_uri(
         authorization_endpoint,
         redirect_uri=redirect_uri,
