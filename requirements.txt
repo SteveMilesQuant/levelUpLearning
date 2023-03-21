@@ -24,7 +24,6 @@ MarkupSafe==2.1.2
 multidict==6.0.4
 oauthlib==3.2.2
 packaging==23.0
-pkg_resources==0.0.0
 pluggy==1.0.0
 pycparser==2.21
 pydantic==1.10.4
