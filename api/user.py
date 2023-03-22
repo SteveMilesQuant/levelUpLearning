@@ -97,8 +97,8 @@ class User(UserResponse):
 
             # Create initial role(s)
             roles = [Role(name = 'GUARDIAN')]
+            roles.append(Role(name = 'INSTRUCTOR')) # TODO: temporarily making everyone an instructor - move down to next check later
             if self._db_obj.id == 1:
-                roles.append(Role(name = 'INSTRUCTOR'))
                 roles.append(Role(name = 'ADMIN'))
             task_list = []
             for role in roles:
