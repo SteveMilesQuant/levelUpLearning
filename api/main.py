@@ -29,6 +29,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/images", StaticFiles(directory="images"), name="images")
 app.mount("/js", StaticFiles(directory="js"), name="js")
 
+
 @app.on_event('startup')
 async def startup():
     app.config = Object()
@@ -525,12 +526,7 @@ async def get_camp_students(request: Request, camp_id: int):
         await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        user_permitted = False
-        for role in await user.roles(session):
-            if role.name == 'ADMIN':
-                user_permitted = True
-                break
-        if not user_permitted and user._db_obj not in await camp.instructors(session):
+        if not await camp.user_authorized(session, user):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
         students = []
         for db_student in await camp.students(session):
@@ -548,12 +544,7 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
         await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        user_permitted = False
-        for role in await user.roles(session):
-            if role.name == 'ADMIN':
-                user_permitted = True
-                break
-        if not user_permitted and user._db_obj not in await camp.instructors(session):
+        if not await camp.user_authorized(session, user):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
         for db_student in await camp.students(session):
             if db_student.id == student_id:
@@ -571,12 +562,7 @@ async def get_camp_student_camps(request: Request, camp_id: int, student_id: int
         await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        user_permitted = False
-        for role in await user.roles(session):
-            if role.name == 'ADMIN':
-                user_permitted = True
-                break
-        if not user_permitted and user._db_obj not in await camp.instructors(session):
+        if not await camp.user_authorized(session, user):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
         for db_student in await camp.students(session):
             if db_student.id == student_id:
@@ -599,12 +585,7 @@ async def get_camp_student_guardians(request: Request, camp_id: int, student_id:
         await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        user_permitted = False
-        for role in await user.roles(session):
-            if role.name == 'ADMIN':
-                user_permitted = True
-                break
-        if not user_permitted and user._db_obj not in await camp.instructors(session):
+        if not await camp.user_authorized(session, user):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
         for db_student in await camp.students(session):
             if db_student.id == student_id:

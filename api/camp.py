@@ -157,6 +157,12 @@ class Camp(CampResponse):
         await session.refresh(self._db_obj, ['level_schedules'])
         return self._db_obj.level_schedules
 
+    async def user_authorized(self, session: Any, user: Any) -> bool:
+        for role in await user.roles(session):
+            if role.name == 'ADMIN':
+                return True
+        return (user._db_obj in await self.instructors(session))
+
 
 async def all_camps(session: Any, published = None):
     if published is None:
