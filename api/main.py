@@ -88,9 +88,25 @@ async def get_authorized_user(request, session, permission_url_path, required = 
         return user
 
 
+def refresh_auth_cookie(request, response):
+    user_id = auth_token_to_user_id(app, request.cookies.get(app.config.jwt_cookie_name))
+    if user_id:
+        user_token, token_expiration = user_id_to_auth_token(app, user_id)
+        response.set_cookie(
+            key = app.config.jwt_cookie_name,
+            value = user_token,
+            expires = token_expiration,
+            secure = True,
+            httponly = True,
+            samesite = 'strict'
+        )
+
+
 @api_router.get("/", response_class = HTMLResponse)
 async def homepage_get(request: Request):
-    return templates.TemplateResponse("index.html", {'request': request})
+    response = templates.TemplateResponse("index.html", {'request': request})
+    refresh_auth_cookie(request, response)
+    return response
 
 
 @api_router.get("/signin", response_class = RedirectResponse)
@@ -164,7 +180,9 @@ async def signout_get(request: Request):
 
 @api_router.get("/profile")
 async def profile_get(request: Request):
-    return templates.TemplateResponse("profile.html", {'request': request})
+    response = templates.TemplateResponse("profile.html", {'request': request})
+    refresh_auth_cookie(request, response)
+    return response
 
 
 @api_router.get("/user", response_model = Optional[UserResponse])
@@ -196,7 +214,9 @@ async def get_user_roles(request: Request):
 @api_router.get("/instructors/{user_id}")
 async def instructor_get_one(request: Request, user_id: int, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        return templates.TemplateResponse("instructor.html", {'request': request})
+        response = templates.TemplateResponse("instructor.html", {'request': request})
+        refresh_auth_cookie(request, response)
+        return response
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/')
@@ -218,7 +238,9 @@ async def instructor_get_one(request: Request, user_id: int, accept: Optional[st
 @api_router.get("/students")
 async def get_students(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        return templates.TemplateResponse("students.html", {'request': request})
+        response = templates.TemplateResponse("students.html", {'request': request})
+        refresh_auth_cookie(request, response)
+        return response
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/students')
@@ -309,7 +331,9 @@ async def get_student_camps(request: Request, student_id: int):
 @api_router.get("/teach")
 async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        return templates.TemplateResponse("teach.html", {'request': request})
+        response = templates.TemplateResponse("teach.html", {'request': request})
+        refresh_auth_cookie(request, response)
+        return response
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/teach')
@@ -324,18 +348,24 @@ async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
 
 @api_router.get("/teach/{camp_id}", response_class = HTMLResponse)
 async def get_teach_one(request: Request):
-    return templates.TemplateResponse("teach_levels.html", {'request': request})
+    response = templates.TemplateResponse("teach_levels.html", {'request': request})
+    refresh_auth_cookie(request, response)
+    return response
 
 
 @api_router.get("/teach/{camp_id}/students/{student_id}", response_class = HTMLResponse)
 async def get_teach_student(request: Request):
-    return templates.TemplateResponse("student.html", {'request': request})
+    response = templates.TemplateResponse("student.html", {'request': request})
+    refresh_auth_cookie(request, response)
+    return response
 
 
 @api_router.get("/programs")
 async def get_programs(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        return templates.TemplateResponse("programs.html", {'request': request})
+        response = templates.TemplateResponse("programs.html", {'request': request})
+        refresh_auth_cookie(request, response)
+        return response
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/programs')
@@ -353,7 +383,9 @@ async def get_programs(request: Request, accept: Optional[str] = Header(None)):
 @api_router.get("/programs/{program_id}", response_model = ProgramResponse)
 async def get_program(request: Request, program_id: int, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        return templates.TemplateResponse("program.html", {'request': request})
+        response = templates.TemplateResponse("program.html", {'request': request})
+        refresh_auth_cookie(request, response)
+        return response
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
@@ -595,7 +627,9 @@ async def get_camp_student_guardians(request: Request, camp_id: int, student_id:
 @api_router.get("/camps")
 async def get_camps(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        return templates.TemplateResponse("camps.html", {'request': request})
+        response = templates.TemplateResponse("camps.html", {'request': request})
+        refresh_auth_cookie(request, response)
+        return response
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/camps')
@@ -605,7 +639,9 @@ async def get_camps(request: Request, accept: Optional[str] = Header(None)):
 @api_router.get("/camps/{camp_id}")
 async def get_camp(request: Request, camp_id: int, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        return templates.TemplateResponse("camp.html", {'request': request})
+        response = templates.TemplateResponse("camp.html", {'request': request})
+        refresh_auth_cookie(request, response)
+        return response
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/camps')
@@ -711,7 +747,9 @@ async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int
 @api_router.get("/schedule")
 async def get_schedule(request: Request, accept: Optional[str] = Header(None)):
     if "text/html" in accept:
-        return templates.TemplateResponse("schedule.html", {'request': request})
+        response = templates.TemplateResponse("schedule.html", {'request': request})
+        refresh_auth_cookie(request, response)
+        return response
     else:
         async with app.db_sessionmaker() as session:
             user = await get_authorized_user(request, session, '/schedule')
@@ -720,7 +758,9 @@ async def get_schedule(request: Request, accept: Optional[str] = Header(None)):
 
 @api_router.get("/schedule/{camp_id}", response_class = HTMLResponse)
 async def get_schedule(request: Request):
-    return templates.TemplateResponse("schedule_levels.html", {'request': request})
+    response = templates.TemplateResponse("schedule_levels.html", {'request': request})
+    refresh_auth_cookie(request, response)
+    return response
 
 
 @api_router.post("/camps", response_model = CampResponse, status_code = status.HTTP_201_CREATED)
@@ -850,7 +890,9 @@ async def get_all_possible_instructors(request: Request):
 
 @api_router.get("/members")
 async def members_get(request: Request):
-    return templates.TemplateResponse("members.html", {'request': request})
+    response = templates.TemplateResponse("members.html", {'request': request})
+    refresh_auth_cookie(request, response)
+    return response
 
 
 @api_router.get("/users")
