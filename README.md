@@ -136,18 +136,41 @@ You can choose to deploy this API as an AWS Lambda function, which is kind of a 
 	* You may need to add an additional URL for the callback, as I found it would insert "cell-1-" into the original URL for some reason
 5. (Bonus) CI/CD: you can see how you might manage CI/CD for this through github by looking at ./.github/workflows/lambda-cicd-pipeline.yml
 
-### Docker/EC2 Deployment
+### EC2 Deployment with Docker
 
+1. Create AWS EC2 instance
+	* Open Amazon EC2 from the AWS console
+	* Select "instances"
+	* Click on "Launch instances"
+	* Pick an OS (e.g. Amazon Linux or Ubuntu have free tiers)
+	* Pick an Instance type (t2.micro is a common free tier)
+	* Click on "Create new key pair" and follow the prompts - this will download a *.pem to our PC that we can use to SSH into the instance (check your downloads)
+	* Click on "Launch instance" (Note: be sure to stop and terminate the instance when you're done with it - the meter is running!)
+	* Connect to your new instance by clicking on the Connect tab - the first/easiest option may not be available with Ubuntu
+2. Install dependencies
+	* sudo yum update
+	* sudo yum install git
+	* git clone https://github.com/SteveMilesQuant/teacherCamp.git
+	* cd teacherCamp
+	* sudo yum install docker
+		* You may need to start docker: sudo service docker start
+	* sudo yum install nginx
+3. Build and run in docker (repeat steps for update)
+	* sudo docker build -t level-up-learning .
+	* create file for env variables (e.g. .env) with the following env variables (search in this readme for where their values come from)
+		* GOOGLE_CLIENT_ID
+		* GOOGLE_CLIENT_SECRET
+		* DB_USER
+		* DB_PASSWORD
+		* DB_PORT
+		* DB_SCHEMA_NAME
+		* DB_HOST
+		* Note: if you're testing this on your own PC through Ubuntu with a local MySQL instance, you may need to update the DB_HOST as follows evert time you restart your PC.
+			* mv .env .env.bak
+			* grep -v '^DB_HOST' .env.bak > .env
+			* echo DB_HOST=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}') >> .env
+			* rm .env.bak
+	* sudo docker run -d --env-file .env --name lul-container -p 8080:8080 level-up-learning
+		* Tip: for the first time, run without -d, to see if there were any problems
 
-mv .env .env.bak
-grep -v '^DB_HOST' .env.bak > .env
-echo DB_HOST=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}') >> .env
-rm .env.bak
-
-sudo docker stop lul-container
-sudo docker rm lul-container
-sudo docker rmi level-up-learning
-sudo docker build -t level-up-learning .
-sudo docker run -d --env-file .env --name lul-container -p 8000:8000 level-up-learning
-curl localhost:8000
 
