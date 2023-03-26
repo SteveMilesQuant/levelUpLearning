@@ -128,9 +128,10 @@ async def signin_callback_get(request: Request, code):
     google_provider_cfg = await get_google_provider_cfg()
     token_endpoint = google_provider_cfg["token_endpoint"]
     redirect_url = os.environ.get("CALLBACK_URL") or 'https://' + request.url.netloc + request.url.path
+    auth_response = redirect_url + f'?code={request.query_params.get("code")}'
     token_url, headers, body = app.google_client.prepare_token_request(
         token_endpoint,
-        authorization_response=f'{request.url}',
+        authorization_response=auth_response,
         redirect_url=redirect_url,
         code=code,
         client_secret=app.config.GOOGLE_CLIENT_SECRET
