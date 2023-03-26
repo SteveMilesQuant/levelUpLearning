@@ -1,4 +1,4 @@
-name: Level Up Learning FastAPI CI/CD
+name: Level Up Learning FastAPI CI/CD for AWS Lambda
 
 on:
   push:

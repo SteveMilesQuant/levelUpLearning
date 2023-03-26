@@ -921,5 +921,5 @@ async def user_remove_role(request: Request, user_id: int, role_name: str):
 
 
 app.include_router(api_router)
-handler = Mangum(app)
+handler = Mangum(app) # only needed for use with AWS Lambda
 

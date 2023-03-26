@@ -44,14 +44,35 @@ The following instructions will guide you on running a developer's instance of t
 7. Run the application
 	* uvicorn api.main:app --reload --port 8080 --ssl-keyfile=./localhost-key.pem --ssl-certfile=./localhost.pem
 	* Navigate to https://localhost:8080/
-8. For testing the API, just run pytest
+8. For automated testing of the API, just run pytest
 	* Note that pytest will create, use, and delete a schema called "pytest". Feel free to change this name in ./tests/conftest.py.
 
 ## Deployment to AWS
 
 AWS has some nice consoles you can set this all up from, but note that any of these could incur a cost. I've suggested as many of the free operations as possible, but higher usage in those tiers can still cost you.
 
+### Basic AWS resources
+
+Create the basic AWS resources you need for any path you choose.
+
+1. IAM User
+	* Open Amazon IAM
+	* Click on "Add users"
+	* Create a user name
+	* Probably don't need to change any other settings, so just keep clicking through "next" and finally "create user"
+	* Click on this user, click on "Security credentials" tab, scroll down to "Access keys"
+	* Create an access key, following the prompts and noting the access key and secret for env variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY below
+	* You will probably need to create permissions for this user. If you're just playing around, you can get away with Administrator privileges. If this is a real deployment, you may want to put in the time to ensure only what is needed (S3, Lambda, EC2, etc)
+2. S3 bucket
+	* Open Amazon S3
+	* Click on Create bucket
+	* Choose a name for your bucket (e.g. leveluplearning-s3bucket)
+	* Note your AWS Region, for setting env variable AWS_DEFAULT_REGION below
+	* Probably don't need to change any other settings, so click "Create bucket"
+
 ### MySQL Database
+
+No matter which deployment you choose, you will need a MySQL database with this project.
 
 1. Create MySQL server in Amazon
 	* Open Amazon RDS
@@ -67,45 +88,33 @@ AWS has some nice consoles you can set this all up from, but note that any of th
 	* Create a new connection using the host name you noted above, user, and password
 	* Create a new schema, choosing the name yourself (don't forget to use charset utf8mb4). Note this name for later env variable DB_SCHEMA_NAME.
 
-### API
+### Lambda Deployment
 
-1. Create AWS resources for this API
-	* IAM User
-		* Open Amazon IAM
-		* Click on "Add users"
-		* Create a user name
-		* Probably don't need to change any other settings, so just keep clicking through "next" and finally "create user"
-		* Click on this user, click on "Security credentials" tab, scroll down to "Access keys"
-		* Create an access key, following the prompts and noting the access key and secret for env variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY below
-	* S3 bucket
-		* Open Amazon S3
-		* Click on Create bucket
-		* Choose a name for your bucket (e.g. leveluplearning-s3bucket)
-		* Note your AWS Region, for setting env variable AWS_DEFAULT_REGION below
-		* Probably don't need to change any other settings, so click "Create bucket"
-	* Lambda function
-		* Open Amazon Lambda
-		* Create
-			* Click on "Create function"
-			* Create a function name (e.g. leveluplearning-lambdafunction)
-			* Under "Runtime", choose a version of Python - IMPORTANT! This version must match the version you're using, so you may have to update your python.
-			* Probably don't need to change any other settings, so click "Create function"
-		* Change handler
-			* Now click on the function you just created and scroll down to "Runtime settings"
-			* Edit it those settings to change the handler to "api.main.handler"
-		* Create env variables
-			* Click on the "Configuration" tab, then "Environment variables", then edit
-			* Add the following environment variables
-				* DB_HOST - the user host from when you created the MySQL server
-				* DB_USER - the user from when you created the MySQL server
-				* DB_PASSWORD - the user password from when you created the MySQL server
-				* DB_PORT - 3306 (or perhaps something different - go to your database in RDS to find out)
-				* DB_SCHEMA_NAME - the schema you created when configuring your MySQL server
-				* SECRET_KEY - choose a number, any number
-				* GOOGLE_CLIENT_ID - same value as before
-				* GOOGLE_CLIENT_SECRET - same value as before
-2. Use AWS CLI to deploy
-	* Set up env variables (in Ubuntu)
+You can choose to deploy this API as an AWS Lambda function, which is kind of a cool concept. As you get an API request, AWS spins up your Lambda and uses it to respond. Although there is a free tier, you only get charged for the volume of requests that need to be served. It's super easy to create one of these, but I did find the api on the free-tier Lambda to be a bit sluggish.
+
+1. Create AWS Lambda function
+	* Open Amazon Lambda
+	* Create new Lambda
+		* Click on "Create function"
+		* Create a function name (e.g. leveluplearning-lambdafunction)
+		* Under "Runtime", choose a version of Python - IMPORTANT! This version must match the version you're using, so you may have to update your python.
+		* Probably don't need to change any other settings, so click "Create function"
+	* Change handler
+		* Now click on the function you just created and scroll down to "Runtime settings"
+		* Edit it those settings to change the handler to "api.main.handler"
+	* Create env variables
+		* Click on the "Configuration" tab, then "Environment variables", then edit
+		* Add the following environment variables
+			* DB_HOST - the user host from when you created the MySQL server
+			* DB_USER - the user from when you created the MySQL server
+			* DB_PASSWORD - the user password from when you created the MySQL server
+			* DB_PORT - 3306 (or perhaps something different - go to your database in RDS to find out)
+			* DB_SCHEMA_NAME - the schema you created when configuring your MySQL server
+			* SECRET_KEY - choose a number, any number
+			* GOOGLE_CLIENT_ID - same value as before
+			* GOOGLE_CLIENT_SECRET - same value as before
+2. Use AWS CLI to deploy (command lines in Ubuntu)
+	* Set up env variables
 		* AWS_ACCESS_KEY_ID - from the IAM User steps above, the access key
 		* AWS_SECRET_ACCESS_KEY - from the IAM User steps above, the secret key
 		* AWS_DEFAULT_REGION - from the S3 bucket steps above, the AWS region
@@ -124,3 +133,21 @@ AWS has some nice consoles you can set this all up from, but note that any of th
 	* Click "Save" and you should get a URL you can visit
 4. Allow access to this URL from Google
 	* Retrace your steps with "Set up test authentication" above and instead use the URL just generated by AWS
+	* You may need to add an additional URL for the callback, as I found it would insert "cell-1-" into the original URL for some reason
+5. (Bonus) CI/CD: you can see how you might manage CI/CD for this through github by looking at ./.github/workflows/lambda-cicd-pipeline.yml
+
+### Docker/EC2 Deployment
+
+
+mv .env .env.bak
+grep -v '^DB_HOST' .env.bak > .env
+echo DB_HOST=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}') >> .env
+rm .env.bak
+
+sudo docker stop lul-container
+sudo docker rm lul-container
+sudo docker rmi level-up-learning
+sudo docker build -t level-up-learning .
+sudo docker run -d --env-file .env --name lul-container -p 8000:8000 level-up-learning
+curl localhost:8000
+

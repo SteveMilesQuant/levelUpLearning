@@ -11,3 +11,4 @@ package*
 serverless.y*
 .serverless*
 api.zip
+.env
