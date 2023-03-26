@@ -153,7 +153,7 @@ If you want to get this website up and running on a single server (i.e. without 
 2. Install dependencies
 	* sudo yum update
 	* sudo yum install -y git docker nginx
-	* You may need to start docker: sudo service docker start
+	* sudo service docker start
 	* git clone https://github.com/SteveMilesQuant/teacherCamp.git
 	* cd teacherCamp
 3. Build and run in docker (repeat steps for update)
@@ -165,6 +165,7 @@ If you want to get this website up and running on a single server (i.e. without 
 		* DB_PORT
 		* DB_SCHEMA_NAME
 		* DB_HOST
+		* CALLBACK_URL - needs to be the final domain-specific URL for the callback (e.g. https://www.your-domain.com/signin/callback)
 		* Note: if you're testing this on your own PC through Ubuntu with a local MySQL instance, you may need to update the DB_HOST as follows evert time you restart your PC.
 			* mv .env .env.bak
 			* grep -v '^DB_HOST' .env.bak > .env
@@ -185,6 +186,10 @@ If you want to get this website up and running on a single server (i.e. without 
 			* If you're just playing around, you can use mkcert localhost, as before, and browsers will just warn traffic that it's not really secure
 			* If this is production, you may want to use a real host (instead of the IP address) and get yourself a real certificate (search online)
 		* sudo service nginx restart
-	* Lastly (as usual), add the necessary URIs to Google's white list (see "Set up test authentication" above)
+	* Make it work with Google
+		* Get a non-IP domain
+			* You can get a domain through AWS
+			* If you get it through GoDaddy, follow these instructions: https://sandny.com/2019/11/23/host-godaddy-domain-with-aws-ec2/
+			* Add the necessary URIs to Google's white list (see "Set up test authentication" above)
 
 
