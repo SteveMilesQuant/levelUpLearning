@@ -138,6 +138,8 @@ You can choose to deploy this API as an AWS Lambda function, which is kind of a 
 
 ### EC2 Deployment with Docker
 
+If you want to get this website up and running on a single server (i.e. without scaling), this is an easy way to go before you have to get into Kubernetes and whatnot. If you're already comfortable with Docker, this may be the preferred way for you to launch uvicorn even on your PC through Ubuntu (skipping the nginx part).
+
 1. Create AWS EC2 instance
 	* Open Amazon EC2 from the AWS console
 	* Select "instances"
@@ -145,8 +147,9 @@ You can choose to deploy this API as an AWS Lambda function, which is kind of a 
 	* Pick an OS (e.g. Amazon Linux or Ubuntu have free tiers)
 	* Pick an Instance type (t2.micro is a common free tier)
 	* Click on "Create new key pair" and follow the prompts - this will download a *.pem to our PC that we can use to SSH into the instance (check your downloads)
+	* Check the box for "Allow HTTPS traffic from the internet"
 	* Click on "Launch instance" (Note: be sure to stop and terminate the instance when you're done with it - the meter is running!)
-	* Connect to your new instance by clicking on the Connect tab - the first/easiest option may not be available with Ubuntu
+	* Connect to your new instance by clicking on the Connect tab - the first/easiest option may not be available with Ubuntu, so you should instead use ssh
 2. Install dependencies
 	* sudo yum update
 	* sudo yum install -y git docker nginx
@@ -177,15 +180,11 @@ You can choose to deploy this API as an AWS Lambda function, which is kind of a 
 		* If /etc/nginx/sites-enabled does not exist (e.g. on Linux)
 			* sudo mkdir /etc/nginx/sites-enabled
 			* Add "include /etc/nginx/sites-enabled/*;" to http block of /etc/nginx/nginx.conf (as sudo)
-		* sudo vi /etc/nginx/sites-enabled/leveluplearning_nginx
-		* Type in the following:
-server {
-	listen 80;
-	server_name <your-server-ip>;
-	location / {
-		proxy_pass http://127.0.0.1:8000;
-	}
-}
+		* sudo cp nginx_template /etc/nginx/sites-enabled/leveluplearning_nginx
+		* Update /etc/nginx/sites-enabled/leveluplearning_nginx to refer to your IP address and ssl certificates
+			* If you're just playing around, you can use mkcert localhost, as before, and browsers will just warn traffic that it's not really secure
+			* If this is production, you may want to use a real host (instead of the IP address) and get yourself a real certificate (search online)
 		* sudo service nginx restart
+	* Lastly (as usual), add the necessary URIs to Google's white list (see "Set up test authentication" above)
 
 
