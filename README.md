@@ -149,14 +149,11 @@ You can choose to deploy this API as an AWS Lambda function, which is kind of a 
 	* Connect to your new instance by clicking on the Connect tab - the first/easiest option may not be available with Ubuntu
 2. Install dependencies
 	* sudo yum update
-	* sudo yum install git
+	* sudo yum install -y git docker nginx
+	* You may need to start docker: sudo service docker start
 	* git clone https://github.com/SteveMilesQuant/teacherCamp.git
 	* cd teacherCamp
-	* sudo yum install docker
-		* You may need to start docker: sudo service docker start
-	* sudo yum install nginx
 3. Build and run in docker (repeat steps for update)
-	* sudo docker build -t level-up-learning .
 	* create file for env variables (e.g. .env) with the following env variables (search in this readme for where their values come from)
 		* GOOGLE_CLIENT_ID
 		* GOOGLE_CLIENT_SECRET
@@ -170,7 +167,14 @@ You can choose to deploy this API as an AWS Lambda function, which is kind of a 
 			* grep -v '^DB_HOST' .env.bak > .env
 			* echo DB_HOST=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}') >> .env
 			* rm .env.bak
-	* sudo docker run -d --env-file .env --name lul-container -p 8080:8080 level-up-learning
-		* Tip: for the first time, run without -d, to see if there were any problems
+	* sudo docker build -t level-up-learning .
+		* To remove: sudo docker rmi level-up-learning
+	* sudo docker run -d --env-file .env --name lul-container -p 8000:8000 level-up-learning
+		* For the first time, run without -d ("detach"), to see if there were any problems
+		* To check that it's running: 
+		* To remove: sudo docker stop lul-container; sudo docker rm lul-container
+	* Configure nginx to route traffic
+		* sudo vi /etc/nginx/sites-enabled/leveluplearning_nginx
+		* sudo service nginx restart
 
 
