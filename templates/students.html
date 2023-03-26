@@ -16,13 +16,13 @@
       <h1>
         <span>Student Profile</span>
         <span><button class='selectable' id='student-edit' onclick='edit(["student-name", "student-birthdate", "student-grade"]); hide(["student-edit", "student-delete"]); unhide(["student-submit", "student-cancel"]);'>
-          <img class='small-button' src="{{ url_for('images', path='/pencil.png') }}" alt='Edit'/>
+          <img class='small-button' src="/images/pencil.png" alt='Edit'/>
         </button></span>
         <span><button class='selectable' id='student-submit' onclick='putStudent(); unhide(["student-edit", "student-delete"]); hide(["student-submit", "student-cancel"]);' hidden>
-          <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+          <img class='small-button' src="/images/confirm.png" alt='Submit'/>
         </button></span>
         <span><button class='selectable' id='student-cancel' onclick='getStudent(null); unhide(["student-edit", "student-delete"]); hide(["student-submit", "student-cancel"]);' hidden>
-          <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+          <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
         </button></span>
       </h1>
       <hr class='h-divider'></hr>
@@ -49,7 +49,7 @@
     </div>
     <div class='content-item' id='student-delete'>
       <button class='selectable' onclick="if (confirm('Are you sure you want to delete this student?')) { deleteStudent(); }">
-        <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
+        <span><img class='small-button' src="/images/cancel.png" alt='Delete'/></span>
         <span><strong>Delete Student</strong></span>
       </button>
     </div>
@@ -81,10 +81,10 @@
     </select></div>
     <div>
       <span><button class='selectable' onclick='postStudent(); resetNewStudent();'>
-        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+        <img class='small-button' src="/images/confirm.png" alt='Submit'/>
       </button></span>
       <span><button class='selectable' onclick='resetNewStudent();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </button></span>
     </div>
   </div>

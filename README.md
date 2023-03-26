@@ -171,10 +171,21 @@ You can choose to deploy this API as an AWS Lambda function, which is kind of a 
 		* To remove: sudo docker rmi level-up-learning
 	* sudo docker run -d --env-file .env --name lul-container -p 8000:8000 level-up-learning
 		* For the first time, run without -d ("detach"), to see if there were any problems
-		* To check that it's running: 
+		* To check that it's running: curl 127.0.0.1:8000
 		* To remove: sudo docker stop lul-container; sudo docker rm lul-container
 	* Configure nginx to route traffic
+		* If /etc/nginx/sites-enabled does not exist (e.g. on Linux)
+			* sudo mkdir /etc/nginx/sites-enabled
+			* Add "include /etc/nginx/sites-enabled/*;" to http block of /etc/nginx/nginx.conf (as sudo)
 		* sudo vi /etc/nginx/sites-enabled/leveluplearning_nginx
+		* Type in the following:
+server {
+	listen 80;
+	server_name <your-server-ip>;
+	location / {
+		proxy_pass http://127.0.0.1:8000;
+	}
+}
 		* sudo service nginx restart
 
 

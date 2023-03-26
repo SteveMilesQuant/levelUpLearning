@@ -6,10 +6,10 @@
       <h1><span>Members</span></h1>
     </div>
     <div class='content-item'><div class='search-box'>
-      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><img class='small-button' src="/images/search.png" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
       <span><span class='selectable' onclick='window.membersTable.resetSearchBox();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </span></span>
     </div></div>
     <div class='content-item'><table id='members-table'>
@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block script %}
-<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script src="/js/filtertable.js"></script>
 <script>
 
   const UserTblColIdx = {
@@ -44,7 +44,7 @@
 
       let htmlTable = document.getElementById('members-table');
       let tableSearchBox = document.getElementById('search-box-text');
-      let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+      let sortImages = ['/images/levelup.png', '/images/leveldown.png'];
       window.membersTable = new FilterTable(colMeta, htmlTable, 0, null, tableSearchBox, sortImages);
 
       http.get('/users').then((userList) => {

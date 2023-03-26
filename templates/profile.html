@@ -6,13 +6,13 @@
       <h1>
         <span>Profile</span>
         <span><button class='selectable' id='profile-edit' onclick='edit(["profile-name", "profile-email", "profile-phone-number", "instructor-subjects", "instructor-description"]); hide(["profile-edit"]); unhide(["profile-submit", "profile-cancel"]);'>
-          <img class='small-button' src="{{ url_for('images', path='/pencil.png') }}" alt='Edit'/>
+          <img class='small-button' src="/images/pencil.png" alt='Edit'/>
         </button></span>
         <span><button class='selectable' id='profile-submit' onclick='putUser(); unhide(["profile-edit"]); hide(["profile-submit", "profile-cancel"]);' hidden>
-          <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+          <img class='small-button' src="/images/confirm.png" alt='Submit'/>
         </button></span>
         <span><button class='selectable' id='profile-cancel' onclick='getUser(); unhide(["profile-edit"]); hide(["profile-submit", "profile-cancel"]);' hidden>
-          <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+          <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
         </button></span>
       </h1>
       <hr class='h-divider'></hr>

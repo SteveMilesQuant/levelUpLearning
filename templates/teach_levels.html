@@ -35,8 +35,8 @@
 {% endblock %}
 
 {% block script %}
-<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
-<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script src="/js/searchlist.js"></script>
+<script src="/js/filtertable.js"></script>
 <script>
   const LevelTblColIdx = {
       Level: 0,
@@ -57,7 +57,7 @@
     colMeta[LevelTblColIdx.EndTime] = new FilterTableColumnConfig('End Time', DisplayType.Datetime, 'tr', filterType=null, searchable=false, sortable=false);
 
     let htmlTable = document.getElementById('levels-table');
-    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    let sortImages = ['/images/levelup.png', '/images/leveldown.png'];
     window.levelsTable = new FilterTable(colMeta, htmlTable, 0, null, null, sortImages);
 
     http.get('/camps/' + campId).then((camp) => {
@@ -110,7 +110,7 @@
 
     let link = document.createElement('a');
     link.innerText = instructor.full_name + ' (' + instructor.email_address + ')';
-    link.href = '/insructors/' + instructor.id;
+    link.href = '/instructors/' + instructor.id;
 
     let box = document.createElement('div');
     box.classList.add('selectable');

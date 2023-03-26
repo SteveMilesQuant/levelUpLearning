@@ -16,13 +16,13 @@
       <h1>
         <span>Program</span>
         <span><button class='selectable' id='program-edit' onclick='edit(["program-title", "program-tags", "program-from-grade", "program-to-grade", "program-description"]); hide(["program-edit", "program-delete"]); unhide(["program-submit", "program-cancel"]);'>
-          <img class='small-button' src="{{ url_for('images', path='/pencil.png') }}" alt='Edit'/>
+          <img class='small-button' src="/images/pencil.png" alt='Edit'/>
         </button></span>
         <span><button class='selectable' id='program-submit' onclick='putProgram(); unhide(["program-edit", "program-delete"]); hide(["program-submit", "program-cancel"]);' hidden>
-          <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+          <img class='small-button' src="/images/confirm.png" alt='Submit'/>
         </button></span>
         <span><button class='selectable' id='program-cancel' onclick='getProgram(); unhide(["program-edit", "program-delete"]); hide(["program-submit", "program-cancel"]);' hidden>
-          <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+          <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
         </button></span>
       </h1>
       <hr class='h-divider'></hr>
@@ -54,7 +54,7 @@
     </div>
     <div class='content-item' id='program-delete'>
       <button class='selectable' onclick="confirmDeleteProgram();">
-        <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
+        <span><img class='small-button' src="/images/cancel.png" alt='Delete'/></span>
         <span><strong>Delete Program</strong></span>
       </button>
     </div>
@@ -64,13 +64,13 @@
       <h1>
         <span id='level-header-text'>Level X</span>
         <span><button class='selectable' id='level-edit' onclick='edit(["level-title", "level-list-index", "level-description"]); hide(["level-edit", "level-delete"]); unhide(["level-submit", "level-cancel"]);'>
-          <img class='small-button' src="{{ url_for('images', path='/pencil.png') }}" alt='Edit'/>
+          <img class='small-button' src="/images/pencil.png" alt='Edit'/>
         </button></span>
         <span><button class='selectable' id='level-submit' onclick='putLevel(); unhide(["level-edit", "level-delete"]); hide(["level-submit", "level-cancel"]);' hidden>
-          <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+          <img class='small-button' src="/images/confirm.png" alt='Submit'/>
         </button></span>
         <span><button class='selectable' id='level-cancel' onclick='getLevel(null); unhide(["level-edit", "level-delete"]); hide(["level-submit", "level-cancel"]);' hidden>
-          <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+          <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
         </button></span>
       </h1>
       <hr class='h-divider'></hr>
@@ -89,7 +89,7 @@
     </div>
     <div class='content-item' id='level-delete'>
       <button class='selectable' onclick="confirmDeleteLevel();">
-        <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
+        <span><img class='small-button' src="/images/cancel.png" alt='Delete'/></span>
         <span><strong>Delete Level</strong></span>
       </button>
     </div>
@@ -120,10 +120,10 @@
     <div class='pop-up-textbox'><p contenteditable='true' id='new-level-title'></p></div>
     <div>
       <span><button class='selectable' onclick='postLevel(); resetNewLevel();'>
-        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+        <img class='small-button' src="/images/confirm.png" alt='Submit'/>
       </button></span>
       <span><button class='selectable' onclick='resetNewLevel();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </button></span>
     </div>
   </div>

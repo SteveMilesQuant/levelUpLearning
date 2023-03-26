@@ -44,7 +44,7 @@
 {% endblock %}
 
 {% block script %}
-<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script src="/js/filtertable.js"></script>
 <script>
   const GuardianTblColIdx = {
       Name: 0,
@@ -89,7 +89,7 @@
     colMeta[GuardianTblColIdx.Email] = new FilterTableColumnConfig('Email', DisplayType.Simple, 'tr', filterType=null, searchable=false, sortable=false);
 
     let htmlTable = document.getElementById('guardians-table');
-    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    let sortImages = ['/images/levelup.png', '/images/leveldown.png'];
     window.campsTable = new FilterTable(colMeta, htmlTable, 0, null, null, sortImages);
 
     http.get('/camps/' + campId + '/students/' + studentId + '/guardians').then((guardianList) => {

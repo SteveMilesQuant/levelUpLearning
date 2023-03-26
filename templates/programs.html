@@ -15,10 +15,10 @@
       <h1>Programs</h1>
     </div>
     <div class='content-item'><div class='search-box'>
-      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><img class='small-button' src="/images/search.png" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
       <span><span class='selectable' onclick='window.programsTable.resetSearchBox();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </span></span>
     </div></div>
     <div class='content-item'><table id='programs-table'>
@@ -50,17 +50,17 @@
     </select></div>
     <div>
       <span><button class='selectable' onclick='postProgram();'>
-        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+        <img class='small-button' src="/images/confirm.png" alt='Submit'/>
       </button></span>
       <span><button class='selectable' onclick='resetNewProgram();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </button></span>
     </div>
   </div>
 {% endblock %}
 
 {% block script %}
-<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script src="/js/filtertable.js"></script>
 <script>
   const ProgramTblColIdx = {
       Title: 0,
@@ -79,7 +79,7 @@
     let htmlTable = document.getElementById('programs-table');
     let filtersBox = document.getElementById('filters-box');
     let searchBox = document.getElementById('search-box-text');
-    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    let sortImages = ['/images/levelup.png', '/images/leveldown.png'];
     window.programsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, searchBox, sortImages); // -1 for row shift - we have one extra final static row for "Add Program"
 
     http.get('/programs').then((programList) => {

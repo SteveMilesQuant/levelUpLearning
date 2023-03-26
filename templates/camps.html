@@ -13,10 +13,10 @@
   <div class='content-body'>
     <div class='content-item'><h1>Available Camps</h1></div>
     <div class='content-item'><div class='search-box'>
-      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><img class='small-button' src="/images/search.png" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
       <span><span class='selectable' onclick='window.campsTable.resetSearchBox();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </span></span>
     </div></div>
     <div class='content-item'><div id='camps-table'>
@@ -26,8 +26,8 @@
 {% endblock %}
 
 {% block script %}
-<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
-<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
+<script src="/js/filtertable.js"></script>
+<script src="/js/searchlist.js"></script>
 <script>
   const CampTblColIdx = {
       Title: 0,
@@ -50,7 +50,7 @@
     let htmlTable = document.getElementById('camps-table');
     let filtersBox = document.getElementById('filters-box');
     let tableSearchBox = document.getElementById('search-box-text');
-    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    let sortImages = ['/images/levelup.png', '/images/leveldown.png'];
     window.campsTable = new FilterTable(colMeta, htmlTable, 0, filtersBox, tableSearchBox, sortImages);
 
     http.get('/camps').then((campList) => {

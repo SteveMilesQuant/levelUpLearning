@@ -63,18 +63,18 @@
     </div>
     <div>
       <span><button class='selectable' onclick='enrollStudent(); resetEnrollStudent();'>
-        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+        <img class='small-button' src="/images/confirm.png" alt='Submit'/>
       </button></span>
       <span><button class='selectable' onclick='resetEnrollStudent();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </button></span>
     </div>
   </div>
 {% endblock %}
 
 {% block script %}
-<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
-<script src="{{ url_for('js', path='/calendar.js') }}"></script>
+<script src="/js/searchlist.js"></script>
+<script src="/js/calendar.js"></script>
 <script>
   // One-time setup
   window.onload = function() {

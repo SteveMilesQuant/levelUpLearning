@@ -30,7 +30,7 @@
     </div>
     <div class='content-item' id='camp-delete'>
       <button class='selectable' onclick="confirmDeleteCamp();">
-        <span><img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Delete'/></span>
+        <span><img class='small-button' src="/images/cancel.png" alt='Delete'/></span>
         <span><strong>Delete Camp</strong></span>
       </button>
     </div>
@@ -48,10 +48,10 @@
       <hr class='h-divider'></hr>
     </div>
     <div class='search-box'>
-      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><img class='small-button' src="/images/search.png" alt='Search'/></span>
       <span><p contenteditable=true id='add-instructor-search'></p></span>
       <span><span class='selectable' onclick='window.allInstructorsList.resetSearchBox();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </span></span>
     </div>
     <div id='add-instructor-list' class='listbox listbox-popup'>
@@ -59,18 +59,18 @@
     </div>
     <div>
       <span><button class='selectable' onclick='hide("add-instructor"); postCampInstructor(); window.allInstructorsList.reset();'>
-        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+        <img class='small-button' src="/images/confirm.png" alt='Submit'/>
       </button></span>
       <span><button class='selectable' onclick='hide("add-instructor"); window.allInstructorsList.reset();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </button></span>
     </div>
   </div>
 {% endblock %}
 
 {% block script %}
-<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
-<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
+<script src="/js/searchlist.js"></script>
+<script src="/js/filtertable.js"></script>
 <script>
   const LvlTblColIdx = {
       Level: 0,
@@ -91,7 +91,7 @@
     colMeta[LvlTblColIdx.EndTime] = new FilterTableColumnConfig('End Time', DisplayType.Datetime, 'tr', filterType=null, searchable=false, sortable=false);
 
     let htmlTable = document.getElementById('levels-table');
-    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    let sortImages = ['/images/levelup.png', '/images/leveldown.png'];
     window.leveslTable = new FilterTable(colMeta, htmlTable, 0, null, null, sortImages);
 
     http.get('/camps/' + campId).then((camp) => {
@@ -184,7 +184,7 @@
     let editImage = document.createElement('img');
     editButton.classList.add('selectable');
     editImage.classList.add('small-button');
-    editImage.src = '{{ url_for("images", path="/pencil.png") }}';
+    editImage.src = '/images/pencil.png';
     editImage.alt = 'Edit';
     editButton.appendChild(editImage);
 
@@ -193,7 +193,7 @@
     confirmButton.hidden = true;
     confirmButton.classList.add('selectable');
     confirmImage.classList.add('small-button');
-    confirmImage.src = '{{ url_for("images", path="/confirm.png") }}';
+    confirmImage.src = '/images/confirm.png';
     confirmImage.alt = 'Submit';
     confirmButton.appendChild(confirmImage);
 
@@ -202,7 +202,7 @@
     cancelButton.hidden = true;
     cancelButton.classList.add('selectable');
     cancelImage.classList.add('small-button');
-    cancelImage.src = '{{ url_for("images", path="/cancel.png") }}';
+    cancelImage.src = '/images/cancel.png';
     cancelImage.alt = 'Cancel';
     cancelButton.appendChild(cancelImage);
 
@@ -280,7 +280,7 @@
 
     let makePrimaryImg = document.createElement('img');
     makePrimaryImg.classList.add('small-button');
-    makePrimaryImg.src = '{{ url_for("images", path="/levelup.png") }}';
+    makePrimaryImg.src = '/images/levelup.png';
     makePrimaryImg.alt = 'Make primary';
     let makePrimaryBtn = document.createElement('button');
     makePrimaryBtn.classList.add('selectable');
@@ -317,7 +317,7 @@
 
     let removeImg = document.createElement('img');
     removeImg.classList.add('small-button');
-    removeImg.src = '{{ url_for("images", path="/cancel.png") }}';
+    removeImg.src = '/images/cancel.png';
     removeImg.alt = 'Remove';
     let removeBtn = document.createElement('button');
     removeBtn.classList.add('selectable');
@@ -366,7 +366,7 @@
 
     let deleteImage = document.createElement('img');
     deleteImage.classList.add('small-button');
-    deleteImage.src = "{{ url_for('images', path='/cancel.png') }}";
+    deleteImage.src = "/images/cancel.png";
     deleteImage.alt = 'Remove Student';
 
     let button = document.createElement('button');

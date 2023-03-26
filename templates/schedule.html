@@ -13,10 +13,10 @@
   <div class='content-body'>
     <div class='content-item'><h1>Camps</h1></div>
     <div class='content-item'><div class='search-box'>
-      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><img class='small-button' src="/images/search.png" alt='Search'/></span>
       <span><p contenteditable=true id='search-box-text'></p></span>
       <span><span class='selectable' onclick='window.campsTable.resetSearchBox();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </span></span>
     </div></div>
     <div class='content-item'><table id='camps-table'>
@@ -31,10 +31,10 @@
     </div>
     <div><strong>Program:</strong></div>
     <div class='search-box'>
-      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><img class='small-button' src="/images/search.png" alt='Search'/></span>
       <span><p contenteditable=true id='new-camp-search-program'></p></span>
       <span><span class='selectable' onclick='window.newCampProgramList.resetSearchBox();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </span></span>
     </div>
     <div id='new-camp-program-list' class='listbox listbox-popup'>
@@ -42,10 +42,10 @@
     </div>
     <div><strong>Primary instructor:</strong></div>
     <div class='search-box'>
-      <span><img class='small-button' src="{{ url_for('images', path='/search.png') }}" alt='Search'/></span>
+      <span><img class='small-button' src="/images/search.png" alt='Search'/></span>
       <span><p contenteditable=true id='new-camp-search-instructor'></p></span>
       <span><span class='selectable' onclick='window.newCampInstructorList.resetSearchBox();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </span></span>
     </div>
     <div id='new-camp-instructor-list' class='listbox listbox-popup'>
@@ -55,18 +55,18 @@
     <div><input type='datetime-local' id='new-camp-start-datetime'></div>
     <div>
       <span><button class='selectable' onclick='hide("new-camp"); postCamp(); resetNewCamp();'>
-        <img class='small-button' src="{{ url_for('images', path='/confirm.png') }}" alt='Submit'/>
+        <img class='small-button' src="/images/confirm.png" alt='Submit'/>
       </button></span>
       <span><button class='selectable' onclick='hide("new-camp"); resetNewCamp();'>
-        <img class='small-button' src="{{ url_for('images', path='/cancel.png') }}" alt='Cancel'/>
+        <img class='small-button' src="/images/cancel.png" alt='Cancel'/>
       </button></span>
     </div>
   </div>
 {% endblock %}
 
 {% block script %}
-<script src="{{ url_for('js', path='/filtertable.js') }}"></script>
-<script src="{{ url_for('js', path='/searchlist.js') }}"></script>
+<script src="/js/filtertable.js"></script>
+<script src="/js/searchlist.js"></script>
 <script>
   const CampTblColIdx = {
       Title: 0,
@@ -87,7 +87,7 @@
     let htmlTable = document.getElementById('camps-table');
     let filtersBox = document.getElementById('filters-box');
     let tableSearchBox = document.getElementById('search-box-text');
-    let sortImages = ['{{ url_for("images", path="/levelup.png") }}', '{{ url_for("images", path="/leveldown.png") }}'];
+    let sortImages = ['/images/levelup.png', '/images/leveldown.png'];
     window.campsTable = new FilterTable(colMeta, htmlTable, -1, filtersBox, tableSearchBox, sortImages); // -1 for row shift - we have one extra final static row for "Add Camp"
 
     // We're not going to sort at first, so enable the sort up button
