@@ -156,7 +156,7 @@ If you want to get this website up and running on a single server (i.e. without 
 	* sudo yum install -y git docker nginx
 	* sudo service docker start
 	* git clone https://github.com/SteveMilesQuant/teacherCamp.git
-	* cd teacherCamp
+	* cd *
 3. Build and run in docker (repeat steps for update)
 	* create file for env variables (e.g. .env) with the following env variables (search in this readme for where their values come from)
 		* GOOGLE_CLIENT_ID
