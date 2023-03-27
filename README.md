@@ -138,7 +138,7 @@ You can choose to deploy this API as an AWS Lambda function, which is kind of a 
 
 ### EC2 Deployment with Docker
 
-If you want to get this website up and running on a single server (i.e. without scaling), this is an easy way to go before you have to get into Kubernetes and whatnot. If you're already comfortable with Docker, this may be the preferred way for you to launch uvicorn even on your PC through Ubuntu (skipping the nginx part).
+If you want to get this website up and running on a single server (i.e. without scaling), this is an easy way to go before you have to get into Kubernetes and whatnot. If you're already comfortable with Docker, this may be the preferred way for you to launch uvicorn even on your PC through Ubuntu (skipping the nginx part), but you will have to edit the Dockerfile to get uvicorn to use your certification files (i.e. localhost.pem and localhost-key.pem). Note that EC2 deployment requires that you have purchased a domain for yourself, since Google's white list for authentication doesn't allow IP addresses.
 
 1. Create AWS EC2 instance
 	* Open Amazon EC2 from the AWS console
@@ -148,9 +148,10 @@ If you want to get this website up and running on a single server (i.e. without 
 	* Pick an Instance type (t2.micro is a common free tier)
 	* Click on "Create new key pair" and follow the prompts - this will download a *.pem to our PC that we can use to SSH into the instance (check your downloads)
 	* Check the box for "Allow HTTPS traffic from the internet"
+	* Also check the box for "Allow HTTP traffic from the internet", since we will redirect regular http to https
 	* Click on "Launch instance" (Note: be sure to stop and terminate the instance when you're done with it - the meter is running!)
-	* Connect to your new instance by clicking on the Connect tab - the first/easiest option may not be available with Ubuntu, so you should instead use ssh
-2. Install dependencies
+	* Connect to your new instance by clicking on the Connect tab - the first/easiest option to use the AWS web interface may not be available with Ubuntu, so you may instead use ssh
+2. Install dependencies (shown as yum commands, since this is what AWS Linux uses)
 	* sudo yum update
 	* sudo yum install -y git docker nginx
 	* sudo service docker start
@@ -165,7 +166,7 @@ If you want to get this website up and running on a single server (i.e. without 
 		* DB_PORT
 		* DB_SCHEMA_NAME
 		* DB_HOST
-		* CALLBACK_URL - needs to be the final domain-specific URL for the callback (e.g. https://www.your-domain.com/signin/callback)
+		* CALLBACK_URL - needs to be the final domain-specific URL for the callback (e.g. https://your-domain.com/signin/callback)
 		* Note: if you're testing this on your own PC through Ubuntu with a local MySQL instance, you may need to update the DB_HOST as follows evert time you restart your PC.
 			* mv .env .env.bak
 			* grep -v '^DB_HOST' .env.bak > .env
@@ -182,14 +183,21 @@ If you want to get this website up and running on a single server (i.e. without 
 			* sudo mkdir /etc/nginx/sites-enabled
 			* Add "include /etc/nginx/sites-enabled/*;" to http block of /etc/nginx/nginx.conf (as sudo)
 		* sudo cp nginx_template /etc/nginx/sites-enabled/leveluplearning_nginx
-		* Update /etc/nginx/sites-enabled/leveluplearning_nginx to refer to your IP address and ssl certificates
-			* If you're just playing around, you can use mkcert localhost, as before, and browsers will just warn traffic that it's not really secure
-			* If this is production, you may want to use a real host (instead of the IP address) and get yourself a real certificate (search online)
+		* Update /etc/nginx/sites-enabled/leveluplearning_nginx to refer to your domain and ssl certificates
+			* Domain
+				* You can get a domain through AWS
+				* If you get it through GoDaddy, follow these instructions: https://sandny.com/2019/11/23/host-godaddy-domain-with-aws-ec2/. Broad strokes follow.
+					* AWS
+						* Create a hosted zone on Route 53
+						* Create one record to route traffic from <your-domain>.com to your EC2's IP adddress
+						* Create another record to alias www.<your-domain>.com to <your-domain>.com
+					* GoDaddy
+						* Use custom namespace servers and put in the servers from your hosted zone (record type NS)
+			* SSL Certificates
+				* If you're just playing around, you can use mkcert localhost, as before, and browsers will just warn traffic that it's not really secure
+				* If this is production, you will want to get a signed certificate from a certificate authority: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SSL-on-amazon-linux-2.html
 		* sudo service nginx restart
 	* Make it work with Google
-		* Get a non-IP domain
-			* You can get a domain through AWS
-			* If you get it through GoDaddy, follow these instructions: https://sandny.com/2019/11/23/host-godaddy-domain-with-aws-ec2/
-			* Add the necessary URIs to Google's white list (see "Set up test authentication" above)
+		* Add the necessary URIs to Google's white list (see "Set up test authentication" above, except use your domain as the base URL)
 
 
