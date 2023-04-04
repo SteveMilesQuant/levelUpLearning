@@ -189,13 +189,18 @@ If you want to get this website up and running on a single server (i.e. without 
 				* If you get it through GoDaddy, follow these instructions: https://sandny.com/2019/11/23/host-godaddy-domain-with-aws-ec2/. Broad strokes follow.
 					* AWS
 						* Create a hosted zone on Route 53
-						* Create one record to route traffic from <your-domain>.com to your EC2's IP adddress
-						* Create another record to alias www.<your-domain>.com to <your-domain>.com
+						* Create one record to route traffic from your-domain.com to your EC2's IP adddress
+						* Create another record to alias www.your-domain.com to your-domain.com
 					* GoDaddy
 						* Use custom namespace servers and put in the servers from your hosted zone (record type NS)
 			* SSL Certificates
-				* If you're just playing around, you can use mkcert localhost, as before, and browsers will just warn traffic that it's not really secure
-				* If this is production, you will want to get a signed certificate from a certificate authority: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/SSL-on-amazon-linux-2.html
+				* If you're just playing around, you can use mkcert localhost, as before, and browsers will just warn traffic that it's not really secure.
+				* If this is production, you will want to get a signed certificate from a certificate authority. Certbot (free) via pip instructions/commands follow.
+					* python3 -m venv virt
+					* source virt/bin/activate
+					* python3 -m pip install --upgrade pip
+					* python3 -m pip install certbot certbot-nginx
+					* sudo ./virt/bin/activate/certbot certonly --nginx
 		* sudo service nginx restart
 	* Make it work with Google
 		* Add the necessary URIs to Google's white list (see "Set up test authentication" above, except use your domain as the base URL)
