@@ -35,3 +35,14 @@ jobs:
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_HOST: ${{ secrets.DB_HOST }}
         run: . virt/bin/activate && export PYTHONPATH=. && pytest
+
+  CD:
+    runs-on: self-hosted
+    needs: [CI]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Create docker image
+        run: sudo docker build -t level-up-learning .
+
+      - name: Restart docker container
+        run: sudo docker stop lul-container && sudo docker rm lul-container && sudo docker run -d --env-file /home/ec2-user/teacherCamp/.env --name lul-container -p 8000:8000 level-up-learning
