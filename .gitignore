@@ -12,3 +12,5 @@ serverless.y*
 .serverless*
 api.zip
 .env
+/app/node_modules/*
+/app/dist/*

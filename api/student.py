@@ -1,7 +1,7 @@
 from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from datetime import date
-from api.db import StudentDb, UserDb, CampDb
+from db import StudentDb, UserDb, CampDb
 
 
 class FastApiDate(date):

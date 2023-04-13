@@ -1,8 +1,7 @@
 import httpx, asyncio, os, pymysql
-from api.user import User, Role
-from api.authentication import user_id_to_auth_token
-from api.main import app, Object
-from fastapi.testclient import TestClient
+from user import User, Role
+from authentication import user_id_to_auth_token
+from main import app, Object
 
 
 async def startup():
@@ -25,8 +24,7 @@ async def startup():
         )
         await app.test.users.admin.create(session)
         auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.admin.id)
-        app.test.users.admin_cookies = httpx.Cookies()
-        app.test.users.admin_cookies.set(app.config.jwt_cookie_name, auth_token)
+        app.test.users.admin_headers = {'Authorization': auth_token}
 
         app.test.users.instructor = User(
             google_id = 2,
@@ -35,8 +33,7 @@ async def startup():
         await app.test.users.instructor.create(session)
         await app.test.users.instructor.add_role(session, instructor_role)
         auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.instructor.id)
-        app.test.users.instructor_cookies = httpx.Cookies()
-        app.test.users.instructor_cookies.set(app.config.jwt_cookie_name, auth_token)
+        app.test.users.instructor_headers = {'Authorization': auth_token}
 
         app.test.users.guardian = User(
             google_id = 3,
@@ -44,8 +41,7 @@ async def startup():
         )
         await app.test.users.guardian.create(session)
         auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.guardian.id)
-        app.test.users.guardian_cookies = httpx.Cookies()
-        app.test.users.guardian_cookies.set(app.config.jwt_cookie_name, auth_token)
+        app.test.users.guardian_headers = {'Authorization': auth_token}
 
 
 def pytest_sessionstart(session):

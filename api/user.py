@@ -2,7 +2,7 @@ from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from enum import Enum
 from sqlalchemy import select
-from api.db import UserDb, RoleDb, EndpointDb, StudentDb, ProgramDb, CampDb
+from db import UserDb, RoleDb, EndpointDb, StudentDb, ProgramDb, CampDb
 
 
 class RoleEnum(Enum):

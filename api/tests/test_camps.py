@@ -1,14 +1,14 @@
 import pytest, json, asyncio
 from fastapi import status
 from fastapi.testclient import TestClient
-from api.user import User, UserResponse
-from api.program import Program, ProgramResponse, Level
-from api.student import StudentData, FastApiDate
-from api.camp import CampData, LevelSchedule, FastApiDatetime
-from api.main import app
+from user import User, UserResponse
+from program import Program, ProgramResponse, Level
+from student import StudentData, FastApiDate
+from camp import CampData, LevelSchedule, FastApiDatetime
+from main import app
 
 
-client = TestClient(app, cookies = app.test.users.admin_cookies)
+client = TestClient(app)
 all_camps_json = []
 
 
@@ -34,18 +34,6 @@ async def seed_program():
 asyncio.run(seed_program())
 
 
-# Test webpage reads
-@pytest.mark.parametrize(('endpoint'), (
-    '/camps',
-    '/schedule',
-))
-def test_get_camps_html(endpoint: str):
-    response = client.get(endpoint, headers={"accept": "text/html"})
-    content_type = response.headers['content-type']
-    assert response.status_code == status.HTTP_200_OK
-    assert 'text/html' in content_type
-
-
 # Test adding camps
 @pytest.mark.parametrize(('camp'), (
     (CampData(program_id = program.id, primary_instructor_id=app.test.users.admin.id, is_published=True)),
@@ -53,7 +41,7 @@ def test_get_camps_html(endpoint: str):
 ))
 def test_post_camp(camp: CampData):
     camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post('/camps', json=camp_json)
+    response = client.post('/camps', json=camp_json, headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_201_CREATED, f'Error posting {camp_json}'
     new_camp_json = response.json()
     camp_json['id'] = new_camp_json['id']
@@ -67,7 +55,7 @@ def test_get_camps():
     compare_camp_list = []
     for camp_json in all_camps_json:
         camp_id = camp_json['id']
-        response = client.get(f'/camps/{camp_id}')
+        response = client.get(f'/camps/{camp_id}', headers = app.test.users.admin_headers)
         content_type = response.headers['content-type']
         assert response.status_code == status.HTTP_200_OK, f'Error getting {camp_json}'
         assert 'application/json' in content_type
@@ -75,11 +63,11 @@ def test_get_camps():
         assert camp_json == got_camp_json, f'Returned camp {got_camp_json} does not match requested camp {camp_json}.'
         compare_camp_list.append(got_camp_json)
         # Also test getting webpage for individual camps
-        response = client.get(f'/camps/{camp_id}')
+        response = client.get(f'/camps/{camp_id}', headers = app.test.users.admin_headers)
         assert response.status_code == status.HTTP_200_OK
 
     # Get as list
-    response = client.get('/camps', headers={"accept": "application/json"})
+    response = client.get('/camps', headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert response.status_code == status.HTTP_200_OK
     assert 'application/json' in content_type
@@ -95,7 +83,7 @@ def test_get_camps():
 def test_add_instructor_to_camp(camp_index: int, instructor: User):
     camp_json = all_camps_json[camp_index]
     camp_id = camp_json['id']
-    response = client.post(f'/camps/{camp_id}/instructors/{instructor.id}', json={})
+    response = client.post(f'/camps/{camp_id}/instructors/{instructor.id}', json={}, headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     new_instructor_json = response.json()
@@ -114,7 +102,7 @@ def test_getting_camp_instructors():
     instructor_user_json = json.loads(json.dumps(app.test.users.instructor.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
     instructor_user_json['is_primary'] = (instructor_user_json['id'] == primary_instructor_id)
     instructors_json = [admin_user_json, instructor_user_json]
-    response = client.get(f'/camps/{camp_id}/instructors')
+    response = client.get(f'/camps/{camp_id}/instructors', headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     got_instructors_json = response.json()
@@ -123,7 +111,7 @@ def test_getting_camp_instructors():
     # Get instructors individually
     for instructor_json in instructors_json:
         instructor_id = instructor_json['id']
-        response = client.get(f'/camps/{camp_id}/instructors/{instructor_id}')
+        response = client.get(f'/camps/{camp_id}/instructors/{instructor_id}', headers = app.test.users.admin_headers)
         content_type = response.headers['content-type']
         assert 'application/json' in content_type
         got_instructor_json = response.json()
@@ -140,13 +128,13 @@ def test_change_primary_instructor(camp_index: int, instructor_id: int):
     camp_json = all_camps_json[camp_index]
     camp_id = camp_json['id']
     camp_json['primary_instructor_id'] = instructor_id
-    response = client.put(f'/camps/{camp_id}', json=camp_json)
+    response = client.put(f'/camps/{camp_id}', json=camp_json, headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     new_camp_json = response.json()
     assert new_camp_json == camp_json
 
-    response = client.get(f'/camps/{camp_id}')
+    response = client.get(f'/camps/{camp_id}', headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     got_camp_json = response.json()
@@ -164,7 +152,7 @@ def test_update_level_schedules(camp_index: int, level_index: int, level_schedul
     camp_id = camp_json['id']
     level = levels[level_index]
     level_schedule_json = json.loads(json.dumps(level_schedule.dict(), indent=4, sort_keys=True, default=str))
-    response = client.put(f'/camps/{camp_id}/levels/{level.id}', json=level_schedule_json)
+    response = client.put(f'/camps/{camp_id}/levels/{level.id}', json=level_schedule_json, headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     new_level_schedule_json = response.json()
@@ -172,7 +160,7 @@ def test_update_level_schedules(camp_index: int, level_index: int, level_schedul
     level_schedule_json['level_id'] = level.id
     assert new_level_schedule_json == level_schedule_json
 
-    response = client.get(f'/camps/{camp_id}/levels/{level.id}')
+    response = client.get(f'/camps/{camp_id}/levels/{level.id}', headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     get_level_schedule_json = response.json()
@@ -189,40 +177,40 @@ def test_camp_student(camp_index: int, student: StudentData):
     camp_id = camp_json['id']
 
     student_data_json = json.loads(json.dumps(student.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/students', json=student_data_json)
+    response = client.post(f'/students', json=student_data_json, headers = app.test.users.admin_headers)
     student_json = response.json()
     student_id = student_json['id']
 
-    response = client.post(f'/camps/{camp_id}/students/{student_id}', json={})
+    response = client.post(f'/camps/{camp_id}/students/{student_id}', json={}, headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     new_student_json = response.json()
     assert new_student_json == student_json
 
-    response = client.get(f'/camps/{camp_id}/students/{student_id}')
+    response = client.get(f'/camps/{camp_id}/students/{student_id}', headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     get_student_json = response.json()
     assert get_student_json == student_json
 
-    response = client.get(f'/camps/{camp_id}/students')
+    response = client.get(f'/camps/{camp_id}/students', headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     student_list_json = response.json()
     assert student_list_json[0] == student_json
 
-    response = client.get(f'/students/{student_id}/camps')
+    response = client.get(f'/students/{student_id}/camps', headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     camp_list_json = response.json()
     assert camp_list_json[0] == camp_json
 
-    response = client.delete(f'/camps/{camp_id}/students/{student_id}')
+    response = client.delete(f'/camps/{camp_id}/students/{student_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_200_OK, f'Error deleting {camp_json}'
-    response = client.get(f'/camps/{camp_id}/students/{student_id}')
+    response = client.get(f'/camps/{camp_id}/students/{student_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    response = client.get(f'/camps/{camp_id}/students')
+    response = client.get(f'/camps/{camp_id}/students', headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     assert response.json() == []
@@ -236,12 +224,12 @@ def test_camp_student(camp_index: int, student: StudentData):
 def test_remove_instructor(camp_index: int, instructor_id: int):
     camp_json = all_camps_json[camp_index]
     camp_id = camp_json['id']
-    response = client.delete(f'/camps/{camp_id}/instructors/{instructor_id}')
+    response = client.delete(f'/camps/{camp_id}/instructors/{instructor_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_200_OK, f'Error deleting {camp_json}'
-    response = client.get(f'/camps/{camp_id}/instructors/{instructor_id}')
+    response = client.get(f'/camps/{camp_id}/instructors/{instructor_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    response = client.get(f'/camps/{camp_id}')
+    response = client.get(f'/camps/{camp_id}', headers = app.test.users.admin_headers)
     got_camp_json = response.json()
     assert got_camp_json['primary_instructor_id'] != instructor_id
 
@@ -250,9 +238,9 @@ def test_remove_instructor(camp_index: int, instructor_id: int):
 def test_delete_camp():
     camp_json = all_camps_json[0]
     camp_id = camp_json['id']
-    response = client.delete(f'/camps/{camp_id}')
+    response = client.delete(f'/camps/{camp_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_200_OK, f'Error deleting {camp_json}'
-    response = client.get(f'/camps/{camp_id}')
+    response = client.get(f'/camps/{camp_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
@@ -270,24 +258,24 @@ def test_permission():
     bad_level_id = alt_level.id
 
     # camp get with bad id
-    response = client.get(f'/camps/{bad_camp_id}')
+    response = client.get(f'/camps/{bad_camp_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
     returned_json = response.json()
     assert returned_json == camp_error_json
 
     # camp put with bad camp id
-    response = client.put(f'/camps/{bad_camp_id}', json=camp_json)
+    response = client.put(f'/camps/{bad_camp_id}', json=camp_json, headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
     returned_json = response.json()
     assert returned_json == camp_error_json
 
     # Try to change program_id (not allowed)
     camp_json['program_id'] = bad_program_id
-    response = client.put(f'/camps/{camp_id}', json=camp_json)
+    response = client.put(f'/camps/{camp_id}', json=camp_json, headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
     # Get bad level id
-    response = client.get(f'/camps/{camp_id}/levels/{bad_level_id}')
+    response = client.get(f'/camps/{camp_id}/levels/{bad_level_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
