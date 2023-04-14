@@ -7,29 +7,17 @@ import {
   CloseButton,
   Grid,
   GridItem,
+  Icon,
   VStack,
 } from "@chakra-ui/react";
 import NavBar from "./components/NavBar";
 import useRoles from "./hooks/useRoles";
-import { FaLevelUpAlt, FaGraduationCap } from "react-icons/fa";
-import { GiTeacher } from "react-icons/gi";
-import { MdManageAccounts, MdOutlineDesignServices } from "react-icons/md";
-import { AiOutlineSchedule } from "react-icons/ai";
-
-interface Role {
-  name: string;
-}
+import SideIconList from "./components/SideIconList";
 
 function App() {
-  const asideIconColor = "#54b5dd";
-
   const [signedIn, setSignedIn] = useState(false);
   const [error, setError] = useState("");
-
   const roles = useRoles(signedIn, setError);
-  const isGuardian = roles.find((role) => role.name === "GUARDIAN");
-  const isInstructor = roles.find((role) => role.name === "INSTRUCTOR");
-  const isAdmin = roles.find((role) => role.name === "ADMIN");
 
   return (
     <>
@@ -51,31 +39,16 @@ function App() {
           base: `"nav nav" "aside main"`,
         }}
       >
-        <GridItem area="nav" backgroundColor="#b1e7fd">
-          <NavBar signedIn={signedIn} setSignedIn={setSignedIn}></NavBar>
+        <GridItem area="nav" backgroundColor="blue.100">
+          <NavBar
+            signedIn={signedIn}
+            setSignedIn={setSignedIn}
+            onError={(error) => setError(error)}
+          ></NavBar>
         </GridItem>
         {signedIn && (
-          <GridItem area="aside">
-            <VStack padding="20px" gap="20px">
-              {isGuardian && (
-                <>
-                  <FaGraduationCap size={40} color={asideIconColor} />
-                  <FaLevelUpAlt size={40} color={asideIconColor} />
-                </>
-              )}
-              {isInstructor && (
-                <>
-                  <GiTeacher size={40} color={asideIconColor} />
-                  <MdOutlineDesignServices size={40} color={asideIconColor} />
-                </>
-              )}
-              {isAdmin && (
-                <>
-                  <AiOutlineSchedule size={40} color={asideIconColor} />
-                  <MdManageAccounts size={40} color={asideIconColor} />
-                </>
-              )}
-            </VStack>
+          <GridItem justifyContent="left" area="aside">
+            <SideIconList roles={roles} />
           </GridItem>
         )}
         <GridItem area="main">Main</GridItem>

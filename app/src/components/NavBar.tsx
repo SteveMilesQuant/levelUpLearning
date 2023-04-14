@@ -4,21 +4,22 @@ import {
   googleLogout,
   useGoogleLogin,
 } from "@react-oauth/google";
-import { Button, HStack, Image, Text } from "@chakra-ui/react";
+import { Box, Button, HStack, Icon, Image, Text } from "@chakra-ui/react";
 import { FcGoogle } from "react-icons/fc";
+import { BsArrowUpSquare } from "react-icons/bs";
 import apiClient from "../services/api-client";
 import logo from "../assets/logo.png";
 
 interface Props {
   signedIn: boolean;
   setSignedIn: (signedIn: boolean) => void;
+  onError: (error: string) => void;
 }
 
-const NavBar = ({ signedIn, setSignedIn }: Props) => {
+const NavBar = ({ signedIn, setSignedIn, onError }: Props) => {
   // Check to see if we're already signed in
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
-    console.log(authToken);
     if (authToken) {
       apiClient.defaults.headers.common = { Authorization: authToken };
       setSignedIn(true);
@@ -40,7 +41,7 @@ const NavBar = ({ signedIn, setSignedIn }: Props) => {
 
   const googleLogin = useGoogleLogin({
     onSuccess: (codeResponse) => apiSignIn(codeResponse),
-    onError: (error) => console.log("Login Failed:", error),
+    onError: (error) => onError("Login Failed: " + error),
   });
 
   const logout = function () {
@@ -52,11 +53,14 @@ const NavBar = ({ signedIn, setSignedIn }: Props) => {
 
   return (
     <HStack justifyContent="space-between" padding="10px">
-      <Image src={logo} height="40px" />
+      <HStack spacing={4}>
+        <Icon as={BsArrowUpSquare} boxSize="40px" />
+        <Image src={logo} height="40px" />
+      </HStack>
       {!signedIn && (
         <Button variant="outline" bgColor="white" onClick={() => googleLogin()}>
-          <HStack justifyContent="space-between" padding="3px">
-            <FcGoogle size={16} />
+          <HStack justifyContent="space-between" spacing={2}>
+            <Icon as={FcGoogle} size={16} />
             <Text>Sign In</Text>
           </HStack>
         </Button>
