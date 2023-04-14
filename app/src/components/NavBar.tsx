@@ -53,9 +53,9 @@ const NavBar = ({ signedIn, setSignedIn, onError }: Props) => {
 
   return (
     <HStack justifyContent="space-between" padding="10px">
-      <HStack spacing={4}>
-        <Icon as={BsArrowUpSquare} boxSize="40px" />
-        <Image src={logo} height="40px" />
+      <HStack spacing={4} paddingLeft={3}>
+        <Icon as={BsArrowUpSquare} boxSize="40px" color="blue.300" />
+        <Image src={logo} height="40px" paddingLeft={4} />
       </HStack>
       {!signedIn && (
         <Button variant="outline" bgColor="white" onClick={() => googleLogin()}>

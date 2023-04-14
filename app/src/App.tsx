@@ -13,6 +13,7 @@ import {
 import NavBar from "./components/NavBar";
 import useRoles from "./hooks/useRoles";
 import SideIconList from "./components/SideIconList";
+import ErrorMessage from "./components/ErrorMessage";
 
 function App() {
   const [signedIn, setSignedIn] = useState(false);
@@ -21,19 +22,7 @@ function App() {
 
   return (
     <>
-      {error && (
-        <Alert status="error">
-          <AlertIcon />
-          <AlertTitle>Error!</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-          <CloseButton
-            alignSelf="flex-start"
-            position="relative"
-            right={-1}
-            onClick={() => setError("")}
-          />
-        </Alert>
-      )}
+      {error && <ErrorMessage message={error} onClose={() => setError("")} />}
       <Grid
         templateAreas={{
           base: `"nav nav" "aside main"`,
