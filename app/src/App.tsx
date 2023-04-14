@@ -40,7 +40,7 @@ function App() {
             <SideIconList roles={roles} />
           </GridItem>
         )}
-        <GridItem area="main">Main</GridItem>
+        <GridItem area="main"></GridItem>
       </Grid>
     </>
   );
