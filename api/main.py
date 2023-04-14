@@ -65,7 +65,6 @@ async def get_google_provider_cfg() -> dict:
 
 async def get_authorized_user(request, session, permission_url_path, required = True) -> Optional[User]:
     token = request.headers.get('Authorization')
-    print(token)
     user_id = auth_token_to_user_id(app, token)
     if user_id:
         user = User(id = user_id)
