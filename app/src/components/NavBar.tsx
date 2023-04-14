@@ -1,11 +1,13 @@
-import { Button, HStack, Image, Text } from "@chakra-ui/react";
-import { FcGoogle } from "react-icons/fc";
-import apiClient from "../services/api-client";
+import { useEffect } from "react";
 import {
   TokenResponse,
   googleLogout,
   useGoogleLogin,
 } from "@react-oauth/google";
+import { Button, HStack, Image, Text } from "@chakra-ui/react";
+import { FcGoogle } from "react-icons/fc";
+import apiClient from "../services/api-client";
+import logo from "../assets/logo.png";
 
 interface Props {
   signedIn: boolean;
@@ -13,6 +15,16 @@ interface Props {
 }
 
 const NavBar = ({ signedIn, setSignedIn }: Props) => {
+  // Check to see if we're already signed in
+  useEffect(() => {
+    const authToken = localStorage.getItem("authToken");
+    console.log(authToken);
+    if (authToken) {
+      apiClient.defaults.headers.common = { Authorization: authToken };
+      setSignedIn(true);
+    }
+  }, []);
+
   const apiSignIn = (
     codeResponse: Omit<
       TokenResponse,
@@ -20,6 +32,7 @@ const NavBar = ({ signedIn, setSignedIn }: Props) => {
     >
   ) => {
     apiClient.post("/signin", codeResponse).then((token) => {
+      localStorage.setItem("authToken", token.data);
       apiClient.defaults.headers.common = { Authorization: token.data };
       setSignedIn(true);
     });
@@ -32,16 +45,16 @@ const NavBar = ({ signedIn, setSignedIn }: Props) => {
 
   const logout = function () {
     googleLogout();
+    localStorage.removeItem("authToken");
     apiClient.defaults.headers.common = {};
     setSignedIn(false);
   };
 
   return (
     <HStack justifyContent="space-between" padding="10px">
-      {/*<Image src={logo} height="32px" />*/}
-      <Text>Level Up Learning</Text>
+      <Image src={logo} height="40px" />
       {!signedIn && (
-        <Button variant="outline" onClick={() => googleLogin()}>
+        <Button variant="outline" bgColor="white" onClick={() => googleLogin()}>
           <HStack justifyContent="space-between" padding="3px">
             <FcGoogle size={16} />
             <Text>Sign In</Text>
@@ -49,7 +62,7 @@ const NavBar = ({ signedIn, setSignedIn }: Props) => {
         </Button>
       )}
       {signedIn && (
-        <Button variant="outline" onClick={() => logout()}>
+        <Button variant="outline" bgColor="white" onClick={() => logout()}>
           <Text>Sign Out</Text>
         </Button>
       )}
