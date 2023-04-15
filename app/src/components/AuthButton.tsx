@@ -14,11 +14,13 @@ const AuthButton = ({ signedIn, setSignedIn, onError }: Props) => {
   return (
     <>
       {!signedIn && (
-        <Button variant="outline" bgColor="white" onClick={() => onLogin()}>
-          <HStack justifyContent="space-between" spacing={2}>
-            <Icon as={FcGoogle} size={16} />
-            <Text>Sign In</Text>
-          </HStack>
+        <Button
+          leftIcon={<FcGoogle />}
+          variant="outline"
+          bgColor="white"
+          onClick={() => onLogin()}
+        >
+          Sign In
         </Button>
       )}
       {signedIn && (
