@@ -1,21 +1,27 @@
 import { useEffect } from "react";
-import apiClient from "../services/api-client";
+import { useNavigate } from "react-router-dom";
 import {
   TokenResponse,
   googleLogout,
   useGoogleLogin,
 } from "@react-oauth/google";
+import apiClient from "../services/api-client";
 
 const useLogin = (
   setSignedIn: (signedIn: boolean) => void,
   onError: (message: string) => void
 ) => {
+  const navigate = useNavigate();
+
   // Check to see if we're already signed in
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
     if (authToken) {
       apiClient.defaults.headers.common = { Authorization: authToken };
       setSignedIn(true);
+    } else {
+      // Ensure that if we're not signed in, we navigate back to the home page
+      navigate("/");
     }
   }, []);
 
@@ -42,6 +48,7 @@ const useLogin = (
     localStorage.removeItem("authToken");
     apiClient.defaults.headers.common = {};
     setSignedIn(false);
+    navigate("/");
   };
 
   return { onLogin: googleLogin, onLogout: logout };
