@@ -1,24 +1,27 @@
 import { useEffect, useState } from "react";
 import { CanceledError } from "../services/api-client";
 import campService, { Camp } from "../services/camp-service";
-import programService, { Program } from "../services/program-service";
+import { Student, studentCampService } from "../services/student-service";
+import programService from "../services/program-service";
 import { AxiosResponse } from "axios";
 
-const useCamps = () => {
+const useCamps = (student?: Student) => {
   const [camps, setCamps] = useState<Camp[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const { request, cancel } = campService.getAll();
+    const { request, cancel } = student
+      ? studentCampService(student).getAll()
+      : campService.getAll();
 
     setIsLoading(true);
     request
       .then((response) => {
-        let programPromises = new Array<Promise<AxiosResponse>>();
+        let subPromises = new Array<Promise<AxiosResponse>>();
         response.data.forEach((camp) => {
           let programPromise = programService.get(camp.program_id);
-          programPromises.push(programPromise);
+          subPromises.push(programPromise);
           programPromise
             .then((pRes) => {
               camp.program = pRes.data;
@@ -29,7 +32,7 @@ const useCamps = () => {
               setIsLoading(false);
             });
         });
-        Promise.all<AxiosResponse>(programPromises).then(() => {
+        Promise.all<AxiosResponse>(subPromises).then(() => {
           setCamps(response.data);
           setIsLoading(false);
         });

@@ -3,11 +3,11 @@ import { Student } from "../services/student-service";
 import useCamps from "../hooks/useCamps";
 
 interface Props {
-  student: Student; // TODO: pass student as query param to camps
+  student?: Student;
 }
 
 const CampList = ({ student }: Props) => {
-  const { camps, error, isLoading, setCamps, setError } = useCamps();
+  const { camps, error, isLoading, setCamps, setError } = useCamps(student);
 
   return (
     <List spacing={5}>
