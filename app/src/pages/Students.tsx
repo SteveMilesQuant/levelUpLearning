@@ -5,14 +5,13 @@ import {
   CardBody,
   HStack,
   Heading,
-  Icon,
-  IconButton,
   List,
   ListItem,
   Text,
 } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
-import { AiFillDelete, AiFillEdit } from "react-icons/ai";
+import EditButton from "../components/EditButton";
+import DeleteButton from "../components/DeleteButton";
 
 const Students = () => {
   const { students, error, isLoading, setStudents, setError } = useStudents();
@@ -26,18 +25,8 @@ const Students = () => {
               <HStack justifyContent="space-between">
                 <Heading fontSize="2xl">{student.name}</Heading>
                 <HStack spacing="3px">
-                  <IconButton
-                    icon={<AiFillEdit size="18px" />}
-                    aria-label="Edit"
-                    size="sm"
-                    variant="ghost"
-                  />
-                  <IconButton
-                    icon={<AiFillDelete size="18px" />}
-                    aria-label="Delete"
-                    size="sm"
-                    variant="ghost"
-                  />
+                  <EditButton onClick={() => {}} />
+                  <DeleteButton onClick={() => {}} />
                 </HStack>
               </HStack>
               <Box marginTop={2}>
