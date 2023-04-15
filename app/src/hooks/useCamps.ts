@@ -4,6 +4,7 @@ import campService, { Camp } from "../services/camp-service";
 import { Student, studentCampService } from "../services/student-service";
 import programService from "../services/program-service";
 import { AxiosResponse } from "axios";
+import { instructorService } from "../services/user-service";
 
 const useCamps = (student?: Student) => {
   const [camps, setCamps] = useState<Camp[]>([]);
@@ -25,6 +26,20 @@ const useCamps = (student?: Student) => {
           programPromise
             .then((pRes) => {
               camp.program = pRes.data;
+            })
+            .catch((error) => {
+              if (error instanceof CanceledError) return;
+              setError(error.message);
+              setIsLoading(false);
+            });
+
+          let instructorPromise = instructorService.get(
+            camp.primary_instructor_id
+          );
+          subPromises.push(instructorPromise);
+          instructorPromise
+            .then((pRes) => {
+              camp.primary_instructor = pRes.data;
             })
             .catch((error) => {
               if (error instanceof CanceledError) return;
