@@ -1,25 +1,24 @@
-import { Box, Icon, Link } from "@chakra-ui/react";
-import { IconType } from "react-icons";
+import { IconButton, Link } from "@chakra-ui/react";
+import { ReactElement, ReactNode, createElement } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 interface Props {
-  icon: IconType;
+  icon: ReactElement;
   endpoint: string;
+  label: string;
 }
 
-const LinkIcon = ({ icon, endpoint }: Props) => {
+const LinkIcon = ({ icon, endpoint, label }: Props) => {
   return (
-    <Box
-      boxSize="50px"
-      borderRadius={10}
-      overflow="hidden"
-      padding={2}
-      _hover={{ bgColor: "gray.200" }}
-    >
-      <Link as={RouterLink} to={endpoint}>
-        <Icon as={icon} color="blue.300" boxSize="100%" />
-      </Link>
-    </Box>
+    <Link as={RouterLink} to={endpoint}>
+      <IconButton
+        icon={icon}
+        aria-label={label}
+        size="lg"
+        color="blue.300"
+        variant="ghost"
+      />
+    </Link>
   );
 };
 

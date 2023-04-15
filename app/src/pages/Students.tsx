@@ -6,6 +6,7 @@ import {
   HStack,
   Heading,
   Icon,
+  IconButton,
   List,
   ListItem,
   Text,
@@ -25,24 +26,18 @@ const Students = () => {
               <HStack justifyContent="space-between">
                 <Heading fontSize="2xl">{student.name}</Heading>
                 <HStack spacing="3px">
-                  <Box
-                    boxSize="26px"
-                    borderRadius={4}
-                    overflow="hidden"
-                    padding="3px"
-                    _hover={{ bgColor: "gray.300" }}
-                  >
-                    <Icon as={AiFillEdit} boxSize="100%" />
-                  </Box>
-                  <Box
-                    boxSize="26px"
-                    borderRadius={4}
-                    overflow="hidden"
-                    padding="3px"
-                    _hover={{ bgColor: "gray.300" }}
-                  >
-                    <Icon as={AiFillDelete} boxSize="100%" />
-                  </Box>
+                  <IconButton
+                    icon={<AiFillEdit size="18px" />}
+                    aria-label="Edit"
+                    size="sm"
+                    variant="ghost"
+                  />
+                  <IconButton
+                    icon={<AiFillDelete size="18px" />}
+                    aria-label="Delete"
+                    size="sm"
+                    variant="ghost"
+                  />
                 </HStack>
               </HStack>
               <Box marginTop={2}>

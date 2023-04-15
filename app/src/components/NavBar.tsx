@@ -1,6 +1,5 @@
-import { HStack, Image } from "@chakra-ui/react";
+import { HStack, Heading, Icon } from "@chakra-ui/react";
 import { BsArrowUpSquare } from "react-icons/bs";
-import logo from "../assets/logo.png";
 import AuthButton from "./AuthButton";
 import LinkIcon from "./LinkIcon";
 
@@ -14,8 +13,14 @@ const NavBar = ({ signedIn, setSignedIn, onError }: Props) => {
   return (
     <HStack justifyContent="space-between" padding="10px">
       <HStack spacing={4} paddingLeft={3}>
-        <LinkIcon icon={BsArrowUpSquare} endpoint="/" />
-        <Image src={logo} height="40px" paddingLeft={4} />
+        <LinkIcon
+          icon={<BsArrowUpSquare size="2em" />}
+          endpoint="/"
+          label="Home"
+        />
+        <Heading fontFamily="monospace" fontSize="30px" color="blue.500">
+          levelup
+        </Heading>
       </HStack>
       <AuthButton
         signedIn={signedIn}
