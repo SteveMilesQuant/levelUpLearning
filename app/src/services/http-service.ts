@@ -19,6 +19,10 @@ class HttpService<T extends Entity> {
     return { request, cancel: () => controller.abort() };
   }
 
+  get(id: number) {
+    return apiClient.get(this.endpoint + "/" + id);
+  }
+
   delete(id: number) {
     return apiClient.delete(this.endpoint + "/" + id);
   }
@@ -28,7 +32,7 @@ class HttpService<T extends Entity> {
   }
 
   update(entity: T) {
-    return apiClient.patch(this.endpoint + "/" + entity.id, entity);
+    return apiClient.put(this.endpoint + "/" + entity.id, entity);
   }
 }
 
