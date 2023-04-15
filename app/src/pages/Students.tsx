@@ -20,13 +20,29 @@ const Students = () => {
     <List padding={10} spacing={5}>
       {students.map((student) => (
         <ListItem key={student.id}>
-          <Card width="200px">
+          <Card width="200px" _hover={{ bgColor: "gray.200" }}>
             <CardBody>
               <HStack justifyContent="space-between">
                 <Heading fontSize="2xl">{student.name}</Heading>
-                <HStack spacing={2}>
-                  <Icon size="md" as={AiFillEdit} />
-                  <Icon size="md" as={AiFillDelete} />
+                <HStack spacing="3px">
+                  <Box
+                    boxSize="26px"
+                    borderRadius={4}
+                    overflow="hidden"
+                    padding="3px"
+                    _hover={{ bgColor: "gray.300" }}
+                  >
+                    <Icon as={AiFillEdit} boxSize="100%" />
+                  </Box>
+                  <Box
+                    boxSize="26px"
+                    borderRadius={4}
+                    overflow="hidden"
+                    padding="3px"
+                    _hover={{ bgColor: "gray.300" }}
+                  >
+                    <Icon as={AiFillDelete} boxSize="100%" />
+                  </Box>
                 </HStack>
               </HStack>
               <Box marginTop={2}>
