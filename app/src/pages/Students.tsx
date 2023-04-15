@@ -16,7 +16,10 @@ const Students = () => {
     >
       <GridItem area="students">
         <BodyContainer>
-          <StudentList onSelectStudent={setSelectedStudent} />
+          <StudentList
+            selectedStudent={selectedStudent}
+            onSelectStudent={setSelectedStudent}
+          />
         </BodyContainer>
       </GridItem>
       <GridItem area="camps">

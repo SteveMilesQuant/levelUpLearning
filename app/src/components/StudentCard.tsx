@@ -5,14 +5,25 @@ import { Student } from "../services/student-service";
 
 interface Props {
   student: Student;
+  isSelected: boolean;
   onClick: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
 }
 
-const StudentCard = ({ student, onClick, onEdit, onDelete }: Props) => {
+const StudentCard = ({
+  student,
+  isSelected,
+  onClick,
+  onEdit,
+  onDelete,
+}: Props) => {
   return (
-    <Card _hover={{ bgColor: "gray.200" }} onClick={onClick}>
+    <Card
+      bgColor={isSelected ? "gray.300" : ""}
+      _hover={{ bgColor: "gray.200" }}
+      onClick={onClick}
+    >
       <CardBody>
         <HStack justifyContent="space-between">
           <Heading fontSize="2xl">{student.name}</Heading>

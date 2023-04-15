@@ -4,10 +4,11 @@ import StudentCard from "./StudentCard";
 import { Student } from "../services/student-service";
 
 interface Props {
+  selectedStudent: Student | null;
   onSelectStudent: (student: Student | null) => void;
 }
 
-const StudentList = ({ onSelectStudent }: Props) => {
+const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
   const { students, error, isLoading, setStudents, setError } = useStudents();
 
   return (
@@ -16,6 +17,7 @@ const StudentList = ({ onSelectStudent }: Props) => {
         <ListItem key={student.id}>
           <StudentCard
             student={student}
+            isSelected={selectedStudent?.id === student.id}
             onClick={() => onSelectStudent(student)}
             onEdit={() => {}}
             onDelete={() => {}}
