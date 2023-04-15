@@ -5,13 +5,14 @@ import { Student } from "../services/student-service";
 
 interface Props {
   student: Student;
+  onClick: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-const StudentCard = ({ student, onEdit, onDelete }: Props) => {
+const StudentCard = ({ student, onClick, onEdit, onDelete }: Props) => {
   return (
-    <Card width="200px" _hover={{ bgColor: "gray.200" }}>
+    <Card _hover={{ bgColor: "gray.200" }} onClick={onClick}>
       <CardBody>
         <HStack justifyContent="space-between">
           <Heading fontSize="2xl">{student.name}</Heading>

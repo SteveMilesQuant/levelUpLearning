@@ -6,11 +6,12 @@ const StudentList = () => {
   const { students, error, isLoading, setStudents, setError } = useStudents();
 
   return (
-    <List padding={10} spacing={5}>
+    <List spacing={5}>
       {students.map((student) => (
         <ListItem key={student.id}>
           <StudentCard
             student={student}
+            onClick={() => {}}
             onEdit={() => {}}
             onDelete={() => {}}
           />
