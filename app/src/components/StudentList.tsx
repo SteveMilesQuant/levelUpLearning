@@ -1,8 +1,13 @@
 import { Button, List, ListItem } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
 import StudentCard from "./StudentCard";
+import { Student } from "../services/student-service";
 
-const StudentList = () => {
+interface Props {
+  onSelectStudent: (student: Student | null) => void;
+}
+
+const StudentList = ({ onSelectStudent }: Props) => {
   const { students, error, isLoading, setStudents, setError } = useStudents();
 
   return (
@@ -11,7 +16,7 @@ const StudentList = () => {
         <ListItem key={student.id}>
           <StudentCard
             student={student}
-            onClick={() => {}}
+            onClick={() => onSelectStudent(student)}
             onEdit={() => {}}
             onDelete={() => {}}
           />

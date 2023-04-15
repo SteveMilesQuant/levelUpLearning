@@ -6,8 +6,8 @@ import { Student } from "../services/student-service";
 interface Props {
   student: Student;
   onClick: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 const StudentCard = ({ student, onClick, onEdit, onDelete }: Props) => {
@@ -17,8 +17,8 @@ const StudentCard = ({ student, onClick, onEdit, onDelete }: Props) => {
         <HStack justifyContent="space-between">
           <Heading fontSize="2xl">{student.name}</Heading>
           <HStack spacing="3px">
-            <EditButton onClick={onEdit} />
-            <DeleteButton onClick={onDelete} />
+            {onEdit && <EditButton onClick={onEdit} />}
+            {onDelete && <DeleteButton onClick={onDelete} />}
           </HStack>
         </HStack>
         <Box marginTop={2}>

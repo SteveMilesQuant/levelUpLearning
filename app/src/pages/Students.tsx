@@ -1,8 +1,13 @@
 import { Grid, GridItem } from "@chakra-ui/react";
 import StudentList from "../components/StudentList";
 import BodyContainer from "../components/BodyContainer";
+import { useState } from "react";
+import { Student } from "../services/student-service";
+import CampList from "../components/CampList";
 
 const Students = () => {
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+
   return (
     <Grid
       templateAreas={{
@@ -11,14 +16,16 @@ const Students = () => {
     >
       <GridItem area="students">
         <BodyContainer>
-          <StudentList />
+          <StudentList onSelectStudent={setSelectedStudent} />
         </BodyContainer>
       </GridItem>
       <GridItem area="camps">
-        <BodyContainer>Camps</BodyContainer>
+        <BodyContainer>
+          {selectedStudent && <CampList student={selectedStudent} />}
+        </BodyContainer>
       </GridItem>
       <GridItem area="coguardians">
-        <BodyContainer>Co-guardians</BodyContainer>
+        <BodyContainer></BodyContainer>
       </GridItem>
     </Grid>
   );

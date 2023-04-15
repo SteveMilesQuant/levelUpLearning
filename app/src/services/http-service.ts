@@ -20,7 +20,7 @@ class HttpService<T extends Entity> {
   }
 
   get(id: number) {
-    return apiClient.get(this.endpoint + "/" + id);
+    return apiClient.get<T>(this.endpoint + "/" + id);
   }
 
   delete(id: number) {
