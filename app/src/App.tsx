@@ -1,48 +1,16 @@
-import { useState } from "react";
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  CloseButton,
-  Grid,
-  GridItem,
-  Icon,
-  VStack,
-} from "@chakra-ui/react";
-import NavBar from "./components/NavBar";
-import useRoles from "./hooks/useRoles";
-import SideIconList from "./components/SideIconList";
-import ErrorMessage from "./components/ErrorMessage";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./pages/Layout";
+import Home from "./pages/Home";
 
 function App() {
-  const [signedIn, setSignedIn] = useState(false);
-  const [error, setError] = useState("");
-  const roles = useRoles(signedIn, setError);
-
   return (
-    <>
-      {error && <ErrorMessage message={error} onClose={() => setError("")} />}
-      <Grid
-        templateAreas={{
-          base: `"nav nav" "aside main"`,
-        }}
-      >
-        <GridItem area="nav" backgroundColor="blue.100">
-          <NavBar
-            signedIn={signedIn}
-            setSignedIn={setSignedIn}
-            onError={(error) => setError(error)}
-          ></NavBar>
-        </GridItem>
-        {signedIn && (
-          <GridItem justifyContent="left" area="aside">
-            <SideIconList roles={roles} />
-          </GridItem>
-        )}
-        <GridItem area="main"></GridItem>
-      </Grid>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Home />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 
