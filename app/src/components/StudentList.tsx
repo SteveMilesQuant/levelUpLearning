@@ -6,9 +6,14 @@ import { Student } from "../services/student-service";
 interface Props {
   selectedStudent: Student | null;
   onSelectStudent: (student: Student | null) => void;
+  onAddStudent: () => void;
 }
 
-const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
+const StudentList = ({
+  selectedStudent,
+  onSelectStudent,
+  onAddStudent,
+}: Props) => {
   const { students, error, isLoading, setStudents, setError } = useStudents();
 
   return (
@@ -25,7 +30,7 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
         </ListItem>
       ))}
       <ListItem>
-        <Button size="lg" variant="outline">
+        <Button size="lg" variant="outline" onClick={onAddStudent}>
           Add Student
         </Button>
       </ListItem>

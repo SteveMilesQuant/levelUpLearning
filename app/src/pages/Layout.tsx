@@ -13,7 +13,9 @@ const Layout = () => {
 
   return (
     <>
-      {error && <ErrorMessage message={error} onClose={() => setError("")} />}
+      {error && (
+        <ErrorMessage onClose={() => setError("")}>{error}</ErrorMessage>
+      )}
       <Grid
         templateAreas={{
           base: `"nav nav" "aside main"`,

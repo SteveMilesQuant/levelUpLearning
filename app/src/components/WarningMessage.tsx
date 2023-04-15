@@ -11,11 +11,11 @@ interface Props {
   onClose?: () => void;
 }
 
-const ErrorMessage = ({ children, onClose }: Props) => {
+const WarningMessage = ({ children, onClose }: Props) => {
   return (
-    <Alert status="error">
+    <Alert status="warning">
       <AlertIcon />
-      <AlertTitle>Error!</AlertTitle>
+      <AlertTitle>Warning!</AlertTitle>
       <AlertDescription>{children}</AlertDescription>
       {onClose && (
         <CloseButton
@@ -29,4 +29,4 @@ const ErrorMessage = ({ children, onClose }: Props) => {
   );
 };
 
-export default ErrorMessage;
+export default WarningMessage;
