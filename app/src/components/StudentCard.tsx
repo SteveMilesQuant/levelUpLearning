@@ -29,7 +29,9 @@ const StudentCard = ({
           <Heading fontSize="2xl">{student.name}</Heading>
           <HStack spacing="3px">
             {onEdit && <EditButton onClick={onEdit} />}
-            {onDelete && <DeleteButton onClick={onDelete} />}
+            {onDelete && (
+              <DeleteButton objName={student.name} onConfirm={onDelete} />
+            )}
           </HStack>
         </HStack>
         <Box marginTop={2}>

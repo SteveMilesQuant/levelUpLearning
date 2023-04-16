@@ -1,14 +1,13 @@
-import { IconButton } from "@chakra-ui/react";
-import { AiFillEdit } from "react-icons/ai";
+import { IconButton, forwardRef } from "@chakra-ui/react";
 import { IconType } from "react-icons/lib";
 
 interface Props {
   Component: IconType;
-  onClick: () => void;
+  onClick?: () => void;
   label: string;
 }
 
-const ActionButton = ({ Component, onClick, label }: Props) => {
+const ActionButton = forwardRef(({ Component, onClick, label }: Props, ref) => {
   return (
     <IconButton
       icon={<Component size="18px" />}
@@ -16,8 +15,9 @@ const ActionButton = ({ Component, onClick, label }: Props) => {
       size="sm"
       variant="ghost"
       onClick={onClick}
+      ref={ref}
     />
   );
-};
+});
 
 export default ActionButton;

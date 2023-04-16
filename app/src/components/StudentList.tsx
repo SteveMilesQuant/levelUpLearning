@@ -1,7 +1,7 @@
 import { Button, List, ListItem, useDisclosure } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
 import StudentCard from "./StudentCard";
-import { Student } from "../services/student-service";
+import studentService, { Student } from "../services/student-service";
 import StudentForm from "./StudentForm";
 import { produce } from "immer";
 
@@ -19,6 +19,20 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
     onClose: newOnClose,
   } = useDisclosure();
 
+  const handleDeleteStudent = (student: Student) => {
+    const origStudents = students;
+    setStudents(
+      produce((draft) => {
+        const index = draft.findIndex((s) => s.id === student.id);
+        if (index >= 0) draft.splice(index, 1);
+      })
+    );
+    onSelectStudent(null);
+    studentService.delete(student.id).catch(() => {
+      setStudents(origStudents);
+    });
+  };
+
   return (
     <>
       <List spacing={5}>
@@ -29,7 +43,7 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
               isSelected={selectedStudent?.id === student.id}
               onClick={() => onSelectStudent(student)}
               onEdit={() => {}}
-              onDelete={() => {}}
+              onDelete={() => handleDeleteStudent(student)}
             />
           </ListItem>
         ))}
