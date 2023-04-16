@@ -43,7 +43,7 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
         title="Add Student"
         isOpen={newIsOpen}
         onClose={newOnClose}
-        onAdd={(student) => {
+        onSubmit={(student) => {
           setStudents(
             produce((draft) => {
               draft.push(student);

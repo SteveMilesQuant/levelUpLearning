@@ -1,4 +1,4 @@
-import { HStack, Heading, Icon } from "@chakra-ui/react";
+import { HStack, Heading } from "@chakra-ui/react";
 import { BsArrowUpSquare } from "react-icons/bs";
 import AuthButton from "./AuthButton";
 import LinkIcon from "./LinkIcon";

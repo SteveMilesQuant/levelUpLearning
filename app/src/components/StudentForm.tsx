@@ -36,10 +36,10 @@ interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (student: Student) => void;
+  onSubmit: (student: Student) => void;
 }
 
-const StudentForm = ({ title, isOpen, onClose, onAdd }: Props) => {
+const StudentForm = ({ title, isOpen, onClose, onSubmit }: Props) => {
   const grades = Array.from(Array(12).keys()).map((x) => x + 1);
 
   const [selectedGrade, setSelectedGrade] = useState(0);
@@ -59,7 +59,7 @@ const StudentForm = ({ title, isOpen, onClose, onAdd }: Props) => {
     onClose();
   };
 
-  const onSubmit = function (data: FieldValues) {
+  const handleSubmitLocal = function (data: FieldValues) {
     if (selectedGrade === 0) return;
     studentService
       .create({
@@ -68,7 +68,7 @@ const StudentForm = ({ title, isOpen, onClose, onAdd }: Props) => {
         grade_level: selectedGrade,
       })
       .then((res) => {
-        onAdd(res.data);
+        onSubmit(res.data);
       })
       .catch((err) => {
         console.log(err.message);
@@ -126,7 +126,7 @@ const StudentForm = ({ title, isOpen, onClose, onAdd }: Props) => {
             onClick={(e) => {
               // I'm not a fan of this nonsense - I'll figure out a better answer later
               setHaveSubmitted(true);
-              handleSubmit(onSubmit)(e);
+              handleSubmit(handleSubmitLocal)(e);
             }}
           >
             Submit

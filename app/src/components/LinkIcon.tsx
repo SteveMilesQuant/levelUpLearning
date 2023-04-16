@@ -1,5 +1,5 @@
-import { IconButton, Link } from "@chakra-ui/react";
-import { ReactElement, ReactNode, createElement } from "react";
+import { IconButton, LinkBox } from "@chakra-ui/react";
+import { ReactElement } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 
 const LinkIcon = ({ icon, endpoint, label }: Props) => {
   return (
-    <Link as={RouterLink} to={endpoint}>
+    <LinkBox as={RouterLink} to={endpoint}>
       <IconButton
         icon={icon}
         aria-label={label}
@@ -18,7 +18,7 @@ const LinkIcon = ({ icon, endpoint, label }: Props) => {
         color="blue.300"
         variant="ghost"
       />
-    </Link>
+    </LinkBox>
   );
 };
 
