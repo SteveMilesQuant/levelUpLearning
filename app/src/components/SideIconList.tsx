@@ -2,7 +2,7 @@ import { FaGraduationCap, FaSearch } from "react-icons/fa";
 import { GiTeacher } from "react-icons/gi";
 import { MdManageAccounts, MdOutlineDesignServices } from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
-import { Box, VStack } from "@chakra-ui/react";
+import { Box, Tooltip } from "@chakra-ui/react";
 import { Role } from "../hooks/useRoles";
 import LinkIcon from "./LinkIcon";
 import { ReactElement } from "react";
@@ -30,7 +30,7 @@ const SideIconList = ({ roles }: Props) => {
       {
         id: 2,
         icon: <FaSearch size="2em" />,
-        endpoint: "/students",
+        endpoint: "#",
         label: "Find Camps",
       },
     ],
@@ -38,13 +38,13 @@ const SideIconList = ({ roles }: Props) => {
       {
         id: 3,
         icon: <GiTeacher size="2em" />,
-        endpoint: "/students",
+        endpoint: "#",
         label: "Teach Camps",
       },
       {
         id: 4,
         icon: <MdOutlineDesignServices size="2em" />,
-        endpoint: "/students",
+        endpoint: "#",
         label: "Design Programs",
       },
     ],
@@ -52,13 +52,13 @@ const SideIconList = ({ roles }: Props) => {
       {
         id: 5,
         icon: <AiOutlineSchedule size="2em" />,
-        endpoint: "/students",
+        endpoint: "#",
         label: "Schedule Camps",
       },
       {
         id: 6,
         icon: <MdManageAccounts size="2em" />,
-        endpoint: "/students",
+        endpoint: "#",
         label: "Manage Members",
       },
     ],
@@ -73,6 +73,7 @@ const SideIconList = ({ roles }: Props) => {
               icon={sideIcon.icon}
               endpoint={sideIcon.endpoint}
               label={sideIcon.label}
+              withTooltip={true}
             />
           </Box>
         ))
