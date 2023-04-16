@@ -15,6 +15,8 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Divider,
+  Heading,
 } from "@chakra-ui/react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -78,7 +80,10 @@ const StudentForm = ({ title, isOpen, onClose, onAdd }: Props) => {
     <Modal isOpen={isOpen} onClose={() => resetAndClose()}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>{title}</ModalHeader>
+        <ModalHeader>
+          <Heading fontSize="2xl">{title}</Heading>
+          <Divider orientation="horizontal" marginTop={1}></Divider>
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={2}>

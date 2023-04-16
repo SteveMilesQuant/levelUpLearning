@@ -20,7 +20,8 @@ const Layout = () => {
         templateAreas={{
           base: `"nav nav" "aside main"`,
         }}
-        gridTemplateColumns={"80px 1fr"}
+        gridTemplateColumns={"5rem 1fr"}
+        gap={0}
       >
         <GridItem area="nav" backgroundColor="blue.100">
           <NavBar

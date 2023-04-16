@@ -15,23 +15,20 @@ const Students = () => {
         templateAreas={{
           base: `"students camps coguardians"`,
         }}
+        paddingLeft={8}
+        paddingTop={10}
+        gap={10}
       >
         <GridItem area="students">
-          <BodyContainer>
-            <StudentList
-              selectedStudent={selectedStudent}
-              onSelectStudent={(student) => setSelectedStudent(student)}
-            />
-          </BodyContainer>
+          <StudentList
+            selectedStudent={selectedStudent}
+            onSelectStudent={(student) => setSelectedStudent(student)}
+          />
         </GridItem>
         <GridItem area="camps">
-          <BodyContainer>
-            {selectedStudent && <CampList student={selectedStudent} />}
-          </BodyContainer>
+          {selectedStudent && <CampList student={selectedStudent} />}
         </GridItem>
-        <GridItem area="coguardians">
-          <BodyContainer></BodyContainer>
-        </GridItem>
+        <GridItem area="coguardians"></GridItem>
       </Grid>
     </>
   );

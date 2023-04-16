@@ -11,8 +11,8 @@ interface Props {
 
 const NavBar = ({ signedIn, setSignedIn, onError }: Props) => {
   return (
-    <HStack justifyContent="space-between" padding="10px">
-      <HStack spacing={4} paddingLeft={3}>
+    <HStack justifyContent="space-between" paddingX={4} paddingY={2}>
+      <HStack spacing={4}>
         <LinkIcon
           icon={<BsArrowUpSquare size="2em" />}
           endpoint="/"

@@ -2,10 +2,10 @@ import { FaGraduationCap, FaSearch } from "react-icons/fa";
 import { GiTeacher } from "react-icons/gi";
 import { MdManageAccounts, MdOutlineDesignServices } from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
-import { Icon, List, ListItem } from "@chakra-ui/react";
+import { Box, VStack } from "@chakra-ui/react";
 import { Role } from "../hooks/useRoles";
 import LinkIcon from "./LinkIcon";
-import { ReactElement, ReactNode } from "react";
+import { ReactElement } from "react";
 
 interface Props {
   roles: Role[];
@@ -65,19 +65,19 @@ const SideIconList = ({ roles }: Props) => {
   };
 
   return (
-    <List paddingLeft={3} paddingTop={3}>
+    <Box paddingX={4} paddingY={2} width="fit-content">
       {roles.map((role) =>
         iconsByRole[role.name].map((sideIcon) => (
-          <ListItem key={sideIcon.id} padding={3}>
+          <Box key={sideIcon.id} marginBottom={4} width="fit-content">
             <LinkIcon
               icon={sideIcon.icon}
               endpoint={sideIcon.endpoint}
               label={sideIcon.label}
             />
-          </ListItem>
+          </Box>
         ))
       )}
-    </List>
+    </Box>
   );
 };
 
