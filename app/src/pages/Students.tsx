@@ -8,11 +8,6 @@ import StudentForm from "../components/StudentForm";
 
 const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const {
-    isOpen: newIsOpen,
-    onOpen: newOnOpen,
-    onClose: newOnClose,
-  } = useDisclosure();
 
   return (
     <>
@@ -25,8 +20,7 @@ const Students = () => {
           <BodyContainer>
             <StudentList
               selectedStudent={selectedStudent}
-              onSelectStudent={setSelectedStudent}
-              onAddStudent={newOnOpen}
+              onSelectStudent={(student) => setSelectedStudent(student)}
             />
           </BodyContainer>
         </GridItem>
@@ -39,11 +33,6 @@ const Students = () => {
           <BodyContainer></BodyContainer>
         </GridItem>
       </Grid>
-      <StudentForm
-        title="Add Student"
-        isOpen={newIsOpen}
-        onClose={newOnClose}
-      />
     </>
   );
 };

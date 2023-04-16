@@ -22,6 +22,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { BsChevronDown } from "react-icons/bs";
 import { useState } from "react";
 import ErrorMessage from "./ErrorMessage";
+import studentService, { Student } from "../services/student-service";
 
 const schema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
@@ -33,33 +34,48 @@ interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
+  onAdd: (student: Student) => void;
 }
 
-const StudentForm = ({ title, isOpen, onClose }: Props) => {
+const StudentForm = ({ title, isOpen, onClose, onAdd }: Props) => {
   const grades = Array.from(Array(12).keys()).map((x) => x + 1);
+
   const [selectedGrade, setSelectedGrade] = useState(0);
+  const [haveSubmitted, setHaveSubmitted] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors },
     reset,
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
+  const resetAndClose = () => {
+    reset();
+    setSelectedGrade(0);
+    setHaveSubmitted(false);
+    onClose();
+  };
+
   const onSubmit = function (data: FieldValues) {
-    if (selectedGrade <= 0) return;
-    console.log(selectedGrade, data);
+    if (selectedGrade === 0) return;
+    studentService
+      .create({
+        id: 0,
+        name: data.name,
+        grade_level: selectedGrade,
+      })
+      .then((res) => {
+        onAdd(res.data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+    resetAndClose();
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={() => {
-        reset();
-        setSelectedGrade(0);
-        onClose();
-      }}
-    >
+    <Modal isOpen={isOpen} onClose={() => resetAndClose()}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{title}</ModalHeader>
@@ -77,7 +93,7 @@ const StudentForm = ({ title, isOpen, onClose }: Props) => {
               <FormLabel>Grade</FormLabel>
               <Menu>
                 <MenuButton as={Button} rightIcon={<BsChevronDown />}>
-                  {selectedGrade > 0 ? selectedGrade : "Grade"}
+                  {selectedGrade || "Grade"}
                 </MenuButton>
                 <MenuList>
                   {grades.map((grade) => (
@@ -93,7 +109,7 @@ const StudentForm = ({ title, isOpen, onClose }: Props) => {
                 </MenuList>
               </Menu>
             </FormControl>
-            {selectedGrade === -1 && (
+            {haveSubmitted && selectedGrade === 0 && (
               <ErrorMessage>Grade level is required.</ErrorMessage>
             )}
           </VStack>
@@ -104,7 +120,7 @@ const StudentForm = ({ title, isOpen, onClose }: Props) => {
             variant="outline"
             onClick={(e) => {
               // I'm not a fan of this nonsense - I'll figure out a better answer later
-              if (selectedGrade === 0) setSelectedGrade(-1);
+              setHaveSubmitted(true);
               handleSubmit(onSubmit)(e);
             }}
           >

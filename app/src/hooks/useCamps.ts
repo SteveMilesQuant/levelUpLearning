@@ -59,7 +59,7 @@ const useCamps = (student?: Student) => {
       });
 
     return () => cancel();
-  }, []);
+  }, [student]);
 
   return { camps, error, isLoading, setCamps, setError };
 };
