@@ -7,7 +7,7 @@ interface Props {
   student: Student;
   isSelected: boolean;
   onClick: () => void;
-  onUpdate?: () => void;
+  onUpdate?: (student: Student) => void;
   onDelete?: () => void;
 }
 

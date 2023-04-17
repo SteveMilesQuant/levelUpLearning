@@ -6,7 +6,7 @@ import StudentFormBody from "./StudentFormBody";
 
 interface Props {
   student: Student;
-  onUpdate: () => void;
+  onUpdate: (student: Student) => void;
 }
 
 const EditStudentButton = ({ student, onUpdate }: Props) => {
