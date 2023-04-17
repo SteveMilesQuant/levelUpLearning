@@ -10,29 +10,25 @@ interface Props {
 }
 
 const LinkIcon = ({ icon, endpoint, label, withTooltip }: Props) => {
-  const button = (
-    <IconButton
-      icon={icon}
-      aria-label={label}
-      size="lg"
-      color="blue.300"
-      variant="ghost"
-    />
-  );
   return (
     <LinkBox as={RouterLink} to={endpoint}>
-      {withTooltip && (
-        <Tooltip
-          hasArrow
-          label={label}
-          bg="blue.500"
-          color="blue.100"
-          placement="right-start"
-        >
-          {button}
-        </Tooltip>
-      )}
-      {!withTooltip && button}
+      <Tooltip
+        hasArrow
+        label={label}
+        bg="blue.500"
+        color="blue.100"
+        placement="right-start"
+        openDelay={250}
+        isDisabled={!withTooltip}
+      >
+        <IconButton
+          icon={icon}
+          aria-label={label}
+          size="lg"
+          color="blue.300"
+          variant="ghost"
+        />
+      </Tooltip>
     </LinkBox>
   );
 };

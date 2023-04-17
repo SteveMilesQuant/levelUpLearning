@@ -10,9 +10,9 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { BsChevronDown } from "react-icons/bs";
-import ErrorMessage from "./ErrorMessage";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { Student } from "../services/student-service";
+import InputError from "./InputError";
 
 interface Props {
   haveSubmitted: boolean;
@@ -37,15 +37,29 @@ const StudentFormBody = ({
     <VStack spacing={2}>
       <FormControl>
         <FormLabel>Name</FormLabel>
-        <Input {...register("name")} type="text" defaultValue={student?.name} />
+        <InputError
+          label={errors.name?.message}
+          isOpen={errors.name ? true : false}
+        >
+          <Input
+            {...register("name")}
+            type="text"
+            defaultValue={student?.name}
+          />
+        </InputError>
       </FormControl>
-      {errors.name && <ErrorMessage>{errors.name.message || ""}</ErrorMessage>}
       <FormControl>
         <FormLabel>Grade</FormLabel>
+
         <Menu>
-          <MenuButton as={Button} rightIcon={<BsChevronDown />}>
-            {selectedGrade || "Grade"}
-          </MenuButton>
+          <InputError
+            label="Grade level is required."
+            isOpen={haveSubmitted && selectedGrade === 0}
+          >
+            <MenuButton as={Button} rightIcon={<BsChevronDown />}>
+              {selectedGrade || "Grade"}
+            </MenuButton>
+          </InputError>
           <MenuList>
             {grades.map((grade) => (
               <MenuItem
@@ -60,9 +74,6 @@ const StudentFormBody = ({
           </MenuList>
         </Menu>
       </FormControl>
-      {haveSubmitted && selectedGrade === 0 && (
-        <ErrorMessage>Grade level is required.</ErrorMessage>
-      )}
     </VStack>
   );
 };
