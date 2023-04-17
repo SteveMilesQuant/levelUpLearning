@@ -10,14 +10,15 @@ import {
   PopoverTrigger,
   Button,
   Text,
+  HStack,
 } from "@chakra-ui/react";
 
 interface Props {
-  objName: string; // name of the thing you want to delete
+  children: string; // name of the thing you want to delete
   onConfirm: () => void;
 }
 
-const DeleteButton = ({ onConfirm, objName }: Props) => {
+const DeleteButton = ({ onConfirm, children }: Props) => {
   return (
     <Popover>
       <PopoverTrigger>
@@ -27,14 +28,16 @@ const DeleteButton = ({ onConfirm, objName }: Props) => {
         <PopoverArrow />
         <PopoverHeader>
           <Text>
-            <strong>Are you sure you want to remove {objName}?</strong>
+            <strong>Are you sure you want to remove {children}?</strong>
           </Text>
           <PopoverCloseButton />
         </PopoverHeader>
         <PopoverBody>
-          <Button onClick={onConfirm} colorScheme="red">
-            Confirm
-          </Button>
+          <HStack justifyContent="right">
+            <Button onClick={onConfirm} colorScheme="red">
+              Delete
+            </Button>
+          </HStack>
         </PopoverBody>
       </PopoverContent>
     </Popover>

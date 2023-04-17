@@ -19,6 +19,10 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
     onClose: newOnClose,
   } = useDisclosure();
 
+  const handleEditStudent = (student: Student) => {
+    console.log(student);
+  };
+
   const handleDeleteStudent = (student: Student) => {
     const origStudents = students;
     setStudents(
@@ -42,7 +46,7 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
               student={student}
               isSelected={selectedStudent?.id === student.id}
               onClick={() => onSelectStudent(student)}
-              onEdit={() => {}}
+              onUpdate={() => handleEditStudent(student)}
               onDelete={() => handleDeleteStudent(student)}
             />
           </ListItem>
