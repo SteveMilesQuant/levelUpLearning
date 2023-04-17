@@ -7,7 +7,11 @@ interface Props {
 
 const BodyContainer = ({ children }: Props) => {
   if (!children) return null;
-  return <Box padding={10}>{children}</Box>;
+  return (
+    <Box paddingX={8} paddingY={10}>
+      {children}
+    </Box>
+  );
 };
 
 export default BodyContainer;

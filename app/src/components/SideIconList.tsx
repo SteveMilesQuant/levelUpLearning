@@ -2,7 +2,7 @@ import { FaGraduationCap, FaSearch } from "react-icons/fa";
 import { GiTeacher } from "react-icons/gi";
 import { MdManageAccounts, MdOutlineDesignServices } from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
-import { Box, Tooltip } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { Role } from "../hooks/useRoles";
 import LinkIcon from "./LinkIcon";
 import { ReactElement } from "react";
@@ -30,7 +30,7 @@ const SideIconList = ({ roles }: Props) => {
       {
         id: 2,
         icon: <FaSearch size="2em" />,
-        endpoint: "#",
+        endpoint: "/camps",
         label: "Find Camps",
       },
     ],

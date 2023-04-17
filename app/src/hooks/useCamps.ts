@@ -19,9 +19,9 @@ const useCamps = (student?: Student) => {
     setIsLoading(true);
     request
       .then((response) => {
-        let subPromises = new Array<Promise<AxiosResponse>>();
+        const subPromises = new Array<Promise<AxiosResponse>>();
         response.data.forEach((camp) => {
-          let programPromise = programService.get(camp.program_id);
+          const programPromise = programService.get(camp.program_id);
           subPromises.push(programPromise);
           programPromise
             .then((pRes) => {
@@ -33,7 +33,7 @@ const useCamps = (student?: Student) => {
               setIsLoading(false);
             });
 
-          let instructorPromise = instructorService.get(
+          const instructorPromise = instructorService.get(
             camp.primary_instructor_id
           );
           subPromises.push(instructorPromise);
