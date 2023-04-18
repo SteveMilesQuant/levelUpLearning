@@ -29,7 +29,7 @@ const Students = () => {
           )}
           <LinkBox as={RouterLink} to="/camps">
             <Button size="lg" variant="outline">
-              Enroll in camp
+              Find camps
             </Button>
           </LinkBox>
         </GridItem>
