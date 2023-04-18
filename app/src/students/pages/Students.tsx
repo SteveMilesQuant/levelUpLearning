@@ -1,16 +1,18 @@
 import { useState } from "react";
-import { Grid, GridItem, LinkBox, Button, Box } from "@chakra-ui/react";
+import { Grid, GridItem, LinkBox, Button } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import StudentList from "../components/StudentList";
 import { Student } from "../services/student-service";
 import CampList from "../../camps/components/CampList";
 import BodyContainer from "../../components/BodyContainer";
+import PageHeader from "../../components/PageHeader";
 
 const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   return (
     <BodyContainer>
+      <PageHeader label="Students"></PageHeader>
       <Grid
         templateAreas={{
           base: `"students camps coguardians"`,
