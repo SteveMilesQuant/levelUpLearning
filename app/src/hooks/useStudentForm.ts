@@ -4,11 +4,11 @@ import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import studentService, { Student } from "../services/student-service";
 
-const schema = z.object({
+export const studentSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
 });
 
-type FormData = z.infer<typeof schema>;
+type FormData = z.infer<typeof studentSchema>;
 
 const useStudentForm = (
   student: Student | null,
@@ -24,7 +24,7 @@ const useStudentForm = (
     handleSubmit: handleFormSubmit,
     formState: { errors },
     reset,
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+  } = useForm<FormData>({ resolver: zodResolver(studentSchema) });
 
   const handleClose = () => {
     reset();
@@ -33,7 +33,7 @@ const useStudentForm = (
     onClose();
   };
 
-  const handleSubmitLocal = function (data: FieldValues) {
+  const handleSubmitLocal = (data: FieldValues) => {
     if (selectedGrade === 0) return;
     if (student) {
       var promise = studentService.update({

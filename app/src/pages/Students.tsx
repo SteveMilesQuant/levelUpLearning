@@ -25,15 +25,13 @@ const Students = () => {
         </GridItem>
         <GridItem area="camps">
           {selectedStudent && (
-            <>
-              <CampList student={selectedStudent} marginBottom={5} />
-              <LinkBox as={RouterLink} to="/camps">
-                <Button size="lg" variant="outline">
-                  Enroll in camp
-                </Button>
-              </LinkBox>
-            </>
+            <CampList student={selectedStudent} marginBottom={5} />
           )}
+          <LinkBox as={RouterLink} to="/camps">
+            <Button size="lg" variant="outline">
+              Enroll in camp
+            </Button>
+          </LinkBox>
         </GridItem>
         <GridItem area="coguardians"></GridItem>
       </Grid>

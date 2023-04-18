@@ -37,6 +37,14 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
     });
   };
 
+  const handleAddStudent = (student: Student) => {
+    setStudents(
+      produce((draft) => {
+        draft.push(student);
+      })
+    );
+  };
+
   return (
     <>
       <List spacing={5}>
@@ -61,13 +69,7 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
         title="Add Student"
         isOpen={newIsOpen}
         onClose={newOnClose}
-        onSubmit={(student) => {
-          setStudents(
-            produce((draft) => {
-              draft.push(student);
-            })
-          );
-        }}
+        onSubmit={(student) => handleAddStudent(student)}
       />
     </>
   );

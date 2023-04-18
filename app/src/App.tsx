@@ -13,7 +13,9 @@ function App() {
           <Route index element={<Home />} />
           <Route path="students" element={<Students />} />
           <Route path="camps" element={<Camps />} />
-          <Route path="programs" element={<Programs />} />
+          <Route path="programs" element={<Programs />}>
+            <Route path=":id" />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>

@@ -9,17 +9,19 @@ import {
   MenuList,
   VStack,
 } from "@chakra-ui/react";
+import { z } from "zod";
 import { BsChevronDown } from "react-icons/bs";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { Student } from "../services/student-service";
 import InputError from "./InputError";
+import { studentSchema } from "../hooks/useStudentForm";
 
 interface Props {
   haveSubmitted: boolean;
   selectedGrade: number;
   setSelectedGrade: (selectedGrade: number) => void;
-  register: UseFormRegister<{ name: string }>;
-  errors: FieldErrors<{ name: string }>;
+  register: UseFormRegister<z.infer<typeof studentSchema>>;
+  errors: FieldErrors<z.infer<typeof studentSchema>>;
   student?: Student;
 }
 
