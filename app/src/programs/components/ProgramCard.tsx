@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { Program } from "../services/program-service";
-import DeleteButton from "./DeleteButton";
+import DeleteButton from "../../components/DeleteButton";
 
 interface Props {
   program: Program;

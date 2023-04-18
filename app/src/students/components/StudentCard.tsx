@@ -1,5 +1,5 @@
 import { Box, Card, CardBody, HStack, Heading, Text } from "@chakra-ui/react";
-import DeleteButton from "./DeleteButton";
+import DeleteButton from "../../components/DeleteButton";
 import { Student } from "../services/student-service";
 import EditStudentButton from "./EditStudentButton";
 

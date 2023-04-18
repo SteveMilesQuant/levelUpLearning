@@ -1,6 +1,6 @@
 import useStudentForm from "../hooks/useStudentForm";
 import { Student } from "../services/student-service";
-import EditButton from "./EditButton";
+import EditButton from "../../components/EditButton";
 import StudentFormBody from "./StudentFormBody";
 
 interface Props {

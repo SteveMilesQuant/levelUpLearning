@@ -1,6 +1,6 @@
-import create from "./http-service";
-import { Program } from "./program-service";
-import { User } from "./user-service";
+import create from "../../services/http-service";
+import { Program } from "../../programs/services/program-service";
+import { User } from "../../services/user-service";
 
 export interface CampData {
   id: number;

@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
-import { CanceledError } from "../services/api-client";
-import studentService, { Student } from "../services/student-service";
+import { CanceledError } from "../../services/api-client";
+import programService, { Program } from "../services/program-service";
 
-const useStudents = () => {
-  const [students, setStudents] = useState<Student[]>([]);
+const usePrograms = () => {
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const { request, cancel } = studentService.getAll();
+    const { request, cancel } = programService.getAll();
 
     setIsLoading(true);
     request
       .then((response) => {
-        setStudents(response.data);
+        setPrograms(response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -25,7 +25,7 @@ const useStudents = () => {
     return () => cancel();
   }, []);
 
-  return { students, error, isLoading, setStudents, setError };
+  return { programs, error, isLoading, setPrograms, setError };
 };
 
-export default useStudents;
+export default usePrograms;

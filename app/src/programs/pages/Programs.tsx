@@ -1,10 +1,10 @@
 import { SimpleGrid, useDisclosure, Button } from "@chakra-ui/react";
-import BodyContainer from "../components/BodyContainer";
+import BodyContainer from "../../components/BodyContainer";
 import usePrograms from "../hooks/usePrograms";
 import ProgramCard from "../components/ProgramCard";
 import programService, { Program } from "../services/program-service";
 import produce from "immer";
-import PageHeader from "../components/PageHeader";
+import PageHeader from "../../components/PageHeader";
 import ProgramForm from "../components/ProgramForm";
 
 const Programs = () => {

@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { CanceledError } from "../services/api-client";
+import { CanceledError } from "../../services/api-client";
 import campService, { Camp } from "../services/camp-service";
-import { Student, studentCampService } from "../services/student-service";
-import programService from "../services/program-service";
+import {
+  Student,
+  studentCampService,
+} from "../../students/services/student-service";
+import programService from "../../programs/services/program-service";
 import { AxiosResponse } from "axios";
-import { instructorService } from "../services/user-service";
+import { instructorService } from "../../services/user-service";
 
 const useCamps = (student?: Student) => {
   const [camps, setCamps] = useState<Camp[]>([]);

@@ -1,4 +1,4 @@
-import create from "./http-service";
+import create from "../../services/http-service";
 
 export interface Program {
   id: number;

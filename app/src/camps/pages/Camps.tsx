@@ -1,6 +1,6 @@
 import { SimpleGrid } from "@chakra-ui/react";
-import BodyContainer from "../components/BodyContainer";
-import PageHeader from "../components/PageHeader";
+import BodyContainer from "../../components/BodyContainer";
+import PageHeader from "../../components/PageHeader";
 import useCamps from "../hooks/useCamps";
 import CampCard from "../components/CampCard";
 

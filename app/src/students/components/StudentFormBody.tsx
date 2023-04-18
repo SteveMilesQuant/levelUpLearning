@@ -13,7 +13,7 @@ import { z } from "zod";
 import { BsChevronDown } from "react-icons/bs";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { Student } from "../services/student-service";
-import InputError from "./InputError";
+import InputError from "../../components/InputError";
 import { studentSchema } from "../hooks/useStudentForm";
 
 interface Props {

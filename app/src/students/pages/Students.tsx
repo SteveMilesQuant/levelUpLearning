@@ -3,8 +3,8 @@ import { Grid, GridItem, LinkBox, Button, Box } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import StudentList from "../components/StudentList";
 import { Student } from "../services/student-service";
-import CampList from "../components/CampList";
-import BodyContainer from "../components/BodyContainer";
+import CampList from "../../camps/components/CampList";
+import BodyContainer from "../../components/BodyContainer";
 
 const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);

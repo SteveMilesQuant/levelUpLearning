@@ -12,7 +12,7 @@ import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { z } from "zod";
 import { Program } from "../services/program-service";
 import { programSchema } from "../hooks/useProgramForm";
-import InputError from "./InputError";
+import InputError from "../../components/InputError";
 
 interface Props {
   program?: Program;

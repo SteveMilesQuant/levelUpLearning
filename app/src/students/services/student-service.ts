@@ -1,5 +1,5 @@
-import { Camp } from "./camp-service";
-import create from "./http-service";
+import { Camp } from "../../camps/services/camp-service";
+import create from "../../services/http-service";
 
 export interface Student {
   id: number;

@@ -10,22 +10,23 @@ import {
   Divider,
   Heading,
 } from "@chakra-ui/react";
-import ProgramFormBody from "./ProgramFormBody";
-import useProgramForm from "../hooks/useProgramForm";
-import { Program } from "../services/program-service";
+import StudentFormBody from "./StudentFormBody";
+import useStudentForm from "../hooks/useStudentForm";
+import { Student } from "../services/student-service";
+import SubmitButton from "../../components/SubmitButton";
 
 interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (program: Program) => void;
+  onSubmit: (student: Student) => void;
 }
 
-const ProgramForm = ({ title, isOpen, onClose, onSubmit }: Props) => {
-  const programForm = useProgramForm(null, onClose, onSubmit);
+const StudentForm = ({ title, isOpen, onClose, onSubmit }: Props) => {
+  const studentForm = useStudentForm(null, onClose, onSubmit);
 
   return (
-    <Modal isOpen={isOpen} onClose={programForm.handleClose}>
+    <Modal isOpen={isOpen} onClose={studentForm.handleClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
@@ -34,20 +35,14 @@ const ProgramForm = ({ title, isOpen, onClose, onSubmit }: Props) => {
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <ProgramFormBody {...programForm} />
+          <StudentFormBody {...studentForm} />
         </ModalBody>
         <ModalFooter>
-          <Button
-            variant="outline"
-            bgColor="blue.300"
-            onClick={programForm.handleSubmit}
-          >
-            Submit
-          </Button>
+          <SubmitButton onClick={studentForm.handleSubmit}>Submit</SubmitButton>
         </ModalFooter>
       </ModalContent>
     </Modal>
   );
 };
 
-export default ProgramForm;
+export default StudentForm;
