@@ -5,6 +5,7 @@ export interface Program {
   title: string;
   grade_range: number[];
   tags: string;
+  description: string;
 }
 
 export default create<Program>("/programs");

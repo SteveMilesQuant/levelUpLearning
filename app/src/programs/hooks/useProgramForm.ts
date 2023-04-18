@@ -7,6 +7,7 @@ import programService, { Program } from "../services/program-service";
 export const programSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),
   tags: z.string(),
+  description: z.string(),
 });
 
 type FormData = z.infer<typeof programSchema>;
