@@ -44,7 +44,7 @@ const SideIconList = ({ roles }: Props) => {
       {
         id: 4,
         icon: <MdOutlineDesignServices size="2em" />,
-        endpoint: "#",
+        endpoint: "/programs",
         label: "Design Programs",
       },
     ],
