@@ -9,18 +9,16 @@ import {
   RangeSliderThumb,
   RangeSliderTrack,
   Textarea,
-  VStack,
 } from "@chakra-ui/react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
-import { z } from "zod";
 import { Program } from "../services/program-service";
-import { programSchema } from "../hooks/useProgramForm";
+import { FormData } from "../hooks/useProgramForm";
 import InputError from "../../components/InputError";
 
 interface Props {
   program?: Program;
-  register: UseFormRegister<z.infer<typeof programSchema>>;
-  errors: FieldErrors<z.infer<typeof programSchema>>;
+  register: UseFormRegister<FormData>;
+  errors: FieldErrors<FormData>;
   selectedGradeRange: number[];
   setSelectedGradeRange: (value: number[]) => void;
   isReadOnly?: boolean;

@@ -4,13 +4,13 @@ import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import programService, { Program } from "../services/program-service";
 
-export const programSchema = z.object({
+const programSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),
   tags: z.string(),
   description: z.string(),
 });
 
-type FormData = z.infer<typeof programSchema>;
+export type FormData = z.infer<typeof programSchema>;
 
 const useProgramForm = (
   program: Program | null,
