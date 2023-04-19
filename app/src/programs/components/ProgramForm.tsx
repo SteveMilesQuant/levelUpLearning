@@ -25,7 +25,7 @@ const ProgramForm = ({ title, isOpen, onClose, onSubmit }: Props) => {
   const programForm = useProgramForm(null, onClose, onSubmit);
 
   return (
-    <Modal isOpen={isOpen} onClose={programForm.handleClose}>
+    <Modal isOpen={isOpen} onClose={programForm.handleClose} size="3xl">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>

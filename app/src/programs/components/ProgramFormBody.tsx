@@ -102,7 +102,8 @@ const ProgramFormBody = ({
               {...register("description")}
               as={Textarea}
               defaultValue={program?.description}
-              size="lg"
+              size="xl"
+              height="210px"
             />
           </InputError>
         </FormControl>
