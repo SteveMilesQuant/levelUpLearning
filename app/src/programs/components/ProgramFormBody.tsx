@@ -23,6 +23,7 @@ interface Props {
   errors: FieldErrors<z.infer<typeof programSchema>>;
   selectedGradeRange: number[];
   setSelectedGradeRange: (value: number[]) => void;
+  isReadOnly?: boolean;
 }
 
 const ProgramFormBody = ({
@@ -31,6 +32,7 @@ const ProgramFormBody = ({
   errors,
   selectedGradeRange,
   setSelectedGradeRange,
+  isReadOnly,
 }: Props) => {
   return (
     <Grid
@@ -50,6 +52,7 @@ const ProgramFormBody = ({
               {...register("title")}
               type="text"
               defaultValue={program?.title}
+              isReadOnly={isReadOnly}
             />
           </InputError>
         </FormControl>
@@ -65,6 +68,7 @@ const ProgramFormBody = ({
               {...register("tags")}
               type="text"
               defaultValue={program?.tags}
+              isReadOnly={isReadOnly}
             />
           </InputError>
         </FormControl>
@@ -82,6 +86,7 @@ const ProgramFormBody = ({
             min={1}
             max={12}
             step={1}
+            isReadOnly={isReadOnly}
           >
             <RangeSliderTrack>
               <RangeSliderFilledTrack />
@@ -104,6 +109,7 @@ const ProgramFormBody = ({
               defaultValue={program?.description}
               size="xl"
               height="210px"
+              isReadOnly={isReadOnly}
             />
           </InputError>
         </FormControl>
