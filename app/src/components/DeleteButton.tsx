@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 
 interface Props {
-  children: string; // name of the thing you want to delete
+  children?: string; // name of the thing you want to delete
   onConfirm: () => void;
   disabled?: boolean;
 }

@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 interface Props {
   children?: ReactNode;
-  label: string;
+  label?: string;
 }
 
 const PageHeader = ({ children, label }: Props) => {
