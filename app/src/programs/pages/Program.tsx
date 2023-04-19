@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AiFillEdit } from "react-icons/ai";
 import { Box, Button, HStack, List, ListItem, Text } from "@chakra-ui/react";
 import useProgramForm from "../hooks/useProgramForm";
@@ -9,7 +9,9 @@ import useProgram from "../hooks/useProgram";
 import BodyContainer from "../../components/BodyContainer";
 import ActionButton from "../../components/ActionButton";
 import DeleteButton from "../../components/DeleteButton";
-import { Program as ProgramType } from "../services/program-service";
+import programService, {
+  Program as ProgramType,
+} from "../services/program-service";
 import SubmitButton from "../../components/SubmitButton";
 import CancelButton from "../../components/CancelButton";
 import useLevels from "../hooks/useLevels";
@@ -18,24 +20,22 @@ import { Level } from "../services/level-service";
 const Program = () => {
   const { id: idStr } = useParams();
   const id = idStr ? parseInt(idStr) : undefined;
-  console.log(id);
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
   const { program, error, isLoading, setProgram, setError } = useProgram(id);
   const { levels, setLevels } = useLevels(id);
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-  };
-
   const handleEdit = (program: ProgramType) => {
     setProgram(program);
   };
-
-  const programForm = useProgramForm(program, handleCancelEdit, handleEdit);
+  const programForm = useProgramForm(program, () => {}, handleEdit);
 
   const handleDelete = () => {
-    console.log("delete");
+    if (!program) return;
+    programService.delete(program.id).then(() => {
+      navigate("/programs");
+    });
   };
 
   return (
@@ -92,7 +92,10 @@ const Program = () => {
           />
           <HStack justifyContent="right" spacing={3} paddingTop={3}>
             <CancelButton
-              onClick={programForm.handleClose}
+              onClick={() => {
+                programForm.handleClose();
+                setIsEditing(false);
+              }}
               disabled={!isEditing}
             >
               Cancel

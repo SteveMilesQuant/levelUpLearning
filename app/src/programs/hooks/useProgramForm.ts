@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import programService, { Program } from "../services/program-service";
@@ -26,10 +26,19 @@ const useProgramForm = (
     handleSubmit: handleFormSubmit,
     formState: { errors },
     reset,
-  } = useForm<FormData>({ resolver: zodResolver(programSchema) });
+  } = useForm<FormData>({
+    resolver: zodResolver(programSchema),
+    defaultValues: useMemo(() => {
+      return { ...program };
+    }, [program]),
+  });
+
+  useEffect(() => {
+    reset({ ...program });
+  }, [program]);
 
   const handleClose = () => {
-    reset();
+    reset({ ...program });
     setSelectedGradeRange(defaultGradeRange);
     onClose();
   };

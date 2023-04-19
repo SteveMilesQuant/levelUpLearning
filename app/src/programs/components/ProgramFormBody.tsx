@@ -46,12 +46,7 @@ const ProgramFormBody = ({
             label={errors.title?.message}
             isOpen={errors.title ? true : false}
           >
-            <Input
-              {...register("title")}
-              type="text"
-              defaultValue={program?.title}
-              isReadOnly={isReadOnly}
-            />
+            <Input {...register("title")} type="text" isReadOnly={isReadOnly} />
           </InputError>
         </FormControl>
       </GridItem>
@@ -62,12 +57,7 @@ const ProgramFormBody = ({
             label={errors.tags?.message}
             isOpen={errors.tags ? true : false}
           >
-            <Input
-              {...register("tags")}
-              type="text"
-              defaultValue={program?.tags}
-              isReadOnly={isReadOnly}
-            />
+            <Input {...register("tags")} type="text" isReadOnly={isReadOnly} />
           </InputError>
         </FormControl>
       </GridItem>
@@ -104,7 +94,6 @@ const ProgramFormBody = ({
             <Input
               {...register("description")}
               as={Textarea}
-              defaultValue={program?.description}
               size="xl"
               height="210px"
               isReadOnly={isReadOnly}
