@@ -18,19 +18,19 @@ const Layout = () => {
       )}
       <Grid
         templateAreas={{
-          base: `"nav nav" "aside main"`,
+          base: `"header header" "aside main"`,
         }}
         gridTemplateColumns={"5rem 1fr"}
         gap={0}
       >
-        <GridItem area="nav" backgroundColor="blue.100">
+        <GridItem area="header" backgroundColor="blue.100">
           <NavBar
             signedIn={signedIn}
             setSignedIn={setSignedIn}
             onError={(error) => setError(error)}
           ></NavBar>
         </GridItem>
-        <GridItem justifyContent="left" area="aside">
+        <GridItem area="aside">
           {signedIn && <SideIconList roles={roles} />}
         </GridItem>
         <GridItem area="main">

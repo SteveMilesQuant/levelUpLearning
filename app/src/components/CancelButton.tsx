@@ -7,12 +7,12 @@ interface Props {
   disabled?: boolean;
 }
 
-const SubmitButton = ({ children, onClick, disabled }: Props) => {
+const CancelButton = ({ children, onClick, disabled }: Props) => {
   return (
     <Button
       onClick={onClick}
       disabled={disabled}
-      bgColor={disabled ? "gray.100" : "blue.300"}
+      bgColor={disabled ? "gray.100" : undefined}
       color={disabled ? "gray.200" : undefined}
       _hover={disabled ? { bgColor: "gray.100" } : undefined}
     >
@@ -21,4 +21,4 @@ const SubmitButton = ({ children, onClick, disabled }: Props) => {
   );
 };
 
-export default SubmitButton;
+export default CancelButton;

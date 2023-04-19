@@ -16,7 +16,7 @@ import {
 import { FormEvent } from "react";
 
 interface Props {
-  children: JSX.Element;
+  children?: JSX.Element;
   title: string;
   onUpdate: (e: FormEvent) => void;
   onClose: () => void;

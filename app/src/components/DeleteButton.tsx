@@ -16,13 +16,18 @@ import {
 interface Props {
   children: string; // name of the thing you want to delete
   onConfirm: () => void;
+  disabled?: boolean;
 }
 
-const DeleteButton = ({ onConfirm, children }: Props) => {
+const DeleteButton = ({ onConfirm, children, disabled }: Props) => {
   return (
     <Popover>
       <PopoverTrigger>
-        <ActionButton Component={AiFillDelete} label="Delete" />
+        <ActionButton
+          Component={AiFillDelete}
+          label="Delete"
+          disabled={disabled}
+        />
       </PopoverTrigger>
       <PopoverContent>
         <PopoverArrow />
