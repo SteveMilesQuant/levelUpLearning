@@ -67,10 +67,7 @@ const ProgramFormBody = ({
           <RangeSlider
             onChange={(value: number[]) => setSelectedGradeRange(value)}
             aria-label={["min", "max"]}
-            defaultValue={[
-              program?.grade_range[0] || 6,
-              program?.grade_range[1] || 8,
-            ]}
+            value={selectedGradeRange}
             min={1}
             max={12}
             step={1}

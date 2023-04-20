@@ -16,7 +16,7 @@ const Programs = () => {
   } = useDisclosure();
 
   const handleDelete = (program: Program) => {
-    const origPrograms = programs;
+    const origPrograms = [...programs];
     setPrograms(
       produce((draft) => {
         const index = draft.findIndex((s) => s.id === program.id);
@@ -26,14 +26,6 @@ const Programs = () => {
     programService.delete(program.id).catch(() => {
       setPrograms(origPrograms);
     });
-  };
-
-  const handleAdd = (program: Program) => {
-    setPrograms(
-      produce((draft) => {
-        draft.push(program);
-      })
-    );
   };
 
   return (
@@ -55,7 +47,8 @@ const Programs = () => {
         title="Add Program"
         isOpen={newIsOpen}
         onClose={newOnClose}
-        onSubmit={(program) => handleAdd(program)}
+        programs={programs}
+        setPrograms={setPrograms}
       />
     </BodyContainer>
   );

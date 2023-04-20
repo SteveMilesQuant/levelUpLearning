@@ -3,7 +3,7 @@ import { CanceledError } from "../../services/api-client";
 import programService, { Program } from "../services/program-service";
 
 const usePrograms = (id?: number) => {
-  const [program, setProgram] = useState<Program | null>(null);
+  const [program, setProgram] = useState<Program | undefined>(undefined);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   if (!id) return { program, error, isLoading, setProgram, setError };

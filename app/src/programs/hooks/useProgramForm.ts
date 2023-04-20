@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import programService, { Program } from "../services/program-service";
@@ -12,14 +12,22 @@ const programSchema = z.object({
 
 export type FormData = z.infer<typeof programSchema>;
 
-const useProgramForm = (
-  program: Program | null,
-  onClose: () => void,
-  onSubmit: (program: Program) => void
-) => {
-  const defaultGradeRange = program?.grade_range || [6, 8];
-  const [selectedGradeRange, setSelectedGradeRange] =
-    useState(defaultGradeRange);
+interface Props {
+  program?: Program;
+  setProgram?: (program?: Program) => void;
+  programs?: Program[];
+  setPrograms?: (programs: Program[]) => void;
+}
+
+const useProgramForm = ({
+  program,
+  setProgram,
+  programs,
+  setPrograms,
+}: Props) => {
+  const [selectedGradeRange, setSelectedGradeRange] = useState(
+    program?.grade_range || [6, 8]
+  );
 
   const {
     register,
@@ -29,47 +37,58 @@ const useProgramForm = (
   } = useForm<FormData>({
     resolver: zodResolver(programSchema),
     defaultValues: useMemo(() => {
-      return { ...program };
+      return { grade_range: [6, 8], ...program };
     }, [program]),
   });
 
   useEffect(() => {
     reset({ ...program });
+    setSelectedGradeRange(program?.grade_range || [6, 8]);
   }, [program]);
 
   const handleClose = () => {
     reset({ ...program });
-    setSelectedGradeRange(defaultGradeRange);
-    onClose();
+    setSelectedGradeRange(program?.grade_range || [6, 8]);
   };
 
   const handleSubmitLocal = (data: FieldValues) => {
-    if (program) {
-      var promise = programService.update({
-        ...program,
-        ...data,
-        grade_range: selectedGradeRange,
-      } as Program);
-    } else {
-      promise = programService.create({
-        id: 0,
-        ...data,
-        grade_range: selectedGradeRange,
-      } as Program);
+    const newProgram = {
+      id: 0,
+      ...program,
+      ...data,
+      grade_range: selectedGradeRange,
+    } as Program;
+    const origProgram = { ...program } as Program;
+    let origPrograms = programs ? [...programs] : [];
+
+    // Optimistic rendering
+    if (setProgram) {
+      setProgram(newProgram);
     }
+    if (setPrograms) {
+      setPrograms(programs ? [newProgram, ...programs] : []);
+    }
+
+    // If program was supplied, we are updating
+    // Otherwise, creating new
+    if (program) {
+      var promise = programService.update(newProgram);
+    } else {
+      promise = programService.create(newProgram);
+    }
+
     promise
       .then((res) => {
-        onSubmit(res.data);
+        if (setPrograms) setPrograms([res.data, ...origPrograms]);
       })
       .catch((err) => {
+        // If it doesn't work out, reset to original
+        if (setProgram) setProgram(origProgram);
+        if (setPrograms && programs) setPrograms(origPrograms);
         console.log(err.message);
       });
-    handleClose();
   };
-
-  const handleSubmit = (e: FormEvent) => {
-    handleFormSubmit(handleSubmitLocal)(e);
-  };
+  const handleSubmit = handleFormSubmit(handleSubmitLocal);
 
   return {
     register,

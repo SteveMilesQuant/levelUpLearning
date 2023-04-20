@@ -9,9 +9,7 @@ import useProgram from "../hooks/useProgram";
 import BodyContainer from "../../components/BodyContainer";
 import ActionButton from "../../components/ActionButton";
 import DeleteButton from "../../components/DeleteButton";
-import programService, {
-  Program as ProgramType,
-} from "../services/program-service";
+import programService from "../services/program-service";
 import SubmitButton from "../../components/SubmitButton";
 import CancelButton from "../../components/CancelButton";
 import useLevels from "../hooks/useLevels";
@@ -21,21 +19,24 @@ const Program = () => {
   const { id: idStr } = useParams();
   const id = idStr ? parseInt(idStr) : undefined;
   const navigate = useNavigate();
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedLevel, setSelectedLevel] = useState<Level | null>(null);
-  const { program, error, isLoading, setProgram, setError } = useProgram(id);
-  const { levels, setLevels } = useLevels(id);
 
-  const handleEdit = (program: ProgramType) => {
-    setProgram(program);
-  };
-  const programForm = useProgramForm(program, () => {}, handleEdit);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState<Level | undefined>(
+    undefined
+  );
+
+  const { program, error, isLoading, setProgram, setError } = useProgram(id);
+  const programForm = useProgramForm({ program, setProgram });
+  const { levels, setLevels } = useLevels(id);
 
   const handleDelete = () => {
     if (!program) return;
-    programService.delete(program.id).then(() => {
-      navigate("/programs");
-    });
+    programService
+      .delete(program.id)
+      .then(() => {
+        navigate("/programs");
+      })
+      .catch((err) => console.log(err));
   };
 
   return (
@@ -61,7 +62,7 @@ const Program = () => {
               variant="ghost"
               fontSize="lg"
               bgColor={selectedLevel ? undefined : "gray.300"}
-              onClick={() => setSelectedLevel(null)}
+              onClick={() => setSelectedLevel(undefined)}
             >
               Program
             </Button>
@@ -87,7 +88,7 @@ const Program = () => {
         <Box width="100%">
           <ProgramFormBody
             {...programForm}
-            program={program || undefined}
+            program={program}
             isReadOnly={!isEditing}
           />
           <HStack justifyContent="right" spacing={3} paddingTop={3}>
@@ -101,7 +102,10 @@ const Program = () => {
               Cancel
             </CancelButton>
             <SubmitButton
-              onClick={programForm.handleSubmit}
+              onClick={() => {
+                programForm.handleSubmit();
+                setIsEditing(false);
+              }}
               disabled={!isEditing}
             >
               Update

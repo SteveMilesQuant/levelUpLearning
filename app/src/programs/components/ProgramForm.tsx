@@ -1,3 +1,4 @@
+import { SetStateAction } from "react";
 import {
   Modal,
   ModalBody,
@@ -18,14 +19,28 @@ interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (program: Program) => void;
+  programs: Program[];
+  setPrograms: (programs: Program[]) => void;
 }
 
-const ProgramForm = ({ title, isOpen, onClose, onSubmit }: Props) => {
-  const programForm = useProgramForm(null, onClose, onSubmit);
+const ProgramForm = ({
+  title,
+  isOpen,
+  onClose,
+  programs,
+  setPrograms,
+}: Props) => {
+  const programForm = useProgramForm({ programs, setPrograms });
 
   return (
-    <Modal isOpen={isOpen} onClose={programForm.handleClose} size="3xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {
+        programForm.handleClose();
+        onClose();
+      }}
+      size="3xl"
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
@@ -37,7 +52,15 @@ const ProgramForm = ({ title, isOpen, onClose, onSubmit }: Props) => {
           <ProgramFormBody {...programForm} />
         </ModalBody>
         <ModalFooter>
-          <SubmitButton onClick={programForm.handleSubmit}>Submit</SubmitButton>
+          <SubmitButton
+            onClick={() => {
+              programForm.handleSubmit();
+              programForm.handleClose();
+              onClose();
+            }}
+          >
+            Submit
+          </SubmitButton>
         </ModalFooter>
       </ModalContent>
     </Modal>
