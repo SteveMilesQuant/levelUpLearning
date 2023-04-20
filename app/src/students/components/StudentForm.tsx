@@ -18,14 +18,27 @@ interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (student: Student) => void;
+  students?: Student[];
+  setStudents?: (student: Student[]) => void;
 }
 
-const StudentForm = ({ title, isOpen, onClose, onSubmit }: Props) => {
-  const studentForm = useStudentForm(null, onClose, onSubmit);
+const StudentForm = ({
+  title,
+  isOpen,
+  onClose,
+  students,
+  setStudents,
+}: Props) => {
+  const studentForm = useStudentForm({ students, setStudents });
 
   return (
-    <Modal isOpen={isOpen} onClose={studentForm.handleClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {
+        studentForm.handleClose();
+        onClose();
+      }}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
@@ -37,7 +50,17 @@ const StudentForm = ({ title, isOpen, onClose, onSubmit }: Props) => {
           <StudentFormBody {...studentForm} />
         </ModalBody>
         <ModalFooter>
-          <SubmitButton onClick={studentForm.handleSubmit}>Submit</SubmitButton>
+          <SubmitButton
+            onClick={() => {
+              studentForm.handleSubmit();
+              if (studentForm.isValid) {
+                studentForm.handleClose();
+                onClose();
+              }
+            }}
+          >
+            Submit
+          </SubmitButton>
         </ModalFooter>
       </ModalContent>
     </Modal>

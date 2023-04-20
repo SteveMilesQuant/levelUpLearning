@@ -32,14 +32,15 @@ const useProgramForm = ({
   const {
     register,
     handleSubmit: handleFormSubmit,
-    formState: { errors },
+    formState: { errors, isValid: isValidForm },
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(programSchema),
     defaultValues: useMemo(() => {
-      return { grade_range: [6, 8], ...program };
+      return { ...program };
     }, [program]),
   });
+  const isValid = isValidForm;
 
   useEffect(() => {
     reset({ ...program });
@@ -59,14 +60,22 @@ const useProgramForm = ({
       grade_range: selectedGradeRange,
     } as Program;
     const origProgram = { ...program } as Program;
-    let origPrograms = programs ? [...programs] : [];
+    const origPrograms = programs ? [...programs] : [];
 
     // Optimistic rendering
     if (setProgram) {
       setProgram(newProgram);
     }
     if (setPrograms) {
-      setPrograms(programs ? [newProgram, ...programs] : []);
+      if (program) {
+        // Just updating one program in the list
+        setPrograms(
+          origPrograms.map((s) => (s.id === newProgram.id ? newProgram : s))
+        );
+      } else {
+        // Adding a new program
+        setPrograms([newProgram, ...origPrograms]);
+      }
     }
 
     // If program was supplied, we are updating
@@ -79,12 +88,15 @@ const useProgramForm = ({
 
     promise
       .then((res) => {
-        if (setPrograms) setPrograms([res.data, ...origPrograms]);
+        if (setPrograms && !program) {
+          // Adding a new student... this will update id
+          setPrograms([res.data, ...origPrograms]);
+        }
       })
       .catch((err) => {
         // If it doesn't work out, reset to original
         if (setProgram) setProgram(origProgram);
-        if (setPrograms && programs) setPrograms(origPrograms);
+        if (setPrograms) setPrograms(origPrograms);
         console.log(err.message);
       });
   };
@@ -93,6 +105,7 @@ const useProgramForm = ({
   return {
     register,
     errors,
+    isValid,
     handleClose,
     handleSubmit,
     selectedGradeRange,

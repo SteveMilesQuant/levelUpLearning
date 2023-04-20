@@ -55,8 +55,10 @@ const ProgramForm = ({
           <SubmitButton
             onClick={() => {
               programForm.handleSubmit();
-              programForm.handleClose();
-              onClose();
+              if (programForm.isValid) {
+                programForm.handleClose();
+                onClose();
+              }
             }}
           >
             Submit

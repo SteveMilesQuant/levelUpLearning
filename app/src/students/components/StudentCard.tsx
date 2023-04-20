@@ -5,17 +5,19 @@ import EditStudentButton from "./EditStudentButton";
 
 interface Props {
   student: Student;
+  students: Student[];
+  setStudents: (students: Student[]) => void;
   isSelected: boolean;
   onClick: () => void;
-  onUpdate?: (student: Student) => void;
   onDelete?: () => void;
 }
 
 const StudentCard = ({
   student,
+  students,
+  setStudents,
   isSelected,
   onClick,
-  onUpdate,
   onDelete,
 }: Props) => {
   return (
@@ -28,8 +30,12 @@ const StudentCard = ({
         <HStack justifyContent="space-between">
           <Heading fontSize="2xl">{student.name}</Heading>
           <HStack spacing="3px">
-            {onUpdate && (
-              <EditStudentButton onUpdate={onUpdate} student={student} />
+            {setStudents && (
+              <EditStudentButton
+                student={student}
+                students={students}
+                setStudents={setStudents}
+              />
             )}
             {onDelete && (
               <DeleteButton onConfirm={onDelete}>{student.name}</DeleteButton>

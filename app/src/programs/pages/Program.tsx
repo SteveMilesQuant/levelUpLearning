@@ -104,7 +104,10 @@ const Program = () => {
             <SubmitButton
               onClick={() => {
                 programForm.handleSubmit();
-                setIsEditing(false);
+                if (programForm.isValid) {
+                  programForm.handleClose();
+                  setIsEditing(false);
+                }
               }}
               disabled={!isEditing}
             >

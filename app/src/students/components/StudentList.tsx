@@ -19,10 +19,6 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
     onClose: newOnClose,
   } = useDisclosure();
 
-  const handleEditStudent = (newStudent: Student) => {
-    setStudents(students.map((s) => (s.id === newStudent.id ? newStudent : s)));
-  };
-
   const handleDeleteStudent = (student: Student) => {
     const origStudents = students;
     setStudents(
@@ -37,14 +33,6 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
     });
   };
 
-  const handleAddStudent = (student: Student) => {
-    setStudents(
-      produce((draft) => {
-        draft.push(student);
-      })
-    );
-  };
-
   return (
     <>
       <List spacing={5}>
@@ -52,9 +40,10 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
           <ListItem key={student.id}>
             <StudentCard
               student={student}
+              students={students}
+              setStudents={setStudents}
               isSelected={selectedStudent?.id === student.id}
               onClick={() => onSelectStudent(student)}
-              onUpdate={(newStudent) => handleEditStudent(newStudent)}
               onDelete={() => handleDeleteStudent(student)}
             />
           </ListItem>
@@ -69,7 +58,8 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
         title="Add Student"
         isOpen={newIsOpen}
         onClose={newOnClose}
-        onSubmit={(student) => handleAddStudent(student)}
+        students={students}
+        setStudents={setStudents}
       />
     </>
   );

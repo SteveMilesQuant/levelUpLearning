@@ -22,11 +22,9 @@ interface Props {
   setSelectedGrade: (selectedGrade: number) => void;
   register: UseFormRegister<z.infer<typeof studentSchema>>;
   errors: FieldErrors<z.infer<typeof studentSchema>>;
-  student?: Student;
 }
 
 const StudentFormBody = ({
-  student,
   haveSubmitted,
   selectedGrade,
   setSelectedGrade,
@@ -43,11 +41,7 @@ const StudentFormBody = ({
           label={errors.name?.message}
           isOpen={errors.name ? true : false}
         >
-          <Input
-            {...register("name")}
-            type="text"
-            defaultValue={student?.name}
-          />
+          <Input {...register("name")} type="text" />
         </InputError>
       </FormControl>
       <FormControl>

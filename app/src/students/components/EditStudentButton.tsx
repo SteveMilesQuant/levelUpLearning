@@ -5,11 +5,12 @@ import StudentFormBody from "./StudentFormBody";
 
 interface Props {
   student: Student;
-  onUpdate: (student: Student) => void;
+  students: Student[];
+  setStudents: (students: Student[]) => void;
 }
 
-const EditStudentButton = ({ student, onUpdate }: Props) => {
-  const studentForm = useStudentForm(student, () => {}, onUpdate);
+const EditStudentButton = ({ student, students, setStudents }: Props) => {
+  const studentForm = useStudentForm({ student, students, setStudents });
 
   return (
     <EditButton
@@ -17,7 +18,7 @@ const EditStudentButton = ({ student, onUpdate }: Props) => {
       onUpdate={studentForm.handleSubmit}
       onClose={studentForm.handleClose}
     >
-      <StudentFormBody {...studentForm} student={student} />
+      <StudentFormBody {...studentForm} />
     </EditButton>
   );
 };
