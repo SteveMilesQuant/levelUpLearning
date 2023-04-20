@@ -54,9 +54,17 @@ const useLevelForm = ({
     const origLevels = levels ? [...levels] : [];
 
     // Optimistic rendering
+    let nextIdx = 1;
+    if (levels) {
+      nextIdx =
+        levels.reduce(
+          (max, l) => (max > l.list_index ? max : l.list_index),
+          0
+        ) + 1;
+    }
     const newLevel = {
       id: 0,
-      list_index: levels ? Math.max(...levels.map((l) => l.list_index)) + 1 : 1,
+      list_index: nextIdx,
       ...level,
       ...data,
     } as Level;
