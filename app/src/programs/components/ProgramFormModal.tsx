@@ -22,7 +22,7 @@ interface Props {
   setPrograms: (programs: Program[]) => void;
 }
 
-const ProgramForm = ({
+const ProgramFormModal = ({
   title,
   isOpen,
   onClose,
@@ -68,4 +68,4 @@ const ProgramForm = ({
   );
 };
 
-export default ProgramForm;
+export default ProgramFormModal;

@@ -5,7 +5,7 @@ import ProgramCard from "../components/ProgramCard";
 import programService, { Program } from "../services/program-service";
 import produce from "immer";
 import PageHeader from "../../components/PageHeader";
-import ProgramForm from "../components/ProgramForm";
+import ProgramFormModal from "../components/ProgramFormModal";
 
 const Programs = () => {
   const { programs, error, isLoading, setPrograms, setError } = usePrograms();
@@ -43,7 +43,7 @@ const Programs = () => {
           />
         ))}
       </SimpleGrid>
-      <ProgramForm
+      <ProgramFormModal
         title="Add Program"
         isOpen={newIsOpen}
         onClose={newOnClose}
