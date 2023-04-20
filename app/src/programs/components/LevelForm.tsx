@@ -9,25 +9,18 @@ import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
 import { Program } from "../services/program-service";
+import { useState } from "react";
 
 interface Props {
   program?: Program;
   level: Level;
   levels?: Level[];
   setLevels: (level: Level[]) => void;
-  isEditing: boolean;
-  setIsEditing: (value: boolean) => void;
 }
 
-const LevelForm = ({
-  program,
-  level,
-  levels,
-  setLevels,
-  isEditing,
-  setIsEditing,
-}: Props) => {
+const LevelForm = ({ program, level, levels, setLevels }: Props) => {
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
   const levelForm = useLevelForm({ program, level, levels, setLevels });
 
   const handleDeleteLevel = () => {

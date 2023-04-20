@@ -8,21 +8,16 @@ import DeleteButton from "../../components/DeleteButton";
 import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
+import { useState } from "react";
 
 interface Props {
   program?: Program;
   setProgram: (program?: Program) => void;
-  isEditing: boolean;
-  setIsEditing: (value: boolean) => void;
 }
 
-const ProgramForm = ({
-  program,
-  setProgram,
-  isEditing,
-  setIsEditing,
-}: Props) => {
+const ProgramForm = ({ program, setProgram }: Props) => {
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
   const programForm = useProgramForm({ program, setProgram });
 
   const handleDeleteProgram = () => {

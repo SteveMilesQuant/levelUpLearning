@@ -14,7 +14,6 @@ const Program = () => {
   const { id: idStr } = useParams();
   const id = idStr ? parseInt(idStr) : undefined;
 
-  const [isEditing, setIsEditing] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<Level | undefined>(
     undefined
   );
@@ -47,12 +46,7 @@ const Program = () => {
         </List>
         <Box width="100%">
           {!selectedLevel && (
-            <ProgramForm
-              program={program}
-              setProgram={setProgram}
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
-            />
+            <ProgramForm program={program} setProgram={setProgram} />
           )}
           {levels
             ?.filter((level) => level.id === selectedLevel?.id)
@@ -62,8 +56,6 @@ const Program = () => {
                 level={level}
                 levels={levels}
                 setLevels={setLevels}
-                isEditing={isEditing}
-                setIsEditing={setIsEditing}
               ></LevelForm>
             ))}
         </Box>
