@@ -29,7 +29,7 @@ const Program = () => {
   const programForm = useProgramForm({ program, setProgram });
   const { levels, setLevels } = useLevels(id);
 
-  const handleDelete = () => {
+  const handleDeleteProgram = () => {
     if (!program) return;
     programService
       .delete(program.id)
@@ -41,28 +41,17 @@ const Program = () => {
 
   return (
     <BodyContainer>
-      <PageHeader label={program?.title}>
-        <Box>
-          <ActionButton
-            Component={AiFillEdit}
-            label="Edit"
-            onClick={() => setIsEditing(true)}
-            disabled={isEditing}
-          />
-          <DeleteButton onConfirm={handleDelete} disabled={isEditing}>
-            {program?.title}
-          </DeleteButton>
-        </Box>
-      </PageHeader>
+      <PageHeader label={program?.title}></PageHeader>
       <HStack alignItems="start" spacing={10}>
         <List spacing={3}>
           <ListItem>
             <Button
-              as={Text}
               variant="ghost"
               fontSize="lg"
               bgColor={selectedLevel ? undefined : "gray.300"}
               onClick={() => setSelectedLevel(undefined)}
+              justifyContent="left"
+              width="100%"
             >
               Program
             </Button>
@@ -76,6 +65,8 @@ const Program = () => {
                   selectedLevel?.id === level.id ? "gray.300" : undefined
                 }
                 onClick={() => setSelectedLevel(level)}
+                justifyContent="left"
+                width="100%"
               >
                 {level.list_index}: {level.title}
               </Button>
@@ -86,34 +77,50 @@ const Program = () => {
           </ListItem>
         </List>
         <Box width="100%">
-          <ProgramFormBody
-            {...programForm}
-            program={program}
-            isReadOnly={!isEditing}
-          />
-          <HStack justifyContent="right" spacing={3} paddingTop={3}>
-            <CancelButton
-              onClick={() => {
-                programForm.handleClose();
-                setIsEditing(false);
-              }}
-              disabled={!isEditing}
-            >
-              Cancel
-            </CancelButton>
-            <SubmitButton
-              onClick={() => {
-                programForm.handleSubmit();
-                if (programForm.isValid) {
-                  programForm.handleClose();
-                  setIsEditing(false);
-                }
-              }}
-              disabled={!isEditing}
-            >
-              Update
-            </SubmitButton>
-          </HStack>
+          {!selectedLevel && (
+            <>
+              <ProgramFormBody
+                {...programForm}
+                program={program}
+                isReadOnly={!isEditing}
+              />
+              <HStack justifyContent="right" spacing={3} paddingTop={3}>
+                <ActionButton
+                  Component={AiFillEdit}
+                  label="Edit"
+                  onClick={() => setIsEditing(true)}
+                  disabled={isEditing}
+                />
+                <DeleteButton
+                  onConfirm={handleDeleteProgram}
+                  disabled={isEditing}
+                >
+                  {program?.title}
+                </DeleteButton>
+                <CancelButton
+                  onClick={() => {
+                    programForm.handleClose();
+                    setIsEditing(false);
+                  }}
+                  disabled={!isEditing}
+                >
+                  Cancel
+                </CancelButton>
+                <SubmitButton
+                  onClick={() => {
+                    programForm.handleSubmit();
+                    if (programForm.isValid) {
+                      programForm.handleClose();
+                      setIsEditing(false);
+                    }
+                  }}
+                  disabled={!isEditing}
+                >
+                  Update
+                </SubmitButton>
+              </HStack>
+            </>
+          )}
         </Box>
       </HStack>
     </BodyContainer>
