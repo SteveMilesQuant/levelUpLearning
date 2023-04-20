@@ -52,7 +52,7 @@ const SideIconList = ({ roles }: Props) => {
       {
         id: 5,
         icon: <AiOutlineSchedule size="2em" />,
-        endpoint: "#",
+        endpoint: "/schedule",
         label: "Schedule Camps",
       },
       {

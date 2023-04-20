@@ -16,6 +16,7 @@ function App() {
           <Route path="camps" element={<Camps />} />
           <Route path="programs" element={<Programs />} />
           <Route path="programs/:id" element={<Program />} />
+          <Route path="schedule" element={<Camps forScheduling={true} />} />
         </Route>
       </Routes>
     </BrowserRouter>

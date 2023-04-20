@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { CanceledError } from "../../services/api-client";
-import campService, { Camp } from "../services/camp-service";
+import campService, {
+  Camp,
+  scheduleCampService,
+} from "../services/camp-service";
 import {
   Student,
   studentCampService,
@@ -9,13 +12,20 @@ import programService from "../../programs/services/program-service";
 import { AxiosResponse } from "axios";
 import { instructorService } from "../../services/user-service";
 
-const useCamps = (student?: Student) => {
+interface Props {
+  forScheduling?: boolean;
+  student?: Student;
+}
+
+const useCamps = ({ student, forScheduling }: Props) => {
   const [camps, setCamps] = useState<Camp[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const { request, cancel } = student
+    const { request, cancel } = forScheduling
+      ? scheduleCampService.getAll()
+      : student
       ? studentCampService(student).getAll()
       : campService.getAll();
 

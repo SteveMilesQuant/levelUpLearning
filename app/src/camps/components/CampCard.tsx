@@ -8,18 +8,29 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Camp } from "../services/camp-service";
+import DeleteButton from "../../components/DeleteButton";
 
 interface Props {
   camp: Camp;
+  onDelete?: () => void;
 }
 
-const CampCard = ({ camp }: Props) => {
+const CampCard = ({ camp, onDelete }: Props) => {
+  const byLine = "with " + camp.primary_instructor?.full_name;
+
   return (
     <Card>
       <CardBody>
-        <HStack alignItems="end">
-          <Heading fontSize="2xl">{camp.program?.title}</Heading>
-          <Text>{"with " + camp.primary_instructor?.full_name}</Text>
+        <HStack justifyContent="space-between">
+          <HStack alignItems="end">
+            <Heading fontSize="2xl">{camp.program?.title}</Heading>
+            <Text>{byLine}</Text>
+          </HStack>
+          {onDelete && (
+            <DeleteButton onConfirm={onDelete}>
+              {camp.program?.title + " " + byLine}
+            </DeleteButton>
+          )}
         </HStack>
         <Divider orientation="horizontal" marginTop={2} />
         <HStack marginTop={2} justifyContent="space-between">

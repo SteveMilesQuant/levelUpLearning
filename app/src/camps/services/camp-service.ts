@@ -17,4 +17,6 @@ export const campProgramService = (camp: Camp) => {
   return create<Camp>("/camps/" + camp.id + "/programs" + camp.program_id);
 };
 
+export const scheduleCampService = create<Camp>("/schedule");
+
 export default create<Camp>("/camps");
