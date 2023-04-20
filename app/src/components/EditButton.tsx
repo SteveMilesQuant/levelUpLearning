@@ -13,16 +13,22 @@ import {
   PopoverFooter,
   HStack,
 } from "@chakra-ui/react";
-import { FormEvent } from "react";
 
 interface Props {
   children?: JSX.Element;
   title: string;
-  onUpdate: (e: FormEvent) => void;
+  holdOpen: boolean;
+  onUpdate: () => void;
   onClose: () => void;
 }
 
-const EditButton = ({ children, title, onUpdate, onClose }: Props) => (
+const EditButton = ({
+  children,
+  title,
+  holdOpen,
+  onUpdate,
+  onClose,
+}: Props) => (
   <Popover>
     {({ onClose: onClosePopover }) => (
       <>
@@ -49,9 +55,12 @@ const EditButton = ({ children, title, onUpdate, onClose }: Props) => (
                 Cancel
               </Button>
               <Button
-                onClick={(e) => {
-                  onClosePopover();
-                  onUpdate(e);
+                onClick={() => {
+                  onUpdate();
+                  if (!holdOpen) {
+                    onClosePopover();
+                    onClose();
+                  }
                 }}
                 bgColor="blue.300"
               >

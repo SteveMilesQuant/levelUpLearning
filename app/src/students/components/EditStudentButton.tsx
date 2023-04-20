@@ -17,6 +17,7 @@ const EditStudentButton = ({ student, students, setStudents }: Props) => {
       title="Update Student"
       onUpdate={studentForm.handleSubmit}
       onClose={studentForm.handleClose}
+      holdOpen={!studentForm.isValid}
     >
       <StudentFormBody {...studentForm} />
     </EditButton>
