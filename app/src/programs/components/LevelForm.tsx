@@ -1,43 +1,48 @@
 import { HStack } from "@chakra-ui/react";
-import useProgramForm from "../hooks/useProgramForm";
-import ProgramFormBody from "./ProgramFormBody";
-import programService, { Program } from "../services/program-service";
+import useLevelForm from "../hooks/useLevelForm";
+import LevelFormBody from "./LevelFormBody";
+import levelService, { Level } from "../services/level-service";
 import { useNavigate } from "react-router-dom";
 import ActionButton from "../../components/ActionButton";
 import DeleteButton from "../../components/DeleteButton";
 import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
+import { Program } from "../services/program-service";
 
 interface Props {
   program?: Program;
-  setProgram: (program?: Program) => void;
+  level: Level;
+  levels?: Level[];
+  setLevels: (level: Level[]) => void;
   isEditing: boolean;
   setIsEditing: (value: boolean) => void;
 }
 
-const ProgramForm = ({
+const LevelForm = ({
   program,
-  setProgram,
+  level,
+  levels,
+  setLevels,
   isEditing,
   setIsEditing,
 }: Props) => {
   const navigate = useNavigate();
-  const programForm = useProgramForm({ program, setProgram });
+  const levelForm = useLevelForm({ program, level, levels, setLevels });
 
-  const handleDeleteProgram = () => {
-    if (!program) return;
-    programService
-      .delete(program.id)
+  const handleDeleteLevel = () => {
+    if (!program || !level) return;
+    levelService(program?.id)
+      .delete(level.id)
       .then(() => {
-        navigate("/programs");
+        navigate("/levels");
       })
       .catch((err) => console.log(err));
   };
 
   return (
     <>
-      <ProgramFormBody {...programForm} isReadOnly={!isEditing} />
+      <LevelFormBody {...levelForm} isReadOnly={!isEditing} />
       <HStack justifyContent="right" spacing={3} paddingTop={3}>
         <ActionButton
           Component={AiFillEdit}
@@ -45,12 +50,12 @@ const ProgramForm = ({
           onClick={() => setIsEditing(true)}
           disabled={isEditing}
         />
-        <DeleteButton onConfirm={handleDeleteProgram} disabled={isEditing}>
-          {program?.title}
+        <DeleteButton onConfirm={handleDeleteLevel} disabled={isEditing}>
+          {level?.title}
         </DeleteButton>
         <CancelButton
           onClick={() => {
-            programForm.handleClose();
+            levelForm.handleClose();
             setIsEditing(false);
           }}
           disabled={!isEditing}
@@ -59,9 +64,9 @@ const ProgramForm = ({
         </CancelButton>
         <SubmitButton
           onClick={() => {
-            programForm.handleSubmit();
-            if (programForm.isValid) {
-              programForm.handleClose();
+            levelForm.handleSubmit();
+            if (levelForm.isValid) {
+              levelForm.handleClose();
               setIsEditing(false);
             }
           }}
@@ -75,4 +80,4 @@ const ProgramForm = ({
   );
 };
 
-export default ProgramForm;
+export default LevelForm;

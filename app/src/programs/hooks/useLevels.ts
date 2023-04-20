@@ -3,7 +3,7 @@ import { CanceledError } from "../../services/api-client";
 import levelService, { Level } from "../services/level-service";
 
 const useLevels = (id?: number) => {
-  const [levels, setLevels] = useState<Level[] | null>(null);
+  const [levels, setLevels] = useState<Level[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   if (!id) return { levels, error, isLoading, setLevels, setError };

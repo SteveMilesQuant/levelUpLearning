@@ -8,6 +8,7 @@ import { Level } from "../services/level-service";
 import ProgramForm from "../components/ProgramForm";
 import { useParams } from "react-router-dom";
 import LevelListButton from "../components/LevelListButton";
+import LevelForm from "../components/LevelForm";
 
 const Program = () => {
   const { id: idStr } = useParams();
@@ -53,6 +54,18 @@ const Program = () => {
               setIsEditing={setIsEditing}
             />
           )}
+          {levels
+            ?.filter((level) => level.id === selectedLevel?.id)
+            .map((level) => (
+              <LevelForm
+                program={program}
+                level={level}
+                levels={levels}
+                setLevels={setLevels}
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
+              ></LevelForm>
+            ))}
         </Box>
       </HStack>
     </BodyContainer>

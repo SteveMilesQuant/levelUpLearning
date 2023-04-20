@@ -16,7 +16,6 @@ import { FormData } from "../hooks/useProgramForm";
 import InputError from "../../components/InputError";
 
 interface Props {
-  program?: Program;
   register: UseFormRegister<FormData>;
   errors: FieldErrors<FormData>;
   selectedGradeRange: number[];
@@ -25,7 +24,6 @@ interface Props {
 }
 
 const ProgramFormBody = ({
-  program,
   register,
   errors,
   selectedGradeRange,
