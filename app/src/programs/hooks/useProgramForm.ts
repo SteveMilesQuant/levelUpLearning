@@ -53,16 +53,16 @@ const useProgramForm = ({
   };
 
   const handleSubmitLocal = (data: FieldValues) => {
+    const origProgram = { ...program } as Program;
+    const origPrograms = programs ? [...programs] : [];
+
+    // Optimistic rendering
     const newProgram = {
       id: 0,
       ...program,
       ...data,
       grade_range: selectedGradeRange,
     } as Program;
-    const origProgram = { ...program } as Program;
-    const origPrograms = programs ? [...programs] : [];
-
-    // Optimistic rendering
     if (setProgram) {
       setProgram(newProgram);
     }

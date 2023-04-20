@@ -2,7 +2,6 @@ import { HStack } from "@chakra-ui/react";
 import useLevelForm from "../hooks/useLevelForm";
 import LevelFormBody from "./LevelFormBody";
 import levelService, { Level } from "../services/level-service";
-import { useNavigate } from "react-router-dom";
 import ActionButton from "../../components/ActionButton";
 import DeleteButton from "../../components/DeleteButton";
 import { AiFillEdit } from "react-icons/ai";
@@ -19,18 +18,19 @@ interface Props {
 }
 
 const LevelForm = ({ program, level, levels, setLevels }: Props) => {
-  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const levelForm = useLevelForm({ program, level, levels, setLevels });
 
   const handleDeleteLevel = () => {
     if (!program || !level) return;
+    const origLevels = levels ? [...levels] : [];
+    setLevels(origLevels.filter((l) => l.id !== level.id));
     levelService(program?.id)
       .delete(level.id)
-      .then(() => {
-        navigate("/levels");
-      })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        setLevels(origLevels);
+      });
   };
 
   return (

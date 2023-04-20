@@ -50,26 +50,30 @@ const useLevelForm = ({
 
   const handleSubmitLocal = (data: FieldValues) => {
     if (!program) return;
-
-    const newLevel = {
-      id: 0,
-      ...level,
-      ...data,
-    } as Level;
     const origLevel = { ...level } as Level;
     const origLevels = levels ? [...levels] : [];
 
     // Optimistic rendering
+    const newLevel = {
+      id: 0,
+      list_index: levels ? Math.max(...levels.map((l) => l.list_index)) + 1 : 1,
+      ...level,
+      ...data,
+    } as Level;
     if (setLevel) {
       setLevel(newLevel);
     }
     if (setLevels) {
       if (level) {
         // Just updating one level in the list
-        setLevels(origLevels.map((s) => (s.id === newLevel.id ? newLevel : s)));
+        const newLevels = origLevels.map((s) =>
+          s.id === newLevel.id ? newLevel : s
+        );
+        newLevels.sort((a, b) => a.list_index - b.list_index);
+        setLevels(newLevels);
       } else {
         // Adding a new level
-        setLevels([newLevel, ...origLevels]);
+        setLevels([...origLevels, newLevel]);
       }
     }
 
@@ -84,8 +88,8 @@ const useLevelForm = ({
     promise
       .then((res) => {
         if (setLevels && !level) {
-          // Adding a new student... this will update id
-          setLevels([res.data, ...origLevels]);
+          // Adding a new student... this will update id and list_index
+          setLevels([...origLevels, res.data]);
         }
       })
       .catch((err) => {

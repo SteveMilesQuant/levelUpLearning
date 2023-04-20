@@ -52,17 +52,16 @@ const useStudentForm = ({
 
   const handleSubmitLocal = (data: FieldValues) => {
     if (!isValid) return;
+    const origStudent = { ...student } as Student;
+    const origStudents = students ? [...students] : [];
 
+    // Optimistic rendering
     const newStudent = {
       id: 0,
       ...student,
       ...data,
       grade_level: selectedGrade,
     } as Student;
-    const origStudent = { ...student } as Student;
-    const origStudents = students ? [...students] : [];
-
-    // Optimistic rendering
     if (setStudent) {
       setStudent(newStudent);
     }
