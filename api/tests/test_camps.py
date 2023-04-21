@@ -1,10 +1,13 @@
 import pytest, json, asyncio
 from fastapi import status
 from fastapi.testclient import TestClient
-from user import User, UserResponse
-from program import Program, ProgramResponse, Level
-from student import StudentData, FastApiDate
-from camp import CampData, LevelSchedule, FastApiDatetime
+from datamodels import UserResponse
+from datamodels import ProgramResponse
+from datamodels import StudentData, FastApiDate
+from datamodels import CampData, FastApiDatetime
+from user import User
+from program import Program, Level
+from camp import LevelSchedule
 from main import app
 
 

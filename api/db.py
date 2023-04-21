@@ -5,6 +5,7 @@ from sqlalchemy import BigInteger, Text, String
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
+from datamodels import UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse, LevelScheduleResponse
 
 
 class Base(DeclarativeBase):
@@ -79,6 +80,12 @@ class UserDb(Base):
     students: Mapped[List['StudentDb']] = relationship(secondary=user_x_students, back_populates='guardians', lazy='raise')
     programs: Mapped[List['ProgramDb']] = relationship(secondary=user_x_programs, back_populates='designers', lazy='raise')
     camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_instructors, back_populates='instructors', lazy='raise')
+    
+    def dict(self):
+        returnVal = {}
+        for key, value in UserResponse():
+            returnVal[key] = getattr(self, key)
+        return returnVal
 
 
 class StudentDb(Base):
@@ -86,11 +93,16 @@ class StudentDb(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(Text)
-    birthdate: Mapped[date] = mapped_column(nullable=True)
     grade_level: Mapped[int] = mapped_column(nullable=True)
 
     guardians: Mapped[List['UserDb']] = relationship(secondary=user_x_students, back_populates='students', lazy='raise')
     camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_students, back_populates='students', lazy='raise')
+    
+    def dict(self):
+        returnVal = {}
+        for key, value in StudentResponse():
+            returnVal[key] = getattr(self, key)
+        return returnVal
 
 
 class ProgramDb(Base):
@@ -106,6 +118,12 @@ class ProgramDb(Base):
     levels: Mapped[List['LevelDb']] = relationship(back_populates='program', lazy='raise', cascade='all, delete')
     designers: Mapped[List['UserDb']] = relationship(secondary=user_x_programs, back_populates='programs', lazy='raise')
     camps: Mapped[List['CampDb']] = relationship(back_populates='program', lazy='raise', cascade='all, delete')
+    
+    def dict(self):
+        returnVal = {}
+        for key, value in ProgramResponse():
+            returnVal[key] = getattr(self, key)
+        return returnVal
 
 
 class LevelDb(Base):
@@ -119,6 +137,12 @@ class LevelDb(Base):
 
     level_schedules: Mapped[List['LevelScheduleDb']] = relationship(back_populates='level', lazy='raise', cascade='all, delete')
     program: Mapped['ProgramDb'] = relationship(back_populates='levels', lazy='raise')
+    
+    def dict(self):
+        returnVal = {}
+        for key, value in LevelResponse():
+            returnVal[key] = getattr(self, key)
+        return returnVal
 
 
 class CampDb(Base):
@@ -134,6 +158,12 @@ class CampDb(Base):
     level_schedules: Mapped[List['LevelScheduleDb']] = relationship(back_populates='camp', lazy='raise', cascade='all, delete')
     instructors: Mapped[List['UserDb']] = relationship(secondary=camp_x_instructors, back_populates='camps', lazy='raise')
     students: Mapped[List['StudentDb']] = relationship(secondary=camp_x_students, back_populates='camps', lazy='raise')
+    
+    def dict(self):
+        returnVal = {}
+        for key, value in CampResponse():
+            returnVal[key] = getattr(self, key)
+        return returnVal
 
 
 class LevelScheduleDb(Base):
@@ -146,6 +176,12 @@ class LevelScheduleDb(Base):
 
     camp: Mapped['CampDb'] = relationship(back_populates='level_schedules', lazy='raise')
     level: Mapped['LevelDb'] = relationship(back_populates='level_schedules', lazy='raise')
+    
+    def dict(self):
+        returnVal = {}
+        for key, value in LevelScheduleResponse():
+            returnVal[key] = getattr(self, key)
+        return returnVal
 
 
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):

@@ -2,7 +2,7 @@ import pytest, json
 from fastapi import status
 from fastapi.testclient import TestClient
 from user import User
-from student import StudentData, FastApiDate
+from datamodels import StudentData, FastApiDate
 from main import app
 
 client = TestClient(app)

@@ -8,12 +8,15 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
 from db import init_db, close_db
+from datamodels import UserData, UserResponse, StudentData, StudentResponse
+from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
+from datamodels import CampData, CampResponse, LevelScheduleData, LevelScheduleResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
-from user import UserData, UserResponse, User, Role, init_roles, all_users
-from student import StudentData, StudentResponse, Student
-from program import ProgramData, ProgramResponse, Program, all_programs
-from program import LevelData, LevelResponse, Level
-from camp import CampData, CampResponse, Camp, LevelScheduleData, LevelScheduleResponse, LevelSchedule, all_camps
+from user import User, Role, init_roles, all_users
+from student import Student
+from program import Program, all_programs
+from program import Level
+from camp import Camp, LevelSchedule, all_camps
 
 
 class Object(object):

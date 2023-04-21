@@ -2,21 +2,7 @@ from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from datetime import date
 from db import StudentDb, UserDb, CampDb
-
-
-class FastApiDate(date):
-    def __str__(self) -> str:
-        return self.strftime('%Y-%m-%d')
-
-
-class StudentData(BaseModel):
-    name: Optional[str] = None
-    birthdate: Optional[FastApiDate] = None
-    grade_level: Optional[int] = None
-
-
-class StudentResponse(StudentData):
-    id: Optional[int] = None
+from datamodels import StudentData, StudentResponse
 
 
 class Student(StudentResponse):

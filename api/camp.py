@@ -1,23 +1,9 @@
 from pydantic import BaseModel, PrivateAttr
 from typing import Optional, Any, List, Dict
+from datamodels import CampData, CampResponse, LevelScheduleResponse
 from db import LevelScheduleDb, CampDb, UserDb, StudentDb
 from datetime import datetime
 from sqlalchemy import select
-
-
-class FastApiDatetime(datetime):
-    def __str__(self) -> str:
-        return self.strftime('%Y-%m-%dT%H:%M:%S')
-
-
-class LevelScheduleData(BaseModel):
-    start_time: Optional[FastApiDatetime]
-    end_time: Optional[FastApiDatetime]
-
-
-class LevelScheduleResponse(LevelScheduleData):
-    camp_id: Optional[int]
-    level_id: Optional[int]
 
 
 class LevelSchedule(LevelScheduleResponse):
@@ -53,16 +39,6 @@ class LevelSchedule(LevelScheduleResponse):
                db_level.list_index -= 1
         await session.delete(self._db_obj)
         await session.commit()
-
-
-class CampData(BaseModel):
-    program_id: Optional[int]
-    primary_instructor_id: Optional[int]
-    is_published: Optional[bool] = False
-
-
-class CampResponse(CampData):
-    id: Optional[int]
 
 
 class Camp(CampResponse):

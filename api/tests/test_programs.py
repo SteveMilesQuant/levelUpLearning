@@ -2,7 +2,7 @@ import pytest, json
 from fastapi import status
 from fastapi.testclient import TestClient
 from user import User
-from program import ProgramData, LevelData
+from datamodels import ProgramData, LevelData
 from main import app
 
 
