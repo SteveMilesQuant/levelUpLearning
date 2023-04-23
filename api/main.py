@@ -24,7 +24,7 @@ class Object(object):
 
 
 app = FastAPI()
-api_router = APIRouter(prefix=os.environ.get('ROOT_PATH') or '')
+api_router = APIRouter(prefix=os.environ.get('API_ROOT_PATH') or '')
 
 
 @app.on_event('startup')
@@ -34,7 +34,6 @@ async def startup():
     app.config.GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
     app.config.GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
     app.config.GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
-    app.config.jwt_cookie_name = "authToken"
     app.config.jwt_lifetime = timedelta(minutes=30)
     app.config.jwt_algorithm = "HS256"
     app.config.jwt_subject = "access"
@@ -108,17 +107,6 @@ async def signin_post(request: Request, google_response_token: dict):
 
         user_token, token_expiration = user_id_to_auth_token(app, user.id)
         return user_token
-
-
-@api_router.get("/signout", response_class = RedirectResponse)
-async def signout_get(request: Request):
-    tgtUrl = '/'
-    message = request.query_params.get('message')
-    if message is not None:
-        tgtUrl = tgtUrl + '?message="' + message + '"'
-    response = RedirectResponse(url=tgtUrl)
-    response.delete_cookie(key = app.config.jwt_cookie_name)
-    return response
 
 
 @api_router.get("/user", response_model = Optional[UserResponse])
