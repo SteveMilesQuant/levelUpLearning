@@ -64,6 +64,8 @@ class CampData(BaseModel):
 
 class CampResponse(CampData):
     id: Optional[int]
+    primary_instructor: Optional[UserResponse] = None
+    program: Optional[ProgramResponse] = None
 
 
 class LevelScheduleData(BaseModel):
@@ -74,3 +76,4 @@ class LevelScheduleData(BaseModel):
 class LevelScheduleResponse(LevelScheduleData):
     camp_id: Optional[int]
     level_id: Optional[int]
+    level: Optional[LevelResponse] = None

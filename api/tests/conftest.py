@@ -42,6 +42,12 @@ async def startup():
         await app.test.users.guardian.create(session)
         auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.guardian.id)
         app.test.users.guardian_headers = {'Authorization': auth_token}
+        
+        app.test.users.map = {
+            app.test.users.admin.id: app.test.users.admin,
+            app.test.users.instructor.id: app.test.users.instructor,
+            app.test.users.guardian.id: app.test.users.guardian
+        }
 
 
 def pytest_sessionstart(session):

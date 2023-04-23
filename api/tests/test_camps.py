@@ -2,7 +2,7 @@ import pytest, json, asyncio
 from fastapi import status
 from fastapi.testclient import TestClient
 from datamodels import UserResponse
-from datamodels import ProgramResponse
+from datamodels import ProgramResponse, LevelResponse
 from datamodels import StudentData, FastApiDate
 from datamodels import CampData, FastApiDatetime
 from user import User
@@ -36,6 +36,9 @@ async def seed_program():
         await alt_level.create(session)
 asyncio.run(seed_program())
 
+program_response = program.dict(include=ProgramResponse().dict())
+program_response['grade_range'] = [program.grade_range[0], program.grade_range[1]] # comes back like this for some reason
+
 
 # Test adding camps
 @pytest.mark.parametrize(('camp'), (
@@ -48,6 +51,8 @@ def test_post_camp(camp: CampData):
     assert response.status_code == status.HTTP_201_CREATED, f'Error posting {camp_json}'
     new_camp_json = response.json()
     camp_json['id'] = new_camp_json['id']
+    camp_json['primary_instructor'] = app.test.users.map[camp_json['primary_instructor_id']].dict(include=UserResponse().dict())
+    camp_json['program'] = program_response
     assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match posted camp {camp_json}.'
     all_camps_json.append(new_camp_json)
 
@@ -131,6 +136,7 @@ def test_change_primary_instructor(camp_index: int, instructor_id: int):
     camp_json = all_camps_json[camp_index]
     camp_id = camp_json['id']
     camp_json['primary_instructor_id'] = instructor_id
+    camp_json['primary_instructor'] = app.test.users.map[instructor_id].dict(include=UserResponse().dict())
     response = client.put(f'/camps/{camp_id}', json=camp_json, headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
@@ -161,6 +167,7 @@ def test_update_level_schedules(camp_index: int, level_index: int, level_schedul
     new_level_schedule_json = response.json()
     level_schedule_json['camp_id'] = camp_id
     level_schedule_json['level_id'] = level.id
+    level_schedule_json['level'] = level.dict(include=LevelResponse().dict())
     assert new_level_schedule_json == level_schedule_json
 
     response = client.get(f'/camps/{camp_id}/levels/{level.id}', headers = app.test.users.admin_headers)

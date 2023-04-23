@@ -32,38 +32,8 @@ const useCamps = ({ student, forScheduling }: Props) => {
     setIsLoading(true);
     request
       .then((response) => {
-        const subPromises = new Array<Promise<AxiosResponse>>();
-        response.data.forEach((camp) => {
-          const programPromise = programService.get(camp.program_id);
-          subPromises.push(programPromise);
-          programPromise
-            .then((pRes) => {
-              camp.program = pRes.data;
-            })
-            .catch((error) => {
-              if (error instanceof CanceledError) return;
-              setError(error.message);
-              setIsLoading(false);
-            });
-
-          const instructorPromise = instructorService.get(
-            camp.primary_instructor_id
-          );
-          subPromises.push(instructorPromise);
-          instructorPromise
-            .then((pRes) => {
-              camp.primary_instructor = pRes.data;
-            })
-            .catch((error) => {
-              if (error instanceof CanceledError) return;
-              setError(error.message);
-              setIsLoading(false);
-            });
-        });
-        Promise.all<AxiosResponse>(subPromises).then(() => {
-          setCamps(response.data);
-          setIsLoading(false);
-        });
+        setCamps(response.data);
+        setIsLoading(false);
       })
       .catch((error) => {
         if (error instanceof CanceledError) return;

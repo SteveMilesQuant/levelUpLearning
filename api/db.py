@@ -120,9 +120,10 @@ class ProgramDb(Base):
     camps: Mapped[List['CampDb']] = relationship(back_populates='program', lazy='raise', cascade='all, delete')
     
     def dict(self):
-        returnVal = {}
+        returnVal = {'grade_range': (self.from_grade, self.to_grade)}
         for key, value in ProgramResponse():
-            returnVal[key] = getattr(self, key)
+            if key != 'grade_range':
+                returnVal[key] = getattr(self, key)
         return returnVal
 
 
@@ -162,7 +163,8 @@ class CampDb(Base):
     def dict(self):
         returnVal = {}
         for key, value in CampResponse():
-            returnVal[key] = getattr(self, key)
+            if key not in ['program', 'primary_instructor']:
+                returnVal[key] = getattr(self, key)
         return returnVal
 
 
@@ -180,7 +182,8 @@ class LevelScheduleDb(Base):
     def dict(self):
         returnVal = {}
         for key, value in LevelScheduleResponse():
-            returnVal[key] = getattr(self, key)
+            if key != 'level':
+                returnVal[key] = getattr(self, key)
         return returnVal
 
 
