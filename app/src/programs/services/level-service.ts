@@ -7,4 +7,5 @@ export interface Level {
   description: string;
 }
 
-export default (id: number) => create<Level>("/programs/" + id + "/levels");
+export default (programId: number) =>
+  create<Level>("/programs/" + programId + "/levels");

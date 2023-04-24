@@ -1,10 +1,6 @@
 import apiClient from "./api-client";
 
-interface Entity {
-  id: number;
-}
-
-class HttpService<T extends Entity> {
+class HttpService<T> {
   endpoint: string;
 
   constructor(endpoint: string) {
@@ -31,12 +27,11 @@ class HttpService<T extends Entity> {
     return apiClient.post(this.endpoint, entity);
   }
 
-  update(entity: T) {
-    return apiClient.put(this.endpoint + "/" + entity.id, entity);
+  update(id: number, entity: T) {
+    return apiClient.put(this.endpoint + "/" + id, entity);
   }
 }
 
-const create = <T extends Entity>(endpoint: string) =>
-  new HttpService<T>(endpoint);
+const create = <T>(endpoint: string) => new HttpService<T>(endpoint);
 
 export default create;

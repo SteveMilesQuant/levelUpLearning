@@ -2,15 +2,10 @@ import { useEffect, useState } from "react";
 import { CanceledError } from "../../services/api-client";
 import campService, {
   Camp,
+  studentCampService,
   scheduleCampService,
 } from "../services/camp-service";
-import {
-  Student,
-  studentCampService,
-} from "../../students/services/student-service";
-import programService from "../../programs/services/program-service";
-import { AxiosResponse } from "axios";
-import { instructorService } from "../../services/user-service";
+import { Student } from "../../students/services/student-service";
 
 interface Props {
   forScheduling?: boolean;
@@ -26,7 +21,7 @@ const useCamps = ({ student, forScheduling }: Props) => {
     const { request, cancel } = forScheduling
       ? scheduleCampService.getAll()
       : student
-      ? studentCampService(student).getAll()
+      ? studentCampService(student.id).getAll()
       : campService.getAll();
 
     setIsLoading(true);

@@ -78,7 +78,7 @@ const useStudentForm = ({
     }
 
     if (student) {
-      var promise = studentService.update(newStudent);
+      var promise = studentService.update(newStudent.id, newStudent);
     } else {
       promise = studentService.create(newStudent);
     }

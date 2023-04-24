@@ -81,7 +81,7 @@ const useProgramForm = ({
     // If program was supplied, we are updating
     // Otherwise, creating new
     if (program) {
-      var promise = programService.update(newProgram);
+      var promise = programService.update(newProgram.id, newProgram);
     } else {
       promise = programService.create(newProgram);
     }

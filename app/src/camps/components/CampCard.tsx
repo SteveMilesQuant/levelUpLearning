@@ -1,5 +1,4 @@
 import {
-  Box,
   Card,
   CardBody,
   Divider,
@@ -9,6 +8,8 @@ import {
 } from "@chakra-ui/react";
 import { Camp } from "../services/camp-service";
 import DeleteButton from "../../components/DeleteButton";
+import useLevelSchedules from "../hooks/useLevelSchedules";
+import { locale } from "../../constants";
 
 interface Props {
   camp: Camp;
@@ -17,6 +18,7 @@ interface Props {
 
 const CampCard = ({ camp, onDelete }: Props) => {
   const byLine = "with " + camp.primary_instructor?.full_name;
+  const { levelSchedules, error, isLoading } = useLevelSchedules(camp);
 
   return (
     <Card>
@@ -46,6 +48,14 @@ const CampCard = ({ camp, onDelete }: Props) => {
           </Text>
           <Text>
             <strong>Start time: </strong>
+            {levelSchedules.length > 0 &&
+              levelSchedules[0].start_time.toLocaleDateString(locale, {
+                dateStyle: "full",
+              }) +
+                " @ " +
+                levelSchedules[0].start_time.toLocaleTimeString(locale, {
+                  timeStyle: "short",
+                })}
           </Text>
         </HStack>
       </CardBody>

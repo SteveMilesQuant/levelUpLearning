@@ -88,7 +88,7 @@ const useLevelForm = ({
     // If level was supplied, we are updating
     // Otherwise, creating new
     if (level) {
-      var promise = levelService(program.id).update(newLevel);
+      var promise = levelService(program.id).update(newLevel.id, newLevel);
     } else {
       promise = levelService(program.id).create(newLevel);
     }

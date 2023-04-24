@@ -13,9 +13,8 @@ export interface Camp extends CampData {
   primary_instructor?: User;
 }
 
-export const campProgramService = (camp: Camp) => {
-  return create<Camp>("/camps/" + camp.id + "/programs" + camp.program_id);
-};
+export const studentCampService = (studentId: number) =>
+  create<Camp>("/students/" + studentId + "/camps");
 
 export const scheduleCampService = create<Camp>("/schedule");
 
