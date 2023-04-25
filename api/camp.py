@@ -1,23 +1,10 @@
 from pydantic import BaseModel, PrivateAttr
 from typing import Optional, Any, List, Dict
-from api.db import LevelScheduleDb, CampDb, UserDb, StudentDb
+from datamodels import CampData, CampResponse, LevelScheduleResponse
+from datamodels import UserResponse, ProgramResponse, LevelResponse
+from db import LevelScheduleDb, CampDb, UserDb, StudentDb
 from datetime import datetime
 from sqlalchemy import select
-
-
-class FastApiDatetime(datetime):
-    def __str__(self) -> str:
-        return self.strftime('%Y-%m-%dT%H:%M:%S')
-
-
-class LevelScheduleData(BaseModel):
-    start_time: Optional[FastApiDatetime]
-    end_time: Optional[FastApiDatetime]
-
-
-class LevelScheduleResponse(LevelScheduleData):
-    camp_id: Optional[int]
-    level_id: Optional[int]
 
 
 class LevelSchedule(LevelScheduleResponse):
@@ -31,18 +18,26 @@ class LevelSchedule(LevelScheduleResponse):
         if self._db_obj is None:
             # If none found, create new
             level_schedule_data = self.dict(include=LevelScheduleResponse().dict())
+            level_schedule_data.pop('level')
             self._db_obj = LevelScheduleDb(**level_schedule_data)
             session.add(self._db_obj)
             await session.commit()
         else:
             # Otherwise, update attributes from fetched object
-            for key, value in LevelScheduleResponse():
-                setattr(self, key, getattr(self._db_obj, key))
+            for key, value in self._db_obj.dict().items():
+                setattr(self, key, value)
+                
+        # Always get the associated level (TODO: do this in db - will be faster)
+        await session.refresh(self._db_obj, ['level'])
+        self.level = LevelResponse(**self._db_obj.level.dict())
 
     async def update(self, session: Any):
-        for key, value in LevelScheduleResponse():
-            setattr(self._db_obj, key, getattr(self, key))
+        level_schedule_data = self.dict(include=LevelScheduleResponse().dict())
+        level_schedule_data.pop('level')
+        for key, value in level_schedule_data.items():
+            setattr(self._db_obj, key, value)
         await session.commit()
+        await session.refresh(self._db_obj, ['level'])
 
     async def delete(self, session: Any):
         await session.refresh(self._db_obj, ['program'])
@@ -53,16 +48,6 @@ class LevelSchedule(LevelScheduleResponse):
                db_level.list_index -= 1
         await session.delete(self._db_obj)
         await session.commit()
-
-
-class CampData(BaseModel):
-    program_id: Optional[int]
-    primary_instructor_id: Optional[int]
-    is_published: Optional[bool] = False
-
-
-class CampResponse(CampData):
-    id: Optional[int]
 
 
 class Camp(CampResponse):
@@ -98,13 +83,21 @@ class Camp(CampResponse):
             await session.commit()
         else:
             # Otherwise, update attributes from fetched object
-            for key, value in CampResponse():
-                setattr(self, key, getattr(self._db_obj, key))
+            for key, value in self._db_obj.dict().items():
+                setattr(self, key, value)
+                
+        # Always get the associated primary instructor and program (TODO: do this in db - will be faster)
+        await session.refresh(self._db_obj, ['primary_instructor', 'program'])
+        self.primary_instructor = UserResponse(**self._db_obj.primary_instructor.dict())
+        self.program = ProgramResponse(**self._db_obj.program.dict())
 
     async def update(self, session: Any):
         for key, value in CampData():
             setattr(self._db_obj, key, getattr(self, key))
         await session.commit()
+        if self.primary_instructor_id != self.primary_instructor.id:
+            await session.refresh(self._db_obj, ['primary_instructor'])
+            self.primary_instructor = UserResponse(**self._db_obj.primary_instructor.dict())
 
     async def delete(self, session: Any):
         await session.refresh(self._db_obj, ['level_schedules'])

@@ -2,19 +2,9 @@ from enum import Enum
 from pydantic import BaseModel, PrivateAttr
 from typing import List, Tuple, Optional, Any
 from sqlalchemy import select
-from api.db import ProgramDb, LevelDb
-from api.camp import LevelSchedule
-
-
-class LevelData(BaseModel):
-    title: Optional[str] = ''
-    description: Optional[str] = ''
-    list_index: Optional[int] = 0
-
-
-class LevelResponse(LevelData):
-    id: Optional[int]
-    program_id: Optional[int]
+from datamodels import ProgramData, ProgramResponse, LevelResponse
+from db import ProgramDb, LevelDb
+from camp import LevelSchedule
 
 
 class Level(LevelResponse):
@@ -76,17 +66,6 @@ class Level(LevelResponse):
                 level.list_index -= 1
         await session.delete(self._db_obj)
         await session.commit()
-
-
-class ProgramData(BaseModel):
-    title: Optional[str] = ''
-    grade_range: Optional[Tuple[int, int]]
-    tags: Optional[str] = ''
-    description: Optional[str] = ''
-
-
-class ProgramResponse(ProgramData):
-    id: Optional[int]
 
 
 class Program(ProgramResponse):

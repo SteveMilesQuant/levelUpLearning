@@ -7,8 +7,10 @@ mkcert*
 /programming_notes.txt
 /Level Up Camps*
 /node_modules/*
-package*
 serverless.y*
 .serverless*
 api.zip
 .env
+/app/node_modules/*
+/app/dist/*
+*.timestamp-*

@@ -2,19 +2,21 @@ import os, aiohttp, json, asyncio
 from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from oauthlib.oauth2 import WebApplicationClient
 from mangum import Mangum
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
-from api.db import init_db, close_db
-from api.authentication import user_id_to_auth_token, auth_token_to_user_id
-from api.user import UserData, UserResponse, User, Role, init_roles, all_users
-from api.student import StudentData, StudentResponse, Student
-from api.program import ProgramData, ProgramResponse, Program, all_programs
-from api.program import LevelData, LevelResponse, Level
-from api.camp import CampData, CampResponse, Camp, LevelScheduleData, LevelScheduleResponse, LevelSchedule, all_camps
+from db import init_db, close_db
+from datamodels import UserData, UserResponse, StudentData, StudentResponse
+from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
+from datamodels import CampData, CampResponse, LevelScheduleData, LevelScheduleResponse
+from authentication import user_id_to_auth_token, auth_token_to_user_id
+from user import User, Role, init_roles, all_users
+from student import Student
+from program import Program, all_programs
+from program import Level
+from camp import Camp, LevelSchedule, all_camps
 
 
 class Object(object):
@@ -22,12 +24,7 @@ class Object(object):
 
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
-api_router = APIRouter()
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/images", StaticFiles(directory="images"), name="images")
-app.mount("/js", StaticFiles(directory="js"), name="js")
+api_router = APIRouter(prefix=os.environ.get('API_ROOT_PATH') or '')
 
 
 @app.on_event('startup')
@@ -37,7 +34,6 @@ async def startup():
     app.config.GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", None)
     app.config.GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", None)
     app.config.GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
-    app.config.jwt_cookie_name = "authToken"
     app.config.jwt_lifetime = timedelta(minutes=30)
     app.config.jwt_algorithm = "HS256"
     app.config.jwt_subject = "access"
@@ -70,7 +66,8 @@ async def get_google_provider_cfg() -> dict:
 
 
 async def get_authorized_user(request, session, permission_url_path, required = True) -> Optional[User]:
-    user_id = auth_token_to_user_id(app, request.cookies.get(app.config.jwt_cookie_name))
+    token = request.headers.get('Authorization')
+    user_id = auth_token_to_user_id(app, token)
     if user_id:
         user = User(id = user_id)
         await user.create(session)
@@ -89,57 +86,10 @@ async def get_authorized_user(request, session, permission_url_path, required = 
         return user
 
 
-def refresh_auth_cookie(request, response):
-    user_id = auth_token_to_user_id(app, request.cookies.get(app.config.jwt_cookie_name))
-    if user_id:
-        user_token, token_expiration = user_id_to_auth_token(app, user_id)
-        response.set_cookie(
-            key = app.config.jwt_cookie_name,
-            value = user_token,
-            expires = token_expiration,
-            secure = True,
-            httponly = True,
-            samesite = 'strict'
-        )
-
-
-@api_router.get("/", response_class = HTMLResponse)
-async def homepage_get(request: Request):
-    response = templates.TemplateResponse("index.html", {'request': request})
-    refresh_auth_cookie(request, response)
-    return response
-
-
-@api_router.get("/signin", response_class = RedirectResponse)
-async def signin_get(request: Request):
+@api_router.post("/signin")
+async def signin_post(request: Request, google_response_token: dict):
     google_provider_cfg = await get_google_provider_cfg()
-    authorization_endpoint = google_provider_cfg["authorization_endpoint"]
-    redirect_uri = os.environ.get("CALLBACK_URL") or f'{request.url}/callback'
-    request_uri = app.google_client.prepare_request_uri(
-        authorization_endpoint,
-        redirect_uri=redirect_uri,
-        scope=["openid", "email", "profile"],
-    )
-    return RedirectResponse(url=request_uri)
-
-
-@api_router.get("/signin/callback", response_class = RedirectResponse)
-async def signin_callback_get(request: Request, code):
-    google_provider_cfg = await get_google_provider_cfg()
-    token_endpoint = google_provider_cfg["token_endpoint"]
-    redirect_url = os.environ.get("CALLBACK_URL") or 'https://' + request.url.netloc + request.url.path
-    auth_response = redirect_url + f'?code={request.query_params.get("code")}'
-    token_url, headers, body = app.google_client.prepare_token_request(
-        token_endpoint,
-        authorization_response=auth_response,
-        redirect_url=redirect_url,
-        code=code,
-        client_secret=app.config.GOOGLE_CLIENT_SECRET
-    )
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.post(token_url, data=body) as google_response:
-            token_response_json = await google_response.json()
-    app.google_client.parse_request_body_response(json.dumps(token_response_json))
+    app.google_client.parse_request_body_response(json.dumps(google_response_token))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
     uri, headers, body = app.google_client.add_token(userinfo_endpoint)
     async with aiohttp.ClientSession(headers=headers) as session:
@@ -147,7 +97,6 @@ async def signin_callback_get(request: Request, code):
             user_info_json = await google_response.json()
     if not user_info_json.get("email_verified"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User email not available or not verified by Google.")
-
     async with app.db_sessionmaker() as db_session:
         user = User(
             google_id = user_info_json["sub"],
@@ -157,34 +106,7 @@ async def signin_callback_get(request: Request, code):
         await user.create(db_session)
 
         user_token, token_expiration = user_id_to_auth_token(app, user.id)
-        response = RedirectResponse(url = '/')
-        response.set_cookie(
-            key = app.config.jwt_cookie_name,
-            value = user_token,
-            expires = token_expiration,
-            secure = True,
-            httponly = True,
-            samesite = 'strict'
-        )
-        return response
-
-
-@api_router.get("/signout", response_class = RedirectResponse)
-async def signout_get(request: Request):
-    tgtUrl = '/'
-    message = request.query_params.get('message')
-    if message is not None:
-        tgtUrl = tgtUrl + '?message="' + message + '"'
-    response = RedirectResponse(url=tgtUrl)
-    response.delete_cookie(key = app.config.jwt_cookie_name)
-    return response
-
-
-@api_router.get("/profile")
-async def profile_get(request: Request):
-    response = templates.TemplateResponse("profile.html", {'request': request})
-    refresh_auth_cookie(request, response)
-    return response
+        return user_token
 
 
 @api_router.get("/user", response_model = Optional[UserResponse])
@@ -213,22 +135,17 @@ async def get_user_roles(request: Request):
             return [role.dict() for role in await user.roles(session)]
 
 
-@api_router.get("/instructors/{user_id}")
+@api_router.get("/instructors/{user_id}", response_model = Optional[UserResponse])
 async def instructor_get_one(request: Request, user_id: int, accept: Optional[str] = Header(None)):
-    if "text/html" in accept:
-        response = templates.TemplateResponse("instructor.html", {'request': request})
-        refresh_auth_cookie(request, response)
-        return response
-    else:
-        async with app.db_sessionmaker() as session:
-            user = await get_authorized_user(request, session, '/')
-            instructor = User(id = user_id)
-            await instructor.create(session)
-            role = Role(name = 'INSTRUCTOR')
-            await role.create(session)
-            if instructor.id is None or role not in await instructor.roles(session):
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={user_id} does not exist.")
-            return user.dict(include=UserResponse().dict())
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/')
+        instructor = User(id = user_id)
+        await instructor.create(session)
+        role = Role(name = 'INSTRUCTOR')
+        await role.create(session)
+        if instructor.id is None or role not in await instructor.roles(session):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={user_id} does not exist.")
+        return user
 
 
 
@@ -239,19 +156,14 @@ async def instructor_get_one(request: Request, user_id: int, accept: Optional[st
 
 @api_router.get("/students")
 async def get_students(request: Request, accept: Optional[str] = Header(None)):
-    if "text/html" in accept:
-        response = templates.TemplateResponse("students.html", {'request': request})
-        refresh_auth_cookie(request, response)
-        return response
-    else:
-        async with app.db_sessionmaker() as session:
-            user = await get_authorized_user(request, session, '/students')
-            students = []
-            for db_student in await user.students(session):
-                student = Student(db_obj = db_student)
-                await student.create(session)
-                students.append(student.dict(include=StudentResponse().dict()))
-            return students
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/students')
+        students = []
+        for db_student in await user.students(session):
+            student = Student(db_obj = db_student)
+            await student.create(session)
+            students.append(student.dict(include=StudentResponse().dict()))
+        return students
 
 
 @api_router.get("/students/{student_id}", response_model = StudentResponse)
@@ -332,70 +244,40 @@ async def get_student_camps(request: Request, student_id: int):
 
 @api_router.get("/teach")
 async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
-    if "text/html" in accept:
-        response = templates.TemplateResponse("teach.html", {'request': request})
-        refresh_auth_cookie(request, response)
-        return response
-    else:
-        async with app.db_sessionmaker() as session:
-            user = await get_authorized_user(request, session, '/teach')
-            camp_list = []
-            for db_camp in await user.camps(session):
-                camp = Camp(db_obj = db_camp)
-                await camp.create(session)
-                if camp.is_published:
-                    camp_list.append(camp.dict(include=CampResponse().dict()))
-            return camp_list
-
-
-@api_router.get("/teach/{camp_id}", response_class = HTMLResponse)
-async def get_teach_one(request: Request):
-    response = templates.TemplateResponse("teach_levels.html", {'request': request})
-    refresh_auth_cookie(request, response)
-    return response
-
-
-@api_router.get("/teach/{camp_id}/students/{student_id}", response_class = HTMLResponse)
-async def get_teach_student(request: Request):
-    response = templates.TemplateResponse("student.html", {'request': request})
-    refresh_auth_cookie(request, response)
-    return response
-
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/teach')
+        camp_list = []
+        for db_camp in await user.camps(session):
+            camp = Camp(db_obj = db_camp)
+            await camp.create(session)
+            if camp.is_published:
+                camp_list.append(camp.dict(include=CampResponse().dict()))
+        return camp_list
 
 @api_router.get("/programs")
 async def get_programs(request: Request, accept: Optional[str] = Header(None)):
-    if "text/html" in accept:
-        response = templates.TemplateResponse("programs.html", {'request': request})
-        refresh_auth_cookie(request, response)
-        return response
-    else:
-        async with app.db_sessionmaker() as session:
-            user = await get_authorized_user(request, session, '/programs')
-            for role in await user.roles(session):
-                if role.name == 'ADMIN':
-                    return await all_programs(session)
-            program_list = []
-            for db_program in await user.programs(session):
-                program = Program(db_obj = db_program)
-                await program.create(session)
-                program_list.append(program.dict(include=ProgramResponse().dict()))
-            return program_list
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/programs')
+        for role in await user.roles(session):
+            if role.name == 'ADMIN':
+                return await all_programs(session)
+        program_list = []
+        for db_program in await user.programs(session):
+            program = Program(db_obj = db_program)
+            await program.create(session)
+            program_list.append(program.dict(include=ProgramResponse().dict()))
+        return program_list
 
 
 @api_router.get("/programs/{program_id}", response_model = ProgramResponse)
 async def get_program(request: Request, program_id: int, accept: Optional[str] = Header(None)):
-    if "text/html" in accept:
-        response = templates.TemplateResponse("program.html", {'request': request})
-        refresh_auth_cookie(request, response)
-        return response
-    else:
-        async with app.db_sessionmaker() as session:
-            user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
-            program = Program(id = program_id)
-            await program.create(session)
-            if program.id is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
-            return program
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
+        program = Program(id = program_id)
+        await program.create(session)
+        if program.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
+        return program
 
 
 @api_router.put("/programs/{program_id}", response_model = ProgramResponse)
@@ -608,30 +490,20 @@ async def get_camp_student_guardians(request: Request, camp_id: int, student_id:
 
 @api_router.get("/camps")
 async def get_camps(request: Request, accept: Optional[str] = Header(None)):
-    if "text/html" in accept:
-        response = templates.TemplateResponse("camps.html", {'request': request})
-        refresh_auth_cookie(request, response)
-        return response
-    else:
-        async with app.db_sessionmaker() as session:
-            user = await get_authorized_user(request, session, '/camps')
-            return await all_camps(session = session, published = True)
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/camps')
+        return await all_camps(session = session, published = True)
 
 
-@api_router.get("/camps/{camp_id}")
+@api_router.get("/camps/{camp_id}", response_model = CampResponse)
 async def get_camp(request: Request, camp_id: int, accept: Optional[str] = Header(None)):
-    if "text/html" in accept:
-        response = templates.TemplateResponse("camp.html", {'request': request})
-        refresh_auth_cookie(request, response)
-        return response
-    else:
-        async with app.db_sessionmaker() as session:
-            user = await get_authorized_user(request, session, '/camps')
-            camp = Camp(id = camp_id)
-            await camp.create(session)
-            if camp.id is None:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-            return camp.dict(include=CampResponse().dict())
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/camps')
+        camp = Camp(id = camp_id)
+        await camp.create(session)
+        if camp.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+        return camp
 
 
 @api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
@@ -728,21 +600,9 @@ async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int
 
 @api_router.get("/schedule")
 async def get_schedule(request: Request, accept: Optional[str] = Header(None)):
-    if "text/html" in accept:
-        response = templates.TemplateResponse("schedule.html", {'request': request})
-        refresh_auth_cookie(request, response)
-        return response
-    else:
-        async with app.db_sessionmaker() as session:
-            user = await get_authorized_user(request, session, '/schedule')
-            return await all_camps(session = session)
-
-
-@api_router.get("/schedule/{camp_id}", response_class = HTMLResponse)
-async def get_schedule(request: Request):
-    response = templates.TemplateResponse("schedule_levels.html", {'request': request})
-    refresh_auth_cookie(request, response)
-    return response
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/schedule')
+        return await all_camps(session = session)
 
 
 @api_router.post("/camps", response_model = CampResponse, status_code = status.HTTP_201_CREATED)
@@ -868,13 +728,6 @@ async def get_all_possible_instructors(request: Request):
 ###############################################################################
 # MEMBERS (full access to users)
 ###############################################################################
-
-
-@api_router.get("/members")
-async def members_get(request: Request):
-    response = templates.TemplateResponse("members.html", {'request': request})
-    refresh_auth_cookie(request, response)
-    return response
 
 
 @api_router.get("/users")
