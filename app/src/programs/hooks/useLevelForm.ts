@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import levelService, { Level } from "../services/level-service";
+import levelService, { Level, LevelData } from "../services/level-service";
 import { Program } from "../services/program-service";
 
 const levelSchema = z.object({
@@ -88,9 +88,12 @@ const useLevelForm = ({
     // If level was supplied, we are updating
     // Otherwise, creating new
     if (level) {
-      var promise = levelService(program.id).update(newLevel.id, newLevel);
+      var promise = levelService(program.id).update(
+        newLevel.id,
+        newLevel as LevelData
+      );
     } else {
-      promise = levelService(program.id).create(newLevel);
+      promise = levelService(program.id).create(newLevel as LevelData);
     }
 
     promise

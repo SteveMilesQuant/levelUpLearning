@@ -1,10 +1,13 @@
 import create from "./http-service";
 
-export interface User {
-  id: number;
+export interface UserData {
   full_name: string;
 }
 
-export const instructorService = create<User>("/instructors");
+export interface User extends UserData {
+  id: number;
+}
 
-export default create<User>("/users");
+export const instructorService = create<UserData, User>("/instructors");
+
+export default create<UserData, User>("/users");

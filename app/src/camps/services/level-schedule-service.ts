@@ -7,8 +7,8 @@ export interface LevelScheduleData {
 }
 
 export interface LevelSchedule extends LevelScheduleData {
-  level?: Level;
+  level: Level;
 }
 
 export default (campId: number) =>
-  create<LevelSchedule>("/camps/" + campId + "/levels");
+  create<LevelScheduleData, LevelSchedule>("/camps/" + campId + "/levels");

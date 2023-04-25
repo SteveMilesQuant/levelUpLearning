@@ -1,9 +1,12 @@
 import create from "../../services/http-service";
 
-export interface Student {
-  id: number;
+export interface StudentData {
   name: string;
   grade_level: number;
 }
 
-export default create<Student>("/students");
+export interface Student extends StudentData {
+  id: number;
+}
+
+export default create<StudentData, Student>("/students");

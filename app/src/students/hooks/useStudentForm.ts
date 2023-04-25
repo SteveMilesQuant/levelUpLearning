@@ -2,7 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import studentService, { Student } from "../services/student-service";
+import studentService, {
+  Student,
+  StudentData,
+} from "../services/student-service";
 
 export const studentSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
@@ -78,9 +81,12 @@ const useStudentForm = ({
     }
 
     if (student) {
-      var promise = studentService.update(newStudent.id, newStudent);
+      var promise = studentService.update(
+        newStudent.id,
+        newStudent as StudentData
+      );
     } else {
-      promise = studentService.create(newStudent);
+      promise = studentService.create(newStudent as StudentData);
     }
     promise
       .then((res) => {

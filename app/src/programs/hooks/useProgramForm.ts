@@ -2,7 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import programService, { Program } from "../services/program-service";
+import programService, {
+  Program,
+  ProgramData,
+} from "../services/program-service";
 
 const programSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),
@@ -81,9 +84,12 @@ const useProgramForm = ({
     // If program was supplied, we are updating
     // Otherwise, creating new
     if (program) {
-      var promise = programService.update(newProgram.id, newProgram);
+      var promise = programService.update(
+        newProgram.id,
+        newProgram as ProgramData
+      );
     } else {
-      promise = programService.create(newProgram);
+      promise = programService.create(newProgram as ProgramData);
     }
 
     promise

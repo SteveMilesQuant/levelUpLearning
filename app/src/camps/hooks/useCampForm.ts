@@ -51,9 +51,9 @@ const useCampForm = ({ camp, setCamp, camps, setCamps }: Props) => {
     // If camp was supplied, we are updating
     // Otherwise, creating new
     if (camp) {
-      var promise = campService.update(newCamp.id, { ...newCamp } as CampData);
+      var promise = campService.update(newCamp.id, newCamp as CampData);
     } else {
-      promise = campService.create({ ...newCamp } as CampData);
+      promise = campService.create(newCamp as CampData);
     }
 
     promise

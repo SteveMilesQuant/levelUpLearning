@@ -12,7 +12,7 @@ import { useState } from "react";
 
 interface Props {
   program?: Program;
-  setProgram: (program?: Program) => void;
+  setProgram?: (program?: Program) => void;
 }
 
 const ProgramForm = ({ program, setProgram }: Props) => {
@@ -33,39 +33,40 @@ const ProgramForm = ({ program, setProgram }: Props) => {
   return (
     <>
       <ProgramFormBody {...programForm} isReadOnly={!isEditing} />
-      <HStack justifyContent="right" spacing={3} paddingTop={3}>
-        <ActionButton
-          Component={AiFillEdit}
-          label="Edit"
-          onClick={() => setIsEditing(true)}
-          disabled={isEditing}
-        />
-        <DeleteButton onConfirm={handleDeleteProgram} disabled={isEditing}>
-          {program?.title}
-        </DeleteButton>
-        <CancelButton
-          onClick={() => {
-            programForm.handleClose();
-            setIsEditing(false);
-          }}
-          disabled={!isEditing}
-        >
-          Cancel
-        </CancelButton>
-        <SubmitButton
-          onClick={() => {
-            programForm.handleSubmit();
-            if (programForm.isValid) {
+      {setProgram && (
+        <HStack justifyContent="right" spacing={3} paddingTop={3}>
+          <ActionButton
+            Component={AiFillEdit}
+            label="Edit"
+            onClick={() => setIsEditing(true)}
+            disabled={isEditing}
+          />
+          <DeleteButton onConfirm={handleDeleteProgram} disabled={isEditing}>
+            {program?.title}
+          </DeleteButton>
+          <CancelButton
+            onClick={() => {
               programForm.handleClose();
               setIsEditing(false);
-            }
-          }}
-          disabled={!isEditing}
-        >
-          Update
-        </SubmitButton>
-      </HStack>
-      ;
+            }}
+            disabled={!isEditing}
+          >
+            Cancel
+          </CancelButton>
+          <SubmitButton
+            onClick={() => {
+              programForm.handleSubmit();
+              if (programForm.isValid) {
+                programForm.handleClose();
+                setIsEditing(false);
+              }
+            }}
+            disabled={!isEditing}
+          >
+            Update
+          </SubmitButton>
+        </HStack>
+      )}
     </>
   );
 };

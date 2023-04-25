@@ -1,6 +1,6 @@
 import apiClient from "./api-client";
 
-class HttpService<T> {
+class HttpService<TData, T> {
   endpoint: string;
 
   constructor(endpoint: string) {
@@ -23,15 +23,16 @@ class HttpService<T> {
     return apiClient.delete(this.endpoint + "/" + id);
   }
 
-  create(entity: T) {
+  create(entity: TData) {
     return apiClient.post(this.endpoint, entity);
   }
 
-  update(id: number, entity: T) {
+  update(id: number, entity: TData) {
     return apiClient.put(this.endpoint + "/" + id, entity);
   }
 }
 
-const create = <T>(endpoint: string) => new HttpService<T>(endpoint);
+const create = <TData, T>(endpoint: string) =>
+  new HttpService<TData, T>(endpoint);
 
 export default create;

@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
 import { CanceledError } from "../../services/api-client";
-import programService, { Program } from "../services/program-service";
+import campService, { Camp } from "../services/camp-service";
 
-const useProgram = (id?: number) => {
-  const [program, setProgram] = useState<Program | undefined>(undefined);
+const useCamp = (id?: number) => {
+  const [camp, setCamp] = useState<Camp | undefined>(undefined);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  if (!id) return { program, error, isLoading, setProgram, setError };
+  if (!id) return { camp, error, isLoading, setCamp, setError };
 
   useEffect(() => {
-    const request = programService.get(id);
+    const request = campService.get(id);
 
     setIsLoading(true);
     request
       .then((response) => {
-        setProgram(response.data);
+        setCamp(response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -24,7 +24,7 @@ const useProgram = (id?: number) => {
       });
   }, []);
 
-  return { program, error, isLoading, setProgram, setError };
+  return { camp, error, isLoading, setCamp, setError };
 };
 
-export default useProgram;
+export default useCamp;
