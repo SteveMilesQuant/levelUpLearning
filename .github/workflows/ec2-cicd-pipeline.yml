@@ -31,7 +31,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_HOST: ${{ secrets.DB_HOST }}
-        run: . virt/bin/activate && export PYTHONPATH=. && pytest
+        run: . virt/bin/activate && cd api && export PYTHONPATH=. && pytest
 
   CD:
     runs-on: self-hosted
