@@ -26,9 +26,9 @@ If you want to get this website up and running on a single server (i.e. without 
 	* <code>cd *</code>
 3. Configure nginx to route traffic
 	* If /etc/nginx/sites-enabled does not exist (e.g. on Linux)
-		* sudo mkdir /etc/nginx/sites-enabled
-		* Add "include /etc/nginx/sirm tes-enabled/*;" to http block of /etc/nginx/nginx.conf (as sudo)
-	* sudo cp nginx_template /etc/nginx/sites-enabled/leveluplearning_nginx
+		* <code>sudo mkdir /etc/nginx/sites-enabled</code>
+		* Add <code>include /etc/nginx/sirm tes-enabled/*;</code> to http block of /etc/nginx/nginx.conf (as sudo)
+	* <code>sudo cp nginx_template /etc/nginx/sites-enabled/leveluplearning_nginx</code>
 	* Update /etc/nginx/sites-enabled/leveluplearning_nginx to refer to your domain, your local path to ./app/dist (replacing \<app-build-directory\>), and ssl certificates
 		* Domain
 			* You can get a domain through AWS
@@ -47,7 +47,8 @@ If you want to get this website up and running on a single server (i.e. without 
 				* <code>python3 -m pip install --upgrade pip</code>
 				* <code>python3 -m pip install certbot certbot-nginx</code>
 				* <code>sudo ./virt/bin/activate/certbot certonly --nginx</code>
-	* sudo service nginx restart
+	* <code>sudo chmod o+x /home/ec2-user/</code>
+	* <code>sudo service nginx restart</code>
 4. Set up authentication with Google
 	* Go to https://console.cloud.google.com/apis/dashboard -> Credentials -> Create credentials
 	* Follow instructions for creating new OAuth 2.0 Client IDs for a web application
@@ -80,5 +81,5 @@ If you want to get this website up and running on a single server (i.e. without 
 		* To remove: <code>sudo docker rmi level-up-learning</code>
 	* <code>sudo docker run -d --env-file api/.env --name lul-container -p 8000:8000 level-up-learning</code>
 		* For the first time, run without -d ("detach"), to see if there were any problems, or check the logs with <code>sudo docker logs lul-container</code>
-		* To check that it's running: <code>curl 127.0.0.1:8000/api/students </code>(should return a detail with "User not logged in.", not a "Not found")
+		* To check that it's running: <code>curl 127.0.0.1:8000/api/students</code> (should return a detail with "User not logged in.", not a "Not found")
 		* To remove: <code>sudo docker stop lul-container; sudo docker rm lul-container</code>
