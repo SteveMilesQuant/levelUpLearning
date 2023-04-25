@@ -22,7 +22,7 @@ jobs:
             ${{ runner.os }}-venv-
 
       - name: Activate Virtual ENV
-        run: python3 -m venv virt && source virt/bin/activate && python3 -m pip install -r requirements.txt
+        run: python3 -m venv virt && source virt/bin/activate && python3 -m pip install -r api/requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
 
       - name: Run Tests
