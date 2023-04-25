@@ -20,7 +20,7 @@ If you want to get this website up and running on a single server (i.e. without 
 	* Connect to your new instance by clicking on the Connect tab - the first/easiest option to use the AWS web interface may not be available with Ubuntu, so you may instead use ssh
 2. Install dependencies (shown as yum commands, since this is what AWS Linux uses)
 	* <code>sudo yum update</code>
-	* <code>sudo yum install -y git docker nginx</code>
+	* <code>sudo yum install -y git docker nginx nodejs</code>
 	* <code>sudo service docker start</code>
 	* <code>git clone https://github.com/SteveMilesQuant/teacherCamp.git</code>
 	* <code>cd *</code>
