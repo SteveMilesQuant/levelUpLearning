@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Grid, GridItem, LinkBox, Button } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import StudentList from "../components/StudentList";
-import { Student } from "../services/student-service";
-import CampList from "../../camps/components/CampList";
-import BodyContainer from "../../components/BodyContainer";
-import PageHeader from "../../components/PageHeader";
+import StudentList from "../students/components/StudentList";
+import { Student } from "../students/services/student-service";
+import CampList from "../camps/components/CampList";
+import BodyContainer from "../components/BodyContainer";
+import PageHeader from "../components/PageHeader";
 
 const Students = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);

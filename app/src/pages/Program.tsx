@@ -7,16 +7,16 @@ import {
   ListItem,
   useDisclosure,
 } from "@chakra-ui/react";
-import PageHeader from "../../components/PageHeader";
-import useProgram from "../hooks/useProgram";
-import BodyContainer from "../../components/BodyContainer";
-import useLevels from "../hooks/useLevels";
-import { Level } from "../services/level-service";
-import ProgramForm from "../components/ProgramForm";
+import PageHeader from "../components/PageHeader";
+import useProgram from "../programs/hooks/useProgram";
+import BodyContainer from "../components/BodyContainer";
+import useLevels from "../programs/hooks/useLevels";
+import { Level } from "../programs/services/level-service";
+import ProgramForm from "../programs/components/ProgramForm";
 import { useParams } from "react-router-dom";
-import LevelListButton from "../components/LevelListButton";
-import LevelForm from "../components/LevelForm";
-import LevelFormModal from "../components/LevelFormModal";
+import LevelListButton from "../programs/components/LevelListButton";
+import LevelForm from "../programs/components/LevelForm";
+import LevelFormModal from "../programs/components/LevelFormModal";
 
 const Program = () => {
   const { id: idStr } = useParams();

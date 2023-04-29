@@ -1,11 +1,11 @@
 import { Button, SimpleGrid, useDisclosure } from "@chakra-ui/react";
-import BodyContainer from "../../components/BodyContainer";
-import PageHeader from "../../components/PageHeader";
-import useCamps from "../hooks/useCamps";
-import CampCard from "../components/CampCard";
+import BodyContainer from "../components/BodyContainer";
+import PageHeader from "../components/PageHeader";
+import useCamps from "../camps/hooks/useCamps";
+import CampCard from "../camps/components/CampCard";
 import produce from "immer";
-import { Camp, scheduleCampService } from "../services/camp-service";
-import CampFormModal from "../components/CampFormModal";
+import { Camp, scheduleCampService } from "../camps/services/camp-service";
+import CampFormModal from "../camps/components/CampFormModal";
 
 interface Props {
   forScheduling?: boolean;
