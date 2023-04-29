@@ -1,5 +1,5 @@
 import { List, ListItem } from "@chakra-ui/react";
-import { Student } from "../../students/Student";
+import { Student } from "../../students";
 import useCamps from "../hooks/useCamps";
 import CampCard from "./CampCard";
 

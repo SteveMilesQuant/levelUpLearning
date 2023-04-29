@@ -5,7 +5,7 @@ import campService, {
   scheduleCampService,
 } from "../camp-service";
 import { Camp } from "../Camp";
-import { Student } from "../../students/Student";
+import { Student } from "../../students";
 
 interface Props {
   forScheduling?: boolean;

@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { GridItem, LinkBox, Button, SimpleGrid } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import StudentList from "../students/components/StudentList";
-import { Student } from "../students/Student";
+import { StudentList, Student } from "../students";
 import CampList from "../camps/components/CampList";
 import BodyContainer from "../components/BodyContainer";
 import PageHeader from "../components/PageHeader";

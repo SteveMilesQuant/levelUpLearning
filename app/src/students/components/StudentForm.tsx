@@ -11,7 +11,6 @@ import {
 } from "@chakra-ui/react";
 import StudentFormBody from "./StudentFormBody";
 import useStudentForm from "../hooks/useStudentForm";
-import { Student } from "../Student";
 import SubmitButton from "../../components/SubmitButton";
 
 interface Props {
