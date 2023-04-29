@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { LevelSchedule } from "../services/level-schedule-service";
+import { LevelSchedule } from "../LevelSchedule";
 
 const levelSchema = z.object({
   start_time: z.string().datetime(),

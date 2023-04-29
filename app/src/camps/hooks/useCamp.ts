@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CanceledError } from "../../services/old-api-client";
-import campService, { Camp } from "../services/camp-service";
+import campService from "../camp-service";
+import { Camp } from "../Camp";
 
 const useCamp = (id?: number) => {
   const [camp, setCamp] = useState<Camp | undefined>(undefined);

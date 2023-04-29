@@ -11,9 +11,9 @@ import {
 } from "@chakra-ui/react";
 import LevelFormBody from "./LevelFormBody";
 import useLevelForm from "../hooks/useLevelForm";
-import { Level } from "../services/level-service";
+import { Level } from "../Level";
 import SubmitButton from "../../components/SubmitButton";
-import { Program } from "../services/program-service";
+import { Program } from "../Program";
 
 interface Props {
   title: string;

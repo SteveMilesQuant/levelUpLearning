@@ -5,7 +5,7 @@ import useCamp from "../camps/hooks/useCamp";
 import useLevelSchedules from "../camps/hooks/useLevelSchedules";
 import PageHeader from "../components/PageHeader";
 import BodyContainer from "../components/BodyContainer";
-import { LevelSchedule } from "../camps/services/level-schedule-service";
+import { LevelSchedule } from "../camps/LevelSchedule";
 import LevelListButton from "../programs/components/LevelListButton";
 import ProgramForm from "../programs/components/ProgramForm";
 import LevelForm from "../programs/components/LevelForm";

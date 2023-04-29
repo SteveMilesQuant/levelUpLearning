@@ -1,13 +1,14 @@
 import { HStack } from "@chakra-ui/react";
 import useLevelForm from "../hooks/useLevelForm";
 import LevelFormBody from "./LevelFormBody";
-import levelService, { Level } from "../services/level-service";
+import levelService from "../level-service";
+import { Level } from "../Level";
 import ActionButton from "../../components/ActionButton";
 import DeleteButton from "../../components/DeleteButton";
 import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
-import { Program } from "../services/program-service";
+import { Program } from "../Program";
 import { useState } from "react";
 
 interface Props {

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { CanceledError } from "../../services/old-api-client";
-import levelScheduleService, {
-  LevelSchedule,
-} from "../services/level-schedule-service";
+import levelScheduleService from "../level-schedule-service";
+import { LevelSchedule } from "../LevelSchedule";
 
 const useLevelSchedules = (campId?: number) => {
   const [levelSchedules, setLevelSchedules] = useState<LevelSchedule[]>([]);

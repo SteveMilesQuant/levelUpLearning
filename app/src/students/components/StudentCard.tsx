@@ -1,6 +1,6 @@
 import { Box, Card, CardBody, HStack, Heading, Text } from "@chakra-ui/react";
 import DeleteButton from "../../components/DeleteButton";
-import { Student } from "../services/student-service";
+import { Student } from "../Student";
 import EditStudentButton from "./EditStudentButton";
 
 interface Props {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CanceledError } from "../../services/old-api-client";
-import levelService, { Level } from "../services/level-service";
+import levelService from "../level-service";
+import { Level } from "../Level";
 
 const useLevels = (id?: number) => {
   const [levels, setLevels] = useState<Level[]>([]);

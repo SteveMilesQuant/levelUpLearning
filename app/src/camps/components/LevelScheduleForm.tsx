@@ -1,5 +1,5 @@
-import { Camp } from "../services/camp-service";
-import { LevelSchedule } from "../services/level-schedule-service";
+import { Camp } from "../Camp";
+import { LevelSchedule } from "../LevelSchedule";
 import LevelScheduleFormBody from "./LevelScheduleFormBody";
 import useLevelScheduleForm from "../hooks/useLevelScheduleForm";
 

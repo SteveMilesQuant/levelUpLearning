@@ -11,9 +11,9 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
-import { Camp } from "../services/camp-service";
+import { Camp } from "../Camp";
 import InputError from "../../components/InputError";
-import { Program } from "../../programs/services/program-service";
+import { Program } from "../../programs/Program";
 import { User } from "../../services/user-service";
 
 interface Props {

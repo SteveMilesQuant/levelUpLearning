@@ -4,7 +4,8 @@ import PageHeader from "../components/PageHeader";
 import useCamps from "../camps/hooks/useCamps";
 import CampCard from "../camps/components/CampCard";
 import produce from "immer";
-import { Camp, scheduleCampService } from "../camps/services/camp-service";
+import { scheduleCampService } from "../camps/camp-service";
+import { Camp } from "../camps/Camp";
 import CampFormModal from "../camps/components/CampFormModal";
 
 interface Props {

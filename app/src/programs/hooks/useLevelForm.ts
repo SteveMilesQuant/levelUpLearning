@@ -2,8 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import levelService, { Level, LevelData } from "../services/level-service";
-import { Program } from "../services/program-service";
+import levelService from "../level-service";
+import { Level, LevelData } from "../Level";
+import { Program } from "../Program";
 
 const levelSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),

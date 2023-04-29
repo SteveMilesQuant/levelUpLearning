@@ -1,5 +1,5 @@
 import useStudentForm from "../hooks/useStudentForm";
-import { Student } from "../services/student-service";
+import { Student } from "../Student";
 import EditButton from "../../components/EditButton";
 import StudentFormBody from "./StudentFormBody";
 

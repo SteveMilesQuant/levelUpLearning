@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import campService, { Camp, CampData } from "../services/camp-service";
+import campService from "../camp-service";
+import { Camp, CampData } from "../Camp";
 
 interface Props {
   camp?: Camp;

@@ -2,10 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import programService, {
-  Program,
-  ProgramData,
-} from "../services/program-service";
+import programService from "../program-service";
+import { Program, ProgramData } from "../Program";
 
 const programSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),

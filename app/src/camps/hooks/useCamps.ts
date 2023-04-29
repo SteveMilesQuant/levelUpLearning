@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { CanceledError } from "../../services/old-api-client";
 import campService, {
-  Camp,
   studentCampService,
   scheduleCampService,
-} from "../services/camp-service";
-import { Student } from "../../students/services/student-service";
+} from "../camp-service";
+import { Camp } from "../Camp";
+import { Student } from "../../students/Student";
 
 interface Props {
   forScheduling?: boolean;

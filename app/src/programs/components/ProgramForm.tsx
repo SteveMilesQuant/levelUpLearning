@@ -1,7 +1,8 @@
 import { HStack } from "@chakra-ui/react";
 import useProgramForm from "../hooks/useProgramForm";
 import ProgramFormBody from "./ProgramFormBody";
-import programService, { Program } from "../services/program-service";
+import programService from "../program-service";
+import { Program } from "../Program";
 import { useNavigate } from "react-router-dom";
 import ActionButton from "../../components/ActionButton";
 import DeleteButton from "../../components/DeleteButton";

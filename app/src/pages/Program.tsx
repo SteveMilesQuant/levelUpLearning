@@ -11,7 +11,7 @@ import PageHeader from "../components/PageHeader";
 import useProgram from "../programs/hooks/useProgram";
 import BodyContainer from "../components/BodyContainer";
 import useLevels from "../programs/hooks/useLevels";
-import { Level } from "../programs/services/level-service";
+import { Level } from "../programs/Level";
 import ProgramForm from "../programs/components/ProgramForm";
 import { useParams } from "react-router-dom";
 import LevelListButton from "../programs/components/LevelListButton";

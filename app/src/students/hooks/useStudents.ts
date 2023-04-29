@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CanceledError } from "../../services/old-api-client";
-import studentService, { Student } from "../services/student-service";
+import studentService from "../student-service";
+import { Student } from "../Student";
 
 const useStudents = () => {
   const [students, setStudents] = useState<Student[]>([]);

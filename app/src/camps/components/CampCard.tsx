@@ -9,7 +9,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { Camp } from "../services/camp-service";
+import { Camp } from "../Camp";
 import DeleteButton from "../../components/DeleteButton";
 import useLevelSchedules from "../hooks/useLevelSchedules";
 import { locale } from "../../constants";

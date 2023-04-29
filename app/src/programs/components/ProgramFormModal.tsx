@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import ProgramFormBody from "./ProgramFormBody";
 import useProgramForm from "../hooks/useProgramForm";
-import { Program } from "../services/program-service";
+import { Program } from "../Program";
 import SubmitButton from "../../components/SubmitButton";
 
 interface Props {

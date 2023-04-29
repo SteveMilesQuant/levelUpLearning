@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import CampFormBody from "./CampFormBody";
 import useCampForm from "../hooks/useCampForm";
-import { Camp } from "../services/camp-service";
+import { Camp } from "../Camp";
 import SubmitButton from "../../components/SubmitButton";
 
 interface Props {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { CanceledError } from "../../services/old-api-client";
-import programService, { Program } from "../services/program-service";
+import programService from "../program-service";
+import { Program } from "../Program";
 
 const useProgram = (id?: number) => {
   const [program, setProgram] = useState<Program | undefined>(undefined);

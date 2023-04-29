@@ -7,7 +7,7 @@ import {
   Input,
   Textarea,
 } from "@chakra-ui/react";
-import { Level } from "../../programs/services/level-service";
+import { Level } from "../../programs/Level";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { FormData } from "../hooks/useLevelScheduleForm";
 import InputError from "../../components/InputError";

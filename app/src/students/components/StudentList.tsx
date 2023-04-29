@@ -1,7 +1,8 @@
 import { Button, List, ListItem, useDisclosure } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
 import StudentCard from "./StudentCard";
-import studentService, { Student } from "../services/student-service";
+import studentService from "../student-service";
+import { Student } from "../Student";
 import StudentForm from "./StudentForm";
 import { produce } from "immer";
 
