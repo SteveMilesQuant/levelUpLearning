@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Grid, GridItem, LinkBox, Button } from "@chakra-ui/react";
+import { GridItem, LinkBox, Button, SimpleGrid } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import StudentList from "../students/components/StudentList";
 import { Student } from "../students/services/student-service";
@@ -13,19 +13,14 @@ const Students = () => {
   return (
     <BodyContainer>
       <PageHeader label="Students"></PageHeader>
-      <Grid
-        templateAreas={{
-          base: `"students camps coguardians"`,
-        }}
-        gap={10}
-      >
-        <GridItem area="students">
+      <SimpleGrid columns={2} spacing={5}>
+        <GridItem>
           <StudentList
             selectedStudent={selectedStudent}
             onSelectStudent={(student) => setSelectedStudent(student)}
           />
         </GridItem>
-        <GridItem area="camps">
+        <GridItem>
           {selectedStudent && (
             <CampList student={selectedStudent} marginBottom={5} />
           )}
@@ -35,8 +30,7 @@ const Students = () => {
             </Button>
           </LinkBox>
         </GridItem>
-        <GridItem area="coguardians"></GridItem>
-      </Grid>
+      </SimpleGrid>
     </BodyContainer>
   );
 };
