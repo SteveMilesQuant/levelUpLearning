@@ -2,9 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import { Student, StudentData } from "../Student";
-import useAddStudent from "./useAddStudent";
-import useUpdateStudent from "./useUpdateStudent";
+import { Student } from "../Student";
+import { useAddStudent, useUpdateStudent } from "./useStudents";
 
 export const studentSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),

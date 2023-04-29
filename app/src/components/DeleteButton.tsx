@@ -11,6 +11,7 @@ import {
   Button,
   Text,
   HStack,
+  Box,
 } from "@chakra-ui/react";
 
 interface Props {
@@ -21,31 +22,34 @@ interface Props {
 
 const DeleteButton = ({ onConfirm, children, disabled }: Props) => {
   return (
-    <Popover>
-      <PopoverTrigger>
-        <ActionButton
-          Component={AiFillDelete}
-          label="Delete"
-          disabled={disabled}
-        />
-      </PopoverTrigger>
-      <PopoverContent>
-        <PopoverArrow />
-        <PopoverHeader>
-          <Text>
-            <strong>Are you sure you want to remove {children}?</strong>
-          </Text>
-          <PopoverCloseButton />
-        </PopoverHeader>
-        <PopoverBody>
-          <HStack justifyContent="right">
-            <Button onClick={onConfirm} colorScheme="red">
-              Delete
-            </Button>
-          </HStack>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
+    <Box>
+      {/* Put popover in a box, to avoid warnings about it, when container might try to apply css*/}
+      <Popover>
+        <PopoverTrigger>
+          <ActionButton
+            Component={AiFillDelete}
+            label="Delete"
+            disabled={disabled}
+          />
+        </PopoverTrigger>
+        <PopoverContent>
+          <PopoverArrow />
+          <PopoverHeader>
+            <Text>
+              <strong>Are you sure you want to remove {children}?</strong>
+            </Text>
+            <PopoverCloseButton />
+          </PopoverHeader>
+          <PopoverBody>
+            <HStack justifyContent="right">
+              <Button onClick={onConfirm} colorScheme="red">
+                Delete
+              </Button>
+            </HStack>
+          </PopoverBody>
+        </PopoverContent>
+      </Popover>
+    </Box>
   );
 };
 

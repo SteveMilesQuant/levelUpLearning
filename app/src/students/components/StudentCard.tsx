@@ -2,7 +2,7 @@ import { Box, Card, CardBody, HStack, Heading, Text } from "@chakra-ui/react";
 import DeleteButton from "../../components/DeleteButton";
 import { Student } from "../Student";
 import EditStudentButton from "./EditStudentButton";
-import useDeleteStudent from "../hooks/useDeleteStudent";
+import { useDeleteStudent } from "../hooks/useStudents";
 
 interface Props {
   student: Student;

@@ -1,13 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { CACHE_KEY_STUDENTS, Student } from "../Student";
-import studentService from "../student-service";
-import ms from "ms";
+import { CACHE_KEY_STUDENTS, Student, StudentData } from "../Student";
+import UseAPI from "../../hooks/useApi";
+import APIClient from "../../services/api-client";
 
-const useStudents = () =>
-  useQuery<Student[], Error>({
-    queryKey: CACHE_KEY_STUDENTS,
-    queryFn: studentService.getAll,
-    staleTime: ms("24h"),
-  });
+const useStudents = new UseAPI<StudentData, Student>(
+  new APIClient<StudentData, Student>("/students"),
+  CACHE_KEY_STUDENTS
+);
 
-export default useStudents;
+export default useStudents.useData;
+export const useAddStudent = useStudents.useAdd;
+export const useUpdateStudent = useStudents.useUpdate;
+export const useDeleteStudent = useStudents.useDelete;
