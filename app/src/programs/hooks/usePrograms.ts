@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CanceledError } from "../../services/api-client";
+import { CanceledError } from "../../services/old-api-client";
 import programService, { Program } from "../services/program-service";
 
 const usePrograms = () => {

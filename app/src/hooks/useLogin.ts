@@ -5,7 +5,7 @@ import {
   googleLogout,
   useGoogleLogin,
 } from "@react-oauth/google";
-import apiClient from "../services/api-client";
+import apiClient from "../services/old-api-client";
 
 const useLogin = (
   setSignedIn: (signedIn: boolean) => void,

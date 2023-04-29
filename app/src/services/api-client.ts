@@ -1,12 +1,13 @@
-import axios, { CanceledError } from "axios";
+import axios, { AxiosResponse } from "axios";
 
+// Handle date conversions
 const isoDateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d*)?$/;
 
 function isIsoDateString(value: any): boolean {
   return value && typeof value === "string" && isoDateFormat.test(value);
 }
 
-export function handleDates(body: any) {
+function handleDates(body: any) {
   if (body === null || body === undefined || typeof body !== "object")
     return body;
 
@@ -17,15 +18,49 @@ export function handleDates(body: any) {
   }
 }
 
-const client = axios.create({
+// Create axios instance
+const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-client.interceptors.response.use((originalResponse) => {
+axiosInstance.interceptors.response.use((originalResponse) => {
   handleDates(originalResponse.data);
   return originalResponse;
 });
 
-export default client;
+// Create client (T: request body; R: response body)
+class APIClient<T, R> {
+  endpoint: string;
 
-export { CanceledError };
+  constructor(endpoint: string) {
+    this.endpoint = endpoint;
+  }
+
+  getAll = () => {
+    return axiosInstance.get<R[]>(this.endpoint).then((res) => res.data);
+  };
+
+  get = (id: number) => {
+    return axiosInstance
+      .get<R>(this.endpoint + "/" + id)
+      .then((res) => res.data);
+  };
+
+  post = (data: T) => {
+    return axiosInstance
+      .post<T, AxiosResponse<R>>(this.endpoint, data)
+      .then((res) => res.data);
+  };
+
+  put = (id: number, data: T) => {
+    return axiosInstance
+      .put<T, AxiosResponse<R>>(this.endpoint + "/" + id, data)
+      .then((res) => res.data);
+  };
+
+  delete = (id: number) => {
+    return axiosInstance.delete(this.endpoint + "/" + id);
+  };
+}
+
+export default APIClient;

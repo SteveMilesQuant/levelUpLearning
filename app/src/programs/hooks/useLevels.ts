@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CanceledError } from "../../services/api-client";
+import { CanceledError } from "../../services/old-api-client";
 import levelService, { Level } from "../services/level-service";
 
 const useLevels = (id?: number) => {
