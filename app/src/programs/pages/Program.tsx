@@ -48,6 +48,7 @@ const Program = () => {
           </LevelListButton>
           {levels?.map((level) => (
             <LevelListButton
+              key={level.id}
               isSelected={selectedLevel?.id === level.id}
               onClick={() => setSelectedLevel(level)}
             >
@@ -66,6 +67,7 @@ const Program = () => {
             ?.filter((level) => level.id === selectedLevel?.id)
             .map((level) => (
               <LevelForm
+                key={level.id}
                 program={program}
                 level={level}
                 levels={levels}

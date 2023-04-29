@@ -46,6 +46,7 @@ const Camps = ({ forScheduling }: Props) => {
       <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 2 }} spacing={5}>
         {camps.map((camp) => (
           <CampCard
+            key={camp.id}
             camp={camp}
             onDelete={forScheduling ? () => handleDelete(camp) : undefined}
           />

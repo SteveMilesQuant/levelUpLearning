@@ -38,6 +38,7 @@ const Programs = () => {
       <SimpleGrid columns={{ sm: 1, md: 2, lg: 3, xl: 3 }} spacing={5}>
         {programs.map((program) => (
           <ProgramCard
+            key={program.id}
             program={program}
             onDelete={() => handleDelete(program)}
           />

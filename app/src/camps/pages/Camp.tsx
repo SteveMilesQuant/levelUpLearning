@@ -33,6 +33,7 @@ const Camp = () => {
           </LevelListButton>
           {levelSchedules?.map((levelSchedule) => (
             <LevelListButton
+              key={levelSchedule.level.id}
               isSelected={
                 selectedLevelSched?.level.id === levelSchedule.level.id
               }
@@ -53,6 +54,7 @@ const Camp = () => {
             )
             .map((levelSchedule) => (
               <LevelScheduleForm
+                key={levelSchedule.level.id}
                 levelSchedule={levelSchedule}
               ></LevelScheduleForm>
             ))}
