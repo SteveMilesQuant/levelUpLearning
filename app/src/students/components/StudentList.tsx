@@ -1,10 +1,8 @@
 import { Button, List, ListItem, useDisclosure } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
 import StudentCard from "./StudentCard";
-import studentService from "../student-service";
 import { Student } from "../Student";
 import StudentForm from "./StudentForm";
-import { produce } from "immer";
 
 interface Props {
   selectedStudent: Student | null;
@@ -12,40 +10,25 @@ interface Props {
 }
 
 const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
-  const { students, error, isLoading, setStudents, setError } = useStudents();
-
+  const { data: students, error, isLoading } = useStudents();
   const {
     isOpen: newIsOpen,
     onOpen: newOnOpen,
     onClose: newOnClose,
   } = useDisclosure();
 
-  const handleDeleteStudent = (student: Student) => {
-    const origStudents = students;
-    setStudents(
-      produce((draft) => {
-        const index = draft.findIndex((s) => s.id === student.id);
-        if (index >= 0) draft.splice(index, 1);
-      })
-    );
-    onSelectStudent(null);
-    studentService.delete(student.id).catch(() => {
-      setStudents(origStudents);
-    });
-  };
+  if (isLoading) return null;
+  if (error) throw error;
 
   return (
     <>
       <List spacing={5}>
-        {students.map((student) => (
+        {students?.map((student) => (
           <ListItem key={student.id}>
             <StudentCard
               student={student}
-              students={students}
-              setStudents={setStudents}
               isSelected={selectedStudent?.id === student.id}
               onClick={() => onSelectStudent(student)}
-              onDelete={() => handleDeleteStudent(student)}
             />
           </ListItem>
         ))}
@@ -59,8 +42,6 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
         title="Add Student"
         isOpen={newIsOpen}
         onClose={newOnClose}
-        students={students}
-        setStudents={setStudents}
       />
     </>
   );

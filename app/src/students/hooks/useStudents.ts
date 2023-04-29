@@ -1,32 +1,13 @@
-import { useEffect, useState } from "react";
-import { CanceledError } from "../../services/old-api-client";
+import { useQuery } from "@tanstack/react-query";
+import { CACHE_KEY_STUDENTS, Student } from "../Student";
 import studentService from "../student-service";
-import { Student } from "../Student";
+import ms from "ms";
 
-const useStudents = () => {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const { request, cancel } = studentService.getAll();
-
-    setIsLoading(true);
-    request
-      .then((response) => {
-        setStudents(response.data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        if (error instanceof CanceledError) return;
-        setError(error.message);
-        setIsLoading(false);
-      });
-
-    return () => cancel();
-  }, []);
-
-  return { students, error, isLoading, setStudents, setError };
-};
+const useStudents = () =>
+  useQuery<Student[], Error>({
+    queryKey: CACHE_KEY_STUDENTS,
+    queryFn: studentService.getAll,
+    staleTime: ms("24h"),
+  });
 
 export default useStudents;

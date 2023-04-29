@@ -5,12 +5,10 @@ import StudentFormBody from "./StudentFormBody";
 
 interface Props {
   student: Student;
-  students: Student[];
-  setStudents: (students: Student[]) => void;
 }
 
-const EditStudentButton = ({ student, students, setStudents }: Props) => {
-  const studentForm = useStudentForm({ student, students, setStudents });
+const EditStudentButton = ({ student }: Props) => {
+  const studentForm = useStudentForm(student);
 
   return (
     <EditButton

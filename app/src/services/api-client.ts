@@ -19,7 +19,7 @@ function handleDates(body: any) {
 }
 
 // Create axios instance
-const axiosInstance = axios.create({
+export const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 

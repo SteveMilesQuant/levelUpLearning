@@ -2,8 +2,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import studentService from "../student-service";
 import { Student, StudentData } from "../Student";
+import useAddStudent from "./useAddStudent";
+import useUpdateStudent from "./useUpdateStudent";
 
 export const studentSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
@@ -11,19 +12,7 @@ export const studentSchema = z.object({
 
 type FormData = z.infer<typeof studentSchema>;
 
-interface Props {
-  student?: Student;
-  setStudent?: (student: Student) => void;
-  students?: Student[];
-  setStudents?: (student: Student[]) => void;
-}
-
-const useStudentForm = ({
-  student,
-  setStudent,
-  students,
-  setStudents,
-}: Props) => {
+const useStudentForm = (student?: Student) => {
   const [haveSubmitted, setHaveSubmitted] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState(student?.grade_level || 0);
 
@@ -40,6 +29,11 @@ const useStudentForm = ({
   });
   const isValid = formIsValid && selectedGrade !== 0;
 
+  const addStudent = useAddStudent();
+  const updateStudent = useUpdateStudent(() => {
+    reset({ ...student });
+  });
+
   useEffect(() => {
     reset({ ...student });
     setSelectedGrade(student?.grade_level || 0);
@@ -53,52 +47,21 @@ const useStudentForm = ({
 
   const handleSubmitLocal = (data: FieldValues) => {
     if (!isValid) return;
-    const origStudent = { ...student } as Student;
-    const origStudents = students ? [...students] : [];
 
-    // Optimistic rendering
     const newStudent = {
       id: 0,
       ...student,
       ...data,
       grade_level: selectedGrade,
     } as Student;
-    if (setStudent) {
-      setStudent(newStudent);
-    }
-    if (setStudents) {
-      if (student) {
-        // Just updating one student in the list
-        setStudents(
-          origStudents.map((s) => (s.id === newStudent.id ? newStudent : s))
-        );
-      } else {
-        // Adding a new student
-        setStudents([newStudent, ...origStudents]);
-      }
-    }
 
     if (student) {
-      var promise = studentService.update(
-        newStudent.id,
-        newStudent as StudentData
-      );
+      // Update student
+      updateStudent.mutate(newStudent);
     } else {
-      promise = studentService.create(newStudent as StudentData);
+      // Add new student
+      addStudent.mutate(newStudent);
     }
-    promise
-      .then((res) => {
-        if (setStudents && !student) {
-          // Adding a new student... this will update id
-          setStudents([res.data, ...origStudents]);
-        }
-      })
-      .catch((err) => {
-        // If it doesn't work out, reset to original
-        if (setStudent) setStudent(origStudent);
-        if (setStudents) setStudents(origStudents);
-        console.log(err.message);
-      });
   };
 
   const handleSubmit = () => {

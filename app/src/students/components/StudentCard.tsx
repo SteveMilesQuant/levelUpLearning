@@ -2,24 +2,17 @@ import { Box, Card, CardBody, HStack, Heading, Text } from "@chakra-ui/react";
 import DeleteButton from "../../components/DeleteButton";
 import { Student } from "../Student";
 import EditStudentButton from "./EditStudentButton";
+import useDeleteStudent from "../hooks/useDeleteStudent";
 
 interface Props {
   student: Student;
-  students: Student[];
-  setStudents: (students: Student[]) => void;
   isSelected: boolean;
   onClick: () => void;
-  onDelete?: () => void;
 }
 
-const StudentCard = ({
-  student,
-  students,
-  setStudents,
-  isSelected,
-  onClick,
-  onDelete,
-}: Props) => {
+const StudentCard = ({ student, isSelected, onClick }: Props) => {
+  const deleteStudent = useDeleteStudent();
+
   return (
     <Card
       bgColor={isSelected ? "gray.300" : ""}
@@ -30,16 +23,10 @@ const StudentCard = ({
         <HStack justifyContent="space-between">
           <Heading fontSize="2xl">{student.name}</Heading>
           <HStack spacing="3px">
-            {setStudents && (
-              <EditStudentButton
-                student={student}
-                students={students}
-                setStudents={setStudents}
-              />
-            )}
-            {onDelete && (
-              <DeleteButton onConfirm={onDelete}>{student.name}</DeleteButton>
-            )}
+            <EditStudentButton student={student} />
+            <DeleteButton onConfirm={() => deleteStudent.mutate(student.id)}>
+              {student.name}
+            </DeleteButton>
           </HStack>
         </HStack>
         <Box marginTop={2}>

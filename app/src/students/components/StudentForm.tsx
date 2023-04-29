@@ -18,18 +18,10 @@ interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  students?: Student[];
-  setStudents?: (student: Student[]) => void;
 }
 
-const StudentForm = ({
-  title,
-  isOpen,
-  onClose,
-  students,
-  setStudents,
-}: Props) => {
-  const studentForm = useStudentForm({ students, setStudents });
+const StudentForm = ({ title, isOpen, onClose }: Props) => {
+  const studentForm = useStudentForm();
 
   return (
     <Modal

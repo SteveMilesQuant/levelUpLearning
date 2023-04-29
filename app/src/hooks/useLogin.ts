@@ -6,6 +6,7 @@ import {
   useGoogleLogin,
 } from "@react-oauth/google";
 import apiClient from "../services/old-api-client";
+import { axiosInstance } from "../services/api-client";
 
 const useLogin = (
   setSignedIn: (signedIn: boolean) => void,
@@ -18,6 +19,7 @@ const useLogin = (
     const authToken = localStorage.getItem("authToken");
     if (authToken) {
       apiClient.defaults.headers.common = { Authorization: authToken };
+      axiosInstance.defaults.headers.common = { Authorization: authToken };
       setSignedIn(true);
     } else {
       // Ensure that if we're not signed in, we navigate back to the home page
@@ -34,6 +36,7 @@ const useLogin = (
     apiClient.post("/signin", codeResponse).then((token) => {
       localStorage.setItem("authToken", token.data);
       apiClient.defaults.headers.common = { Authorization: token.data };
+      axiosInstance.defaults.headers.common = { Authorization: token.data };
       setSignedIn(true);
     });
   };
@@ -47,6 +50,7 @@ const useLogin = (
     googleLogout();
     localStorage.removeItem("authToken");
     apiClient.defaults.headers.common = {};
+    axiosInstance.defaults.headers.common = {};
     setSignedIn(false);
     navigate("/");
   };

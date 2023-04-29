@@ -6,3 +6,5 @@ export interface StudentData {
 export interface Student extends StudentData {
   id: number;
 }
+
+export const CACHE_KEY_STUDENTS = ["students"];

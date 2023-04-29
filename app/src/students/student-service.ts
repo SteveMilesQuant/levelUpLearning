@@ -1,4 +1,4 @@
-import create from "../services/http-service";
+import APIClient from "../services/api-client";
 import { StudentData, Student } from "./Student";
 
-export default create<StudentData, Student>("/students");
+export default new APIClient<StudentData, Student>("/students");
