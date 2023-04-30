@@ -1,16 +1,16 @@
 import { CACHE_KEY_PROGRAMS, ProgramData, Program } from "../Program";
-import UseAPI from "../../hooks/useApi";
+import APIHooks from "../../services/api-hooks";
 import APIClient from "../../services/api-client";
 import ms from "ms";
 
-const usePrograms = new UseAPI<ProgramData, Program>(
+const programHooks = new APIHooks<ProgramData, Program>(
   new APIClient<ProgramData, Program>("/programs"),
   CACHE_KEY_PROGRAMS,
   ms("5m")
 );
 
-export default usePrograms.useDataList;
-export const useProgram = usePrograms.useData;
-export const useAddProgram = usePrograms.useAdd;
-export const useUpdateProgram = usePrograms.useUpdate;
-export const useDeleteProgram = usePrograms.useDelete;
+export default programHooks.useDataList;
+export const useProgram = programHooks.useData;
+export const useAddProgram = programHooks.useAdd;
+export const useUpdateProgram = programHooks.useUpdate;
+export const useDeleteProgram = programHooks.useDelete;

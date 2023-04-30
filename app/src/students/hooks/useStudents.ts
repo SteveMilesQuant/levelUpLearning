@@ -1,15 +1,15 @@
 import { CACHE_KEY_STUDENTS, Student, StudentData } from "../Student";
-import UseAPI from "../../hooks/useApi";
+import APIHooks from "../../services/api-hooks";
 import APIClient from "../../services/api-client";
 import ms from "ms";
 
-const useStudents = new UseAPI<StudentData, Student>(
+const studentHooks = new APIHooks<StudentData, Student>(
   new APIClient<StudentData, Student>("/students"),
   CACHE_KEY_STUDENTS,
   ms("5m")
 );
 
-export default useStudents.useDataList;
-export const useAddStudent = useStudents.useAdd;
-export const useUpdateStudent = useStudents.useUpdate;
-export const useDeleteStudent = useStudents.useDelete;
+export default studentHooks.useDataList;
+export const useAddStudent = studentHooks.useAdd;
+export const useUpdateStudent = studentHooks.useUpdate;
+export const useDeleteStudent = studentHooks.useDelete;

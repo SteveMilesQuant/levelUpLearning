@@ -4,19 +4,19 @@ import {
   useQueryClient,
   UseQueryResult,
 } from "@tanstack/react-query";
-import APIClient from "../services/api-client";
+import APIClient from "./api-client";
 
 // TODO: see if you can get rid of the @ts-ignore in this file
 // Problem: R extends T and adds an id
 // I thought useMutation would be able to take R and T separately, but for some reason, that doesn't work out
 
-export default class UseAPI<T, R extends T> {
-  service: APIClient<T, R>;
+export default class APIHooks<T, R extends T> {
+  client: APIClient<T, R>;
   cacheKey: (string | number)[];
   staleTime: number;
 
-  constructor(service: APIClient<T, R>, cacheKey: string[], staleTime: number) {
-    this.service = service;
+  constructor(client: APIClient<T, R>, cacheKey: string[], staleTime: number) {
+    this.client = client;
     this.cacheKey = cacheKey;
     this.staleTime = staleTime;
   }
@@ -28,7 +28,7 @@ export default class UseAPI<T, R extends T> {
     singleCacheKey.push(id);
     return useQuery<R, Error>({
       queryKey: singleCacheKey,
-      queryFn: () => this.service.get(id),
+      queryFn: () => this.client.get(id),
       staleTime: this.staleTime,
     });
   };
@@ -36,7 +36,7 @@ export default class UseAPI<T, R extends T> {
   useDataList = () =>
     useQuery<R[], Error>({
       queryKey: this.cacheKey,
-      queryFn: this.service.getAll,
+      queryFn: this.client.getAll,
       staleTime: this.staleTime,
     });
 
@@ -47,7 +47,7 @@ export default class UseAPI<T, R extends T> {
     const queryClient = useQueryClient();
 
     const addData = useMutation<R, Error, R, AddDataContext>({
-      mutationFn: (data: T) => this.service.post(data),
+      mutationFn: (data: T) => this.client.post(data),
       onMutate: (newData: R) => {
         const prevData = queryClient.getQueryData<R[]>(this.cacheKey) || [];
         queryClient.setQueryData<R[]>(this.cacheKey, (dataList = []) => [
@@ -81,7 +81,7 @@ export default class UseAPI<T, R extends T> {
 
     const udpateData = useMutation<R, Error, R, UpdateDataContext>({
       // @ts-ignore
-      mutationFn: (data: R) => this.service.put(data.id, data),
+      mutationFn: (data: R) => this.client.put(data.id, data),
       onMutate: (newData: R) => {
         // Update in list
         const prevDataList = queryClient.getQueryData<R[]>(this.cacheKey) || [];
@@ -126,7 +126,7 @@ export default class UseAPI<T, R extends T> {
     const queryClient = useQueryClient();
 
     const deleteData = useMutation<any, Error, any, DeleteDataContext>({
-      mutationFn: (dataId: number) => this.service.delete(dataId),
+      mutationFn: (dataId: number) => this.client.delete(dataId),
       onMutate: (dataId: number) => {
         const prevData = queryClient.getQueryData<R[]>(this.cacheKey) || [];
         queryClient.setQueryData<R[]>(this.cacheKey, (dataList = []) =>
