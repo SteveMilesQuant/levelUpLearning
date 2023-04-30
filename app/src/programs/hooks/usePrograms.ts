@@ -1,32 +1,14 @@
-import { useEffect, useState } from "react";
-import { CanceledError } from "../../services/old-api-client";
-import programService from "../program-service";
-import { Program } from "../Program";
+import { CACHE_KEY_PROGRAMS, ProgramData, Program } from "../Program";
+import UseAPI from "../../hooks/useApi";
+import APIClient from "../../services/api-client";
 
-const usePrograms = () => {
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+const usePrograms = new UseAPI<ProgramData, Program>(
+  new APIClient<ProgramData, Program>("/programs"),
+  CACHE_KEY_PROGRAMS
+);
 
-  useEffect(() => {
-    const { request, cancel } = programService.getAll();
-
-    setIsLoading(true);
-    request
-      .then((response) => {
-        setPrograms(response.data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        if (error instanceof CanceledError) return;
-        setError(error.message);
-        setIsLoading(false);
-      });
-
-    return () => cancel();
-  }, []);
-
-  return { programs, error, isLoading, setPrograms, setError };
-};
-
-export default usePrograms;
+export default usePrograms.useDataList;
+export const useProgram = usePrograms.useData;
+export const useAddProgram = usePrograms.useAdd;
+export const useUpdateProgram = usePrograms.useUpdate;
+export const useDeleteProgram = usePrograms.useDelete;

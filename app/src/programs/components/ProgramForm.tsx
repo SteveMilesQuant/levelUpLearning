@@ -13,13 +13,13 @@ import { useState } from "react";
 
 interface Props {
   program?: Program;
-  setProgram?: (program?: Program) => void;
+  canUpdate?: boolean;
 }
 
-const ProgramForm = ({ program, setProgram }: Props) => {
+const ProgramForm = ({ program, canUpdate }: Props) => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const programForm = useProgramForm({ program, setProgram });
+  const programForm = useProgramForm(program);
 
   const handleDeleteProgram = () => {
     if (!program) return;
@@ -34,7 +34,7 @@ const ProgramForm = ({ program, setProgram }: Props) => {
   return (
     <>
       <ProgramFormBody {...programForm} isReadOnly={!isEditing} />
-      {setProgram && (
+      {canUpdate && (
         <HStack justifyContent="right" spacing={3} paddingTop={3}>
           <ActionButton
             Component={AiFillEdit}

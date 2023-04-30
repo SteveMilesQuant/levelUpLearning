@@ -11,25 +11,16 @@ import {
 } from "@chakra-ui/react";
 import ProgramFormBody from "./ProgramFormBody";
 import useProgramForm from "../hooks/useProgramForm";
-import { Program } from "../Program";
 import SubmitButton from "../../components/SubmitButton";
 
 interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  programs: Program[];
-  setPrograms: (programs: Program[]) => void;
 }
 
-const ProgramFormModal = ({
-  title,
-  isOpen,
-  onClose,
-  programs,
-  setPrograms,
-}: Props) => {
-  const programForm = useProgramForm({ programs, setPrograms });
+const ProgramFormModal = ({ title, isOpen, onClose }: Props) => {
+  const programForm = useProgramForm();
 
   return (
     <Modal

@@ -7,7 +7,7 @@ const useStudents = new UseAPI<StudentData, Student>(
   CACHE_KEY_STUDENTS
 );
 
-export default useStudents.useData;
+export default useStudents.useDataList;
 export const useAddStudent = useStudents.useAdd;
 export const useUpdateStudent = useStudents.useUpdate;
 export const useDeleteStudent = useStudents.useDelete;

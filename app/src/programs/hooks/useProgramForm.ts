@@ -2,8 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import programService from "../program-service";
-import { Program, ProgramData } from "../Program";
+import { Program } from "../Program";
+import { useAddProgram, useUpdateProgram } from "./usePrograms";
 
 const programSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),
@@ -13,19 +13,7 @@ const programSchema = z.object({
 
 export type FormData = z.infer<typeof programSchema>;
 
-interface Props {
-  program?: Program;
-  setProgram?: (program?: Program) => void;
-  programs?: Program[];
-  setPrograms?: (programs: Program[]) => void;
-}
-
-const useProgramForm = ({
-  program,
-  setProgram,
-  programs,
-  setPrograms,
-}: Props) => {
+const useProgramForm = (program?: Program) => {
   const [selectedGradeRange, setSelectedGradeRange] = useState(
     program?.grade_range || [6, 8]
   );
@@ -43,6 +31,11 @@ const useProgramForm = ({
   });
   const isValid = isValidForm;
 
+  const addProgram = useAddProgram();
+  const updateProgram = useUpdateProgram(() => {
+    reset({ ...program });
+  });
+
   useEffect(() => {
     reset({ ...program });
     setSelectedGradeRange(program?.grade_range || [6, 8]);
@@ -54,55 +47,20 @@ const useProgramForm = ({
   };
 
   const handleSubmitLocal = (data: FieldValues) => {
-    const origProgram = { ...program } as Program;
-    const origPrograms = programs ? [...programs] : [];
-
-    // Optimistic rendering
     const newProgram = {
       id: 0,
       ...program,
       ...data,
       grade_range: selectedGradeRange,
     } as Program;
-    if (setProgram) {
-      setProgram(newProgram);
-    }
-    if (setPrograms) {
-      if (program) {
-        // Just updating one program in the list
-        setPrograms(
-          origPrograms.map((s) => (s.id === newProgram.id ? newProgram : s))
-        );
-      } else {
-        // Adding a new program
-        setPrograms([newProgram, ...origPrograms]);
-      }
-    }
 
-    // If program was supplied, we are updating
-    // Otherwise, creating new
     if (program) {
-      var promise = programService.update(
-        newProgram.id,
-        newProgram as ProgramData
-      );
+      // Update student
+      updateProgram.mutate(newProgram);
     } else {
-      promise = programService.create(newProgram as ProgramData);
+      // Add new student
+      addProgram.mutate(newProgram);
     }
-
-    promise
-      .then((res) => {
-        if (setPrograms && !program) {
-          // Adding a new student... this will update id
-          setPrograms([res.data, ...origPrograms]);
-        }
-      })
-      .catch((err) => {
-        // If it doesn't work out, reset to original
-        if (setProgram) setProgram(origProgram);
-        if (setPrograms) setPrograms(origPrograms);
-        console.log(err.message);
-      });
   };
   const handleSubmit = handleFormSubmit(handleSubmitLocal);
 

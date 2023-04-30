@@ -8,7 +8,6 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import useProgram from "../programs/hooks/useProgram";
 import BodyContainer from "../components/BodyContainer";
 import useLevels from "../programs/hooks/useLevels";
 import { Level } from "../programs/Level";
@@ -17,6 +16,7 @@ import { useParams } from "react-router-dom";
 import LevelListButton from "../programs/components/LevelListButton";
 import LevelForm from "../programs/components/LevelForm";
 import LevelFormModal from "../programs/components/LevelFormModal";
+import { useProgram } from "../programs/hooks/usePrograms";
 
 const Program = () => {
   const { id: idStr } = useParams();
@@ -26,7 +26,8 @@ const Program = () => {
     undefined
   );
 
-  const { program, error, isLoading, setProgram, setError } = useProgram(id);
+  const { data: program, error, isLoading } = useProgram(id);
+
   const { levels, setLevels } = useLevels(id);
 
   const {
@@ -34,6 +35,9 @@ const Program = () => {
     onOpen: newLevelOnOpen,
     onClose: newLevelOnClose,
   } = useDisclosure();
+
+  if (isLoading || !program) return null;
+  if (error) throw error;
 
   return (
     <BodyContainer>
@@ -60,9 +64,7 @@ const Program = () => {
           </ListItem>
         </List>
         <Box width="100%">
-          {!selectedLevel && (
-            <ProgramForm program={program} setProgram={setProgram} />
-          )}
+          {!selectedLevel && <ProgramForm program={program} canUpdate={true} />}
           {levels
             ?.filter((level) => level.id === selectedLevel?.id)
             .map((level) => (

@@ -11,13 +11,15 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { Program } from "../Program";
 import DeleteButton from "../../components/DeleteButton";
+import { useDeleteProgram } from "../hooks/usePrograms";
 
 interface Props {
   program: Program;
-  onDelete?: () => void;
 }
 
-const ProgramCard = ({ program, onDelete }: Props) => {
+const ProgramCard = ({ program }: Props) => {
+  const deleteProgram = useDeleteProgram();
+
   return (
     <LinkBox
       as={Card}
@@ -30,9 +32,9 @@ const ProgramCard = ({ program, onDelete }: Props) => {
           <LinkOverlay as={RouterLink} to={"/programs/" + program.id}>
             <Heading fontSize="2xl">{program.title}</Heading>
           </LinkOverlay>
-          {onDelete && (
-            <DeleteButton onConfirm={onDelete}>{program.title}</DeleteButton>
-          )}
+          <DeleteButton onConfirm={() => deleteProgram.mutate(program.id)}>
+            {program.title}
+          </DeleteButton>
         </HStack>
         <Divider orientation="horizontal" marginTop={2} />
         <HStack justifyContent="space-between" marginTop={2}>
