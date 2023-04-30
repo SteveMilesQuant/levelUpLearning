@@ -5,7 +5,6 @@ import {
   UseQueryResult,
 } from "@tanstack/react-query";
 import APIClient from "../services/api-client";
-import ms from "ms";
 
 // TODO: see if you can get rid of the @ts-ignore in this file
 // Problem: R extends T and adds an id
@@ -14,10 +13,12 @@ import ms from "ms";
 export default class UseAPI<T, R extends T> {
   service: APIClient<T, R>;
   cacheKey: (string | number)[];
+  staleTime: number;
 
-  constructor(service: APIClient<T, R>, cacheKey: string[]) {
+  constructor(service: APIClient<T, R>, cacheKey: string[], staleTime: number) {
     this.service = service;
     this.cacheKey = cacheKey;
+    this.staleTime = staleTime;
   }
 
   useData = (id?: number) => {
@@ -28,7 +29,7 @@ export default class UseAPI<T, R extends T> {
     return useQuery<R, Error>({
       queryKey: singleCacheKey,
       queryFn: () => this.service.get(id),
-      staleTime: ms("24h"),
+      staleTime: this.staleTime,
     });
   };
 
@@ -36,7 +37,7 @@ export default class UseAPI<T, R extends T> {
     useQuery<R[], Error>({
       queryKey: this.cacheKey,
       queryFn: this.service.getAll,
-      staleTime: ms("24h"),
+      staleTime: this.staleTime,
     });
 
   useAdd = (onAdd?: () => void) => {
