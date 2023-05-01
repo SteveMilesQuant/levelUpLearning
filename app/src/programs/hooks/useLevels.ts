@@ -1,34 +1,57 @@
-import { useEffect, useState } from "react";
-import { CanceledError } from "../../services/old-api-client";
-import levelService from "../level-service";
-import { Level } from "../Level";
+import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
+import { CACHE_KEY_PROGRAMS } from "../Program";
+import APIHooks, {
+  AddDataContext,
+  DeleteDataContext,
+  UpdateDataContext,
+} from "../../services/api-hooks";
+import APIClient from "../../services/api-client";
+import ms from "ms";
+import { CACHE_KEY_LEVELS, Level, LevelData } from "../Level";
 
-const useLevels = (id?: number) => {
-  const [levels, setLevels] = useState<Level[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  if (!id) return { levels, error, isLoading, setLevels, setError };
-
-  useEffect(() => {
-    const { request, cancel } = levelService(id).getAll();
-
-    setIsLoading(true);
-    request
-      .then((response) => {
-        response.data.sort((a, b) => a.list_index - b.list_index);
-        setLevels(response.data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        if (error instanceof CanceledError) return;
-        setError(error.message);
-        setIsLoading(false);
-      });
-
-    return () => cancel();
-  }, []);
-
-  return { levels, error, isLoading, setLevels, setError };
+const useLevelHooks = (programId: number) => {
+  return new APIHooks<LevelData, Level>(
+    new APIClient<LevelData, Level>(`/programs/${programId}/levels`),
+    [...CACHE_KEY_PROGRAMS, programId.toString(), ...CACHE_KEY_LEVELS],
+    ms("5m")
+  );
 };
 
+const useLevels = (programId?: number) => {
+  if (!programId) return {} as UseQueryResult<Level[], Error>;
+  const levelHooks = useLevelHooks(programId);
+  return levelHooks.useDataList();
+};
 export default useLevels;
+
+export const useLevel = (programId?: number, levelId?: number) => {
+  if (!programId || !levelId) return {} as UseQueryResult<Level, Error>;
+  const levelHooks = useLevelHooks(programId);
+  return levelHooks.useData(levelId);
+};
+
+export const useAddLevel = (programId?: number, onAdd?: () => void) => {
+  if (!programId)
+    return {} as UseMutationResult<Level, Error, Level, AddDataContext<Level>>;
+  const levelHooks = useLevelHooks(programId);
+  return levelHooks.useAdd(onAdd);
+};
+
+export const useUpdateLevel = (programId?: number, onUpdate?: () => void) => {
+  if (!programId)
+    return {} as UseMutationResult<
+      Level,
+      Error,
+      Level,
+      UpdateDataContext<Level>
+    >;
+  const levelHooks = useLevelHooks(programId);
+  return levelHooks.useUpdate(onUpdate);
+};
+
+export const useDeleteLevel = (programId?: number, onDelete?: () => void) => {
+  if (!programId)
+    return {} as UseMutationResult<any, Error, any, DeleteDataContext<Level>>;
+  const levelHooks = useLevelHooks(programId);
+  return levelHooks.useDelete(onDelete);
+};

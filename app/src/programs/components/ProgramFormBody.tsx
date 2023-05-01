@@ -11,7 +11,6 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
-import { Program } from "../Program";
 import { FormData } from "../hooks/useProgramForm";
 import InputError from "../../components/InputError";
 

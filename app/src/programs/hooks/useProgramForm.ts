@@ -32,9 +32,7 @@ const useProgramForm = (program?: Program) => {
   const isValid = isValidForm;
 
   const addProgram = useAddProgram();
-  const updateProgram = useUpdateProgram(() => {
-    reset({ ...program });
-  });
+  const updateProgram = useUpdateProgram();
 
   useEffect(() => {
     reset({ ...program });

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -26,9 +26,16 @@ const Program = () => {
     undefined
   );
 
-  const { data: program, error, isLoading } = useProgram(id);
-
-  const { levels, setLevels } = useLevels(id);
+  const {
+    data: program,
+    error: programError,
+    isLoading: loadingProgram,
+  } = useProgram(id);
+  const {
+    data: levels,
+    error: levelsError,
+    isLoading: loadingLevels,
+  } = useLevels(id);
 
   const {
     isOpen: newLevelIsOpen,
@@ -36,8 +43,9 @@ const Program = () => {
     onClose: newLevelOnClose,
   } = useDisclosure();
 
-  if (isLoading || !program) return null;
-  if (error) throw error;
+  if (loadingProgram || loadingLevels || !program || !levels) return null;
+  if (programError) throw programError;
+  if (levelsError) throw levelsError;
 
   return (
     <BodyContainer>
@@ -50,15 +58,17 @@ const Program = () => {
           >
             Program
           </LevelListButton>
-          {levels?.map((level) => (
-            <LevelListButton
-              key={level.id}
-              isSelected={selectedLevel?.id === level.id}
-              onClick={() => setSelectedLevel(level)}
-            >
-              {level.list_index + ": " + level.title}
-            </LevelListButton>
-          ))}
+          {levels
+            ?.sort((a, b) => a.list_index - b.list_index)
+            .map((level) => (
+              <LevelListButton
+                key={level.id}
+                isSelected={selectedLevel?.id === level.id}
+                onClick={() => setSelectedLevel(level)}
+              >
+                {level.list_index + ": " + level.title}
+              </LevelListButton>
+            ))}
           <ListItem>
             <Button onClick={newLevelOnOpen}>Add level</Button>
           </ListItem>
@@ -70,10 +80,9 @@ const Program = () => {
             .map((level) => (
               <LevelForm
                 key={level.id}
-                program={program}
+                programId={program.id}
                 level={level}
-                levels={levels}
-                setLevels={setLevels}
+                canUpdate={true}
               ></LevelForm>
             ))}
         </Box>
@@ -82,9 +91,7 @@ const Program = () => {
         title="Add level"
         isOpen={newLevelIsOpen}
         onClose={newLevelOnClose}
-        program={program}
-        levels={levels}
-        setLevels={setLevels}
+        programId={program.id}
       ></LevelFormModal>
     </BodyContainer>
   );

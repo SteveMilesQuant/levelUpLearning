@@ -7,3 +7,5 @@ export interface LevelData {
 export interface Level extends LevelData {
   id: number;
 }
+
+export const CACHE_KEY_LEVELS = ["levels"];

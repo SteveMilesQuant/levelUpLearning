@@ -29,9 +29,7 @@ const useStudentForm = (student?: Student) => {
   const isValid = formIsValid && selectedGrade !== 0;
 
   const addStudent = useAddStudent();
-  const updateStudent = useUpdateStudent(() => {
-    reset({ ...student });
-  });
+  const updateStudent = useUpdateStudent();
 
   useEffect(() => {
     reset({ ...student });

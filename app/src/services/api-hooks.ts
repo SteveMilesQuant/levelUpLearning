@@ -10,6 +10,19 @@ import APIClient from "./api-client";
 // Problem: R extends T and adds an id
 // I thought useMutation would be able to take R and T separately, but for some reason, that doesn't work out
 
+export interface AddDataContext<R> {
+  prevData: R[];
+}
+
+export interface UpdateDataContext<R> {
+  prevDataList: R[];
+  prevData?: R;
+}
+
+export interface DeleteDataContext<R> {
+  prevData: R[];
+}
+
 export default class APIHooks<T, R extends T> {
   client: APIClient<T, R>;
   cacheKey: (string | number)[];
@@ -41,12 +54,9 @@ export default class APIHooks<T, R extends T> {
     });
 
   useAdd = (onAdd?: () => void) => {
-    interface AddDataContext {
-      prevData: R[];
-    }
     const queryClient = useQueryClient();
 
-    const addData = useMutation<R, Error, R, AddDataContext>({
+    const addData = useMutation<R, Error, R, AddDataContext<R>>({
       mutationFn: (data: T) => this.client.post(data),
       onMutate: (newData: R) => {
         const prevData = queryClient.getQueryData<R[]>(this.cacheKey) || [];
@@ -73,13 +83,9 @@ export default class APIHooks<T, R extends T> {
   };
 
   useUpdate = (onUpdate?: () => void) => {
-    interface UpdateDataContext {
-      prevDataList: R[];
-      prevData?: R;
-    }
     const queryClient = useQueryClient();
 
-    const udpateData = useMutation<R, Error, R, UpdateDataContext>({
+    const udpateData = useMutation<R, Error, R, UpdateDataContext<R>>({
       // @ts-ignore
       mutationFn: (data: R) => this.client.put(data.id, data),
       onMutate: (newData: R) => {
@@ -98,7 +104,7 @@ export default class APIHooks<T, R extends T> {
         if (prevData) queryClient.setQueryData<R>(singleCacheKey, newData);
 
         if (onUpdate) onUpdate();
-        return { prevDataList, prevData } as UpdateDataContext;
+        return { prevDataList, prevData } as UpdateDataContext<R>;
       },
       onError: (error, newData, context) => {
         if (!context) return;
@@ -120,12 +126,9 @@ export default class APIHooks<T, R extends T> {
   };
 
   useDelete = (onDelete?: () => void) => {
-    interface DeleteDataContext {
-      prevData: R[];
-    }
     const queryClient = useQueryClient();
 
-    const deleteData = useMutation<any, Error, any, DeleteDataContext>({
+    const deleteData = useMutation<any, Error, any, DeleteDataContext<R>>({
       mutationFn: (dataId: number) => this.client.delete(dataId),
       onMutate: (dataId: number) => {
         const prevData = queryClient.getQueryData<R[]>(this.cacheKey) || [];

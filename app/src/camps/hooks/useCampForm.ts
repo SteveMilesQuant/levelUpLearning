@@ -25,9 +25,7 @@ const useCampForm = (camp?: Camp) => {
   }, [selectedProgram, selectedInstructor]);
 
   const addCamp = useAddCamp();
-  const updateCamp = useUpdateCamp(() => {
-    reset(camp);
-  });
+  const updateCamp = useUpdateCamp();
 
   const handleSubmit = () => {
     if (!isValid) return;

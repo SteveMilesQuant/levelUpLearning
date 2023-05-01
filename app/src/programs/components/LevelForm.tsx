@@ -1,43 +1,30 @@
 import { HStack } from "@chakra-ui/react";
 import useLevelForm from "../hooks/useLevelForm";
 import LevelFormBody from "./LevelFormBody";
-import levelService from "../level-service";
 import { Level } from "../Level";
 import ActionButton from "../../components/ActionButton";
 import DeleteButton from "../../components/DeleteButton";
 import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
-import { Program } from "../Program";
 import { useState } from "react";
+import { useDeleteLevel } from "../hooks/useLevels";
 
 interface Props {
-  program?: Program;
+  programId?: number;
   level?: Level;
-  levels?: Level[];
-  setLevels?: (level: Level[]) => void;
+  canUpdate?: boolean;
 }
 
-const LevelForm = ({ program, level, levels, setLevels }: Props) => {
+const LevelForm = ({ programId, level, canUpdate }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
-  const levelForm = useLevelForm({ program, level, levels, setLevels });
-
-  const handleDeleteLevel = () => {
-    if (!program || !level || !setLevels) return;
-    const origLevels = levels ? [...levels] : [];
-    setLevels(origLevels.filter((l) => l.id !== level.id));
-    levelService(program?.id)
-      .delete(level.id)
-      .catch((err) => {
-        console.log(err);
-        setLevels(origLevels);
-      });
-  };
+  const levelForm = useLevelForm(programId, level);
+  const deleteLevel = useDeleteLevel(programId);
 
   return (
     <>
       <LevelFormBody {...levelForm} isReadOnly={!isEditing} />
-      {setLevels && (
+      {canUpdate && (
         <HStack justifyContent="right" spacing={3} paddingTop={3}>
           <ActionButton
             Component={AiFillEdit}
@@ -45,7 +32,10 @@ const LevelForm = ({ program, level, levels, setLevels }: Props) => {
             onClick={() => setIsEditing(true)}
             disabled={isEditing}
           />
-          <DeleteButton onConfirm={handleDeleteLevel} disabled={isEditing}>
+          <DeleteButton
+            onConfirm={() => deleteLevel.mutate(level?.id)}
+            disabled={isEditing}
+          >
             {level?.title}
           </DeleteButton>
           <CancelButton

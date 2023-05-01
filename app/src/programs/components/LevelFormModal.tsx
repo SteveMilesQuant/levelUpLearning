@@ -19,20 +19,11 @@ interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  program?: Program;
-  levels: Level[];
-  setLevels: (levels: Level[]) => void;
+  programId?: number;
 }
 
-const LevelFormModal = ({
-  title,
-  isOpen,
-  onClose,
-  program,
-  levels,
-  setLevels,
-}: Props) => {
-  const levelForm = useLevelForm({ program, levels, setLevels });
+const LevelFormModal = ({ title, isOpen, onClose, programId }: Props) => {
+  const levelForm = useLevelForm(programId);
 
   return (
     <Modal
