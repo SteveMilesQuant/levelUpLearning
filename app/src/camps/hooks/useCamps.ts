@@ -1,45 +1,38 @@
-import { useEffect, useState } from "react";
-import { CanceledError } from "../../services/old-api-client";
-import campService, {
-  studentCampService,
-  scheduleCampService,
-} from "../camp-service";
-import { Camp } from "../Camp";
-import { Student } from "../../students";
+import ms from "ms";
+import APIHooks from "../../services/api-hooks";
+import APIClient from "../../services/api-client";
+import { CACHE_KEY_CAMPS, CACHE_KEY_SCHEDULE, CampData, Camp } from "../Camp";
+import { CACHE_KEY_STUDENTS } from "../../students";
 
-interface Props {
-  forScheduling?: boolean;
-  student?: Student;
-}
+const campHooks = new APIHooks<CampData, Camp>(
+  new APIClient<CampData, Camp>("/camps"),
+  CACHE_KEY_CAMPS,
+  ms("5m")
+);
 
-const useCamps = ({ student, forScheduling }: Props) => {
-  const [camps, setCamps] = useState<Camp[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+const scheduleHooks = new APIHooks<CampData, Camp>(
+  new APIClient<CampData, Camp>("/schedule"),
+  CACHE_KEY_SCHEDULE,
+  ms("5m")
+);
 
-  useEffect(() => {
-    const { request, cancel } = forScheduling
-      ? scheduleCampService.getAll()
-      : student
-      ? studentCampService(student.id).getAll()
-      : campService.getAll();
-
-    setIsLoading(true);
-    request
-      .then((response) => {
-        setCamps(response.data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        if (error instanceof CanceledError) return;
-        setError(error.message);
-        setIsLoading(false);
-      });
-
-    return () => cancel();
-  }, [student]);
-
-  return { camps, error, isLoading, setCamps, setError };
+const useCamps = (forScheduling?: boolean, studentId?: number) => {
+  if (forScheduling) {
+    return scheduleHooks.useDataList();
+  } else if (studentId) {
+    const studentCampHooks = new APIHooks<CampData, Camp>(
+      new APIClient<CampData, Camp>(`/students/${studentId}/camps`),
+      [...CACHE_KEY_STUDENTS, studentId.toString(), ...CACHE_KEY_CAMPS],
+      ms("5m")
+    );
+    return studentCampHooks.useDataList();
+  } else {
+    return campHooks.useDataList();
+  }
 };
 
 export default useCamps;
+export const useCamp = campHooks.useData;
+export const useAddCamp = campHooks.useAdd;
+export const useUpdateCamp = campHooks.useUpdate;
+export const useDeleteCamp = campHooks.useDelete;

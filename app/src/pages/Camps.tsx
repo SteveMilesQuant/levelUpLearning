@@ -1,11 +1,8 @@
 import { Button, SimpleGrid, useDisclosure } from "@chakra-ui/react";
 import BodyContainer from "../components/BodyContainer";
 import PageHeader from "../components/PageHeader";
-import useCamps from "../camps/hooks/useCamps";
+import useCamps, { useDeleteCamp } from "../camps/hooks/useCamps";
 import CampCard from "../camps/components/CampCard";
-import produce from "immer";
-import { scheduleCampService } from "../camps/camp-service";
-import { Camp } from "../camps/Camp";
 import CampFormModal from "../camps/components/CampFormModal";
 
 interface Props {
@@ -13,27 +10,16 @@ interface Props {
 }
 
 const Camps = ({ forScheduling }: Props) => {
-  const { camps, error, isLoading, setCamps, setError } = useCamps({
-    forScheduling,
-  });
+  const { data: camps, isLoading, error } = useCamps(forScheduling, undefined);
+  const deleteCamp = useDeleteCamp();
   const {
     isOpen: newIsOpen,
     onOpen: newOnOpen,
     onClose: newOnClose,
   } = useDisclosure();
 
-  const handleDelete = (camp: Camp) => {
-    const origPrograms = [...camps];
-    setCamps(
-      produce((draft) => {
-        const index = draft.findIndex((s) => s.id === camp.id);
-        if (index >= 0) draft.splice(index, 1);
-      })
-    );
-    scheduleCampService.delete(camp.id).catch(() => {
-      setCamps(origPrograms);
-    });
-  };
+  if (isLoading) return null;
+  if (error) throw error;
 
   return (
     <BodyContainer>
@@ -49,7 +35,9 @@ const Camps = ({ forScheduling }: Props) => {
           <CampCard
             key={camp.id}
             camp={camp}
-            onDelete={forScheduling ? () => handleDelete(camp) : undefined}
+            onDelete={
+              forScheduling ? () => deleteCamp.mutate(camp.id) : undefined
+            }
           />
         ))}
       </SimpleGrid>
@@ -58,8 +46,6 @@ const Camps = ({ forScheduling }: Props) => {
           title="Add Camp"
           isOpen={newIsOpen}
           onClose={newOnClose}
-          camps={camps}
-          setCamps={setCamps}
         />
       )}
     </BodyContainer>

@@ -1,18 +1,4 @@
-import {
-  FormControl,
-  FormLabel,
-  Grid,
-  GridItem,
-  Input,
-  RangeSlider,
-  RangeSliderFilledTrack,
-  RangeSliderThumb,
-  RangeSliderTrack,
-  Textarea,
-} from "@chakra-ui/react";
-import { FieldErrors, UseFormRegister } from "react-hook-form";
-import { Camp } from "../Camp";
-import InputError from "../../components/InputError";
+import { FormControl, FormLabel, Grid, GridItem } from "@chakra-ui/react";
 import { Program } from "../../programs/Program";
 import { User } from "../../services/user-service";
 

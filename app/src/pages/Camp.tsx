@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box, HStack, List, ListItem } from "@chakra-ui/react";
-import useCamp from "../camps/hooks/useCamp";
+import { Box, HStack, List } from "@chakra-ui/react";
 import useLevelSchedules from "../camps/hooks/useLevelSchedules";
 import PageHeader from "../components/PageHeader";
 import BodyContainer from "../components/BodyContainer";
 import { LevelSchedule } from "../camps/LevelSchedule";
 import LevelListButton from "../programs/components/LevelListButton";
 import ProgramForm from "../programs/components/ProgramForm";
-import LevelForm from "../programs/components/LevelForm";
 import LevelScheduleForm from "../camps/components/LevelScheduleForm";
+import { useCamp } from "../camps/hooks/useCamps";
 
 const Camp = () => {
   const { id: idStr } = useParams();
@@ -17,8 +16,11 @@ const Camp = () => {
   const [selectedLevelSched, setSelectedLevelSched] = useState<
     LevelSchedule | undefined
   >(undefined);
-  const { camp } = useCamp(id);
+  const { data: camp, isLoading, error } = useCamp(id);
   const { levelSchedules } = useLevelSchedules(id);
+
+  if (isLoading) return null;
+  if (error) throw error;
 
   return (
     <BodyContainer>

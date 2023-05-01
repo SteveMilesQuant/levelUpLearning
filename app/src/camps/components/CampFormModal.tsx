@@ -11,19 +11,16 @@ import {
 } from "@chakra-ui/react";
 import CampFormBody from "./CampFormBody";
 import useCampForm from "../hooks/useCampForm";
-import { Camp } from "../Camp";
 import SubmitButton from "../../components/SubmitButton";
 
 interface Props {
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  camps: Camp[];
-  setCamps: (camps: Camp[]) => void;
 }
 
-const CampFormModal = ({ title, isOpen, onClose, camps, setCamps }: Props) => {
-  const campForm = useCampForm({ camps, setCamps });
+const CampFormModal = ({ title, isOpen, onClose }: Props) => {
+  const campForm = useCampForm();
 
   return (
     <Modal

@@ -25,6 +25,9 @@ const CampCard = ({ camp, onDelete }: Props) => {
     camp.id
   );
 
+  if (isLoading) return null;
+  if (error) throw error;
+
   return (
     <LinkBox
       as={Card}

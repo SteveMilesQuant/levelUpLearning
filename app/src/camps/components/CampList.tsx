@@ -9,7 +9,10 @@ interface Props {
 }
 
 const CampList = ({ student, marginBottom }: Props) => {
-  const { camps, error, isLoading, setError } = useCamps({ student });
+  const { data: camps, isLoading, error } = useCamps(false, student?.id);
+
+  if (isLoading) return null;
+  if (error) throw error;
 
   return (
     <List spacing={5} marginBottom={camps.length > 0 ? marginBottom : ""}>
