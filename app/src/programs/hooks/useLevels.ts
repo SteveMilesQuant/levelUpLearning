@@ -47,7 +47,7 @@ export const useUpdateLevel = (programId?: number, onUpdate?: () => void) => {
     return {} as UseMutationResult<
       Level,
       Error,
-      LevelData,
+      Level,
       UpdateDataContext<Level>
     >;
   const levelHooks = useLevelHooks(programId);

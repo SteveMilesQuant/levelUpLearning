@@ -83,26 +83,21 @@ export default class APIHooks<S extends A, Q = S> {
   useUpdate = (onUpdate?: () => void) => {
     const queryClient = useQueryClient();
 
-    const udpateData = useMutation<S, Error, Q, UpdateDataContext<S>>({
-      // @ts-ignore
-      mutationFn: (data: Q) => this.client.put(data.id, data),
-      onMutate: (newData: Q) => {
+    const udpateData = useMutation<S, Error, S, UpdateDataContext<S>>({
+      mutationFn: (data: S) =>
+        this.client.put(data.id, { ...data } as unknown as Q),
+      onMutate: (newData: S) => {
         // Update in list
         const prevDataList = queryClient.getQueryData<S[]>(this.cacheKey) || [];
         queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) =>
-          // @ts-ignore
-          dataList.map((data) => (data.id === 0 ? ({ ...newData } as S) : data))
+          dataList.map((data) => (data.id === newData.id ? newData : data))
         );
 
         // Also update individual data cache
         const singleCacheKey = [...this.cacheKey];
-        // @ts-ignore
         singleCacheKey.push(newData.id);
         const prevData = queryClient.getQueryData<S[]>(singleCacheKey);
-        if (prevData)
-          queryClient.setQueryData<S>(singleCacheKey, {
-            ...newData,
-          } as unknown as S);
+        if (prevData) queryClient.setQueryData<S>(singleCacheKey, newData);
 
         if (onUpdate) onUpdate();
         return { prevDataList, prevData } as UpdateDataContext<S>;
@@ -116,7 +111,6 @@ export default class APIHooks<S extends A, Q = S> {
 
         if (context.prevData) {
           const singleCacheKey = [...this.cacheKey];
-          // @ts-ignore
           singleCacheKey.push(context.prevData.id);
           queryClient.setQueryData<S>(singleCacheKey, () => context.prevData);
         }
@@ -134,7 +128,6 @@ export default class APIHooks<S extends A, Q = S> {
       onMutate: (dataId: number) => {
         const prevData = queryClient.getQueryData<S[]>(this.cacheKey) || [];
         queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) =>
-          // @ts-ignore
           dataList.filter((data) => data.id !== dataId)
         );
         if (onDelete) onDelete();
