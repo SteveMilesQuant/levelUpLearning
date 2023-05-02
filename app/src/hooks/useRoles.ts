@@ -1,33 +1,17 @@
-import { useEffect, useState } from "react";
-import apiClient, { CanceledError } from "../services/old-api-client";
+import { useQuery } from "@tanstack/react-query";
+import ms from "ms";
+import APIClient from "../services/api-client";
 
 export interface Role {
   name: string;
 }
 
-const useRoles = (signedIn: boolean, setError: (error: string) => void) => {
-  const controller = new AbortController();
-  const [roles, setRoles] = useState<Role[]>([]);
+const apiClient = new APIClient<Role>("/roles");
 
-  useEffect(() => {
-    if (signedIn) {
-      apiClient
-        .get<Role[]>("/user/roles", { signal: controller.signal })
-        .then((res) => {
-          setRoles(res.data);
-        })
-        .catch((err) => {
-          if (err instanceof CanceledError) return;
-          setError("While getting roles: " + err.message);
-        });
-
-      return () => controller.abort();
-    } else {
-      setRoles([]);
-    }
-  }, [signedIn]);
-
-  return roles;
+export default () => {
+  return useQuery<Role[], Error>({
+    queryKey: ["roles"],
+    queryFn: apiClient.getAll,
+    staleTime: ms("24h"),
+  });
 };
-
-export default useRoles;

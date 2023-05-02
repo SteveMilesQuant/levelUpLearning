@@ -33,7 +33,7 @@ const useLogin = (
       "error" | "error_description" | "error_uri"
     >
   ) => {
-    apiClient.post("/signin", codeResponse).then((token) => {
+    axiosInstance.post("/signin", codeResponse).then((token) => {
       localStorage.setItem("authToken", token.data);
       apiClient.defaults.headers.common = { Authorization: token.data };
       axiosInstance.defaults.headers.common = { Authorization: token.data };
