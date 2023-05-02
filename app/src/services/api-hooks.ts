@@ -23,6 +23,7 @@ interface A {
   id: number;
 }
 
+// Typical API hooks (S: response body; Q: request body)
 export default class APIHooks<S extends A, Q = S> {
   client: APIClient<S, Q>;
   cacheKey: (string | number)[];
@@ -52,17 +53,23 @@ export default class APIHooks<S extends A, Q = S> {
       staleTime: this.staleTime,
     });
 
-  useAdd = (onAdd?: () => void) => {
+  useAdd = (
+    onAdd?: () => void,
+    queryMutation?: (newData: Q, dataList: S[]) => S[]
+  ) => {
     const queryClient = useQueryClient();
 
     const addData = useMutation<S, Error, Q, AddDataContext<S>>({
       mutationFn: (data: Q) => this.client.post(data),
       onMutate: (newData: Q) => {
         const prevData = queryClient.getQueryData<S[]>(this.cacheKey) || [];
-        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) => [
-          { id: 0, ...newData } as unknown as S,
-          ...dataList,
-        ]);
+        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) => {
+          if (queryMutation) {
+            return queryMutation(newData, dataList);
+          } else {
+            return [{ id: 0, ...newData } as unknown as S, ...dataList];
+          }
+        });
         if (onAdd) onAdd();
         return { prevData };
       },

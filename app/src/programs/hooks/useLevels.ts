@@ -39,7 +39,18 @@ export const useAddLevel = (programId?: number, onAdd?: () => void) => {
       AddDataContext<Level>
     >;
   const levelHooks = useLevelHooks(programId);
-  return levelHooks.useAdd(onAdd);
+
+  // Apply custom mutation where we append to end, instead of beginning, and initialize list_index
+  const queryMutation = (newData: LevelData, dataList: Level[]) => {
+    const newLevel = {
+      id: 0, // always set id to zero on new objects
+      ...newData,
+      list_index: dataList.length + 1,
+    };
+    return [...dataList, newLevel];
+  };
+
+  return levelHooks.useAdd(onAdd, queryMutation);
 };
 
 export const useUpdateLevel = (programId?: number, onUpdate?: () => void) => {
