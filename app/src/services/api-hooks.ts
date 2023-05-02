@@ -6,40 +6,39 @@ import {
 } from "@tanstack/react-query";
 import APIClient from "./api-client";
 
-// TODO: see if you can get rid of the @ts-ignore in this file
-// Problem: R extends T and adds an id
-// I thought useMutation would be able to take R and T separately, but for some reason, that doesn't work out
-
-export interface AddDataContext<R> {
-  prevData: R[];
+export interface AddDataContext<S> {
+  prevData: S[];
 }
 
-export interface UpdateDataContext<R> {
-  prevDataList: R[];
-  prevData?: R;
+export interface UpdateDataContext<S> {
+  prevDataList: S[];
+  prevData?: S;
 }
 
-export interface DeleteDataContext<R> {
-  prevData: R[];
+export interface DeleteDataContext<S> {
+  prevData: S[];
 }
 
-export default class APIHooks<T, R extends T> {
-  client: APIClient<T, R>;
+interface A {
+  id: number;
+}
+
+export default class APIHooks<S extends A, Q = S> {
+  client: APIClient<S, Q>;
   cacheKey: (string | number)[];
   staleTime: number;
 
-  constructor(client: APIClient<T, R>, cacheKey: string[], staleTime: number) {
+  constructor(client: APIClient<S, Q>, cacheKey: string[], staleTime: number) {
     this.client = client;
     this.cacheKey = cacheKey;
     this.staleTime = staleTime;
   }
 
   useData = (id?: number) => {
-    if (!id) return {} as UseQueryResult<R, Error>;
+    if (!id) return {} as UseQueryResult<S, Error>;
     const singleCacheKey = [...this.cacheKey];
-    // @ts-ignore
     singleCacheKey.push(id);
-    return useQuery<R, Error>({
+    return useQuery<S, Error>({
       queryKey: singleCacheKey,
       queryFn: () => this.client.get(id),
       staleTime: this.staleTime,
@@ -47,7 +46,7 @@ export default class APIHooks<T, R extends T> {
   };
 
   useDataList = () =>
-    useQuery<R[], Error>({
+    useQuery<S[], Error>({
       queryKey: this.cacheKey,
       queryFn: this.client.getAll,
       staleTime: this.staleTime,
@@ -56,26 +55,25 @@ export default class APIHooks<T, R extends T> {
   useAdd = (onAdd?: () => void) => {
     const queryClient = useQueryClient();
 
-    const addData = useMutation<R, Error, R, AddDataContext<R>>({
-      mutationFn: (data: T) => this.client.post(data),
-      onMutate: (newData: R) => {
-        const prevData = queryClient.getQueryData<R[]>(this.cacheKey) || [];
-        queryClient.setQueryData<R[]>(this.cacheKey, (dataList = []) => [
-          newData,
+    const addData = useMutation<S, Error, Q, AddDataContext<S>>({
+      mutationFn: (data: Q) => this.client.post(data),
+      onMutate: (newData: Q) => {
+        const prevData = queryClient.getQueryData<S[]>(this.cacheKey) || [];
+        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) => [
+          { id: 0, ...newData } as unknown as S,
           ...dataList,
         ]);
         if (onAdd) onAdd();
         return { prevData };
       },
       onSuccess: (savedData, newData) => {
-        queryClient.setQueryData<R[]>(this.cacheKey, (dataList) =>
-          // @ts-ignore
+        queryClient.setQueryData<S[]>(this.cacheKey, (dataList) =>
           dataList?.map((data) => (data.id === 0 ? savedData : data))
         );
       },
       onError: (error, newData, context) => {
         if (!context) return;
-        queryClient.setQueryData<R[]>(this.cacheKey, () => context.prevData);
+        queryClient.setQueryData<S[]>(this.cacheKey, () => context.prevData);
       },
     });
 
@@ -85,30 +83,33 @@ export default class APIHooks<T, R extends T> {
   useUpdate = (onUpdate?: () => void) => {
     const queryClient = useQueryClient();
 
-    const udpateData = useMutation<R, Error, R, UpdateDataContext<R>>({
+    const udpateData = useMutation<S, Error, Q, UpdateDataContext<S>>({
       // @ts-ignore
-      mutationFn: (data: R) => this.client.put(data.id, data),
-      onMutate: (newData: R) => {
+      mutationFn: (data: Q) => this.client.put(data.id, data),
+      onMutate: (newData: Q) => {
         // Update in list
-        const prevDataList = queryClient.getQueryData<R[]>(this.cacheKey) || [];
-        queryClient.setQueryData<R[]>(this.cacheKey, (dataList = []) =>
+        const prevDataList = queryClient.getQueryData<S[]>(this.cacheKey) || [];
+        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) =>
           // @ts-ignore
-          dataList.map((data) => (data.id === newData.id ? newData : data))
+          dataList.map((data) => (data.id === 0 ? ({ ...newData } as S) : data))
         );
 
         // Also update individual data cache
         const singleCacheKey = [...this.cacheKey];
         // @ts-ignore
         singleCacheKey.push(newData.id);
-        const prevData = queryClient.getQueryData<R[]>(singleCacheKey);
-        if (prevData) queryClient.setQueryData<R>(singleCacheKey, newData);
+        const prevData = queryClient.getQueryData<S[]>(singleCacheKey);
+        if (prevData)
+          queryClient.setQueryData<S>(singleCacheKey, {
+            ...newData,
+          } as unknown as S);
 
         if (onUpdate) onUpdate();
-        return { prevDataList, prevData } as UpdateDataContext<R>;
+        return { prevDataList, prevData } as UpdateDataContext<S>;
       },
       onError: (error, newData, context) => {
         if (!context) return;
-        queryClient.setQueryData<R[]>(
+        queryClient.setQueryData<S[]>(
           this.cacheKey,
           () => context.prevDataList
         );
@@ -117,7 +118,7 @@ export default class APIHooks<T, R extends T> {
           const singleCacheKey = [...this.cacheKey];
           // @ts-ignore
           singleCacheKey.push(context.prevData.id);
-          queryClient.setQueryData<R>(singleCacheKey, () => context.prevData);
+          queryClient.setQueryData<S>(singleCacheKey, () => context.prevData);
         }
       },
     });
@@ -128,11 +129,11 @@ export default class APIHooks<T, R extends T> {
   useDelete = (onDelete?: () => void) => {
     const queryClient = useQueryClient();
 
-    const deleteData = useMutation<any, Error, any, DeleteDataContext<R>>({
+    const deleteData = useMutation<any, Error, any, DeleteDataContext<S>>({
       mutationFn: (dataId: number) => this.client.delete(dataId),
       onMutate: (dataId: number) => {
-        const prevData = queryClient.getQueryData<R[]>(this.cacheKey) || [];
-        queryClient.setQueryData<R[]>(this.cacheKey, (dataList = []) =>
+        const prevData = queryClient.getQueryData<S[]>(this.cacheKey) || [];
+        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) =>
           // @ts-ignore
           dataList.filter((data) => data.id !== dataId)
         );
@@ -141,7 +142,7 @@ export default class APIHooks<T, R extends T> {
       },
       onError: (error, newData, context) => {
         if (!context) return;
-        queryClient.setQueryData<R[]>(this.cacheKey, () => context.prevData);
+        queryClient.setQueryData<S[]>(this.cacheKey, () => context.prevData);
       },
     });
 

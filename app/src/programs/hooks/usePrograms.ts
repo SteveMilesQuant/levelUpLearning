@@ -3,8 +3,8 @@ import APIHooks from "../../services/api-hooks";
 import APIClient from "../../services/api-client";
 import ms from "ms";
 
-const programHooks = new APIHooks<ProgramData, Program>(
-  new APIClient<ProgramData, Program>("/programs"),
+const programHooks = new APIHooks<Program, ProgramData>(
+  new APIClient<Program, ProgramData>("/programs"),
   CACHE_KEY_PROGRAMS,
   ms("5m")
 );

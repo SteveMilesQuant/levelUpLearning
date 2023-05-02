@@ -10,8 +10,8 @@ import ms from "ms";
 import { CACHE_KEY_LEVELS, Level, LevelData } from "../Level";
 
 const useLevelHooks = (programId: number) => {
-  return new APIHooks<LevelData, Level>(
-    new APIClient<LevelData, Level>(`/programs/${programId}/levels`),
+  return new APIHooks<Level, LevelData>(
+    new APIClient<Level, LevelData>(`/programs/${programId}/levels`),
     [...CACHE_KEY_PROGRAMS, programId.toString(), ...CACHE_KEY_LEVELS],
     ms("5m")
   );
@@ -32,7 +32,12 @@ export const useLevel = (programId?: number, levelId?: number) => {
 
 export const useAddLevel = (programId?: number, onAdd?: () => void) => {
   if (!programId)
-    return {} as UseMutationResult<Level, Error, Level, AddDataContext<Level>>;
+    return {} as UseMutationResult<
+      Level,
+      Error,
+      LevelData,
+      AddDataContext<Level>
+    >;
   const levelHooks = useLevelHooks(programId);
   return levelHooks.useAdd(onAdd);
 };
@@ -42,7 +47,7 @@ export const useUpdateLevel = (programId?: number, onUpdate?: () => void) => {
     return {} as UseMutationResult<
       Level,
       Error,
-      Level,
+      LevelData,
       UpdateDataContext<Level>
     >;
   const levelHooks = useLevelHooks(programId);

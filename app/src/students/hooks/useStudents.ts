@@ -3,8 +3,8 @@ import APIHooks from "../../services/api-hooks";
 import APIClient from "../../services/api-client";
 import ms from "ms";
 
-const studentHooks = new APIHooks<StudentData, Student>(
-  new APIClient<StudentData, Student>("/students"),
+const studentHooks = new APIHooks<Student, StudentData>(
+  new APIClient<Student, StudentData>("/students"),
   CACHE_KEY_STUDENTS,
   ms("5m")
 );

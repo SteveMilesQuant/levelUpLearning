@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 
 // Handle date conversions
-const isoDateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d*)?$/;
+const isoDateFormat = /^\d{4}-\d{2}-\d{2}Q\d{2}:\d{2}:\d{2}(?:\.\d*)?$/;
 
 function isIsoDateString(value: any): boolean {
   return value && typeof value === "string" && isoDateFormat.test(value);
@@ -28,8 +28,8 @@ axiosInstance.interceptors.response.use((originalResponse) => {
   return originalResponse;
 });
 
-// Create client (T: request body; R: response body)
-class APIClient<T, R> {
+// Create client (S: response body; Q: request body)
+class APIClient<S, Q = S> {
   endpoint: string;
 
   constructor(endpoint: string) {
@@ -37,24 +37,24 @@ class APIClient<T, R> {
   }
 
   getAll = () => {
-    return axiosInstance.get<R[]>(this.endpoint).then((res) => res.data);
+    return axiosInstance.get<S[]>(this.endpoint).then((res) => res.data);
   };
 
   get = (id: number) => {
     return axiosInstance
-      .get<R>(this.endpoint + "/" + id)
+      .get<S>(this.endpoint + "/" + id)
       .then((res) => res.data);
   };
 
-  post = (data: T) => {
+  post = (data: Q) => {
     return axiosInstance
-      .post<T, AxiosResponse<R>>(this.endpoint, data)
+      .post<Q, AxiosResponse<S>>(this.endpoint, data)
       .then((res) => res.data);
   };
 
-  put = (id: number, data: T) => {
+  put = (id: number, data: Q) => {
     return axiosInstance
-      .put<T, AxiosResponse<R>>(this.endpoint + "/" + id, data)
+      .put<Q, AxiosResponse<S>>(this.endpoint + "/" + id, data)
       .then((res) => res.data);
   };
 
