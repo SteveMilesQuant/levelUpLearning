@@ -87,7 +87,10 @@ export default class APIHooks<S extends A, Q = S> {
     return addData;
   };
 
-  useUpdate = (onUpdate?: () => void) => {
+  useUpdate = (
+    onUpdate?: () => void,
+    queryMutation?: (newData: S, dataList: S[]) => S[]
+  ) => {
     const queryClient = useQueryClient();
 
     const udpateData = useMutation<S, Error, S, UpdateDataContext<S>>({
@@ -96,9 +99,15 @@ export default class APIHooks<S extends A, Q = S> {
       onMutate: (newData: S) => {
         // Update in list
         const prevDataList = queryClient.getQueryData<S[]>(this.cacheKey) || [];
-        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) =>
-          dataList.map((data) => (data.id === newData.id ? newData : data))
-        );
+        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) => {
+          if (queryMutation) {
+            return queryMutation(newData, dataList);
+          } else {
+            return dataList.map((data) =>
+              data.id === newData.id ? newData : data
+            );
+          }
+        });
 
         // Also update individual data cache
         const singleCacheKey = [...this.cacheKey];
@@ -127,16 +136,23 @@ export default class APIHooks<S extends A, Q = S> {
     return udpateData;
   };
 
-  useDelete = (onDelete?: () => void) => {
+  useDelete = (
+    onDelete?: () => void,
+    queryMutation?: (dataId: number, dataList: S[]) => S[]
+  ) => {
     const queryClient = useQueryClient();
 
     const deleteData = useMutation<any, Error, any, DeleteDataContext<S>>({
       mutationFn: (dataId: number) => this.client.delete(dataId),
       onMutate: (dataId: number) => {
         const prevData = queryClient.getQueryData<S[]>(this.cacheKey) || [];
-        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) =>
-          dataList.filter((data) => data.id !== dataId)
-        );
+        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) => {
+          if (queryMutation) {
+            return queryMutation(dataId, dataList);
+          } else {
+            return dataList.filter((data) => data.id !== dataId);
+          }
+        });
         if (onDelete) onDelete();
         return { prevData };
       },
