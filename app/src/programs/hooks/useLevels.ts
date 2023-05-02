@@ -62,7 +62,26 @@ export const useUpdateLevel = (programId?: number, onUpdate?: () => void) => {
       UpdateDataContext<Level>
     >;
   const levelHooks = useLevelHooks(programId);
-  return levelHooks.useUpdate(onUpdate);
+
+  // Apply custom mutation where we update list indices for other levels when target level moves
+  const queryMutation = (newData: Level, dataList: Level[]) => {
+    const origData = dataList.find((level) => level.id === newData.id);
+    if (!origData || origData.list_index === newData.list_index)
+      return dataList.map((data) => (data.id === newData.id ? newData : data));
+    const minIdx = Math.min(origData.list_index, newData.list_index);
+    const maxIdx = Math.max(origData.list_index, newData.list_index);
+    const direction = origData.list_index < newData.list_index ? -1 : 1;
+    const newList = dataList.map((level) =>
+      level.id === newData.id
+        ? newData
+        : level.list_index > minIdx || level.list_index > maxIdx
+        ? level
+        : { ...level, list_index: level.list_index + direction }
+    );
+    return newList;
+  };
+
+  return levelHooks.useUpdate(onUpdate, queryMutation);
 };
 
 export const useDeleteLevel = (programId?: number, onDelete?: () => void) => {
@@ -70,7 +89,7 @@ export const useDeleteLevel = (programId?: number, onDelete?: () => void) => {
     return {} as UseMutationResult<any, Error, any, DeleteDataContext<Level>>;
   const levelHooks = useLevelHooks(programId);
 
-  // Apply custom mutation where we update list_index for the deleted level
+  // Apply custom mutation where we update list_index for levels after deleted level
   const queryMutation = (dataId: number, dataList: Level[]) => {
     const delData = dataList.find((level) => level.id === dataId);
     if (!delData) return dataList;
