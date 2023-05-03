@@ -7,20 +7,29 @@ import Camps from "./Camps";
 import Camp from "./Camp";
 import Program from "./Program";
 import Programs from "./Programs";
+import PrivateRoutes from "./PrivateRoutes";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     errorElement: <ErrorPage />,
+    children: [{ index: true, element: <Home /> }],
+  },
+  {
+    element: <Layout />,
     children: [
-      { index: true, element: <Home /> },
-      { path: "students", element: <Students /> },
-      { path: "camps", element: <Camps /> },
-      { path: "camps/:id", element: <Camp /> },
-      { path: "programs", element: <Programs /> },
-      { path: "programs/:id", element: <Program /> },
-      { path: "schedule", element: <Camps forScheduling={true} /> },
+      {
+        element: <PrivateRoutes />,
+        children: [
+          { path: "students", element: <Students /> },
+          { path: "camps", element: <Camps /> },
+          { path: "camps/:id", element: <Camp /> },
+          { path: "programs", element: <Programs /> },
+          { path: "programs/:id", element: <Program /> },
+          { path: "schedule", element: <Camps forScheduling={true} /> },
+        ],
+      },
     ],
   },
 ]);

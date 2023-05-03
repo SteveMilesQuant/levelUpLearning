@@ -3,14 +3,9 @@ import { Grid, GridItem } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import SideIconList from "../components/SideIconList";
 import useRoles from "../hooks/useRoles";
-import { useState } from "react";
 
 const Layout = () => {
-  const [signedIn, setSignedIn] = useState(false);
-  const [error, setError] = useState("");
   const { data: roles } = useRoles();
-
-  if (error) throw error;
 
   return (
     <Grid
@@ -21,11 +16,7 @@ const Layout = () => {
       gap={0}
     >
       <GridItem area="header" backgroundColor="blue.100">
-        <NavBar
-          signedIn={signedIn}
-          setSignedIn={setSignedIn}
-          onError={(error) => setError(error)}
-        ></NavBar>
+        <NavBar></NavBar>
       </GridItem>
       <GridItem area="aside">
         {roles && <SideIconList roles={roles} />}

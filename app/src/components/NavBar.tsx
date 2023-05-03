@@ -3,13 +3,7 @@ import { BsArrowUpSquare } from "react-icons/bs";
 import AuthButton from "./AuthButton";
 import LinkIcon from "./LinkIcon";
 
-interface Props {
-  signedIn: boolean;
-  setSignedIn: (signedIn: boolean) => void;
-  onError: (error: string) => void;
-}
-
-const NavBar = ({ signedIn, setSignedIn, onError }: Props) => {
+const NavBar = () => {
   return (
     <HStack justifyContent="space-between" paddingX={4} paddingY={2}>
       <HStack spacing={4}>
@@ -22,11 +16,7 @@ const NavBar = ({ signedIn, setSignedIn, onError }: Props) => {
           levelup
         </Heading>
       </HStack>
-      <AuthButton
-        signedIn={signedIn}
-        setSignedIn={setSignedIn}
-        onError={onError}
-      />
+      <AuthButton />
     </HStack>
   );
 };

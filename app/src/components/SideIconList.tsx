@@ -6,6 +6,7 @@ import { Box } from "@chakra-ui/react";
 import { Role } from "../hooks/useRoles";
 import LinkIcon from "./LinkIcon";
 import { ReactElement } from "react";
+import useLogin from "../hooks/useLogin";
 
 interface Props {
   roles: Role[];
@@ -19,6 +20,9 @@ interface SideIcon {
 }
 
 const SideIconList = ({ roles }: Props) => {
+  const { signedIn } = useLogin();
+  if (!signedIn) return null;
+
   const iconsByRole: { [key: string]: SideIcon[] } = {
     GUARDIAN: [
       {

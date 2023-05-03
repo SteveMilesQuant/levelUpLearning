@@ -1,10 +1,7 @@
-import { Box, Text } from "@chakra-ui/react";
+import BodyContainer from "../components/BodyContainer";
 
 const Home = () => {
-  return (
-    <Box padding={4}>
-    </Box>
-  );
+  return <BodyContainer></BodyContainer>;
 };
 
 export default Home;

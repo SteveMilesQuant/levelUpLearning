@@ -1,27 +1,37 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   TokenResponse,
   googleLogout,
   useGoogleLogin,
 } from "@react-oauth/google";
 import { axiosInstance } from "../services/api-client";
+import { create } from "zustand";
+import { mountStoreDevtool } from "simple-zustand-devtools";
 
-const useLogin = (
-  setSignedIn: (signedIn: boolean) => void,
-  onError: (message: string) => void
-) => {
-  const navigate = useNavigate();
+interface UserStore {
+  signedIn: boolean;
+  login: () => void;
+  logout: () => void;
+}
+
+const useUserStore = create<UserStore>((set) => ({
+  signedIn: false,
+  login: () => set(() => ({ signedIn: true })),
+  logout: () => set(() => ({ signedIn: false })),
+}));
+
+if (process.env.NODE_ENV === "development")
+  mountStoreDevtool("Counter store", useUserStore);
+
+const useLogin = () => {
+  const { signedIn, login, logout } = useUserStore();
 
   // Check to see if we're already signed in
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
     if (authToken) {
       axiosInstance.defaults.headers.common = { Authorization: authToken };
-      setSignedIn(true);
-    } else {
-      // Ensure that if we're not signed in, we navigate back to the home page
-      navigate("/");
+      login();
     }
   }, []);
 
@@ -34,24 +44,25 @@ const useLogin = (
     axiosInstance.post("/signin", codeResponse).then((token) => {
       localStorage.setItem("authToken", token.data);
       axiosInstance.defaults.headers.common = { Authorization: token.data };
-      setSignedIn(true);
+      login();
     });
   };
 
   const googleLogin = useGoogleLogin({
     onSuccess: (codeResponse) => apiSignIn(codeResponse),
-    onError: (error) => onError("Login Failed: " + error),
+    onError: (error) => {
+      throw error;
+    },
   });
 
-  const logout = function () {
+  const onLogout = function () {
     googleLogout();
     localStorage.removeItem("authToken");
     axiosInstance.defaults.headers.common = {};
-    setSignedIn(false);
-    navigate("/");
+    logout();
   };
 
-  return { onLogin: googleLogin, onLogout: logout };
+  return { signedIn, onLogin: googleLogin, onLogout };
 };
 
 export default useLogin;
