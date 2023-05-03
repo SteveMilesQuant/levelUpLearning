@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -9,14 +10,15 @@ import {
 } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import BodyContainer from "../components/BodyContainer";
-import useLevels from "../programs/hooks/useLevels";
-import { Level } from "../programs/Level";
-import ProgramForm from "../programs/components/ProgramForm";
-import { useParams } from "react-router-dom";
-import LevelListButton from "../programs/components/LevelListButton";
-import LevelForm from "../programs/components/LevelForm";
-import LevelFormModal from "../programs/components/LevelFormModal";
-import { useProgram } from "../programs/hooks/usePrograms";
+import {
+  Level,
+  useLevels,
+  ProgramForm,
+  LevelListButton,
+  LevelForm,
+  LevelFormModal,
+  useProgram,
+} from "../programs";
 
 const Program = () => {
   const { id: idStr } = useParams();

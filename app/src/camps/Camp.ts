@@ -1,4 +1,4 @@
-import { Program } from "../programs/Program";
+import { Program } from "../programs";
 import { User } from "../services/user-service";
 
 export interface CampData {

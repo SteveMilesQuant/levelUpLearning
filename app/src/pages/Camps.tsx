@@ -1,9 +1,7 @@
 import { Button, SimpleGrid, useDisclosure } from "@chakra-ui/react";
 import BodyContainer from "../components/BodyContainer";
 import PageHeader from "../components/PageHeader";
-import useCamps, { useDeleteCamp } from "../camps/hooks/useCamps";
-import CampCard from "../camps/components/CampCard";
-import CampFormModal from "../camps/components/CampFormModal";
+import { useCamps, useDeleteCamp, CampCard, CampFormModal } from "../camps";
 
 interface Props {
   forScheduling?: boolean;

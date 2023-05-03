@@ -1,4 +1,4 @@
-import { Level } from "../programs/Level";
+import { Level } from "../programs";
 
 export interface LevelScheduleData {
   start_time: Date;

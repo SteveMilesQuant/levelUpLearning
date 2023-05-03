@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Box, HStack, List } from "@chakra-ui/react";
-import useLevelSchedules from "../camps/hooks/useLevelSchedules";
 import PageHeader from "../components/PageHeader";
 import BodyContainer from "../components/BodyContainer";
-import { LevelSchedule } from "../camps/LevelSchedule";
-import LevelListButton from "../programs/components/LevelListButton";
-import ProgramForm from "../programs/components/ProgramForm";
-import LevelScheduleForm from "../camps/components/LevelScheduleForm";
-import { useCamp } from "../camps/hooks/useCamps";
+import {
+  LevelSchedule,
+  useLevelSchedules,
+  LevelScheduleForm,
+  useCamp,
+} from "../camps";
+import { LevelListButton, ProgramForm } from "../programs";
 
 const Camp = () => {
   const { id: idStr } = useParams();

@@ -1,5 +1,5 @@
 import { FormControl, FormLabel, Grid, GridItem } from "@chakra-ui/react";
-import { Program } from "../../programs/Program";
+import { Program } from "../../programs";
 import { User } from "../../services/user-service";
 
 interface Props {
