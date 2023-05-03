@@ -6,5 +6,8 @@ export interface LevelScheduleData {
 }
 
 export interface LevelSchedule extends LevelScheduleData {
+  id: number;
   level: Level;
 }
+
+export const CACHE_KEY_LEVEL_SCHEDULES = ["levels"];

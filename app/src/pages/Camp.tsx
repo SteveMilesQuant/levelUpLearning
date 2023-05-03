@@ -17,10 +17,11 @@ const Camp = () => {
     LevelSchedule | undefined
   >(undefined);
   const { data: camp, isLoading, error } = useCamp(id);
-  const { levelSchedules } = useLevelSchedules(id);
+  const { data: levelSchedules, error: levelsError } = useLevelSchedules(id);
 
   if (isLoading) return null;
   if (error) throw error;
+  if (levelsError) throw levelsError;
 
   return (
     <BodyContainer>

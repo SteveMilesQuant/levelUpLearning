@@ -5,7 +5,6 @@ import {
   googleLogout,
   useGoogleLogin,
 } from "@react-oauth/google";
-import apiClient from "../services/old-api-client";
 import { axiosInstance } from "../services/api-client";
 
 const useLogin = (
@@ -18,7 +17,6 @@ const useLogin = (
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
     if (authToken) {
-      apiClient.defaults.headers.common = { Authorization: authToken };
       axiosInstance.defaults.headers.common = { Authorization: authToken };
       setSignedIn(true);
     } else {
@@ -35,7 +33,6 @@ const useLogin = (
   ) => {
     axiosInstance.post("/signin", codeResponse).then((token) => {
       localStorage.setItem("authToken", token.data);
-      apiClient.defaults.headers.common = { Authorization: token.data };
       axiosInstance.defaults.headers.common = { Authorization: token.data };
       setSignedIn(true);
     });
@@ -49,7 +46,6 @@ const useLogin = (
   const logout = function () {
     googleLogout();
     localStorage.removeItem("authToken");
-    apiClient.defaults.headers.common = {};
     axiosInstance.defaults.headers.common = {};
     setSignedIn(false);
     navigate("/");

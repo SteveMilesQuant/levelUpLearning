@@ -1,6 +1,6 @@
 from pydantic import BaseModel, PrivateAttr
 from typing import Optional, Any, List, Dict
-from datamodels import CampData, CampResponse, LevelScheduleResponse
+from datamodels import CampData, CampResponse, LevelScheduleData, LevelScheduleResponse
 from datamodels import UserResponse, ProgramResponse, LevelResponse
 from db import LevelScheduleDb, CampDb, UserDb, StudentDb
 from datetime import datetime
@@ -18,6 +18,7 @@ class LevelSchedule(LevelScheduleResponse):
         if self._db_obj is None:
             # If none found, create new
             level_schedule_data = self.dict(include=LevelScheduleResponse().dict())
+            level_schedule_data.pop('id')
             level_schedule_data.pop('level')
             self._db_obj = LevelScheduleDb(**level_schedule_data)
             session.add(self._db_obj)
@@ -30,9 +31,11 @@ class LevelSchedule(LevelScheduleResponse):
         # Always get the associated level (TODO: do this in db - will be faster)
         await session.refresh(self._db_obj, ['level'])
         self.level = LevelResponse(**self._db_obj.level.dict())
+        self.id = self.level_id # make ID copy to make it easy for front end
 
     async def update(self, session: Any):
         level_schedule_data = self.dict(include=LevelScheduleResponse().dict())
+        level_schedule_data.pop('id')
         level_schedule_data.pop('level')
         for key, value in level_schedule_data.items():
             setattr(self._db_obj, key, value)

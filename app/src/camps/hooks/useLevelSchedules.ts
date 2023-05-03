@@ -1,35 +1,71 @@
-import { useEffect, useState } from "react";
-import { CanceledError } from "../../services/old-api-client";
-import levelScheduleService from "../level-schedule-service";
-import { LevelSchedule } from "../LevelSchedule";
+import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
+import { CACHE_KEY_CAMPS } from "../Camp";
+import APIHooks, {
+  AddDataContext,
+  DeleteDataContext,
+  UpdateDataContext,
+} from "../../services/api-hooks";
+import APIClient from "../../services/api-client";
+import ms from "ms";
+import {
+  CACHE_KEY_LEVEL_SCHEDULES,
+  LevelSchedule,
+  LevelScheduleData,
+} from "../LevelSchedule";
 
-const useLevelSchedules = (campId?: number) => {
-  const [levelSchedules, setLevelSchedules] = useState<LevelSchedule[]>([]);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  if (!campId)
-    return { levelSchedules, error, isLoading, setLevelSchedules, setError };
-
-  useEffect(() => {
-    const { request, cancel } = levelScheduleService(campId).getAll();
-
-    setIsLoading(true);
-    request
-      .then((response) => {
-        response.data.sort((a, b) => a.level.list_index - b.level.list_index);
-        setLevelSchedules(response.data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        if (error instanceof CanceledError) return;
-        setError(error.message);
-        setIsLoading(false);
-      });
-
-    return () => cancel();
-  }, [campId]);
-
-  return { levelSchedules, error, isLoading, setLevelSchedules, setError };
+const useLevelScheduleHooks = (campId: number) => {
+  return new APIHooks<LevelSchedule, LevelScheduleData>(
+    new APIClient<LevelSchedule, LevelScheduleData>(`/camps/${campId}/levels`),
+    [...CACHE_KEY_CAMPS, campId.toString(), ...CACHE_KEY_LEVEL_SCHEDULES],
+    ms("5m")
+  );
 };
 
+const useLevelSchedules = (campId?: number) => {
+  if (!campId) return {} as UseQueryResult<LevelSchedule[], Error>;
+  const levelHooks = useLevelScheduleHooks(campId);
+  return levelHooks.useDataList();
+};
 export default useLevelSchedules;
+
+export const useLevelSchedule = (campId?: number, levelId?: number) => {
+  if (!campId || !levelId) return {} as UseQueryResult<LevelSchedule, Error>;
+  const levelHooks = useLevelScheduleHooks(campId);
+  return levelHooks.useData(levelId);
+};
+
+export const useAddLevel = (campId?: number, onAdd?: () => void) => {
+  if (!campId)
+    return {} as UseMutationResult<
+      LevelSchedule,
+      Error,
+      LevelScheduleData,
+      AddDataContext<LevelSchedule>
+    >;
+  const levelHooks = useLevelScheduleHooks(campId);
+  return levelHooks.useAdd(onAdd);
+};
+
+export const useUpdateLevel = (campId?: number, onUpdate?: () => void) => {
+  if (!campId)
+    return {} as UseMutationResult<
+      LevelSchedule,
+      Error,
+      LevelSchedule,
+      UpdateDataContext<LevelSchedule>
+    >;
+  const levelHooks = useLevelScheduleHooks(campId);
+  return levelHooks.useUpdate(onUpdate);
+};
+
+export const useDeleteLevel = (campId?: number, onDelete?: () => void) => {
+  if (!campId)
+    return {} as UseMutationResult<
+      any,
+      Error,
+      any,
+      DeleteDataContext<LevelSchedule>
+    >;
+  const levelHooks = useLevelScheduleHooks(campId);
+  return levelHooks.useDelete(onDelete);
+};

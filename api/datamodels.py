@@ -76,4 +76,5 @@ class LevelScheduleData(BaseModel):
 class LevelScheduleResponse(LevelScheduleData):
     camp_id: Optional[int]
     level_id: Optional[int]
+    id: Optional[int]
     level: Optional[LevelResponse] = None

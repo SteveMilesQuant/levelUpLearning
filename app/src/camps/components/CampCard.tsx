@@ -21,9 +21,7 @@ interface Props {
 
 const CampCard = ({ camp, onDelete }: Props) => {
   const byLine = "with " + camp.primary_instructor.full_name;
-  const { levelSchedules, error, isLoading, setError } = useLevelSchedules(
-    camp.id
-  );
+  const { data: levelSchedules, error, isLoading } = useLevelSchedules(camp.id);
 
   if (isLoading) return null;
   if (error) throw error;

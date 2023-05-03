@@ -182,7 +182,7 @@ class LevelScheduleDb(Base):
     def dict(self):
         returnVal = {}
         for key, value in LevelScheduleResponse():
-            if key != 'level':
+            if key not in ['id', 'level']:
                 returnVal[key] = getattr(self, key)
         return returnVal
 

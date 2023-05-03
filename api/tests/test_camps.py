@@ -1,4 +1,4 @@
-import pytest, json, asyncio
+import pytest, json, asyncio, os
 from fastapi import status
 from fastapi.testclient import TestClient
 from datamodels import UserResponse
@@ -167,6 +167,7 @@ def test_update_level_schedules(camp_index: int, level_index: int, level_schedul
     new_level_schedule_json = response.json()
     level_schedule_json['camp_id'] = camp_id
     level_schedule_json['level_id'] = level.id
+    level_schedule_json['id'] = level.id
     level_schedule_json['level'] = level.dict(include=LevelResponse().dict())
     assert new_level_schedule_json == level_schedule_json
 

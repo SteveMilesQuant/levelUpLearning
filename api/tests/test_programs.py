@@ -1,4 +1,4 @@
-import pytest, json
+import pytest, json, os
 from fastapi import status
 from fastapi.testclient import TestClient
 from user import User
