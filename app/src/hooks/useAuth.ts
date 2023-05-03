@@ -23,7 +23,7 @@ const useUserStore = create<UserStore>((set) => ({
 if (process.env.NODE_ENV === "development")
   mountStoreDevtool("Counter store", useUserStore);
 
-const useLogin = () => {
+const useAuth = () => {
   const { signedIn, login, logout } = useUserStore();
 
   // Check to see if we're already signed in
@@ -65,4 +65,4 @@ const useLogin = () => {
   return { signedIn, onLogin: googleLogin, onLogout };
 };
 
-export default useLogin;
+export default useAuth;
