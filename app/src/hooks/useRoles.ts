@@ -1,19 +1,21 @@
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import ms from "ms";
+import { useQuery } from "@tanstack/react-query";
 import APIClient from "../services/api-client";
 
 export interface Role {
   name: string;
 }
 
+export const CACHE_KEY_ROLES = ["roles"];
+
 const apiClient = new APIClient<Role>("/roles");
 
-const useRoles = (signedIn: boolean) =>
-  useQuery<Role[], Error>({
-    queryKey: ["roles"],
+const useRoles = (signedIn: boolean) => {
+  return useQuery<Role[], Error>({
+    queryKey: CACHE_KEY_ROLES,
     queryFn: apiClient.getAll,
-    staleTime: ms("5m"),
+    staleTime: 0,
     enabled: signedIn,
   });
+};
 
 export default useRoles;

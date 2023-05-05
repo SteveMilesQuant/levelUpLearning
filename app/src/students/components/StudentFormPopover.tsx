@@ -7,7 +7,7 @@ interface Props {
   student: Student;
 }
 
-const EditStudentButtonModal = ({ student }: Props) => {
+const StudentFormPopover = ({ student }: Props) => {
   const studentForm = useStudentForm(student);
 
   return (
@@ -22,4 +22,4 @@ const EditStudentButtonModal = ({ student }: Props) => {
   );
 };
 
-export default EditStudentButtonModal;
+export default StudentFormPopover;
