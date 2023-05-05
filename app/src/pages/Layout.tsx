@@ -4,9 +4,11 @@ import NavBar from "../components/NavBar";
 import SideIconList from "../components/SideIconList";
 import useRoles from "../hooks/useRoles";
 import BodyContainer from "../components/BodyContainer";
+import useAuth from "../hooks/useAuth";
 
 const Layout = () => {
-  const { data: roles } = useRoles();
+  const { signedIn } = useAuth();
+  const { data: roles } = useRoles(signedIn);
 
   return (
     <>
