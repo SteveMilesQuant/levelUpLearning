@@ -44,7 +44,12 @@ const EditButtonPopover = ({
               <Text>
                 <strong>{title}</strong>
               </Text>
-              <PopoverCloseButton />
+              <PopoverCloseButton
+                onClick={() => {
+                  onClosePopover();
+                  onClose();
+                }}
+              />
             </PopoverHeader>
             <PopoverBody>{children}</PopoverBody>
             <PopoverFooter>
