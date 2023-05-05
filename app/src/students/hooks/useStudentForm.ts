@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Student } from "../Student";
@@ -7,14 +7,19 @@ import { useAddStudent, useUpdateStudent } from "./useStudents";
 
 export const studentSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
+  grade_level: z
+    .string()
+    .min(1, { message: "Grade is required." })
+    .transform((val) => parseInt(val))
+    .catch((ctx) => {
+      if (typeof ctx.input === "number") return parseInt(ctx.input);
+      throw ctx.error;
+    }),
 });
 
 type FormData = z.infer<typeof studentSchema>;
 
 const useStudentForm = (student?: Student) => {
-  const [haveSubmitted, setHaveSubmitted] = useState(false);
-  const [selectedGrade, setSelectedGrade] = useState(student?.grade_level || 0);
-
   const {
     register,
     handleSubmit: handleFormSubmit,
@@ -26,20 +31,17 @@ const useStudentForm = (student?: Student) => {
       return { ...student };
     }, [student]),
   });
-  const isValid = formIsValid && selectedGrade !== 0;
+  const isValid = formIsValid;
 
   const addStudent = useAddStudent();
   const updateStudent = useUpdateStudent();
 
   useEffect(() => {
     reset({ ...student });
-    setSelectedGrade(student?.grade_level || 0);
   }, [student]);
 
   const handleClose = () => {
     reset({ ...student });
-    setSelectedGrade(student?.grade_level || 0);
-    setHaveSubmitted(false);
   };
 
   const handleSubmitLocal = (data: FieldValues) => {
@@ -49,7 +51,6 @@ const useStudentForm = (student?: Student) => {
       id: 0,
       ...student,
       ...data,
-      grade_level: selectedGrade,
     } as Student;
 
     if (student) {
@@ -62,7 +63,6 @@ const useStudentForm = (student?: Student) => {
   };
 
   const handleSubmit = () => {
-    setHaveSubmitted(true);
     handleFormSubmit(handleSubmitLocal)();
   };
 
@@ -71,9 +71,6 @@ const useStudentForm = (student?: Student) => {
     errors,
     handleClose,
     handleSubmit,
-    selectedGrade,
-    setSelectedGrade,
-    haveSubmitted,
     isValid,
   };
 };

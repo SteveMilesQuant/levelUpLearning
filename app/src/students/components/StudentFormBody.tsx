@@ -1,36 +1,22 @@
 import {
-  Button,
   FormControl,
   FormLabel,
   Input,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuList,
   VStack,
+  Select,
 } from "@chakra-ui/react";
 import { z } from "zod";
-import { BsChevronDown } from "react-icons/bs";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import InputError from "../../components/InputError";
 import { studentSchema } from "../hooks/useStudentForm";
 
 interface Props {
-  haveSubmitted: boolean;
-  selectedGrade: number;
-  setSelectedGrade: (selectedGrade: number) => void;
   register: UseFormRegister<z.infer<typeof studentSchema>>;
   errors: FieldErrors<z.infer<typeof studentSchema>>;
 }
 
-const StudentFormBody = ({
-  haveSubmitted,
-  selectedGrade,
-  setSelectedGrade,
-  register,
-  errors,
-}: Props) => {
-  const grades = Array.from(Array(12).keys()).map((x) => x + 1);
+const StudentFormBody = ({ register, errors }: Props) => {
+  const grades = Array.from(Array(12).keys()).map((x) => (x + 1).toString());
 
   return (
     <VStack spacing={2}>
@@ -46,28 +32,19 @@ const StudentFormBody = ({
       <FormControl>
         <FormLabel>Grade</FormLabel>
 
-        <Menu>
-          <InputError
-            label="Grade level is required."
-            isOpen={haveSubmitted && selectedGrade === 0}
-          >
-            <MenuButton as={Button} rightIcon={<BsChevronDown />}>
-              {selectedGrade || "Grade"}
-            </MenuButton>
-          </InputError>
-          <MenuList>
+        <InputError
+          label={errors.grade_level?.message}
+          isOpen={errors.grade_level ? true : false}
+        >
+          <Select {...register("grade_level")}>
+            <option value="">Select grade</option>
             {grades.map((grade) => (
-              <MenuItem
-                key={grade}
-                onClick={() => {
-                  setSelectedGrade(grade);
-                }}
-              >
+              <option key={grade} value={grade}>
                 {grade}
-              </MenuItem>
+              </option>
             ))}
-          </MenuList>
-        </Menu>
+          </Select>
+        </InputError>
       </FormControl>
     </VStack>
   );
