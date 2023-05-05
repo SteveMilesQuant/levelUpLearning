@@ -1,25 +1,25 @@
 import useStudentForm from "../hooks/useStudentForm";
 import { Student } from "../Student";
-import EditButton from "../../components/EditButton";
+import EditButtonPopover from "../../components/EditButtonPopover";
 import StudentFormBody from "./StudentFormBody";
 
 interface Props {
   student: Student;
 }
 
-const EditStudentButton = ({ student }: Props) => {
+const EditStudentButtonModal = ({ student }: Props) => {
   const studentForm = useStudentForm(student);
 
   return (
-    <EditButton
+    <EditButtonPopover
       title="Update Student"
       onUpdate={studentForm.handleSubmit}
       onClose={studentForm.handleClose}
       holdOpen={!studentForm.isValid}
     >
       <StudentFormBody {...studentForm} />
-    </EditButton>
+    </EditButtonPopover>
   );
 };
 
-export default EditStudentButton;
+export default EditStudentButtonModal;

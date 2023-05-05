@@ -19,7 +19,7 @@ interface Props {
   onClose: () => void;
 }
 
-const StudentForm = ({ title, isOpen, onClose }: Props) => {
+const StudentFormModal = ({ title, isOpen, onClose }: Props) => {
   const studentForm = useStudentForm();
 
   return (
@@ -58,4 +58,4 @@ const StudentForm = ({ title, isOpen, onClose }: Props) => {
   );
 };
 
-export default StudentForm;
+export default StudentFormModal;

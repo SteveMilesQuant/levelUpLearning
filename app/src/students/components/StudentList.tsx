@@ -1,8 +1,8 @@
-import { Button, List, ListItem, useDisclosure } from "@chakra-ui/react";
+import { Button, List, useDisclosure } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
 import StudentCard from "./StudentCard";
 import { Student } from "../Student";
-import StudentForm from "./StudentForm";
+import StudentFormModal from "./StudentFormModal";
 
 interface Props {
   selectedStudent: Student | null;
@@ -24,21 +24,18 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
     <>
       <List spacing={5}>
         {students?.map((student) => (
-          <ListItem key={student.id}>
-            <StudentCard
-              student={student}
-              isSelected={selectedStudent?.id === student.id}
-              onClick={() => onSelectStudent(student)}
-            />
-          </ListItem>
+          <StudentCard
+            student={student}
+            isSelected={selectedStudent?.id === student.id}
+            onClick={() => onSelectStudent(student)}
+            key={student.id}
+          />
         ))}
-        <ListItem>
-          <Button size="lg" variant="outline" onClick={newOnOpen}>
-            Add Student
-          </Button>
-        </ListItem>
+        <Button size="lg" variant="outline" onClick={newOnOpen}>
+          Add Student
+        </Button>
       </List>
-      <StudentForm
+      <StudentFormModal
         title="Add Student"
         isOpen={newIsOpen}
         onClose={newOnClose}

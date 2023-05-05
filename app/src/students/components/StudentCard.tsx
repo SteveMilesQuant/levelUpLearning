@@ -1,7 +1,7 @@
 import { Box, Card, CardBody, HStack, Heading, Text } from "@chakra-ui/react";
 import DeleteButton from "../../components/DeleteButton";
 import { Student } from "../Student";
-import EditStudentButton from "./EditStudentButton";
+import EditStudentButtonModal from "./EditStudentButtonModal";
 import { useDeleteStudent } from "../hooks/useStudents";
 
 interface Props {
@@ -23,7 +23,7 @@ const StudentCard = ({ student, isSelected, onClick }: Props) => {
         <HStack justifyContent="space-between">
           <Heading fontSize="2xl">{student.name}</Heading>
           <HStack spacing="3px">
-            <EditStudentButton student={student} />
+            <EditStudentButtonModal student={student} />
             <DeleteButton onConfirm={() => deleteStudent.mutate(student.id)}>
               {student.name}
             </DeleteButton>

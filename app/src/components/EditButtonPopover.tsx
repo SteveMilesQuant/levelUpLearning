@@ -23,7 +23,7 @@ interface Props {
   onClose: () => void;
 }
 
-const EditButton = ({
+const EditButtonPopover = ({
   children,
   title,
   holdOpen,
@@ -78,4 +78,4 @@ const EditButton = ({
   </Box>
 );
 
-export default EditButton;
+export default EditButtonPopover;
