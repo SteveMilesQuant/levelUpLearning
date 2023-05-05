@@ -1,4 +1,3 @@
-import { Camp } from "../Camp";
 import { LevelSchedule } from "../LevelSchedule";
 import LevelScheduleFormBody from "./LevelScheduleFormBody";
 import useLevelScheduleForm from "../hooks/useLevelScheduleForm";

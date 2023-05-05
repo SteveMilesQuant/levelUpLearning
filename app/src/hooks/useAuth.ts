@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   TokenResponse,
   googleLogout,
@@ -25,6 +25,7 @@ if (process.env.NODE_ENV === "development")
 
 const useAuth = () => {
   const { signedIn, login, logout } = useUserStore();
+  const [isChecking, setIsChecking] = useState(true);
 
   // Check to see if we're already signed in
   useEffect(() => {
@@ -33,6 +34,7 @@ const useAuth = () => {
       axiosInstance.defaults.headers.common = { Authorization: authToken };
       login();
     }
+    setIsChecking(false);
   }, []);
 
   const apiSignIn = (
@@ -62,7 +64,7 @@ const useAuth = () => {
     logout();
   };
 
-  return { signedIn, onLogin: googleLogin, onLogout };
+  return { signedIn, isChecking, onLogin: googleLogin, onLogout };
 };
 
 export default useAuth;

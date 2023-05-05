@@ -13,10 +13,10 @@ import { useDeleteLevel } from "../hooks/useLevels";
 interface Props {
   programId?: number;
   level?: Level;
-  canUpdate?: boolean;
+  isReadOnly?: boolean;
 }
 
-const LevelForm = ({ programId, level, canUpdate }: Props) => {
+const LevelForm = ({ programId, level, isReadOnly }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const levelForm = useLevelForm(programId, level);
   const deleteLevel = useDeleteLevel(programId);
@@ -24,7 +24,7 @@ const LevelForm = ({ programId, level, canUpdate }: Props) => {
   return (
     <>
       <LevelFormBody {...levelForm} isReadOnly={!isEditing} />
-      {canUpdate && (
+      {!isReadOnly && (
         <HStack justifyContent="right" spacing={3} paddingTop={3}>
           <ActionButton
             Component={AiFillEdit}

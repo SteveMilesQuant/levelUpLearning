@@ -17,9 +17,7 @@ const CampList = ({ student, marginBottom }: Props) => {
   return (
     <List spacing={5} marginBottom={camps.length > 0 ? marginBottom : ""}>
       {camps.map((camp) => (
-        <ListItem key={camp.id}>
-          <CampCard camp={camp} />
-        </ListItem>
+        <CampCard key={camp.id} camp={camp} />
       ))}
     </List>
   );

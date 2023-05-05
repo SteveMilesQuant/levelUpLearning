@@ -75,7 +75,9 @@ const Program = () => {
           </ListItem>
         </List>
         <Box width="100%">
-          {!selectedLevel && <ProgramForm program={program} canUpdate={true} />}
+          {!selectedLevel && (
+            <ProgramForm program={program} isReadOnly={false} />
+          )}
           {levels
             ?.filter((level) => level.id === selectedLevel?.id)
             .map((level) => (
@@ -83,7 +85,7 @@ const Program = () => {
                 key={level.id}
                 programId={program.id}
                 level={level}
-                canUpdate={true}
+                isReadOnly={false}
               ></LevelForm>
             ))}
         </Box>

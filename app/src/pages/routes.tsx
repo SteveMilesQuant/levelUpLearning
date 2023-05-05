@@ -20,7 +20,7 @@ const router = createBrowserRouter([
         element: <PrivateRoutes />,
         children: [
           { path: "students", element: <Students /> },
-          { path: "camps", element: <Camps /> },
+          { path: "camps", element: <Camps forScheduling={false} /> },
           { path: "camps/:id", element: <Camp /> },
           { path: "programs", element: <Programs /> },
           { path: "programs/:id", element: <Program /> },
