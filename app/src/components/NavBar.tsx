@@ -5,7 +5,12 @@ import LinkIcon from "./LinkIcon";
 
 const NavBar = () => {
   return (
-    <HStack justifyContent="space-between" paddingX={4} paddingY={2}>
+    <HStack
+      justifyContent="space-between"
+      paddingX={4}
+      paddingY={2}
+      backgroundColor="blue.100"
+    >
       <HStack spacing={4}>
         <LinkIcon
           icon={<BsArrowUpSquare size="2em" />}

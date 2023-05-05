@@ -1,5 +1,4 @@
 import { useDisclosure, Button } from "@chakra-ui/react";
-import BodyContainer from "../components/BodyContainer";
 import PageHeader from "../components/PageHeader";
 import { ProgramFormModal } from "../programs";
 import { ProgramList } from "../programs";
@@ -12,7 +11,7 @@ const Programs = () => {
   } = useDisclosure();
 
   return (
-    <BodyContainer>
+    <>
       <PageHeader label="Programs">
         <Button size="lg" variant="outline" onClick={newOnOpen}>
           Add Program
@@ -24,7 +23,7 @@ const Programs = () => {
         isOpen={newIsOpen}
         onClose={newOnClose}
       />
-    </BodyContainer>
+    </>
   );
 };
 

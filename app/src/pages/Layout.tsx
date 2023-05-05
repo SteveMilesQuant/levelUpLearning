@@ -1,30 +1,23 @@
 import { Outlet } from "react-router-dom";
-import { Grid, GridItem } from "@chakra-ui/react";
+import { HStack } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import SideIconList from "../components/SideIconList";
 import useRoles from "../hooks/useRoles";
+import BodyContainer from "../components/BodyContainer";
 
 const Layout = () => {
   const { data: roles } = useRoles();
 
   return (
-    <Grid
-      templateAreas={{
-        base: `"header header" "aside main"`,
-      }}
-      gridTemplateColumns={"5rem 1fr"}
-      gap={0}
-    >
-      <GridItem area="header" backgroundColor="blue.100">
-        <NavBar></NavBar>
-      </GridItem>
-      <GridItem area="aside">
+    <>
+      <NavBar></NavBar>
+      <HStack gap={0} alignItems="top">
         {roles && <SideIconList roles={roles} />}
-      </GridItem>
-      <GridItem area="main">
-        <Outlet />
-      </GridItem>
-    </Grid>
+        <BodyContainer>
+          <Outlet />
+        </BodyContainer>
+      </HStack>
+    </>
   );
 };
 

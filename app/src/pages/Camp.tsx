@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Box, HStack, List } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import BodyContainer from "../components/BodyContainer";
 import {
   LevelSchedule,
   useLevelSchedules,
@@ -25,7 +24,7 @@ const Camp = () => {
   if (levelsError) throw levelsError;
 
   return (
-    <BodyContainer>
+    <>
       <PageHeader label={camp?.program.title}></PageHeader>
       <HStack alignItems="start" spacing={10}>
         <List spacing={3}>
@@ -64,7 +63,7 @@ const Camp = () => {
             ))}
         </Box>
       </HStack>
-    </BodyContainer>
+    </>
   );
 };
 

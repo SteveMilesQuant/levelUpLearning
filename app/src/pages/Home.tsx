@@ -1,7 +1,5 @@
-import BodyContainer from "../components/BodyContainer";
-
 const Home = () => {
-  return <BodyContainer></BodyContainer>;
+  return <></>;
 };
 
 export default Home;

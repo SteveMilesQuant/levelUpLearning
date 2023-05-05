@@ -9,7 +9,6 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import BodyContainer from "../components/BodyContainer";
 import {
   Level,
   useLevels,
@@ -50,7 +49,7 @@ const Program = () => {
   if (levelsError) throw levelsError;
 
   return (
-    <BodyContainer>
+    <>
       <PageHeader label={program?.title}></PageHeader>
       <HStack alignItems="start" spacing={10}>
         <List spacing={3}>
@@ -95,7 +94,7 @@ const Program = () => {
         onClose={newLevelOnClose}
         programId={program.id}
       ></LevelFormModal>
-    </BodyContainer>
+    </>
   );
 };
 

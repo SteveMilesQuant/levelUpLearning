@@ -1,5 +1,4 @@
 import { Button, SimpleGrid, useDisclosure } from "@chakra-ui/react";
-import BodyContainer from "../components/BodyContainer";
 import PageHeader from "../components/PageHeader";
 import { useCamps, useDeleteCamp, CampCard, CampFormModal } from "../camps";
 
@@ -20,7 +19,7 @@ const Camps = ({ forScheduling }: Props) => {
   if (error) throw error;
 
   return (
-    <BodyContainer>
+    <>
       <PageHeader label={forScheduling ? "Schedule Camps" : "Camps"}>
         {forScheduling && (
           <Button size="lg" variant="outline" onClick={newOnOpen}>
@@ -46,7 +45,7 @@ const Camps = ({ forScheduling }: Props) => {
           onClose={newOnClose}
         />
       )}
-    </BodyContainer>
+    </>
   );
 };
 
