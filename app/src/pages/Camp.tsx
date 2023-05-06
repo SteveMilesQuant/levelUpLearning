@@ -84,6 +84,7 @@ const Camp = ({ forScheduling }: Props) => {
       </HStack>
       <EnrollStudentModal
         title="Enroll Student"
+        campId={camp?.id}
         isOpen={newIsOpen}
         onClose={newOnClose}
       />

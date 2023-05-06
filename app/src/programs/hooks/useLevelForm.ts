@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Level } from "../Level";

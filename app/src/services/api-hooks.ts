@@ -164,4 +164,16 @@ export default class APIHooks<S extends A, Q = S> {
 
     return deleteData;
   };
+
+  useEnroll = () => {
+    const deleteData = useMutation<any, Error, any>({
+      mutationFn: (dataId: number) => this.client.post(dataId),
+      onMutate: (dataId: number) => {},
+      onError: (error, newData, context) => {
+        if (!context) return;
+      },
+    });
+
+    return deleteData;
+  };
 }

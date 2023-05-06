@@ -8,31 +8,39 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  Text,
   List,
 } from "@chakra-ui/react";
 import SubmitButton from "../../components/SubmitButton";
 import useStudents from "../hooks/useStudents";
 import ListButton from "../../camps/components/ListButton";
 import { useState } from "react";
+import useEnrollStudent from "../hooks/useEnrollStudent";
 
 interface Props {
   title: string;
+  campId?: number;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const EnrollStudentModal = ({ title, isOpen, onClose }: Props) => {
+const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
   const { data: students, isLoading, error } = useStudents();
   const [selectedStudentId, setSelectedStudentId] = useState<
     number | undefined
   >(undefined);
+  const enrollStudent = useEnrollStudent(campId);
 
   if (isLoading) return null;
   if (error) throw error;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={() => {
+        setSelectedStudentId(undefined);
+        onClose();
+      }}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
@@ -58,6 +66,8 @@ const EnrollStudentModal = ({ title, isOpen, onClose }: Props) => {
         <ModalFooter>
           <SubmitButton
             onClick={() => {
+              enrollStudent.mutate(selectedStudentId);
+              setSelectedStudentId(undefined);
               onClose();
             }}
           >
