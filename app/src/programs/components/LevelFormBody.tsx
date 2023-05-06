@@ -1,9 +1,8 @@
 import {
   FormControl,
   FormLabel,
-  Grid,
-  GridItem,
   Input,
+  SimpleGrid,
   Textarea,
 } from "@chakra-ui/react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
@@ -18,42 +17,32 @@ interface Props {
 
 const LevelFormBody = ({ register, errors, isReadOnly }: Props) => {
   return (
-    <Grid
-      templateAreas={{
-        base: `"title" "desc"`,
-      }}
-      gap={5}
-    >
-      <GridItem area="title">
-        <FormControl>
-          <FormLabel>Title</FormLabel>
-          <InputError
-            label={errors.title?.message}
-            isOpen={errors.title ? true : false}
-          >
-            <Input {...register("title")} type="text" isReadOnly={isReadOnly} />
-          </InputError>
-        </FormControl>
-      </GridItem>
-
-      <GridItem area="desc">
-        <FormControl>
-          <FormLabel>Description</FormLabel>
-          <InputError
-            label={errors.description?.message}
-            isOpen={errors.description ? true : false}
-          >
-            <Input
-              {...register("description")}
-              as={Textarea}
-              size="xl"
-              height="210px"
-              isReadOnly={isReadOnly}
-            />
-          </InputError>
-        </FormControl>
-      </GridItem>
-    </Grid>
+    <SimpleGrid columns={1} gap={5}>
+      <FormControl>
+        <FormLabel>Title</FormLabel>
+        <InputError
+          label={errors.title?.message}
+          isOpen={errors.title ? true : false}
+        >
+          <Input {...register("title")} type="text" isReadOnly={isReadOnly} />
+        </InputError>
+      </FormControl>
+      <FormControl>
+        <FormLabel>Description</FormLabel>
+        <InputError
+          label={errors.description?.message}
+          isOpen={errors.description ? true : false}
+        >
+          <Input
+            {...register("description")}
+            as={Textarea}
+            size="xl"
+            height="210px"
+            isReadOnly={isReadOnly}
+          />
+        </InputError>
+      </FormControl>
+    </SimpleGrid>
   );
 };
 

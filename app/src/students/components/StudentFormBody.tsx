@@ -2,8 +2,8 @@ import {
   FormControl,
   FormLabel,
   Input,
-  VStack,
   Select,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { z } from "zod";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
@@ -19,7 +19,7 @@ const StudentFormBody = ({ register, errors }: Props) => {
   const grades = Array.from(Array(12).keys()).map((x) => (x + 1).toString());
 
   return (
-    <VStack spacing={2}>
+    <SimpleGrid columns={1} gap={5}>
       <FormControl>
         <FormLabel>Name</FormLabel>
         <InputError
@@ -31,7 +31,6 @@ const StudentFormBody = ({ register, errors }: Props) => {
       </FormControl>
       <FormControl>
         <FormLabel>Grade</FormLabel>
-
         <InputError
           label={errors.grade_level?.message}
           isOpen={errors.grade_level ? true : false}
@@ -46,7 +45,7 @@ const StudentFormBody = ({ register, errors }: Props) => {
           </Select>
         </InputError>
       </FormControl>
-    </VStack>
+    </SimpleGrid>
   );
 };
 

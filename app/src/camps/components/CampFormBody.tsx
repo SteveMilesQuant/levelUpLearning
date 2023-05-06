@@ -1,4 +1,4 @@
-import { FormControl, FormLabel, Grid, GridItem } from "@chakra-ui/react";
+import { FormControl, FormLabel, SimpleGrid } from "@chakra-ui/react";
 import { Program } from "../../programs";
 import { User } from "../../services/user-service";
 
@@ -18,23 +18,14 @@ const CampFormBody = ({
   isReadOnly,
 }: Props) => {
   return (
-    <Grid
-      templateAreas={{
-        base: `"Program" "Instructor"`,
-      }}
-      gap={5}
-    >
-      <GridItem area="Program">
-        <FormControl>
-          <FormLabel>Program</FormLabel>
-        </FormControl>
-      </GridItem>
-      <GridItem area="Instructor">
-        <FormControl>
-          <FormLabel>Instructor</FormLabel>
-        </FormControl>
-      </GridItem>
-    </Grid>
+    <SimpleGrid columns={1} gap={5}>
+      <FormControl>
+        <FormLabel>Program</FormLabel>
+      </FormControl>
+      <FormControl>
+        <FormLabel>Instructor</FormLabel>
+      </FormControl>
+    </SimpleGrid>
   );
 };
 

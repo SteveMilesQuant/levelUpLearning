@@ -13,10 +13,12 @@ import {
   PopoverFooter,
   HStack,
   Box,
+  Heading,
 } from "@chakra-ui/react";
+import { ReactNode } from "react";
 
 interface Props {
-  children?: JSX.Element;
+  children?: ReactNode;
   title: string;
   holdOpen: boolean;
   onUpdate: () => void;
@@ -41,9 +43,9 @@ const EditButtonPopover = ({
           <PopoverContent>
             <PopoverArrow />
             <PopoverHeader>
-              <Text>
-                <strong>{title}</strong>
-              </Text>
+              <Heading fontSize="xl" paddingY={1}>
+                {title}
+              </Heading>
               <PopoverCloseButton
                 onClick={() => {
                   onClosePopover();
