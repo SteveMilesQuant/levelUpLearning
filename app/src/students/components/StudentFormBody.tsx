@@ -5,14 +5,13 @@ import {
   Select,
   SimpleGrid,
 } from "@chakra-ui/react";
-import { z } from "zod";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import InputError from "../../components/InputError";
-import { studentSchema } from "../hooks/useStudentForm";
+import { FormData } from "../hooks/useStudentForm";
 
 interface Props {
-  register: UseFormRegister<z.infer<typeof studentSchema>>;
-  errors: FieldErrors<z.infer<typeof studentSchema>>;
+  register: UseFormRegister<FormData>;
+  errors: FieldErrors<FormData>;
 }
 
 const StudentFormBody = ({ register, errors }: Props) => {

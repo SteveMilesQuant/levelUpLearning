@@ -17,7 +17,7 @@ export const studentSchema = z.object({
     }),
 });
 
-type FormData = z.infer<typeof studentSchema>;
+export type FormData = z.infer<typeof studentSchema>;
 
 const useStudentForm = (student?: Student) => {
   const {
