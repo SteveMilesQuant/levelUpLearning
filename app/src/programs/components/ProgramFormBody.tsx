@@ -3,11 +3,13 @@ import {
   FormLabel,
   Grid,
   GridItem,
+  HStack,
   Input,
   RangeSlider,
   RangeSliderFilledTrack,
   RangeSliderThumb,
   RangeSliderTrack,
+  SimpleGrid,
   Textarea,
 } from "@chakra-ui/react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
@@ -30,24 +32,18 @@ const ProgramFormBody = ({
   isReadOnly,
 }: Props) => {
   return (
-    <Grid
-      templateAreas={{
-        base: `"title desc" "tags desc" "gradeRange desc"`,
-      }}
-      gap={5}
-    >
-      <GridItem area="title">
-        <FormControl>
-          <FormLabel>Title</FormLabel>
-          <InputError
-            label={errors.title?.message}
-            isOpen={errors.title ? true : false}
-          >
-            <Input {...register("title")} type="text" isReadOnly={isReadOnly} />
-          </InputError>
-        </FormControl>
-      </GridItem>
-      <GridItem area="tags">
+    <SimpleGrid columns={1} gap={5}>
+      <FormControl>
+        <FormLabel>Title</FormLabel>
+        <InputError
+          label={errors.title?.message}
+          isOpen={errors.title ? true : false}
+        >
+          <Input {...register("title")} type="text" isReadOnly={isReadOnly} />
+        </InputError>
+      </FormControl>
+
+      <HStack justifyContent="space-between" spacing={10}>
         <FormControl>
           <FormLabel>Tags</FormLabel>
           <InputError
@@ -57,8 +53,7 @@ const ProgramFormBody = ({
             <Input {...register("tags")} type="text" isReadOnly={isReadOnly} />
           </InputError>
         </FormControl>
-      </GridItem>
-      <GridItem area="gradeRange">
+
         <FormControl>
           <FormLabel>Grade range: {selectedGradeRange.join(" to ")}</FormLabel>
           <RangeSlider
@@ -77,25 +72,24 @@ const ProgramFormBody = ({
             <RangeSliderThumb index={1} />
           </RangeSlider>
         </FormControl>
-      </GridItem>
-      <GridItem area="desc">
-        <FormControl>
-          <FormLabel>Description</FormLabel>
-          <InputError
-            label={errors.description?.message}
-            isOpen={errors.description ? true : false}
-          >
-            <Input
-              {...register("description")}
-              as={Textarea}
-              size="xl"
-              height="210px"
-              isReadOnly={isReadOnly}
-            />
-          </InputError>
-        </FormControl>
-      </GridItem>
-    </Grid>
+      </HStack>
+
+      <FormControl>
+        <FormLabel>Description</FormLabel>
+        <InputError
+          label={errors.description?.message}
+          isOpen={errors.description ? true : false}
+        >
+          <Input
+            {...register("description")}
+            as={Textarea}
+            size="xl"
+            height="250px"
+            isReadOnly={isReadOnly}
+          />
+        </InputError>
+      </FormControl>
+    </SimpleGrid>
   );
 };
 

@@ -76,7 +76,7 @@ const LevelScheduleFormBody = ({
           <Input
             as={Textarea}
             size="xl"
-            height="210px"
+            height="250px"
             isReadOnly={true}
             value={level.description}
           />
