@@ -39,10 +39,10 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Stop docker container to free up CPU on my delicate EC2
-        run: sudo docker stop lul-container
+        run: sudo docker stop lul-container && sudo service nginx stop && sudo service docker stop
         
       - name: Rebuild UI
-        run: cd app && cp /home/ec2-user/teacherCamp/app/.env . && npm install && npm run build && cp -r ./dist /home/ec2-user/teacherCamp/app
+        run: cd app && cp /home/ec2-user/teacherCamp/app/.env . && npm install && npm run build && cp -r ./dist /home/ec2-user/teacherCamp/app && sudo service nginx start && sudo service docker start
 
       - name: Create docker image
         run: sudo docker build -t level-up-learning api
