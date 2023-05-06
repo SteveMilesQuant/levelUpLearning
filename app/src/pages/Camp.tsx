@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box, HStack, List } from "@chakra-ui/react";
+import { Box, Button, HStack, List, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import {
   LevelSchedule,
@@ -9,6 +9,7 @@ import {
   useCamp,
 } from "../camps";
 import { LevelListButton, ProgramForm } from "../programs";
+import { EnrollStudentModal } from "../students";
 
 interface Props {
   forScheduling: boolean;
@@ -20,6 +21,11 @@ const Camp = ({ forScheduling }: Props) => {
   const [selectedLevelSched, setSelectedLevelSched] = useState<
     LevelSchedule | undefined
   >(undefined);
+  const {
+    isOpen: newIsOpen,
+    onOpen: newOnOpen,
+    onClose: newOnClose,
+  } = useDisclosure();
   const { data: camp, isLoading, error } = useCamp(id, false);
   const { data: levelSchedules, error: levelsError } = useLevelSchedules(id);
 
@@ -29,7 +35,11 @@ const Camp = ({ forScheduling }: Props) => {
 
   return (
     <>
-      <PageHeader label={camp?.program.title}></PageHeader>
+      <PageHeader label={camp?.program.title}>
+        <Button size="lg" variant="outline" onClick={newOnOpen}>
+          Enroll Student
+        </Button>
+      </PageHeader>
       <HStack alignItems="start" spacing={10}>
         <List spacing={3}>
           <LevelListButton
@@ -71,6 +81,11 @@ const Camp = ({ forScheduling }: Props) => {
             ))}
         </Box>
       </HStack>
+      <EnrollStudentModal
+        title="Enroll Student"
+        isOpen={newIsOpen}
+        onClose={newOnClose}
+      />
     </>
   );
 };
