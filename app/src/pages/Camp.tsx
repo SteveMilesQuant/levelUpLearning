@@ -10,7 +10,11 @@ import {
 } from "../camps";
 import { LevelListButton, ProgramForm } from "../programs";
 
-const Camp = () => {
+interface Props {
+  forScheduling: boolean;
+}
+
+const Camp = ({ forScheduling }: Props) => {
   const { id: idStr } = useParams();
   const id = idStr ? parseInt(idStr) : undefined;
   const [selectedLevelSched, setSelectedLevelSched] = useState<
@@ -49,7 +53,9 @@ const Camp = () => {
           ))}
         </List>
         <Box width="100%">
-          {!selectedLevelSched && <ProgramForm program={camp?.program} />}
+          {!selectedLevelSched && (
+            <ProgramForm program={camp?.program} isReadOnly={!forScheduling} />
+          )}
           {levelSchedules
             ?.filter(
               (levelSchedule) =>

@@ -21,10 +21,11 @@ const router = createBrowserRouter([
         children: [
           { path: "students", element: <Students /> },
           { path: "camps", element: <Camps forScheduling={false} /> },
-          { path: "camps/:id", element: <Camp /> },
+          { path: "camps/:id", element: <Camp forScheduling={false} /> },
           { path: "programs", element: <Programs /> },
           { path: "programs/:id", element: <Program /> },
           { path: "schedule", element: <Camps forScheduling={true} /> },
+          { path: "schedule/:id", element: <Camp forScheduling={true} /> },
         ],
       },
     ],

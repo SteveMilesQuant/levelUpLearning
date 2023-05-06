@@ -3,7 +3,7 @@ import PageHeader from "../components/PageHeader";
 import { useCamps, useDeleteCamp, CampCard, CampFormModal } from "../camps";
 
 interface Props {
-  forScheduling?: boolean;
+  forScheduling: boolean;
 }
 
 const Camps = ({ forScheduling }: Props) => {
@@ -35,6 +35,7 @@ const Camps = ({ forScheduling }: Props) => {
             onDelete={
               forScheduling ? () => deleteCamp.mutate(camp.id) : undefined
             }
+            forScheduling={forScheduling}
           />
         ))}
       </SimpleGrid>

@@ -17,9 +17,10 @@ import { locale } from "../../constants";
 interface Props {
   camp: Camp;
   onDelete?: () => void;
+  forScheduling: boolean;
 }
 
-const CampCard = ({ camp, onDelete }: Props) => {
+const CampCard = ({ camp, onDelete, forScheduling }: Props) => {
   const byLine = "with " + camp.primary_instructor.full_name;
   const { data: levelSchedules, error, isLoading } = useLevelSchedules(camp.id);
 
@@ -35,7 +36,10 @@ const CampCard = ({ camp, onDelete }: Props) => {
     >
       <CardBody>
         <HStack justifyContent="space-between">
-          <LinkOverlay as={RouterLink} to={"/camps/" + camp.id}>
+          <LinkOverlay
+            as={RouterLink}
+            to={forScheduling ? "/schedule/" + camp.id : "/camps/" + camp.id}
+          >
             <HStack alignItems="end">
               <Heading fontSize="2xl">{camp.program.title}</Heading>
               <Text>{byLine}</Text>
