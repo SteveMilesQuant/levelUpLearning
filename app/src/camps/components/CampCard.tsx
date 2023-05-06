@@ -27,6 +27,8 @@ const CampCard = ({ camp, onDelete, forScheduling }: Props) => {
   if (isLoading) return null;
   if (error) throw error;
 
+  const startDate = new Date(levelSchedules[0]?.start_time);
+
   return (
     <LinkBox
       as={Card}
@@ -64,14 +66,12 @@ const CampCard = ({ camp, onDelete, forScheduling }: Props) => {
           </Text>
           <Text>
             <strong>Start time: </strong>
-            {levelSchedules &&
-              levelSchedules.length > 0 &&
-              levelSchedules[0].start_time &&
-              levelSchedules[0].start_time.toLocaleDateString(locale, {
+            {startDate &&
+              startDate.toLocaleDateString(locale, {
                 dateStyle: "short",
               }) +
                 " @ " +
-                levelSchedules[0].start_time.toLocaleTimeString(locale, {
+                startDate.toLocaleTimeString(locale, {
                   timeStyle: "short",
                 })}
           </Text>

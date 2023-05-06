@@ -2,30 +2,42 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
+import { zj } from "zod-joda";
 import { LevelSchedule } from "../LevelSchedule";
 import {
   useAddLevelSchedule,
   useUpdateLevelSchedule,
 } from "./useLevelSchedules";
+import { LocalDateTime } from "@js-joda/core";
 
 const levelSchema = z.object({
-  start_time: z.string().datetime(),
-  end_time: z.string().datetime(),
+  start_time: zj.localDateTime(),
+  end_time: zj.localDateTime(),
 });
 
 export type FormData = z.infer<typeof levelSchema>;
 
-interface Props {
-  campId?: number;
-  levelSchedule?: LevelSchedule;
-}
+const toLocalISOString = (dateTime: LocalDateTime) => {
+  let month = dateTime.monthValue().toString();
+  if (month.length < 2) month = "0" + month;
+  let day = dateTime.dayOfMonth().toString();
+  if (day.length < 2) day = "0" + day;
+  let hour = dateTime.hour().toString();
+  if (hour.length < 2) hour = "0" + hour;
+  let minute = dateTime.minute().toString();
+  if (minute.length < 2) minute = "0" + minute;
+  let second = dateTime.second().toString();
+  if (second.length < 2) second = "0" + second;
+  return `${dateTime.year()}-${month}-${day}T${hour}:${minute}:${second}`;
+};
 
 // For now, just using form to display - will add edit soon
-const useLevelScheduleForm = ({ campId, levelSchedule }: Props) => {
-  let start_time = levelSchedule?.start_time?.toISOString();
-  start_time = start_time?.substring(0, start_time.length - 8);
-  let end_time = levelSchedule?.end_time?.toISOString();
-  end_time = end_time?.substring(0, end_time.length - 8);
+const useLevelScheduleForm = (
+  campId?: number,
+  levelSchedule?: LevelSchedule
+) => {
+  const start_time = levelSchedule?.start_time;
+  const end_time = levelSchedule?.end_time;
 
   const {
     register,
@@ -39,7 +51,7 @@ const useLevelScheduleForm = ({ campId, levelSchedule }: Props) => {
         start_time,
         end_time,
       };
-    }, [levelSchedule]),
+    }, [start_time, end_time]),
   });
 
   const addLevelSchedule = useAddLevelSchedule(campId);
@@ -48,9 +60,6 @@ const useLevelScheduleForm = ({ campId, levelSchedule }: Props) => {
   const handleClose = () => {
     reset({ start_time, end_time });
   };
-  useEffect(() => {
-    handleClose();
-  }, [start_time, end_time]);
 
   const handleSubmitLocal = (data: FieldValues) => {
     if (!campId) return;
@@ -58,7 +67,8 @@ const useLevelScheduleForm = ({ campId, levelSchedule }: Props) => {
     const newLevel = {
       id: 0,
       ...levelSchedule,
-      ...data,
+      start_time: toLocalISOString(data.start_time),
+      end_time: toLocalISOString(data.end_time),
     } as LevelSchedule;
 
     if (levelSchedule) {

@@ -1,8 +1,8 @@
 import { Level } from "../programs";
 
 export interface LevelScheduleData {
-  start_time: Date;
-  end_time: Date;
+  start_time: string;
+  end_time: string;
 }
 
 export interface LevelSchedule extends LevelScheduleData {

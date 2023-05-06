@@ -16,7 +16,7 @@ interface Props {
 
 const LevelScheduleForm = ({ campId, levelSchedule, isReadOnly }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
-  const levelScheduleForm = useLevelScheduleForm({ levelSchedule });
+  const levelScheduleForm = useLevelScheduleForm(campId, levelSchedule);
 
   return (
     <>
