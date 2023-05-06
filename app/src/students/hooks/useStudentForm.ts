@@ -8,11 +8,12 @@ import { useAddStudent, useUpdateStudent } from "./useStudents";
 export const studentSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
   grade_level: z
-    .string()
-    .min(1, { message: "Grade is required." })
-    .transform((val) => parseInt(val))
+    .number({ invalid_type_error: "Grade is required." })
     .catch((ctx) => {
-      if (typeof ctx.input === "number") return parseInt(ctx.input);
+      if (typeof ctx.input === "string") {
+        const num = parseInt(ctx.input);
+        if (!isNaN(num)) return num;
+      }
       throw ctx.error;
     }),
 });

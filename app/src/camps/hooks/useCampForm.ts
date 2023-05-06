@@ -1,61 +1,84 @@
-import { useEffect, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo } from "react";
+import { FieldValues, useForm } from "react-hook-form";
+import { z } from "zod";
 import { Camp } from "../Camp";
 import { useAddCamp, useUpdateCamp } from "./useCamps";
 
+export const campSchema = z.object({
+  program_id: z
+    .string()
+    .min(1, { message: "Program is required." })
+    .transform((val) => parseInt(val))
+    .catch((ctx) => {
+      if (typeof ctx.input === "number") return parseInt(ctx.input);
+      throw ctx.error;
+    }),
+  primary_instructor_id: z
+    .string()
+    .min(1, { message: "Primary instructor is required." })
+    .transform((val) => parseInt(val))
+    .catch((ctx) => {
+      if (typeof ctx.input === "number") return parseInt(ctx.input);
+      throw ctx.error;
+    }),
+});
+
+export type FormData = z.infer<typeof campSchema>;
+
 const useCampForm = (camp?: Camp) => {
-  const [selectedProgram, setSelectedProgram] = useState(camp?.program);
-  const [selectedInstructor, setSelectedInstructor] = useState(
-    camp?.primary_instructor
-  );
-  const [isValid, setIsValid] = useState(false);
-
-  const reset = (resetCamp?: Camp) => {
-    setSelectedProgram(resetCamp?.program);
-    setSelectedInstructor(resetCamp?.primary_instructor);
-  };
-  const handleClose = reset;
-
-  useEffect(() => reset(camp), [camp]);
-  useEffect(() => {
-    if (selectedProgram && selectedInstructor) {
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-    }
-  }, [selectedProgram, selectedInstructor]);
+  const {
+    register,
+    handleSubmit: handleFormSubmit,
+    formState: { errors, isValid: formIsValid },
+    reset,
+  } = useForm<FormData>({
+    resolver: zodResolver(campSchema),
+    defaultValues: useMemo(() => {
+      return { ...camp };
+    }, [camp]),
+  });
+  const isValid = formIsValid;
 
   const addCamp = useAddCamp();
   const updateCamp = useUpdateCamp();
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    reset({ ...camp });
+  }, [camp]);
+
+  const handleClose = () => {
+    reset({ ...camp });
+  };
+
+  const handleSubmitLocal = (data: FieldValues) => {
     if (!isValid) return;
 
     const newCamp = {
       id: 0,
       ...camp,
-      program_id: selectedProgram?.id,
-      program: selectedProgram,
-      primary_instructor_id: selectedInstructor?.id,
-      primary_instructor: selectedInstructor,
+      ...data,
     } as Camp;
 
     if (camp) {
-      // Update student
+      // Update camp
       updateCamp.mutate(newCamp);
     } else {
-      // Add new student
+      // Add new camp
       addCamp.mutate(newCamp);
     }
   };
 
+  const handleSubmit = () => {
+    handleFormSubmit(handleSubmitLocal)();
+  };
+
   return {
-    isValid,
+    register,
+    errors,
     handleClose,
     handleSubmit,
-    selectedProgram,
-    setSelectedProgram,
-    selectedInstructor,
-    setSelectedInstructor,
+    isValid,
   };
 };
 
