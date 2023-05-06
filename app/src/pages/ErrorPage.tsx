@@ -5,8 +5,8 @@ const ErrorPage = () => {
   const error = useRouteError();
   return (
     <>
-      <Heading>ErrorPage</Heading>
-      <Text>
+      <Heading>Oops...</Heading>
+      <Text marginY={5}>
         {isRouteErrorResponse(error) ? "Invalid page" : "Unexpected error."}
       </Text>
     </>

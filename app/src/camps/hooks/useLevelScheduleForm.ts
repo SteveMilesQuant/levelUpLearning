@@ -1,8 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { LevelSchedule } from "../LevelSchedule";
+import {
+  useAddLevelSchedule,
+  useUpdateLevelSchedule,
+} from "./useLevelSchedules";
 
 const levelSchema = z.object({
   start_time: z.string().datetime(),
@@ -12,11 +16,12 @@ const levelSchema = z.object({
 export type FormData = z.infer<typeof levelSchema>;
 
 interface Props {
+  campId?: number;
   levelSchedule?: LevelSchedule;
 }
 
 // For now, just using form to display - will add edit soon
-const useLevelForm = ({ levelSchedule }: Props) => {
+const useLevelScheduleForm = ({ campId, levelSchedule }: Props) => {
   let start_time = levelSchedule?.start_time?.toISOString();
   start_time = start_time?.substring(0, start_time.length - 8);
   let end_time = levelSchedule?.end_time?.toISOString();
@@ -25,7 +30,8 @@ const useLevelForm = ({ levelSchedule }: Props) => {
   const {
     register,
     reset,
-    formState: { errors },
+    handleSubmit: handleFormSubmit,
+    formState: { errors, isValid },
   } = useForm<FormData>({
     resolver: zodResolver(levelSchema),
     defaultValues: useMemo(() => {
@@ -36,17 +42,40 @@ const useLevelForm = ({ levelSchedule }: Props) => {
     }, [levelSchedule]),
   });
 
+  const addLevelSchedule = useAddLevelSchedule(campId);
+  const updateLevelSchedule = useUpdateLevelSchedule(campId);
+
+  const handleClose = () => {
+    reset({ start_time, end_time });
+  };
   useEffect(() => {
-    reset({
-      start_time,
-      end_time,
-    });
-  }, [levelSchedule]);
+    handleClose();
+  }, [start_time, end_time]);
+
+  const handleSubmitLocal = (data: FieldValues) => {
+    if (!campId) return;
+
+    const newLevel = {
+      id: 0,
+      ...levelSchedule,
+      ...data,
+    } as LevelSchedule;
+
+    if (levelSchedule) {
+      updateLevelSchedule.mutate(newLevel);
+    } else {
+      addLevelSchedule.mutate(newLevel);
+    }
+  };
+  const handleSubmit = handleFormSubmit(handleSubmitLocal);
 
   return {
     register,
     errors,
+    isValid,
+    handleClose,
+    handleSubmit,
   };
 };
 
-export default useLevelForm;
+export default useLevelScheduleForm;

@@ -16,7 +16,7 @@ const useLevelForm = (programId?: number, level?: Level) => {
   const {
     register,
     handleSubmit: handleFormSubmit,
-    formState: { errors, isValid: isValidForm },
+    formState: { errors, isValid },
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(levelSchema),
@@ -24,18 +24,16 @@ const useLevelForm = (programId?: number, level?: Level) => {
       return { ...level };
     }, [level]),
   });
-  const isValid = isValidForm;
 
   const addLevel = useAddLevel(programId);
   const updateLevel = useUpdateLevel(programId);
 
-  useEffect(() => {
-    reset({ ...level });
-  }, [level]);
-
   const handleClose = () => {
     reset({ ...level });
   };
+  useEffect(() => {
+    handleClose();
+  }, [level]);
 
   const handleSubmitLocal = (data: FieldValues) => {
     if (!programId) return;

@@ -5,8 +5,13 @@ import SideIconList from "../components/SideIconList";
 import useRoles from "../hooks/useRoles";
 import BodyContainer from "../components/BodyContainer";
 import useAuth from "../hooks/useAuth";
+import { ReactNode } from "react";
 
-const Layout = () => {
+interface Props {
+  children?: ReactNode;
+}
+
+const Layout = ({ children }: Props) => {
   const { signedIn } = useAuth();
   const { data: roles } = useRoles(signedIn);
 
@@ -17,6 +22,7 @@ const Layout = () => {
         {roles && <SideIconList roles={roles} />}
         <BodyContainer>
           <Outlet />
+          {children}
         </BodyContainer>
       </HStack>
     </>

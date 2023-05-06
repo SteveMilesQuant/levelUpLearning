@@ -54,7 +54,7 @@ const Camp = ({ forScheduling }: Props) => {
         </List>
         <Box width="100%">
           {!selectedLevelSched && (
-            <ProgramForm program={camp?.program} isReadOnly={!forScheduling} />
+            <ProgramForm program={camp?.program} isReadOnly={true} />
           )}
           {levelSchedules
             ?.filter(
@@ -64,7 +64,9 @@ const Camp = ({ forScheduling }: Props) => {
             .map((levelSchedule) => (
               <LevelScheduleForm
                 key={levelSchedule.level.id}
+                campId={camp.id}
                 levelSchedule={levelSchedule}
+                isReadOnly={!forScheduling}
               ></LevelScheduleForm>
             ))}
         </Box>
