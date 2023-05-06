@@ -34,11 +34,6 @@ const useProgramForm = (program?: Program) => {
   const addProgram = useAddProgram();
   const updateProgram = useUpdateProgram();
 
-  useEffect(() => {
-    reset({ ...program });
-    setSelectedGradeRange(program?.grade_range || [6, 8]);
-  }, [program]);
-
   const handleClose = () => {
     reset({ ...program });
     setSelectedGradeRange(program?.grade_range || [6, 8]);

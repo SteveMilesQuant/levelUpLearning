@@ -31,9 +31,6 @@ const useLevelForm = (programId?: number, level?: Level) => {
   const handleClose = () => {
     reset({ ...level });
   };
-  useEffect(() => {
-    handleClose();
-  }, [level]);
 
   const handleSubmitLocal = (data: FieldValues) => {
     if (!programId) return;

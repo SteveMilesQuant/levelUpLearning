@@ -55,10 +55,6 @@ const useCampForm = (camp?: Camp) => {
   const addCamp = useAddCamp();
   const updateCamp = useUpdateCamp();
 
-  useEffect(() => {
-    reset({ ...camp });
-  }, [camp]);
-
   const handleClose = () => {
     reset({ ...camp });
   };

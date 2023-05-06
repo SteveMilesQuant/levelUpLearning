@@ -40,10 +40,6 @@ const useStudentForm = (student?: Student) => {
   const addStudent = useAddStudent();
   const updateStudent = useUpdateStudent();
 
-  useEffect(() => {
-    reset({ ...student });
-  }, [student]);
-
   const handleClose = () => {
     reset({ ...student });
   };

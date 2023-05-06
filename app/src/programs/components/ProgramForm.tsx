@@ -53,10 +53,7 @@ const ProgramForm = ({ program, isReadOnly }: Props) => {
           <SubmitButton
             onClick={() => {
               programForm.handleSubmit();
-              if (programForm.isValid) {
-                programForm.handleClose();
-                setIsEditing(false);
-              }
+              if (programForm.isValid) setIsEditing(false);
             }}
             disabled={!isEditing}
           >

@@ -67,10 +67,7 @@ const EditButtonPopover = ({
                 <Button
                   onClick={() => {
                     onUpdate();
-                    if (!holdOpen) {
-                      onClosePopover();
-                      onClose();
-                    }
+                    if (!holdOpen) onClosePopover();
                   }}
                   bgColor="blue.300"
                 >

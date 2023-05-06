@@ -50,10 +50,7 @@ const LevelForm = ({ programId, level, isReadOnly }: Props) => {
           <SubmitButton
             onClick={() => {
               levelForm.handleSubmit();
-              if (levelForm.isValid) {
-                levelForm.handleClose();
-                setIsEditing(false);
-              }
+              if (levelForm.isValid) setIsEditing(false);
             }}
             disabled={!isEditing}
           >

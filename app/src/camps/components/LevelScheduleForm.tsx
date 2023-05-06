@@ -45,10 +45,7 @@ const LevelScheduleForm = ({ campId, levelSchedule, isReadOnly }: Props) => {
           <SubmitButton
             onClick={() => {
               levelScheduleForm.handleSubmit();
-              if (levelScheduleForm.isValid) {
-                levelScheduleForm.handleClose();
-                setIsEditing(false);
-              }
+              if (levelScheduleForm.isValid) setIsEditing(false);
             }}
             disabled={!isEditing}
           >
