@@ -1,6 +1,6 @@
-export { type Program } from "./Program";
+export { type Program, CACHE_KEY_PROGRAMS } from "./Program";
 export { type Level } from "./Level";
-export { useProgram } from "./hooks/usePrograms";
+export { default as usePrograms, useProgram } from "./hooks/usePrograms";
 export { default as useLevels } from "./hooks/useLevels";
 export { default as ProgramList } from "./components/ProgramList";
 export { default as ProgramFormModal } from "./components/ProgramFormModal";

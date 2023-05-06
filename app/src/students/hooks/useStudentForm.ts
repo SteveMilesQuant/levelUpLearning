@@ -10,6 +10,9 @@ export const studentSchema = z.object({
   grade_level: z
     .number({ invalid_type_error: "Grade is required." })
     .catch((ctx) => {
+      // I'd prefer use transform (string to number), but that doesn't play well with defaultValues
+      // You end up getting numbers you have to catch from the default values, which must be numbers
+      // Zod should fix this, or allow valueAsNumber (which it ignores)
       if (typeof ctx.input === "string") {
         const num = parseInt(ctx.input);
         if (!isNaN(num)) return num;

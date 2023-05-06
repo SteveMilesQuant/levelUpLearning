@@ -16,6 +16,12 @@ const scheduleHooks = new APIHooks<Camp, CampData>(
   ms("5m")
 );
 
+const writeCampHooks = new APIHooks<Camp, CampData>(
+  new APIClient<Camp, CampData>("/camps"),
+  CACHE_KEY_SCHEDULE,
+  ms("5m")
+);
+
 const useCamps = (forScheduling?: boolean, studentId?: number) => {
   if (forScheduling) {
     return scheduleHooks.useDataList();
@@ -32,7 +38,10 @@ const useCamps = (forScheduling?: boolean, studentId?: number) => {
 };
 
 export default useCamps;
-export const useCamp = campHooks.useData;
-export const useAddCamp = campHooks.useAdd;
-export const useUpdateCamp = campHooks.useUpdate;
-export const useDeleteCamp = campHooks.useDelete;
+export const useCamp = (id?: number, forScheduling?: boolean) => {
+  if (forScheduling) scheduleHooks.useData(id);
+  return campHooks.useData(id);
+};
+export const useAddCamp = writeCampHooks.useAdd;
+export const useUpdateCamp = writeCampHooks.useUpdate;
+export const useDeleteCamp = writeCampHooks.useDelete;

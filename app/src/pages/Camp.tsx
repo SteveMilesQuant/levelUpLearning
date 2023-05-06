@@ -16,7 +16,7 @@ const Camp = () => {
   const [selectedLevelSched, setSelectedLevelSched] = useState<
     LevelSchedule | undefined
   >(undefined);
-  const { data: camp, isLoading, error } = useCamp(id);
+  const { data: camp, isLoading, error } = useCamp(id, false);
   const { data: levelSchedules, error: levelsError } = useLevelSchedules(id);
 
   if (isLoading) return null;

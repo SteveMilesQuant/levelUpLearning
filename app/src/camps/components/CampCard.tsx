@@ -60,7 +60,9 @@ const CampCard = ({ camp, onDelete }: Props) => {
           </Text>
           <Text>
             <strong>Start time: </strong>
-            {levelSchedules.length > 0 &&
+            {levelSchedules &&
+              levelSchedules.length > 0 &&
+              levelSchedules[0].start_time &&
               levelSchedules[0].start_time.toLocaleDateString(locale, {
                 dateStyle: "short",
               }) +

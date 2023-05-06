@@ -4,22 +4,32 @@ import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Camp } from "../Camp";
 import { useAddCamp, useUpdateCamp } from "./useCamps";
+import { usePrograms } from "../../programs";
+import useInstructors from "../../hooks/useInstructors";
 
 export const campSchema = z.object({
   program_id: z
-    .string()
-    .min(1, { message: "Program is required." })
-    .transform((val) => parseInt(val))
+    .number({ invalid_type_error: "Program is required." })
     .catch((ctx) => {
-      if (typeof ctx.input === "number") return parseInt(ctx.input);
+      // I'd prefer use transform (string to number), but that doesn't play well with defaultValues
+      // You end up getting numbers you have to catch from the default values, which must be numbers
+      // Zod should fix this, or allow valueAsNumber (which it ignores)
+      if (typeof ctx.input === "string") {
+        const num = parseInt(ctx.input);
+        if (!isNaN(num)) return num;
+      }
       throw ctx.error;
     }),
   primary_instructor_id: z
-    .string()
-    .min(1, { message: "Primary instructor is required." })
-    .transform((val) => parseInt(val))
+    .number({ invalid_type_error: "Primary instructor is required." })
     .catch((ctx) => {
-      if (typeof ctx.input === "number") return parseInt(ctx.input);
+      // I'd prefer use transform (string to number), but that doesn't play well with defaultValues
+      // You end up getting numbers you have to catch from the default values, which must be numbers
+      // Zod should fix this, or allow valueAsNumber (which it ignores)
+      if (typeof ctx.input === "string") {
+        const num = parseInt(ctx.input);
+        if (!isNaN(num)) return num;
+      }
       throw ctx.error;
     }),
 });
@@ -27,6 +37,8 @@ export const campSchema = z.object({
 export type FormData = z.infer<typeof campSchema>;
 
 const useCampForm = (camp?: Camp) => {
+  const { data: programs } = usePrograms();
+  const { data: instructors } = useInstructors();
   const {
     register,
     handleSubmit: handleFormSubmit,
@@ -54,10 +66,17 @@ const useCampForm = (camp?: Camp) => {
   const handleSubmitLocal = (data: FieldValues) => {
     if (!isValid) return;
 
+    const program = programs?.find((p) => p.id === data.program_id);
+    const instructor = instructors?.find(
+      (i) => i.id === data.primary_instructor_id
+    );
+
     const newCamp = {
       id: 0,
       ...camp,
       ...data,
+      program: { ...program },
+      primary_instructor: { ...instructor },
     } as Camp;
 
     if (camp) {
