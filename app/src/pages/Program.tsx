@@ -13,11 +13,11 @@ import {
   Level,
   useLevels,
   ProgramForm,
-  LevelListButton,
   LevelForm,
   LevelFormModal,
   useProgram,
 } from "../programs";
+import ListButton from "../camps/components/ListButton";
 
 const Program = () => {
   const { id: idStr } = useParams();
@@ -53,22 +53,22 @@ const Program = () => {
       <PageHeader label={program?.title}></PageHeader>
       <HStack alignItems="start" spacing={10}>
         <List spacing={3}>
-          <LevelListButton
+          <ListButton
             isSelected={!selectedLevel}
             onClick={() => setSelectedLevel(undefined)}
           >
             Program
-          </LevelListButton>
+          </ListButton>
           {levels
             ?.sort((a, b) => a.list_index - b.list_index)
             .map((level) => (
-              <LevelListButton
+              <ListButton
                 key={level.id}
                 isSelected={selectedLevel?.id === level.id}
                 onClick={() => setSelectedLevel(level)}
               >
                 {level.list_index + ": " + level.title}
-              </LevelListButton>
+              </ListButton>
             ))}
           <ListItem>
             <Button onClick={newLevelOnOpen}>Add level</Button>

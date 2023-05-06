@@ -8,8 +8,9 @@ import {
   LevelScheduleForm,
   useCamp,
 } from "../camps";
-import { LevelListButton, ProgramForm } from "../programs";
+import { ProgramForm } from "../programs";
 import { EnrollStudentModal } from "../students";
+import ListButton from "../camps/components/ListButton";
 
 interface Props {
   forScheduling: boolean;
@@ -42,14 +43,14 @@ const Camp = ({ forScheduling }: Props) => {
       </PageHeader>
       <HStack alignItems="start" spacing={10}>
         <List spacing={3}>
-          <LevelListButton
+          <ListButton
             isSelected={!selectedLevelSched}
             onClick={() => setSelectedLevelSched(undefined)}
           >
             Camp
-          </LevelListButton>
+          </ListButton>
           {levelSchedules?.map((levelSchedule) => (
-            <LevelListButton
+            <ListButton
               key={levelSchedule.level.id}
               isSelected={
                 selectedLevelSched?.level.id === levelSchedule.level.id
@@ -59,7 +60,7 @@ const Camp = ({ forScheduling }: Props) => {
               {levelSchedule.level?.list_index +
                 ": " +
                 levelSchedule.level?.title}
-            </LevelListButton>
+            </ListButton>
           ))}
         </List>
         <Box width="100%">

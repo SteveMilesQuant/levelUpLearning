@@ -1,4 +1,4 @@
-import { Button, ListItem } from "@chakra-ui/react";
+import { Button } from "@chakra-ui/react";
 
 interface Props {
   children: string;
@@ -6,7 +6,7 @@ interface Props {
   onClick: () => void;
 }
 
-const LevelListButton = ({ children, isSelected, onClick }: Props) => {
+const ListButton = ({ children, isSelected, onClick }: Props) => {
   return (
     <Button
       variant="ghost"
@@ -21,4 +21,4 @@ const LevelListButton = ({ children, isSelected, onClick }: Props) => {
   );
 };
 
-export default LevelListButton;
+export default ListButton;
