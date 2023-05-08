@@ -56,7 +56,23 @@ jobs:
         run: cd app && npm install
 
       - name: Production build
-        num: cd app && echo VITE_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}$'\n'VITE_API_URL=/api > .env && npm run build
+        run: cd app && echo VITE_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}$'\n'VITE_API_URL=/api > .env && npm run build
 
       - name: Add built app files to Zip file
         run: zip -g ./app.zip -r ./app/dist
+
+    - name: Install AWS CLI
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Upload to S3
+        run: aws s3 cp app.zip s3://leveluplearning-s3bucket/app.zip
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
