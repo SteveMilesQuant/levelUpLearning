@@ -33,3 +33,18 @@ jobs:
           DB_HOST: ${{ secrets.DB_HOST }}
         run: . virt/bin/activate && cd api && export PYTHONPATH=. && pytest
 
+  API-CD:
+    runs-on: self-hosted
+    needs: [CI]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Rebuild UI
+        run: cd app && cp /home/ec2-user/teacherCamp/app/.env . && npm install && npm run build && cp -r ./dist /home/ec2-user/teacherCamp/app && sudo service nginx start && sudo service docker start
+
+      - name: Create docker image
+        run: sudo docker build -t level-up-learning api
+
+      - name: Restart docker container
+        run: sudo docker rm lul-container && sudo docker run -d --env-file /home/ec2-user/teacherCamp/api/.env --name lul-container -p 8000:8000 level-up-learning
