@@ -38,6 +38,8 @@ jobs:
     needs: [CI]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
+      - uses: actions/checkout@v2
+
       - name: Rebuild UI
         run: cd app && cp /home/ec2-user/teacherCamp/app/.env . && npm install && npm run build && cp -r ./dist /home/ec2-user/teacherCamp/app && sudo service nginx start && sudo service docker start
 
