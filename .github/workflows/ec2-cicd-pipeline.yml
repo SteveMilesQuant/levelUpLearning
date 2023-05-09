@@ -91,6 +91,10 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
   APP-DEPLOY:
+    runs-on: self-hosted
+    needs: [APP-BUILD]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
       - name: Download from S3, unzip, and copy to target location
         run: |
           aws s3 cp s3://leveluplearning-s3bucket/app.zip ./app.zip
