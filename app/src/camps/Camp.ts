@@ -1,5 +1,5 @@
 import { Program } from "../programs";
-import { User } from "../services/user-service";
+import { User } from "../users";
 
 export interface CampData {
   program_id: number;

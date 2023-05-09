@@ -2,8 +2,8 @@ import { FormControl, FormLabel, Select, SimpleGrid } from "@chakra-ui/react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { FormData } from "../hooks/useCampForm";
 import InputError from "../../components/InputError";
-import usePrograms from "../../programs/hooks/usePrograms";
-import useInstructors from "../../hooks/useInstructors";
+import { usePrograms } from "../../programs";
+import { useInstructors } from "../../users";
 
 interface Props {
   register: UseFormRegister<FormData>;

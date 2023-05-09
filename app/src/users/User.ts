@@ -1,4 +1,4 @@
-import { Role } from "../hooks/useRoles";
+import { Role } from "./Role";
 
 export interface UserData {
   full_name: string;

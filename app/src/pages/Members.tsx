@@ -8,8 +8,7 @@ import {
   Tr,
 } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import useUsers from "../hooks/useUsers";
-import useRoles from "../hooks/useRoles";
+import { useRoles, useUsers } from "../users";
 
 const Members = () => {
   const { data: roles } = useRoles();

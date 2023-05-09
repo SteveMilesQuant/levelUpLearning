@@ -3,10 +3,9 @@ import { GiTeacher } from "react-icons/gi";
 import { MdManageAccounts, MdOutlineDesignServices } from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
 import { Box } from "@chakra-ui/react";
-import { Role } from "../hooks/useRoles";
+import { Role } from "../users/Role";
 import LinkIcon from "./LinkIcon";
 import { ReactElement } from "react";
-import useAuth from "../hooks/useAuth";
 
 interface Props {
   roles: Role[];
@@ -20,9 +19,6 @@ interface SideIcon {
 }
 
 const SideIconList = ({ roles }: Props) => {
-  const { signedIn } = useAuth();
-  if (!signedIn) return null;
-
   const iconsByRole: { [key: string]: SideIcon[] } = {
     GUARDIAN: [
       {

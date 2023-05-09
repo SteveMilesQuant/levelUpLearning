@@ -4,7 +4,7 @@ import {
   googleLogout,
   useGoogleLogin,
 } from "@react-oauth/google";
-import { axiosInstance } from "../services/api-client";
+import { axiosInstance } from "../../services/api-client";
 import { create } from "zustand";
 import { mountStoreDevtool } from "simple-zustand-devtools";
 

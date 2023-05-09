@@ -1,6 +1,6 @@
 import { Button, Text } from "@chakra-ui/react";
 import { FcGoogle } from "react-icons/fc";
-import useAuth from "../hooks/useAuth";
+import { useAuth } from "../users";
 
 const AuthButton = () => {
   const { signedIn, onLogin, onLogout } = useAuth();

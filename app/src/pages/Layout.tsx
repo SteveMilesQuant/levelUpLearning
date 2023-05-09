@@ -3,9 +3,9 @@ import { HStack } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import SideIconList from "../components/SideIconList";
 import BodyContainer from "../components/BodyContainer";
-import useAuth from "../hooks/useAuth";
+import { useAuth } from "../users";
 import { ReactNode } from "react";
-import useUser from "../hooks/useUser";
+import { useUser } from "../users";
 
 interface Props {
   children?: ReactNode;

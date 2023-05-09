@@ -1,11 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Camp } from "../Camp";
 import { useAddCamp, useUpdateCamp } from "./useCamps";
 import { usePrograms } from "../../programs";
-import useInstructors from "../../hooks/useInstructors";
+import { useInstructors } from "../../users";
 
 export const campSchema = z.object({
   program_id: z

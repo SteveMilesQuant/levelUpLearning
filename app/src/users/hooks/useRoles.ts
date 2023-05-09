@@ -1,9 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import APIClient from "../services/api-client";
-
-export interface Role {
-  name: string;
-}
+import APIClient from "../../services/api-client";
 
 export const CACHE_KEY_ROLES = ["roles"];
 

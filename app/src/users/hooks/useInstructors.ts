@@ -1,7 +1,7 @@
-import APIHooks from "../services/api-hooks";
-import APIClient from "../services/api-client";
+import APIHooks from "../../services/api-hooks";
+import APIClient from "../../services/api-client";
 import ms from "ms";
-import { User, UserData } from "../services/user-service";
+import { User, UserData } from "../User";
 
 export const CACHE_KEY_INSTRUCTORS = ["instructors"];
 

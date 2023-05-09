@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import APIClient from "../services/api-client";
-import { User } from "../services/user-service";
+import APIClient from "../../services/api-client";
+import { User } from "../User";
 
 export const CACHE_KEY_USER = ["user"];
 
