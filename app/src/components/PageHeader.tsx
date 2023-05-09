@@ -4,16 +4,17 @@ import { ReactNode } from "react";
 interface Props {
   children?: ReactNode;
   label?: string;
+  hideUnderline?: boolean;
 }
 
-const PageHeader = ({ children, label }: Props) => {
+const PageHeader = ({ children, label, hideUnderline }: Props) => {
   return (
     <>
-      <HStack justifyContent="space-between">
+      <HStack justifyContent="space-between" marginBottom={5}>
         <Heading fontSize="3xl">{label}</Heading>
         {children}
       </HStack>
-      <Divider orientation="horizontal" marginY={5} />
+      {!hideUnderline && <Divider orientation="horizontal" marginY={5} />}
     </>
   );
 };

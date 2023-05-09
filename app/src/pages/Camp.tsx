@@ -1,6 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Button, HStack, List, useDisclosure } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  HStack,
+  List,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  useDisclosure,
+} from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import {
   LevelSchedule,
@@ -30,58 +41,69 @@ const Camp = ({ forScheduling }: Props) => {
   const { data: camp, isLoading, error } = useCamp(id, false);
   const { data: levelSchedules, error: levelsError } = useLevelSchedules(id);
 
+  useEffect(() => {
+    if (levelSchedules) setSelectedLevelSched(levelSchedules[0]);
+  }, [levelSchedules === undefined]);
+
   if (isLoading) return null;
   if (error) throw error;
   if (levelsError) throw levelsError;
 
   return (
     <>
-      <PageHeader label={camp?.program.title}>
-        <Button size="lg" variant="outline" onClick={newOnOpen}>
-          Enroll Student
-        </Button>
+      <PageHeader label={camp?.program.title} hideUnderline={true}>
+        {!forScheduling && (
+          <Button size="lg" variant="outline" onClick={newOnOpen}>
+            Enroll Student
+          </Button>
+        )}
       </PageHeader>
-      <HStack alignItems="start" spacing={10}>
-        <List spacing={3}>
-          <ListButton
-            isSelected={!selectedLevelSched}
-            onClick={() => setSelectedLevelSched(undefined)}
-          >
-            Camp
-          </ListButton>
-          {levelSchedules?.map((levelSchedule) => (
-            <ListButton
-              key={levelSchedule.level.id}
-              isSelected={
-                selectedLevelSched?.level.id === levelSchedule.level.id
-              }
-              onClick={() => setSelectedLevelSched(levelSchedule)}
-            >
-              {levelSchedule.level?.list_index +
-                ": " +
-                levelSchedule.level?.title}
-            </ListButton>
-          ))}
-        </List>
-        <Box width="100%">
-          {!selectedLevelSched && (
+      <Tabs variant="enclosed">
+        <TabList>
+          <Tab>Camp</Tab>
+          <Tab>Levels</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
             <ProgramForm program={camp?.program} isReadOnly={true} />
-          )}
-          {levelSchedules
-            ?.filter(
-              (levelSchedule) =>
-                levelSchedule.level.id === selectedLevelSched?.level.id
-            )
-            .map((levelSchedule) => (
-              <LevelScheduleForm
-                key={levelSchedule.level.id}
-                campId={camp.id}
-                levelSchedule={levelSchedule}
-                isReadOnly={!forScheduling}
-              ></LevelScheduleForm>
-            ))}
-        </Box>
-      </HStack>
+          </TabPanel>
+          <TabPanel>
+            <HStack alignItems="start" spacing={10}>
+              <List spacing={3}>
+                {levelSchedules?.map((levelSchedule, index) => (
+                  <ListButton
+                    key={levelSchedule.level.id}
+                    isSelected={
+                      (!selectedLevelSched && index === 0) ||
+                      selectedLevelSched?.level.id === levelSchedule.level.id
+                    }
+                    onClick={() => setSelectedLevelSched(levelSchedule)}
+                  >
+                    {levelSchedule.level?.list_index +
+                      ": " +
+                      levelSchedule.level?.title}
+                  </ListButton>
+                ))}
+              </List>
+              <Box width="100%">
+                {levelSchedules
+                  ?.filter(
+                    (levelSchedule) =>
+                      levelSchedule.level.id === selectedLevelSched?.level.id
+                  )
+                  .map((levelSchedule) => (
+                    <LevelScheduleForm
+                      key={levelSchedule.level.id}
+                      campId={camp.id}
+                      levelSchedule={levelSchedule}
+                      isReadOnly={!forScheduling}
+                    ></LevelScheduleForm>
+                  ))}
+              </Box>
+            </HStack>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
       <EnrollStudentModal
         title="Enroll Student"
         campId={camp?.id}
