@@ -27,7 +27,7 @@ class LevelSchedule(LevelScheduleResponse):
             # Otherwise, update attributes from fetched object
             for key, value in self._db_obj.dict().items():
                 setattr(self, key, value)
-                
+
         # Always get the associated level (TODO: do this in db - will be faster)
         await session.refresh(self._db_obj, ['level'])
         self.level = LevelResponse(**self._db_obj.level.dict())
@@ -84,11 +84,15 @@ class Camp(CampResponse):
                 await level_schedule.create(session)
                 self._db_obj.level_schedules.append(level_schedule._db_obj)
             await session.commit()
+
+            await session.refresh(self._db_obj, ['primary_instructor', 'instructors'])
+            self._db_obj.instructors.append(self._db_obj.primary_instructor)
+            await session.commit()
         else:
             # Otherwise, update attributes from fetched object
             for key, value in self._db_obj.dict().items():
                 setattr(self, key, value)
-                
+
         # Always get the associated primary instructor and program (TODO: do this in db - will be faster)
         await session.refresh(self._db_obj, ['primary_instructor', 'program'])
         self.primary_instructor = UserResponse(**self._db_obj.primary_instructor.dict())
@@ -154,7 +158,7 @@ class Camp(CampResponse):
         return self._db_obj.level_schedules
 
     async def user_authorized(self, session: Any, user: Any) -> bool:
-        for role in await user.roles(session):
+        for role in user.roles:
             if role.name == 'ADMIN':
                 return True
         return (user._db_obj in await self.instructors(session))

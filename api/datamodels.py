@@ -1,6 +1,7 @@
 from pydantic import BaseModel
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, List
 from datetime import date, datetime
+from enum import Enum
 
 
 class FastApiDate(date):
@@ -13,6 +14,23 @@ class FastApiDatetime(datetime):
         return self.strftime('%Y-%m-%dT%H:%M:%S')
 
 
+class RoleEnum(Enum):
+    GUARDIAN = 0
+    INSTRUCTOR = 1
+    ADMIN = 2
+
+
+class RoleResponse(BaseModel):
+    name: Optional[str] = ''
+    permissible_endpoints: Optional[Dict[str, str]]
+
+    def __eq__(self, other):
+        return (self.name == other.name)
+
+    def __lt__(self, other):
+        return (RoleEnum[self.name].value < RoleEnum[other.name].value)
+
+
 class UserData(BaseModel):
     full_name: Optional[str] = ''
     email_address: Optional[str] = ''
@@ -22,7 +40,13 @@ class UserData(BaseModel):
 
 
 class UserResponse(UserData):
-    id: Optional[int]
+    id: Optional[int] = None
+    roles: Optional[List[RoleResponse]] = []
+
+    def dict(self, *args, **kwargs):
+        ret = super().dict(*args, **kwargs)
+        ret['roles'] = [role.dict() for role in self.roles]
+        return ret
 
 
 class StudentData(BaseModel):

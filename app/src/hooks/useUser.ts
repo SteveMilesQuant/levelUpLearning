@@ -6,11 +6,12 @@ export const CACHE_KEY_USER = ["user"];
 
 const apiClient = new APIClient<User>("/user");
 
-const useUser = () =>
+const useUser = (signedIn: boolean) =>
   useQuery<User, Error>({
     queryKey: CACHE_KEY_USER,
     queryFn: () => apiClient.get(),
     staleTime: 0,
+    enabled: signedIn,
   });
 
 export default useUser;

@@ -5,10 +5,10 @@ from fastapi.staticfiles import StaticFiles
 from oauthlib.oauth2 import WebApplicationClient
 from mangum import Mangum
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timedelta
 from db import init_db, close_db
-from datamodels import UserData, UserResponse, StudentData, StudentResponse
+from datamodels import RoleResponse, UserData, UserResponse, StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse, LevelScheduleData, LevelScheduleResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
@@ -78,7 +78,7 @@ async def get_authorized_user(request, session, permission_url_path, required = 
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Auth: User not logged in.")
         if permission_url_path == '/':
             return user
-        for role in await user.roles(session):
+        for role in user.roles:
             if permission_url_path in role.permissible_endpoints:
                 return user
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for {permission_url_path}")
@@ -109,33 +109,23 @@ async def signin_post(request: Request, google_response_token: dict):
         return user_token
 
 
-@api_router.get("/user", response_model = Optional[UserResponse])
+@api_router.get("/user")
 async def get_user(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/', required = False)
-        return user
+        if user is not None:
+            return user.dict(include=UserResponse().dict())
 
 
-@api_router.put("/user", response_model = UserResponse)
+@api_router.put("/user")
 async def put_user(request: Request, updated_user: UserData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/', required = True)
         user = user.copy(update=updated_user.dict(exclude_unset=True))
         await user.update(session = session)
-        return user
+        return user.dict(include=UserResponse().dict())
 
-
-@api_router.get("/user/roles")
-async def get_user_roles(request: Request):
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/', required = False)
-        if user is None:
-            return []
-        else:
-            return [role.dict() for role in await user.roles(session)]
-
-
-@api_router.get("/instructors/{user_id}", response_model = Optional[UserResponse])
+@api_router.get("/instructors/{user_id}")
 async def instructor_get_one(request: Request, user_id: int, accept: Optional[str] = Header(None)):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/')
@@ -143,9 +133,10 @@ async def instructor_get_one(request: Request, user_id: int, accept: Optional[st
         await instructor.create(session)
         role = Role(name = 'INSTRUCTOR')
         await role.create(session)
-        if instructor.id is None or role not in await instructor.roles(session):
+        if instructor.id is None or role._db_obj not in instructor._db_obj.roles:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={user_id} does not exist.")
-        return user
+        if user is not None:
+            return user.dict(include=UserResponse().dict())
 
 
 
@@ -258,7 +249,7 @@ async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
 async def get_programs(request: Request, accept: Optional[str] = Header(None)):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/programs')
-        for role in await user.roles(session):
+        for role in user.roles:
             if role.name == 'ADMIN':
                 return await all_programs(session)
         program_list = []
@@ -605,10 +596,12 @@ async def get_schedule(request: Request, accept: Optional[str] = Header(None)):
         return await all_camps(session = session)
 
 
-@api_router.post("/camps", response_model = CampResponse, status_code = status.HTTP_201_CREATED)
+@api_router.post("/camps", status_code = status.HTTP_201_CREATED)
 async def post_new_camp(request: Request, new_camp_data: CampData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
+        if new_camp_data.primary_instructor_id is None:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Primary instructor id is required.")
         instructor = User(id = new_camp_data.primary_instructor_id)
         await instructor.create(session)
         if instructor.id is None:
@@ -617,8 +610,7 @@ async def post_new_camp(request: Request, new_camp_data: CampData):
         await new_camp.create(session)
         if new_camp.id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new camp failed")
-        await new_camp.add_instructor(session, instructor)
-        return new_camp
+        return new_camp.dict(include=CampResponse().dict())
 
 
 @api_router.put("/camps/{camp_id}", response_model = CampResponse)
@@ -651,7 +643,7 @@ async def delete_camp(request: Request, camp_id: int):
         await camp.delete(session = session)
 
 
-@api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
+@api_router.post("/camps/{camp_id}/instructors/{instructor_id}", status_code = status.HTTP_201_CREATED)
 async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
@@ -665,7 +657,7 @@ async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor_id id={instructor_id} not found.")
         await instructor.create(session)
         await camp.add_instructor(session = session, instructor = instructor)
-        return instructor
+        return instructor.dict(include=UserResponse().dict())
 
 
 @api_router.delete("/camps/{camp_id}/instructors/{instructor_id}")
@@ -737,11 +729,11 @@ async def users_get_all(request: Request):
         return await all_users(session)
 
 
-@api_router.get("/roles")
+@api_router.get("/roles", response_model = List[RoleResponse])
 async def roles_get_all(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/members')
-        return [role.dict() for role in await user.roles(session)] # cheating a little here - admin (i.e. this) user will have all roles
+        return user.roles # cheating a little here - admin user (i.e. this user) will have all roles
 
 
 @api_router.post("/users/{user_id}/roles/{role_name}")

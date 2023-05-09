@@ -1,3 +1,5 @@
+import { Role } from "../hooks/useRoles";
+
 export interface UserData {
   full_name: string;
   email_address: string;
@@ -5,5 +7,5 @@ export interface UserData {
 
 export interface User extends UserData {
   id: number;
-  roles: string[];
+  roles: Role[];
 }

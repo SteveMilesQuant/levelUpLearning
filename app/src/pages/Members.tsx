@@ -35,7 +35,7 @@ const Members = () => {
               <Tr key={user.id}>
                 <Td>{user.full_name}</Td>
                 <Td>{user.email_address}</Td>
-                <Td>{user.roles.join(", ")}</Td>
+                <Td>{user.roles.map((role) => role.name).join(", ")}</Td>
               </Tr>
             ))}
           </Tbody>

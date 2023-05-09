@@ -84,7 +84,8 @@ class UserDb(Base):
     def dict(self):
         returnVal = {}
         for key, value in UserResponse():
-            returnVal[key] = getattr(self, key)
+            if key != 'roles':
+                returnVal[key] = getattr(self, key)
         return returnVal
 
 

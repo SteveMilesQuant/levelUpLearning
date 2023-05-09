@@ -7,10 +7,10 @@ export interface Role {
 
 export const CACHE_KEY_ROLES = ["roles"];
 
-const apiClient = new APIClient<Role>("/roles");
+const apiClient = new APIClient<string>("/roles");
 
 const useRoles = () =>
-  useQuery<Role[], Error>({
+  useQuery<string[], Error>({
     queryKey: CACHE_KEY_ROLES,
     queryFn: apiClient.getAll,
     staleTime: 0,

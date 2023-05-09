@@ -1,19 +1,11 @@
 from pydantic import BaseModel, PrivateAttr
-from typing import Dict, List, Optional, Any
-from enum import Enum
+from typing import List, Optional, Any
 from sqlalchemy import select
+from datamodels import RoleResponse, UserData, UserResponse
 from db import UserDb, RoleDb, EndpointDb, StudentDb, ProgramDb, CampDb
 
 
-class RoleEnum(Enum):
-    GUARDIAN = 0
-    INSTRUCTOR = 1
-    ADMIN = 2
-
-
-class Role(BaseModel):
-    name: Optional[str] = ''
-    permissible_endpoints: Optional[Dict[str, str]]
+class Role(RoleResponse):
     _db_obj: Optional[RoleDb] = PrivateAttr()
 
     def __init__(self, db_obj: Optional[RoleDb] = None, **data):
@@ -33,12 +25,6 @@ class Role(BaseModel):
         for endpoint in self._db_obj.endpoints:
             self.permissible_endpoints[endpoint.url] = endpoint.title
 
-    def __eq__(self, other):
-        return (self.name == other.name)
-
-    def __lt__(self, other):
-        return (RoleEnum[self.name].value < RoleEnum[other.name].value)
-
 
 async def init_roles(session: Any):
     stmt = select(RoleDb)
@@ -50,18 +36,6 @@ async def init_roles(session: Any):
             RoleDb(name='ADMIN', endpoints=[EndpointDb(url='/schedule', title='Schedule Camps'), EndpointDb(url='/members', title='Manage Members')])
         ])
         await session.commit()
-
-
-class UserData(BaseModel):
-    full_name: Optional[str] = ''
-    email_address: Optional[str] = ''
-    phone_number: Optional[str] = ''
-    instructor_subjects: Optional[str] = ''
-    instructor_description: Optional[str] = ''
-
-
-class UserResponse(UserData):
-    id: Optional[int]
 
 
 class User(UserResponse):
@@ -96,25 +70,29 @@ class User(UserResponse):
             await session.commit()
 
             # Create initial role(s)
+            self.roles = []
             roles = [Role(name = 'GUARDIAN')]
             roles.append(Role(name = 'INSTRUCTOR')) # TODO: temporarily making everyone an instructor - move down to next check later
             if self._db_obj.id == 1:
                 roles.append(Role(name = 'ADMIN'))
-            task_list = []
             for role in roles:
-                task_list.append(role.create(session))
-            for task in task_list: # poor man's asyncio.gather, since gather had trouble with pytest
-                await task
-            task_list = []
-            for role in roles:
-                task_list.append(self.add_role(session, role))
-            for task in task_list: # poor man's asyncio.gather, since gather had trouble with pytest
-                await task
+                await role.create(session)
+                await self.add_role(session, role)
+                self.roles.append(RoleResponse(**role.dict()))
         else:
             # Otherwise, update attributes from fetched object
             for key, value in UserResponse():
-                setattr(self, key, getattr(self._db_obj, key))
+                if key != 'roles':
+                    setattr(self, key, getattr(self._db_obj, key))
             self.google_id = self._db_obj.google_id
+
+            await session.refresh(self._db_obj, ['roles'])
+            self.roles = []
+            for db_role in self._db_obj.roles:
+                role = Role(db_obj=db_role)
+                await role.create(session) # not really async when we use db_obj
+                self.roles.append(RoleResponse(**role.dict()))
+            self.roles.sort() # TODO: sort in database
 
         # A couple cases require the id from the database (new or lookup by google_id)
         self.id = self._db_obj.id
@@ -130,9 +108,8 @@ class User(UserResponse):
 
     async def add_role(self, session: Any, role: Role):
         await session.refresh(self._db_obj, ['roles'])
-        for db_role in self._db_obj.roles:
-            if db_role.name == role.name:
-                return
+        if role._db_obj in self._db_obj.roles:
+            return
         self._db_obj.roles.append(role._db_obj)
         await session.commit()
 
@@ -140,16 +117,6 @@ class User(UserResponse):
         await session.refresh(self._db_obj, ['roles'])
         self._db_obj.roles.remove(role._db_obj)
         await session.commit()
-
-    async def roles(self, session: Any) -> List[Role]: # note this is not List[RoleDb] like the others
-        await session.refresh(self._db_obj, ['roles'])
-        roles = []
-        for db_role in self._db_obj.roles:
-            role = Role(db_obj=db_role)
-            roles.append(role)
-            await role.create(session) # not really async when we use db_obj
-        roles.sort()
-        return roles
 
     async def add_student(self, session: Any, student: Any):
         await session.refresh(self._db_obj, ['students'])
@@ -205,7 +172,8 @@ async def all_users(session: Any, by_role: Optional[str] = None):
         for db_user in role._db_obj.users:
             user = User(db_obj = db_user)
             await user.create(session)
-            users.append(user.dict(include=UserResponse().dict()))
+            user_response = user.dict(include=UserResponse().dict())
+            users.append(user_response)
     else:
         stmt = select(UserDb)
         result = await session.execute(stmt)
@@ -213,8 +181,6 @@ async def all_users(session: Any, by_role: Optional[str] = None):
             user = User(db_obj = db_user)
             await user.create(session)
             user_response = user.dict(include=UserResponse().dict())
-            await session.refresh(user._db_obj, ['roles'])
-            user_response['roles'] = [role.name for role in user._db_obj.roles]
             users.append(user_response)
     return users
 

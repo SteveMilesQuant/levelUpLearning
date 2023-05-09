@@ -52,6 +52,7 @@ def test_post_camp(camp: CampData):
     new_camp_json = response.json()
     camp_json['id'] = new_camp_json['id']
     camp_json['primary_instructor'] = app.test.users.map[camp_json['primary_instructor_id']].dict(include=UserResponse().dict())
+    camp_json['primary_instructor']['roles'] = []
     camp_json['program'] = program_response
     assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match posted camp {camp_json}.'
     all_camps_json.append(new_camp_json)
@@ -137,6 +138,7 @@ def test_change_primary_instructor(camp_index: int, instructor_id: int):
     camp_id = camp_json['id']
     camp_json['primary_instructor_id'] = instructor_id
     camp_json['primary_instructor'] = app.test.users.map[instructor_id].dict(include=UserResponse().dict())
+    camp_json['primary_instructor']['roles'] = []
     response = client.put(f'/camps/{camp_id}', json=camp_json, headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
