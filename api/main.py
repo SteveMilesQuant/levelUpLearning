@@ -319,6 +319,7 @@ async def get_levels(request: Request, program_id: int):
             level = Level(db_obj = db_level)
             await level.create(session)
             level_list.append(level)
+        level_list.sort(key = lambda l: l.list_index)
         return level_list
 
 
@@ -525,6 +526,7 @@ async def get_camp_level_schedules(request: Request, camp_id: int):
             level_schedule = LevelSchedule(db_obj = db_level_schedule)
             await level_schedule.create(session)
             level_schedules.append(level_schedule)
+        level_schedules.sort(key = lambda l: l.level.list_index)
         return level_schedules
 
 

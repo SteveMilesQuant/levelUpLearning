@@ -36,13 +36,12 @@ const Members = () => {
                 <Td>{user.full_name}</Td>
                 <Td>{user.email_address}</Td>
                 <Td>
-                  <Select>
+                  <Select
+                    value={user.roles.slice(-1)[0].name}
+                    isReadOnly={true}
+                  >
                     {roles?.map((role) => (
-                      <option
-                        key={role.name}
-                        value={role.name}
-                        selected={role.name === user.roles.slice(-1)[0].name}
-                      >
+                      <option key={role.name} value={role.name}>
                         {role.name.charAt(0).toUpperCase() +
                           role.name.slice(1, role.name.length).toLowerCase()}
                       </option>
