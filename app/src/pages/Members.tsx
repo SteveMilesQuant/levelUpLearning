@@ -1,4 +1,5 @@
 import {
+  Select,
   Table,
   TableContainer,
   Tbody,
@@ -26,7 +27,7 @@ const Members = () => {
             <Tr>
               <Th>Name</Th>
               <Th>Email</Th>
-              <Th>Roles</Th>
+              <Th>Role</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -34,7 +35,20 @@ const Members = () => {
               <Tr key={user.id}>
                 <Td>{user.full_name}</Td>
                 <Td>{user.email_address}</Td>
-                <Td>{user.roles.map((role) => role.name).join(", ")}</Td>
+                <Td>
+                  <Select>
+                    {roles?.map((role) => (
+                      <option
+                        key={role.name}
+                        value={role.name}
+                        selected={role.name === user.roles.slice(-1)[0].name}
+                      >
+                        {role.name.charAt(0).toUpperCase() +
+                          role.name.slice(1, role.name.length).toLowerCase()}
+                      </option>
+                    ))}
+                  </Select>
+                </Td>
               </Tr>
             ))}
           </Tbody>

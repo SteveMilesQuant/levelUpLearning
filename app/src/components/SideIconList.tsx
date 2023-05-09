@@ -3,7 +3,7 @@ import { GiTeacher } from "react-icons/gi";
 import { MdManageAccounts, MdOutlineDesignServices } from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
 import { Box } from "@chakra-ui/react";
-import { Role } from "../users/Role";
+import { Role } from "../users";
 import LinkIcon from "./LinkIcon";
 import { ReactElement } from "react";
 
