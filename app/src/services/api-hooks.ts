@@ -142,7 +142,7 @@ export default class APIHooks<S extends A, Q = S> {
   ) => {
     const queryClient = useQueryClient();
 
-    const deleteData = useMutation<any, Error, any, DeleteDataContext<S>>({
+    const deleteData = useMutation<any, Error, number, DeleteDataContext<S>>({
       mutationFn: (dataId: number) => this.client.delete(dataId),
       onMutate: (dataId: number) => {
         const prevData = queryClient.getQueryData<S[]>(this.cacheKey) || [];

@@ -757,7 +757,13 @@ async def user_remove_role(request: Request, user_id: int, role_name: str):
         user = await get_authorized_user(request, session, '/members')
         tgt_user = User(id = user_id)
         await tgt_user.create(session)
-        await tgt_user.remove_role(session = session, role = role_name)
+        if tgt_user.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User id={tgt_user.id} not found.")
+        role = Role(name = role_name)
+        await role.create(session)
+        if role.name is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role={role_name} not found.")
+        await tgt_user.remove_role(session = session, role = role)
 
 
 ###############################################################################

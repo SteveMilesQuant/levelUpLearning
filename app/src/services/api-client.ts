@@ -23,8 +23,8 @@ class APIClient<S, Q = S> {
       .then((res) => res.data);
   };
 
-  post = (data: Q | number) => {
-    if (typeof data === "number") {
+  post = (data: Q | number | string) => {
+    if (typeof data === "number" || typeof data === "string") {
       // This isn't the best way to do this - maybe come back to it later
       // instanceof doesn't work with generic types
       return axiosInstance
@@ -43,7 +43,7 @@ class APIClient<S, Q = S> {
       .then((res) => res.data);
   };
 
-  delete = (id: number) => {
+  delete = (id: number | string) => {
     return axiosInstance.delete(this.endpoint + "/" + id);
   };
 }
