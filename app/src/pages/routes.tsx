@@ -8,6 +8,7 @@ import Camp from "./Camp";
 import Program from "./Program";
 import Programs from "./Programs";
 import PrivateRoutes from "./PrivateRoutes";
+import Members from "./Members";
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
           { path: "programs/:id", element: <Program /> },
           { path: "schedule", element: <Camps forScheduling={true} /> },
           { path: "schedule/:id", element: <Camp forScheduling={true} /> },
+          { path: "members", element: <Members /> },
         ],
       },
     ],

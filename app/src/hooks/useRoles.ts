@@ -9,13 +9,11 @@ export const CACHE_KEY_ROLES = ["roles"];
 
 const apiClient = new APIClient<Role>("/roles");
 
-const useRoles = (signedIn: boolean) => {
-  return useQuery<Role[], Error>({
+const useRoles = () =>
+  useQuery<Role[], Error>({
     queryKey: CACHE_KEY_ROLES,
     queryFn: apiClient.getAll,
     staleTime: 0,
-    enabled: signedIn,
   });
-};
 
 export default useRoles;

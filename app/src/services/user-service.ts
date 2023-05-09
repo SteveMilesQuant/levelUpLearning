@@ -5,4 +5,5 @@ export interface UserData {
 
 export interface User extends UserData {
   id: number;
+  roles: string[];
 }

@@ -62,7 +62,7 @@ const SideIconList = ({ roles }: Props) => {
       {
         id: 6,
         icon: <MdManageAccounts size="2em" />,
-        endpoint: "#",
+        endpoint: "/members",
         label: "Manage Members",
       },
     ],

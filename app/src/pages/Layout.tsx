@@ -2,10 +2,10 @@ import { Outlet } from "react-router-dom";
 import { HStack } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import SideIconList from "../components/SideIconList";
-import useRoles from "../hooks/useRoles";
 import BodyContainer from "../components/BodyContainer";
 import useAuth from "../hooks/useAuth";
 import { ReactNode } from "react";
+import useUserRoles from "../hooks/useUserRoles";
 
 interface Props {
   children?: ReactNode;
@@ -13,7 +13,7 @@ interface Props {
 
 const Layout = ({ children }: Props) => {
   const { signedIn } = useAuth();
-  const { data: roles } = useRoles(signedIn);
+  const { data: roles } = useUserRoles(signedIn);
 
   return (
     <>
