@@ -86,7 +86,12 @@ export const useUpdateLevel = (programId?: number, onUpdate?: () => void) => {
 
 export const useDeleteLevel = (programId?: number, onDelete?: () => void) => {
   if (!programId)
-    return {} as UseMutationResult<any, Error, any, DeleteDataContext<Level>>;
+    return {} as UseMutationResult<
+      any,
+      Error,
+      number,
+      DeleteDataContext<Level>
+    >;
   const levelHooks = useLevelHooks(programId);
 
   // Apply custom mutation where we update list_index for levels after deleted level

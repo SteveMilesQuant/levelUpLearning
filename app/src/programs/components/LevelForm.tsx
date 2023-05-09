@@ -33,7 +33,9 @@ const LevelForm = ({ programId, level, isReadOnly }: Props) => {
             disabled={isEditing}
           />
           <DeleteButton
-            onConfirm={() => deleteLevel.mutate(level?.id)}
+            onConfirm={() => {
+              if (level) deleteLevel.mutate(level.id);
+            }}
             disabled={isEditing}
           >
             {level?.title}

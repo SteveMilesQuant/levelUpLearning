@@ -36,7 +36,9 @@ const ProgramForm = ({ program, isReadOnly }: Props) => {
             disabled={isEditing}
           />
           <DeleteButton
-            onConfirm={() => deleteProgram.mutate(program?.id)}
+            onConfirm={() => {
+              if (program) deleteProgram.mutate(program.id);
+            }}
             disabled={isEditing}
           >
             {program?.title}

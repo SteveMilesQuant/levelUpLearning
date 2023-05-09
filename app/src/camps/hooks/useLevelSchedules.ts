@@ -69,7 +69,7 @@ export const useDeleteLevelSchedule = (
     return {} as UseMutationResult<
       any,
       Error,
-      any,
+      number,
       DeleteDataContext<LevelSchedule>
     >;
   const levelHooks = useLevelScheduleHooks(campId);
