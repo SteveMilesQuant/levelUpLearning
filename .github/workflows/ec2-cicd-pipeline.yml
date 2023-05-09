@@ -22,7 +22,10 @@ jobs:
             ${{ runner.os }}-venv-
 
       - name: Activate Virtual ENV
-        run: python3 -m venv virt && source virt/bin/activate && python3 -m pip install -r api/requirements.txt
+        run: |
+          python3 -m venv virt
+          source virt/bin/activate
+          python3 -m pip install -r api/requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
 
       - name: Run Tests
@@ -31,7 +34,11 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_HOST: ${{ secrets.DB_HOST }}
-        run: . virt/bin/activate && cd api && export PYTHONPATH=. && pytest
+        run: |
+          . virt/bin/activate
+          cd api
+          export PYTHONPATH=.
+          pytest
 
   API-CD:
     runs-on: self-hosted
@@ -44,9 +51,12 @@ jobs:
         run: sudo docker build -t level-up-learning api
 
       - name: Restart docker container
-        run: sudo docker rm lul-container && sudo docker run -d --env-file /home/ec2-user/teacherCamp/api/.env --name lul-container -p 8000:8000 level-up-learning
+        run: |
+          sudo docker stop lul-container
+          sudo docker rm lul-container
+          sudo docker run -d --env-file /home/ec2-user/teacherCamp/api/.env --name lul-container -p 8000:8000 level-up-learning
 
-  APP-CD-BUILD:
+  APP-BUILD:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
@@ -56,7 +66,10 @@ jobs:
         run: cd app && npm install
 
       - name: Production build
-        run: cd app && echo VITE_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}$'\n'VITE_API_URL=/api > .env && npm run build
+        run: |
+          cd app
+          echo VITE_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}$'\n'VITE_API_URL=/api > .env
+          npm run build
 
       - name: Add built app files to Zip file
         run: zip -g ./app.zip -r ./app/dist
@@ -72,6 +85,17 @@ jobs:
 
       - name: Upload to S3
         run: aws s3 cp app.zip s3://leveluplearning-s3bucket/app.zip
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+  APP-DEPLOY:
+      - name: Download from S3, unzip, and copy to target location
+        run: |
+          aws s3 cp s3://leveluplearning-s3bucket/app.zip ./app.zip
+          unzip ./app.zip
+          sudo cp -r ./app/dist/* /www/
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
