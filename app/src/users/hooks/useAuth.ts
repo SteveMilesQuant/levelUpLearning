@@ -7,6 +7,7 @@ import {
 import { axiosInstance } from "../../services/api-client";
 import { create } from "zustand";
 import { mountStoreDevtool } from "simple-zustand-devtools";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UserStore {
   signedIn: boolean;
@@ -26,6 +27,7 @@ if (process.env.NODE_ENV === "development")
 const useAuth = () => {
   const { signedIn, login, logout } = useUserStore();
   const [isChecking, setIsChecking] = useState(true);
+  const queryClient = useQueryClient();
 
   // Check to see if we're already signed in
   useEffect(() => {
@@ -61,6 +63,7 @@ const useAuth = () => {
     googleLogout();
     localStorage.removeItem("authToken");
     axiosInstance.defaults.headers.common = {};
+    queryClient.clear();
     logout();
   };
 
