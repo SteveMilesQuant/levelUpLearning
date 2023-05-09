@@ -9,10 +9,10 @@ import {
   Tr,
 } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import { useRoles, useUsers } from "../users";
+import { useAllRoles, useUsers } from "../users";
 
 const Members = () => {
-  const { data: roles } = useRoles();
+  const { data: roles } = useAllRoles();
   const { data: users, isLoading, error } = useUsers();
 
   if (isLoading) return null;
