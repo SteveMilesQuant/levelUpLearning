@@ -80,7 +80,7 @@ class UserDb(Base):
     students: Mapped[List['StudentDb']] = relationship(secondary=user_x_students, back_populates='guardians', lazy='raise')
     programs: Mapped[List['ProgramDb']] = relationship(secondary=user_x_programs, back_populates='designers', lazy='raise')
     camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_instructors, back_populates='instructors', lazy='raise')
-    
+
     def dict(self):
         returnVal = {}
         for key, value in UserResponse():
@@ -98,7 +98,7 @@ class StudentDb(Base):
 
     guardians: Mapped[List['UserDb']] = relationship(secondary=user_x_students, back_populates='students', lazy='raise')
     camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_students, back_populates='students', lazy='raise')
-    
+
     def dict(self):
         returnVal = {}
         for key, value in StudentResponse():
@@ -119,7 +119,7 @@ class ProgramDb(Base):
     levels: Mapped[List['LevelDb']] = relationship(back_populates='program', lazy='raise', cascade='all, delete')
     designers: Mapped[List['UserDb']] = relationship(secondary=user_x_programs, back_populates='programs', lazy='raise')
     camps: Mapped[List['CampDb']] = relationship(back_populates='program', lazy='raise', cascade='all, delete')
-    
+
     def dict(self):
         returnVal = {'grade_range': (self.from_grade, self.to_grade)}
         for key, value in ProgramResponse():
@@ -139,7 +139,7 @@ class LevelDb(Base):
 
     level_schedules: Mapped[List['LevelScheduleDb']] = relationship(back_populates='level', lazy='raise', cascade='all, delete')
     program: Mapped['ProgramDb'] = relationship(back_populates='levels', lazy='raise')
-    
+
     def dict(self):
         returnVal = {}
         for key, value in LevelResponse():
@@ -160,7 +160,7 @@ class CampDb(Base):
     level_schedules: Mapped[List['LevelScheduleDb']] = relationship(back_populates='camp', lazy='raise', cascade='all, delete')
     instructors: Mapped[List['UserDb']] = relationship(secondary=camp_x_instructors, back_populates='camps', lazy='raise')
     students: Mapped[List['StudentDb']] = relationship(secondary=camp_x_students, back_populates='camps', lazy='raise')
-    
+
     def dict(self):
         returnVal = {}
         for key, value in CampResponse():
@@ -179,7 +179,7 @@ class LevelScheduleDb(Base):
 
     camp: Mapped['CampDb'] = relationship(back_populates='level_schedules', lazy='raise')
     level: Mapped['LevelDb'] = relationship(back_populates='level_schedules', lazy='raise')
-    
+
     def dict(self):
         returnVal = {}
         for key, value in LevelScheduleResponse():

@@ -174,7 +174,7 @@ async def all_camps(session: Any, published = None):
     for db_camp in result.scalars():
         camp = Camp(db_obj = db_camp)
         await camp.create(session)
-        camps.append(camp.dict(include=CampResponse().dict()))
+        camps.append(camp)
     return camps
 
 

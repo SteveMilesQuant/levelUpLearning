@@ -172,16 +172,14 @@ async def all_users(session: Any, by_role: Optional[str] = None):
         for db_user in role._db_obj.users:
             user = User(db_obj = db_user)
             await user.create(session)
-            user_response = user.dict(include=UserResponse().dict())
-            users.append(user_response)
+            users.append(user)
     else:
         stmt = select(UserDb)
         result = await session.execute(stmt)
         for db_user in result.scalars():
             user = User(db_obj = db_user)
             await user.create(session)
-            user_response = user.dict(include=UserResponse().dict())
-            users.append(user_response)
+            users.append(user)
     return users
 
 

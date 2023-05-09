@@ -107,9 +107,7 @@ def test_getting_camp_instructors():
     camp_id = camp_json['id']
     primary_instructor_id = camp_json['primary_instructor_id']
     admin_user_json = json.loads(json.dumps(app.test.users.admin.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
-    admin_user_json['is_primary'] = (admin_user_json['id'] == primary_instructor_id)
     instructor_user_json = json.loads(json.dumps(app.test.users.instructor.dict(include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
-    instructor_user_json['is_primary'] = (instructor_user_json['id'] == primary_instructor_id)
     instructors_json = [admin_user_json, instructor_user_json]
     response = client.get(f'/camps/{camp_id}/instructors', headers = app.test.users.admin_headers)
     content_type = response.headers['content-type']
@@ -124,7 +122,6 @@ def test_getting_camp_instructors():
         content_type = response.headers['content-type']
         assert 'application/json' in content_type
         got_instructor_json = response.json()
-        got_instructor_json['is_primary'] = (instructor_id == primary_instructor_id)
         assert got_instructor_json == instructor_json
 
 
