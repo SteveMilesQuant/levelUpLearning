@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import SubmitButton from "../../components/SubmitButton";
 import useStudents from "../hooks/useStudents";
-import ListButton from "../../camps/components/ListButton";
+import ListButton from "../../components/ListButton";
 import { useState } from "react";
 import useEnrollStudent from "../hooks/useEnrollStudent";
 

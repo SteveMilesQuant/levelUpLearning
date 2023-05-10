@@ -2,7 +2,7 @@ import { Box, HStack, List } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import useLevelSchedules from "../hooks/useLevelSchedules";
 import { LevelSchedule } from "../LevelSchedule";
-import ListButton from "./ListButton";
+import ListButton from "../../components/ListButton";
 import LevelScheduleForm from "./LevelScheduleForm";
 
 interface Props {
@@ -18,7 +18,7 @@ const LevelScheduleList = ({ campId, forScheduling }: Props) => {
   >(undefined);
   useEffect(() => {
     if (levelSchedules) setSelectedLevelSched(levelSchedules[0]);
-  }, [levelSchedules === undefined]);
+  }, [!!levelSchedules]);
 
   if (isLoading) return null;
   if (error) throw error;
@@ -26,13 +26,10 @@ const LevelScheduleList = ({ campId, forScheduling }: Props) => {
   return (
     <HStack alignItems="start" spacing={10}>
       <List spacing={3}>
-        {levelSchedules?.map((levelSchedule, index) => (
+        {levelSchedules?.map((levelSchedule) => (
           <ListButton
             key={levelSchedule.level.id}
-            isSelected={
-              (!selectedLevelSched && index === 0) ||
-              selectedLevelSched?.level.id === levelSchedule.level.id
-            }
+            isSelected={selectedLevelSched?.level.id === levelSchedule.level.id}
             onClick={() => setSelectedLevelSched(levelSchedule)}
           >
             {levelSchedule.level?.list_index +

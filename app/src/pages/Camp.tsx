@@ -12,6 +12,7 @@ import PageHeader from "../components/PageHeader";
 import { useCamp, LevelScheduleList } from "../camps";
 import { ProgramForm } from "../programs";
 import { EnrollStudentModal } from "../students";
+import { InstructorList } from "../users";
 
 interface Props {
   forScheduling: boolean;
@@ -44,6 +45,7 @@ const Camp = ({ forScheduling }: Props) => {
         <TabList>
           <Tab>Camp</Tab>
           <Tab>Levels</Tab>
+          <Tab>Instructors</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -51,6 +53,9 @@ const Camp = ({ forScheduling }: Props) => {
           </TabPanel>
           <TabPanel>
             <LevelScheduleList campId={camp.id} forScheduling={forScheduling} />
+          </TabPanel>
+          <TabPanel>
+            <InstructorList campId={camp.id} forScheduling={forScheduling} />
           </TabPanel>
         </TabPanels>
       </Tabs>

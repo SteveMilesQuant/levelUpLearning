@@ -17,7 +17,7 @@ import {
   LevelFormModal,
   useProgram,
 } from "../programs";
-import ListButton from "../camps/components/ListButton";
+import ListButton from "../components/ListButton";
 
 const Program = () => {
   const { id: idStr } = useParams();
