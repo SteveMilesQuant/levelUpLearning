@@ -3,6 +3,7 @@ import ListButton from "../../components/ListButton";
 import { useCampInstructors } from "../hooks/useInstructors";
 import { useEffect, useState } from "react";
 import { User } from "../User";
+import InstructorFormBody from "./InstructorFormBody";
 
 interface Props {
   campId?: number;
@@ -39,7 +40,11 @@ const InstructorList = ({ campId, forScheduling }: Props) => {
         {instructors
           ?.filter((instructor) => instructor.id === selectedInstructor?.id)
           .map((instructor) => (
-            <div key={instructor.id}>{instructor.email_address}</div>
+            <InstructorFormBody
+              key={instructor.id}
+              instructor={instructor}
+              isReadOnly={!forScheduling}
+            />
           ))}
       </Box>
     </HStack>
