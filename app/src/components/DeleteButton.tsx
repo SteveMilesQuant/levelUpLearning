@@ -9,9 +9,9 @@ import {
   PopoverHeader,
   PopoverTrigger,
   Button,
-  Text,
   HStack,
   Box,
+  Heading,
 } from "@chakra-ui/react";
 
 interface Props {
@@ -35,9 +35,9 @@ const DeleteButton = ({ onConfirm, children, disabled }: Props) => {
         <PopoverContent>
           <PopoverArrow />
           <PopoverHeader>
-            <Text>
-              <strong>Are you sure you want to remove {children}?</strong>
-            </Text>
+            <Heading fontSize="md">
+              Are you sure you want to remove {children}?
+            </Heading>
             <PopoverCloseButton />
           </PopoverHeader>
           <PopoverBody>
