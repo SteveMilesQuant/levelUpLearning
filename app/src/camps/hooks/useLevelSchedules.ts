@@ -34,7 +34,7 @@ export const useLevelSchedule = (campId?: number, levelId?: number) => {
   return levelHooks.useData(levelId);
 };
 
-export const useAddLevelSchedule = (campId?: number, onAdd?: () => void) => {
+export const useAddLevelSchedule = (campId?: number) => {
   if (!campId)
     return {} as UseMutationResult<
       LevelSchedule,
@@ -43,7 +43,7 @@ export const useAddLevelSchedule = (campId?: number, onAdd?: () => void) => {
       AddDataContext<LevelSchedule>
     >;
   const levelHooks = useLevelScheduleHooks(campId);
-  return levelHooks.useAdd(onAdd);
+  return levelHooks.useAdd();
 };
 
 export const useUpdateLevelSchedule = (campId?: number) => {

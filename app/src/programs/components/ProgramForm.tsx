@@ -20,8 +20,10 @@ const ProgramForm = ({ program, isReadOnly }: Props) => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const programForm = useProgramForm(program);
-  const deleteProgram = useDeleteProgram(() => {
-    navigate("/programs");
+  const deleteProgram = useDeleteProgram({
+    onDelete: () => {
+      navigate("/programs");
+    },
   });
 
   return (

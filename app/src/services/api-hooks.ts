@@ -23,10 +23,22 @@ interface A {
   id: number;
 }
 
+interface AddArgs<S, Q = S> {
+  onAdd?: () => void;
+  onSuccess?: () => void;
+  queryMutation?: (newData: Q, dataList: S[]) => S[];
+}
+
 interface UpdateArgs<S> {
   onUpdate?: () => void;
   onSuccess?: () => void;
   queryMutation?: (newData: S, dataList: S[]) => S[];
+}
+
+interface DeleteArgs<S> {
+  onDelete?: () => void;
+  onSuccess?: () => void;
+  queryMutation?: (dataId: number, dataList: S[]) => S[];
 }
 
 // Typical API hooks (S: response body; Q: request body)
@@ -59,11 +71,9 @@ export default class APIHooks<S extends A, Q = S> {
       staleTime: this.staleTime,
     });
 
-  useAdd = (
-    onAdd?: () => void,
-    queryMutation?: (newData: Q, dataList: S[]) => S[]
-  ) => {
+  useAdd = (addArgs?: AddArgs<S, Q>) => {
     const queryClient = useQueryClient();
+    const { onAdd, onSuccess, queryMutation } = addArgs || {};
 
     const addData = useMutation<S, Error, Q, AddDataContext<S>>({
       mutationFn: (data: Q) => this.client.post(data),
@@ -83,6 +93,7 @@ export default class APIHooks<S extends A, Q = S> {
         queryClient.setQueryData<S[]>(this.cacheKey, (dataList) =>
           dataList?.map((data) => (data.id === 0 ? savedData : data))
         );
+        if (onSuccess) onSuccess();
       },
       onError: (error, newData, context) => {
         if (!context) return;
@@ -141,11 +152,9 @@ export default class APIHooks<S extends A, Q = S> {
     return udpateData;
   };
 
-  useDelete = (
-    onDelete?: () => void,
-    queryMutation?: (dataId: number, dataList: S[]) => S[]
-  ) => {
+  useDelete = (deleteArgs?: DeleteArgs<S>) => {
     const queryClient = useQueryClient();
+    const { onDelete, onSuccess, queryMutation } = deleteArgs || {};
 
     const deleteData = useMutation<any, Error, number, DeleteDataContext<S>>({
       mutationFn: (dataId: number) => this.client.delete(dataId),
@@ -161,6 +170,7 @@ export default class APIHooks<S extends A, Q = S> {
         if (onDelete) onDelete();
         return { prevData };
       },
+      onSuccess: onSuccess,
       onError: (error, newData, context) => {
         if (!context) return;
         queryClient.setQueryData<S[]>(this.cacheKey, () => context.prevData);

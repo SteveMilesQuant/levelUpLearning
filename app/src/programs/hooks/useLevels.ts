@@ -30,7 +30,7 @@ export const useLevel = (programId?: number, levelId?: number) => {
   return levelHooks.useData(levelId);
 };
 
-export const useAddLevel = (programId?: number, onAdd?: () => void) => {
+export const useAddLevel = (programId?: number) => {
   if (!programId)
     return {} as UseMutationResult<
       Level,
@@ -50,7 +50,7 @@ export const useAddLevel = (programId?: number, onAdd?: () => void) => {
     return [...dataList, newLevel];
   };
 
-  return levelHooks.useAdd(onAdd, queryMutation);
+  return levelHooks.useAdd({ queryMutation });
 };
 
 export const useUpdateLevel = (programId?: number) => {
@@ -84,7 +84,7 @@ export const useUpdateLevel = (programId?: number) => {
   return levelHooks.useUpdate({ queryMutation });
 };
 
-export const useDeleteLevel = (programId?: number, onDelete?: () => void) => {
+export const useDeleteLevel = (programId?: number) => {
   if (!programId)
     return {} as UseMutationResult<
       any,
@@ -107,5 +107,5 @@ export const useDeleteLevel = (programId?: number, onDelete?: () => void) => {
       );
   };
 
-  return levelHooks.useDelete(onDelete, queryMutation);
+  return levelHooks.useDelete({ queryMutation });
 };
