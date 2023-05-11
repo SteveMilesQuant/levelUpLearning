@@ -3,12 +3,10 @@ import useLevelForm from "../hooks/useLevelForm";
 import LevelFormBody from "./LevelFormBody";
 import { Level } from "../Level";
 import ActionButton from "../../components/ActionButton";
-import DeleteButton from "../../components/DeleteButton";
 import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
 import { useState } from "react";
-import { useDeleteLevel } from "../hooks/useLevels";
 
 interface Props {
   programId?: number;
@@ -19,7 +17,6 @@ interface Props {
 const LevelForm = ({ programId, level, isReadOnly }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const levelForm = useLevelForm(programId, level);
-  const deleteLevel = useDeleteLevel(programId);
 
   return (
     <>
@@ -32,14 +29,6 @@ const LevelForm = ({ programId, level, isReadOnly }: Props) => {
             onClick={() => setIsEditing(true)}
             disabled={isEditing}
           />
-          <DeleteButton
-            onConfirm={() => {
-              if (level) deleteLevel.mutate(level.id);
-            }}
-            disabled={isEditing}
-          >
-            {level?.title}
-          </DeleteButton>
           <CancelButton
             onClick={() => {
               levelForm.handleClose();
