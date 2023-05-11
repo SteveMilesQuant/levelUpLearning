@@ -19,11 +19,14 @@ const StudentTable = ({ campId }: Props) => {
           <Tr>
             <Th>Name</Th>
             <Th>Grade</Th>
+            <Th>
+              {/* Placeholder for delete button, which needs no header */}
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
           {students.map((student) => (
-            <StudentRow key={student.id} student={student} />
+            <StudentRow key={student.id} campId={campId} student={student} />
           ))}
         </Tbody>
       </Table>
