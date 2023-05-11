@@ -10,11 +10,16 @@ import {
   MenuList,
 } from "@chakra-ui/react";
 import ListButton from "../../components/ListButton";
-import useInstructors, { useCampInstructors } from "../hooks/useInstructors";
+import useInstructors, {
+  useAddCampInstructor,
+  useCampInstructors,
+  useDeleteCampInstructor,
+} from "../hooks/useInstructors";
 import { useEffect, useState } from "react";
 import { User } from "../User";
 import InstructorFormBody from "./InstructorFormBody";
 import { BsChevronDown } from "react-icons/bs";
+import DeleteButton from "../../components/DeleteButton";
 
 interface Props {
   campId?: number;
@@ -24,6 +29,8 @@ interface Props {
 const InstructorList = ({ campId, forScheduling }: Props) => {
   const { data: instructors, isLoading, error } = useCampInstructors(campId);
   const { data: allInstructors } = useInstructors();
+  const deleteInstructor = useDeleteCampInstructor(campId);
+  const addInstructor = useAddCampInstructor(campId);
 
   const [selectedInstructor, setSelectedInstructor] = useState<
     User | undefined
@@ -35,8 +42,8 @@ const InstructorList = ({ campId, forScheduling }: Props) => {
   if (isLoading) return null;
   if (error) throw error;
 
-  const addableInstructors = allInstructors?.filter((instructor) =>
-    instructors.find((i) => i.id === instructor.id)
+  const addableInstructors = allInstructors?.filter(
+    (instructor) => !instructors.find((i) => i.id === instructor.id)
   );
 
   return (
@@ -44,13 +51,21 @@ const InstructorList = ({ campId, forScheduling }: Props) => {
       <HStack alignItems="start" spacing={10}>
         <List spacing={3}>
           {instructors?.map((instructor) => (
-            <ListButton
-              key={instructor.id}
-              isSelected={selectedInstructor?.id === instructor.id}
-              onClick={() => setSelectedInstructor(instructor)}
-            >
-              {instructor.full_name}
-            </ListButton>
+            <HStack key={instructor.id}>
+              <ListButton
+                isSelected={selectedInstructor?.id === instructor.id}
+                onClick={() => setSelectedInstructor(instructor)}
+              >
+                {instructor.full_name}
+              </ListButton>
+              {forScheduling && (
+                <DeleteButton
+                  onConfirm={() => deleteInstructor.mutate(instructor.id)}
+                >
+                  {instructor.full_name}
+                </DeleteButton>
+              )}
+            </HStack>
           ))}
           {forScheduling &&
             addableInstructors &&
@@ -62,7 +77,10 @@ const InstructorList = ({ campId, forScheduling }: Props) => {
                   </MenuButton>
                   <MenuList>
                     {addableInstructors?.map((instructor) => (
-                      <MenuItem key={instructor.id} onClick={() => {}}>
+                      <MenuItem
+                        key={instructor.id}
+                        onClick={() => addInstructor.mutate(instructor.id)}
+                      >
                         {instructor.full_name +
                           " (" +
                           instructor.email_address +

@@ -165,12 +165,17 @@ export default class APIHooks<S extends A, Q = S> {
     return deleteData;
   };
 
+  // "Enroll" uses post to add one existing object to another
+  // E.g. a student to a camp: neiher is created as an object, but the student is added to the camp
   useEnroll = () => {
+    const queryClient = useQueryClient();
+
     const deleteData = useMutation<any, Error, any>({
       mutationFn: (dataId: number) => this.client.post(dataId),
-      onMutate: (dataId: number) => {},
-      onError: (error, newData, context) => {
-        if (!context) return;
+      onMutate: () => {},
+      onError: () => {},
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: this.cacheKey });
       },
     });
 
