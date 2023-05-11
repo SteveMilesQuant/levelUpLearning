@@ -11,7 +11,7 @@ import {
 import PageHeader from "../components/PageHeader";
 import { useCamp, LevelScheduleList } from "../camps";
 import { ProgramForm } from "../programs";
-import { EnrollStudentModal } from "../students";
+import { EnrollStudentModal, StudentTable } from "../students";
 import { InstructorList } from "../users";
 
 interface Props {
@@ -46,6 +46,7 @@ const Camp = ({ forScheduling }: Props) => {
           <Tab>Camp</Tab>
           <Tab>Levels</Tab>
           <Tab>Instructors</Tab>
+          {forScheduling && <Tab>Students</Tab>}
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -57,6 +58,11 @@ const Camp = ({ forScheduling }: Props) => {
           <TabPanel>
             <InstructorList campId={camp.id} forScheduling={forScheduling} />
           </TabPanel>
+          {forScheduling && (
+            <TabPanel>
+              <StudentTable campId={camp.id} />
+            </TabPanel>
+          )}
         </TabPanels>
       </Tabs>
       <EnrollStudentModal
