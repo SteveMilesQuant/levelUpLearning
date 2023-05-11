@@ -21,6 +21,7 @@ const InstructorFormBody = ({ instructor, isReadOnly }: Props) => {
           type="text"
           isReadOnly={isReadOnly}
           value={instructor.full_name}
+          onChange={() => {}}
         />
       </FormControl>
       <FormControl>
@@ -29,6 +30,7 @@ const InstructorFormBody = ({ instructor, isReadOnly }: Props) => {
           type="text"
           isReadOnly={isReadOnly}
           value={instructor.instructor_subjects}
+          onChange={() => {}}
         />
       </FormControl>
       <FormControl>
@@ -39,6 +41,7 @@ const InstructorFormBody = ({ instructor, isReadOnly }: Props) => {
           height="250px"
           isReadOnly={isReadOnly}
           value={instructor.instructor_description}
+          onChange={() => {}}
         />
       </FormControl>
     </Stack>

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zj } from "zod-joda";
@@ -10,12 +10,12 @@ import {
 } from "./useLevelSchedules";
 import { LocalDateTime } from "@js-joda/core";
 
-const levelSchema = z.object({
+const levelScheduleSchema = z.object({
   start_time: zj.localDateTime(),
   end_time: zj.localDateTime(),
 });
 
-export type FormData = z.infer<typeof levelSchema>;
+export type FormData = z.infer<typeof levelScheduleSchema>;
 
 const toLocalISOString = (dateTime: LocalDateTime) => {
   let month = dateTime.monthValue().toString();
@@ -45,7 +45,7 @@ const useLevelScheduleForm = (
     handleSubmit: handleFormSubmit,
     formState: { errors, isValid },
   } = useForm<FormData>({
-    resolver: zodResolver(levelSchema),
+    resolver: zodResolver(levelScheduleSchema),
     defaultValues: useMemo(() => {
       return {
         start_time,
