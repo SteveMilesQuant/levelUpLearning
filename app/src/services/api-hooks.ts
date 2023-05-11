@@ -23,6 +23,12 @@ interface A {
   id: number;
 }
 
+interface UpdateArgs<S> {
+  onUpdate?: () => void;
+  onSuccess?: () => void;
+  queryMutation?: (newData: S, dataList: S[]) => S[];
+}
+
 // Typical API hooks (S: response body; Q: request body)
 export default class APIHooks<S extends A, Q = S> {
   client: APIClient<S, Q>;
@@ -87,10 +93,8 @@ export default class APIHooks<S extends A, Q = S> {
     return addData;
   };
 
-  useUpdate = (
-    onUpdate?: () => void,
-    queryMutation?: (newData: S, dataList: S[]) => S[]
-  ) => {
+  useUpdate = (updateArgs?: UpdateArgs<S>) => {
+    const { onUpdate, onSuccess, queryMutation } = updateArgs || {};
     const queryClient = useQueryClient();
 
     const udpateData = useMutation<S, Error, S, UpdateDataContext<S>>({
@@ -118,6 +122,7 @@ export default class APIHooks<S extends A, Q = S> {
         if (onUpdate) onUpdate();
         return { prevDataList, prevData } as UpdateDataContext<S>;
       },
+      onSuccess: onSuccess,
       onError: (error, newData, context) => {
         if (!context) return;
         queryClient.setQueryData<S[]>(

@@ -9,10 +9,12 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import { useCamp, LevelScheduleList } from "../camps";
+import { useCamp, LevelScheduleList, CACHE_KEY_CAMPS } from "../camps";
 import { ProgramForm } from "../programs";
 import { EnrollStudentModal, StudentTable } from "../students";
 import { InstructorList } from "../users";
+import { useUpdateCamp } from "../camps/hooks/useCamps";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   forScheduling: boolean;
@@ -27,7 +29,16 @@ const Camp = ({ forScheduling }: Props) => {
     onOpen: newOnOpen,
     onClose: newOnClose,
   } = useDisclosure();
+  const queryClient = useQueryClient();
   const { data: camp, isLoading, error } = useCamp(id, false);
+  const updateCamp = useUpdateCamp({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CACHE_KEY_CAMPS });
+      queryClient.invalidateQueries({
+        queryKey: [...CACHE_KEY_CAMPS, camp?.id.toString()],
+      });
+    },
+  });
 
   if (isLoading) return null;
   if (error) throw error;
@@ -35,6 +46,17 @@ const Camp = ({ forScheduling }: Props) => {
   return (
     <>
       <PageHeader label={camp?.program.title} hideUnderline={true}>
+        {forScheduling && (
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={() => {
+              updateCamp.mutate({ ...camp, is_published: !camp.is_published });
+            }}
+          >
+            {camp.is_published ? "Unpublish" : "Publish"}
+          </Button>
+        )}
         {!forScheduling && (
           <Button size="lg" variant="outline" onClick={newOnOpen}>
             Enroll Student
@@ -65,12 +87,14 @@ const Camp = ({ forScheduling }: Props) => {
           )}
         </TabPanels>
       </Tabs>
-      <EnrollStudentModal
-        title="Enroll Student"
-        campId={camp?.id}
-        isOpen={newIsOpen}
-        onClose={newOnClose}
-      />
+      {!forScheduling && (
+        <EnrollStudentModal
+          title="Enroll Student"
+          campId={camp?.id}
+          isOpen={newIsOpen}
+          onClose={newOnClose}
+        />
+      )}
     </>
   );
 };
