@@ -14,7 +14,7 @@ import SubmitButton from "../../components/SubmitButton";
 import useStudents from "../hooks/useStudents";
 import ListButton from "../../components/ListButton";
 import { useState } from "react";
-import useEnrollStudent from "../hooks/useEnrollStudent";
+import useCampStudents, { useEnrollStudent } from "../hooks/useCampStudents";
 
 interface Props {
   title: string;
@@ -24,7 +24,8 @@ interface Props {
 }
 
 const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
-  const { data: students, isLoading, error } = useStudents();
+  const { data: allStudents, isLoading, error } = useStudents();
+  const { data: enrolledStudents } = useCampStudents(campId);
   const [selectedStudentId, setSelectedStudentId] = useState<
     number | undefined
   >(undefined);
@@ -32,6 +33,10 @@ const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
 
   if (isLoading) return null;
   if (error) throw error;
+
+  const unenrolledStudents = allStudents.filter(
+    (student) => !enrolledStudents?.find((s) => s.id === student.id)
+  );
 
   return (
     <Modal
@@ -50,7 +55,7 @@ const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
         <ModalCloseButton />
         <ModalBody>
           <List spacing={3}>
-            {students.map((s) => (
+            {unenrolledStudents.map((s) => (
               <ListButton
                 key={s.id}
                 isSelected={selectedStudentId === s.id}

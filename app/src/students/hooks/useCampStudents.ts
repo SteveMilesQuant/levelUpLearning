@@ -30,3 +30,9 @@ export const useDisenrollStudent = (campId?: number) => {
   const studentHooks = useStudentHooks(campId);
   return studentHooks.useDelete();
 };
+
+export const useEnrollStudent = (campId?: number) => {
+  if (!campId) return {} as UseMutationResult<any, Error, any>;
+  const studentHooks = useStudentHooks(campId);
+  return studentHooks.useEnroll();
+};
