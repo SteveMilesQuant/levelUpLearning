@@ -9,6 +9,7 @@ import Program from "./Program";
 import Programs from "./Programs";
 import PrivateRoutes from "./PrivateRoutes";
 import Members from "./Members";
+import { CampGetType } from "../camps";
 
 const router = createBrowserRouter([
   {
@@ -25,12 +26,26 @@ const router = createBrowserRouter([
         element: <PrivateRoutes />,
         children: [
           { path: "students", element: <Students /> },
-          { path: "camps", element: <Camps forScheduling={false} /> },
-          { path: "camps/:id", element: <Camp forScheduling={false} /> },
+          { path: "camps", element: <Camps campGetType={CampGetType.camps} /> },
+          {
+            path: "camps/:id",
+            element: <Camp campGetType={CampGetType.camps} />,
+          },
+          { path: "teach", element: <Camps campGetType={CampGetType.teach} /> },
+          {
+            path: "teach/:id",
+            element: <Camp campGetType={CampGetType.teach} />,
+          },
           { path: "programs", element: <Programs /> },
           { path: "programs/:id", element: <Program /> },
-          { path: "schedule", element: <Camps forScheduling={true} /> },
-          { path: "schedule/:id", element: <Camp forScheduling={true} /> },
+          {
+            path: "schedule",
+            element: <Camps campGetType={CampGetType.schedule} />,
+          },
+          {
+            path: "schedule/:id",
+            element: <Camp campGetType={CampGetType.schedule} />,
+          },
           { path: "members", element: <Members /> },
         ],
       },

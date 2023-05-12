@@ -20,13 +20,14 @@ import { User } from "../User";
 import InstructorFormBody from "./InstructorFormBody";
 import { BsChevronDown } from "react-icons/bs";
 import DeleteButton from "../../components/DeleteButton";
+import { CampGetType } from "../../camps";
 
 interface Props {
   campId?: number;
-  forScheduling?: boolean;
+  campGetType?: CampGetType;
 }
 
-const InstructorList = ({ campId, forScheduling }: Props) => {
+const InstructorList = ({ campId, campGetType }: Props) => {
   const { data: instructors, isLoading, error } = useCampInstructors(campId);
   const { data: allInstructors } = useInstructors();
   const deleteInstructor = useDeleteCampInstructor(campId);
@@ -58,7 +59,7 @@ const InstructorList = ({ campId, forScheduling }: Props) => {
               >
                 {instructor.full_name}
               </ListButton>
-              {forScheduling && (
+              {campGetType === CampGetType.schedule && (
                 <DeleteButton
                   onConfirm={() => deleteInstructor.mutate(instructor.id)}
                 >
@@ -67,7 +68,7 @@ const InstructorList = ({ campId, forScheduling }: Props) => {
               )}
             </HStack>
           ))}
-          {forScheduling &&
+          {campGetType === CampGetType.schedule &&
             addableInstructors &&
             addableInstructors.length > 0 && (
               <ListItem>
@@ -99,7 +100,7 @@ const InstructorList = ({ campId, forScheduling }: Props) => {
               <InstructorFormBody
                 key={instructor.id}
                 instructor={instructor}
-                isReadOnly={!forScheduling}
+                isReadOnly={campGetType !== CampGetType.schedule}
               />
             ))}
         </Box>

@@ -1,13 +1,19 @@
 import { Button, SimpleGrid, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import { useCamps, useDeleteCamp, CampCard, CampFormModal } from "../camps";
+import {
+  useCamps,
+  useDeleteCamp,
+  CampCard,
+  CampFormModal,
+  CampGetType,
+} from "../camps";
 
 interface Props {
-  forScheduling: boolean;
+  campGetType: CampGetType;
 }
 
-const Camps = ({ forScheduling }: Props) => {
-  const { data: camps, isLoading, error } = useCamps(forScheduling, undefined);
+const Camps = ({ campGetType }: Props) => {
+  const { data: camps, isLoading, error } = useCamps(campGetType);
   const deleteCamp = useDeleteCamp();
   const {
     isOpen: newIsOpen,
@@ -20,8 +26,12 @@ const Camps = ({ forScheduling }: Props) => {
 
   return (
     <>
-      <PageHeader label={forScheduling ? "Schedule Camps" : "Camps"}>
-        {forScheduling && (
+      <PageHeader
+        label={
+          campGetType === CampGetType.schedule ? "Schedule Camps" : "Camps"
+        }
+      >
+        {campGetType === CampGetType.schedule && (
           <Button size="lg" variant="outline" onClick={newOnOpen}>
             Add Camp
           </Button>
@@ -33,13 +43,15 @@ const Camps = ({ forScheduling }: Props) => {
             key={camp.id}
             camp={camp}
             onDelete={
-              forScheduling ? () => deleteCamp.mutate(camp.id) : undefined
+              campGetType === CampGetType.schedule
+                ? () => deleteCamp.mutate(camp.id)
+                : undefined
             }
-            forScheduling={forScheduling}
+            campGetType={campGetType}
           />
         ))}
       </SimpleGrid>
-      {forScheduling && (
+      {campGetType === CampGetType.schedule && (
         <CampFormModal
           title="Add Camp"
           isOpen={newIsOpen}

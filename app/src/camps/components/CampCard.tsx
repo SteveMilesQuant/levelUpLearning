@@ -13,14 +13,15 @@ import { Camp } from "../Camp";
 import DeleteButton from "../../components/DeleteButton";
 import useLevelSchedules from "../hooks/useLevelSchedules";
 import { locale } from "../../constants";
+import { CampGetType } from "../hooks/useCamps";
 
 interface Props {
   camp: Camp;
   onDelete?: () => void;
-  forScheduling: boolean;
+  campGetType: CampGetType;
 }
 
-const CampCard = ({ camp, onDelete, forScheduling }: Props) => {
+const CampCard = ({ camp, onDelete, campGetType }: Props) => {
   const byLine = "with " + camp.primary_instructor.full_name;
   const { data: levelSchedules, error, isLoading } = useLevelSchedules(camp.id);
 
@@ -42,7 +43,11 @@ const CampCard = ({ camp, onDelete, forScheduling }: Props) => {
         <HStack justifyContent="space-between">
           <LinkOverlay
             as={RouterLink}
-            to={forScheduling ? "/schedule/" + camp.id : "/camps/" + camp.id}
+            to={
+              campGetType === CampGetType.schedule
+                ? "/schedule/" + camp.id
+                : "/camps/" + camp.id
+            }
           >
             <HStack alignItems="end">
               <Heading fontSize="2xl">{camp.program.title}</Heading>

@@ -13,14 +13,14 @@ import { useCamp, LevelScheduleList, CACHE_KEY_CAMPS } from "../camps";
 import { ProgramForm } from "../programs";
 import { EnrollStudentModal, StudentTable } from "../students";
 import { InstructorList } from "../users";
-import { useUpdateCamp } from "../camps/hooks/useCamps";
+import { CampGetType, useUpdateCamp } from "../camps/hooks/useCamps";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
-  forScheduling: boolean;
+  campGetType: CampGetType;
 }
 
-const Camp = ({ forScheduling }: Props) => {
+const Camp = ({ campGetType }: Props) => {
   const { id: idStr } = useParams();
   const id = idStr ? parseInt(idStr) : undefined;
 
@@ -30,7 +30,7 @@ const Camp = ({ forScheduling }: Props) => {
     onClose: newOnClose,
   } = useDisclosure();
   const queryClient = useQueryClient();
-  const { data: camp, isLoading, error } = useCamp(id, false);
+  const { data: camp, isLoading, error } = useCamp(id);
   const updateCamp = useUpdateCamp({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CACHE_KEY_CAMPS });
@@ -46,7 +46,7 @@ const Camp = ({ forScheduling }: Props) => {
   return (
     <>
       <PageHeader label={camp?.program.title} hideUnderline={true}>
-        {forScheduling && (
+        {campGetType === CampGetType.schedule && (
           <Button
             size="lg"
             variant="outline"
@@ -57,7 +57,7 @@ const Camp = ({ forScheduling }: Props) => {
             {camp.is_published ? "Unpublish" : "Publish"}
           </Button>
         )}
-        {!forScheduling && (
+        {campGetType === CampGetType.camps && (
           <Button size="lg" variant="outline" onClick={newOnOpen}>
             Enroll Student
           </Button>
@@ -68,26 +68,26 @@ const Camp = ({ forScheduling }: Props) => {
           <Tab>Camp</Tab>
           <Tab>Levels</Tab>
           <Tab>Instructors</Tab>
-          {forScheduling && <Tab>Students</Tab>}
+          {campGetType === CampGetType.schedule && <Tab>Students</Tab>}
         </TabList>
         <TabPanels>
           <TabPanel>
             <ProgramForm program={camp?.program} isReadOnly={true} />
           </TabPanel>
           <TabPanel>
-            <LevelScheduleList campId={camp.id} forScheduling={forScheduling} />
+            <LevelScheduleList campId={camp.id} campGetType={campGetType} />
           </TabPanel>
           <TabPanel>
-            <InstructorList campId={camp.id} forScheduling={forScheduling} />
+            <InstructorList campId={camp.id} campGetType={campGetType} />
           </TabPanel>
-          {forScheduling && (
+          {campGetType === CampGetType.schedule && (
             <TabPanel>
               <StudentTable campId={camp.id} />
             </TabPanel>
           )}
         </TabPanels>
       </Tabs>
-      {!forScheduling && (
+      {campGetType === CampGetType.camps && (
         <EnrollStudentModal
           title="Enroll Student"
           campId={camp?.id}
