@@ -17,11 +17,11 @@ import { CampGetType } from "../hooks/useCamps";
 
 interface Props {
   camp: Camp;
-  onDelete?: () => void;
   campGetType: CampGetType;
+  onDelete?: () => void;
 }
 
-const CampCard = ({ camp, onDelete, campGetType }: Props) => {
+const CampCard = ({ camp, campGetType, onDelete }: Props) => {
   const byLine = "with " + camp.primary_instructor.full_name;
   const { data: levelSchedules, error, isLoading } = useLevelSchedules(camp.id);
 
@@ -46,6 +46,8 @@ const CampCard = ({ camp, onDelete, campGetType }: Props) => {
             to={
               campGetType === CampGetType.schedule
                 ? "/schedule/" + camp.id
+                : campGetType === CampGetType.teach
+                ? "/teach/" + camp.id
                 : "/camps/" + camp.id
             }
           >

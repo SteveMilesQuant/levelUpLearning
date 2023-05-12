@@ -38,7 +38,7 @@ const SideIconList = ({ roles }: Props) => {
       {
         id: 3,
         icon: <GiTeacher size="2em" />,
-        endpoint: "#",
+        endpoint: "/teach",
         label: "Teach Camps",
       },
       {

@@ -1,12 +1,14 @@
 import { Table, TableContainer, Tbody, Th, Thead, Tr } from "@chakra-ui/react";
 import useCampStudents from "../hooks/useCampStudents";
 import StudentRow from "./StudentRow";
+import { CampGetType } from "../../camps";
 
 interface Props {
   campId: number;
+  campGetType: CampGetType;
 }
 
-const StudentTable = ({ campId }: Props) => {
+const StudentTable = ({ campId, campGetType }: Props) => {
   const { data: students, isLoading, error } = useCampStudents(campId);
 
   if (isLoading) return null;
@@ -19,14 +21,21 @@ const StudentTable = ({ campId }: Props) => {
           <Tr>
             <Th>Name</Th>
             <Th>Grade</Th>
-            <Th>
-              {/* Placeholder for delete button, which needs no header */}
-            </Th>
+            {campGetType === CampGetType.schedule && (
+              <Th>
+                {/* Placeholder for delete button, which needs no header */}
+              </Th>
+            )}
           </Tr>
         </Thead>
         <Tbody>
           {students.map((student) => (
-            <StudentRow key={student.id} campId={campId} student={student} />
+            <StudentRow
+              key={student.id}
+              campId={campId}
+              student={student}
+              campGetType={campGetType}
+            />
           ))}
         </Tbody>
       </Table>

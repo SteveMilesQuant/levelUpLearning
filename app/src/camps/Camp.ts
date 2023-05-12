@@ -14,4 +14,5 @@ export interface Camp extends CampData {
 }
 
 export const CACHE_KEY_CAMPS = ["camps"];
+export const CACHE_KEY_TEACH = ["teach"];
 export const CACHE_KEY_SCHEDULE = ["schedule"];

@@ -1,7 +1,13 @@
 import ms from "ms";
 import APIHooks from "../../services/api-hooks";
 import APIClient from "../../services/api-client";
-import { CACHE_KEY_CAMPS, CACHE_KEY_SCHEDULE, Camp, CampData } from "../Camp";
+import {
+  CACHE_KEY_CAMPS,
+  CACHE_KEY_TEACH,
+  CACHE_KEY_SCHEDULE,
+  Camp,
+  CampData,
+} from "../Camp";
 import { CACHE_KEY_STUDENTS } from "../../students";
 
 export enum CampGetType {
@@ -24,7 +30,7 @@ const scheduleHooks = new APIHooks<Camp, CampData>(
 
 const teachHooks = new APIHooks<Camp, CampData>(
   new APIClient<Camp, CampData>("/teach"),
-  CACHE_KEY_SCHEDULE,
+  CACHE_KEY_TEACH,
   ms("5m")
 );
 
@@ -36,9 +42,9 @@ const writeCampHooks = new APIHooks<Camp, CampData>(
 
 const useCamps = (getType?: CampGetType, studentId?: number) => {
   if (getType === CampGetType.schedule) {
-    return teachHooks.useDataList();
-  } else if (getType === CampGetType.teach) {
     return scheduleHooks.useDataList();
+  } else if (getType === CampGetType.teach) {
+    return teachHooks.useDataList();
   } else if (studentId) {
     const studentCampHooks = new APIHooks<Camp, CampData>(
       new APIClient<Camp, CampData>(`/students/${studentId}/camps`),
@@ -46,9 +52,8 @@ const useCamps = (getType?: CampGetType, studentId?: number) => {
       ms("5m")
     );
     return studentCampHooks.useDataList();
-  } else {
-    return campHooks.useDataList();
   }
+  return campHooks.useDataList();
 };
 
 export default useCamps;

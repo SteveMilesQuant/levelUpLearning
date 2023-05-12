@@ -28,7 +28,11 @@ const Camps = ({ campGetType }: Props) => {
     <>
       <PageHeader
         label={
-          campGetType === CampGetType.schedule ? "Schedule Camps" : "Camps"
+          campGetType === CampGetType.schedule
+            ? "Schedule Camps"
+            : campGetType === CampGetType.teach
+            ? "Teach Camps"
+            : "Camps"
         }
       >
         {campGetType === CampGetType.schedule && (

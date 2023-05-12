@@ -68,7 +68,7 @@ const Camp = ({ campGetType }: Props) => {
           <Tab>Camp</Tab>
           <Tab>Levels</Tab>
           <Tab>Instructors</Tab>
-          {campGetType === CampGetType.schedule && <Tab>Students</Tab>}
+          {campGetType !== CampGetType.camps && <Tab>Students</Tab>}
         </TabList>
         <TabPanels>
           <TabPanel>
@@ -80,9 +80,9 @@ const Camp = ({ campGetType }: Props) => {
           <TabPanel>
             <InstructorList campId={camp.id} campGetType={campGetType} />
           </TabPanel>
-          {campGetType === CampGetType.schedule && (
+          {campGetType !== CampGetType.camps && (
             <TabPanel>
-              <StudentTable campId={camp.id} />
+              <StudentTable campId={camp.id} campGetType={campGetType} />
             </TabPanel>
           )}
         </TabPanels>

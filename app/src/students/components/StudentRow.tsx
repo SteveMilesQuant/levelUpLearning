@@ -3,14 +3,15 @@ import { CACHE_KEY_STUDENTS, Student } from "../Student";
 import DeleteButton from "../../components/DeleteButton";
 import { useDisenrollStudent } from "../hooks/useCampStudents";
 import { useQueryClient } from "@tanstack/react-query";
-import { CACHE_KEY_CAMPS } from "../../camps";
+import { CACHE_KEY_CAMPS, CampGetType } from "../../camps";
 
 interface Props {
   campId: number;
+  campGetType: CampGetType;
   student: Student;
 }
 
-const StudentRow = ({ campId, student }: Props) => {
+const StudentRow = ({ campId, campGetType, student }: Props) => {
   const queryClient = useQueryClient();
   const disenrollStudent = useDisenrollStudent(campId, {
     onSuccess: () => {
@@ -28,15 +29,17 @@ const StudentRow = ({ campId, student }: Props) => {
     <Tr>
       <Td>{student.name}</Td>
       <Td>{student.grade_level}</Td>
-      <Td>
-        <DeleteButton
-          onConfirm={() => {
-            disenrollStudent.mutate(student.id);
-          }}
-        >
-          {student.name}
-        </DeleteButton>
-      </Td>
+      {campGetType === CampGetType.schedule && (
+        <Td>
+          <DeleteButton
+            onConfirm={() => {
+              disenrollStudent.mutate(student.id);
+            }}
+          >
+            {student.name}
+          </DeleteButton>
+        </Td>
+      )}
     </Tr>
   );
 };
