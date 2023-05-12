@@ -23,19 +23,19 @@ interface A {
   id: number;
 }
 
-interface AddArgs<S, Q = S> {
+export interface AddArgs<S, Q = S> {
   onAdd?: () => void;
   onSuccess?: () => void;
   queryMutation?: (newData: Q, dataList: S[]) => S[];
 }
 
-interface UpdateArgs<S> {
+export interface UpdateArgs<S> {
   onUpdate?: () => void;
   onSuccess?: () => void;
   queryMutation?: (newData: S, dataList: S[]) => S[];
 }
 
-interface DeleteArgs<S> {
+export interface DeleteArgs<S> {
   onDelete?: () => void;
   onSuccess?: () => void;
   queryMutation?: (dataId: number, dataList: S[]) => S[];

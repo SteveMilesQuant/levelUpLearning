@@ -15,6 +15,9 @@ import useStudents from "../hooks/useStudents";
 import ListButton from "../../components/ListButton";
 import { useState } from "react";
 import useCampStudents, { useEnrollStudent } from "../hooks/useCampStudents";
+import { useQueryClient } from "@tanstack/react-query";
+import { CACHE_KEY_STUDENTS } from "../Student";
+import { CACHE_KEY_CAMPS } from "../../camps";
 
 interface Props {
   title: string;
@@ -30,6 +33,7 @@ const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
     number | undefined
   >(undefined);
   const enrollStudent = useEnrollStudent(campId);
+  const queryClient = useQueryClient();
 
   if (isLoading) return null;
   if (error) throw error;
@@ -71,7 +75,15 @@ const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
         <ModalFooter>
           <SubmitButton
             onClick={() => {
+              if (!selectedStudentId) return;
               enrollStudent.mutate(selectedStudentId);
+              queryClient.invalidateQueries({
+                queryKey: [
+                  ...CACHE_KEY_STUDENTS,
+                  selectedStudentId?.toString(),
+                  ...CACHE_KEY_CAMPS,
+                ],
+              });
               setSelectedStudentId(undefined);
               onClose();
             }}

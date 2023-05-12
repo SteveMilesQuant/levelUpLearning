@@ -1,7 +1,9 @@
 import { Td, Tr } from "@chakra-ui/react";
-import { Student } from "../Student";
+import { CACHE_KEY_STUDENTS, Student } from "../Student";
 import DeleteButton from "../../components/DeleteButton";
 import { useDisenrollStudent } from "../hooks/useCampStudents";
+import { useQueryClient } from "@tanstack/react-query";
+import { CACHE_KEY_CAMPS } from "../../camps";
 
 interface Props {
   campId: number;
@@ -9,7 +11,19 @@ interface Props {
 }
 
 const StudentRow = ({ campId, student }: Props) => {
-  const disenrollStudent = useDisenrollStudent(campId);
+  const queryClient = useQueryClient();
+  const disenrollStudent = useDisenrollStudent(campId, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          ...CACHE_KEY_STUDENTS,
+          student.id.toString(),
+          ...CACHE_KEY_CAMPS,
+        ],
+      });
+    },
+  });
+
   return (
     <Tr>
       <Td>{student.name}</Td>

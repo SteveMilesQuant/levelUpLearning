@@ -1,6 +1,9 @@
 import ms from "ms";
 import APIClient from "../../services/api-client";
-import APIHooks, { DeleteDataContext } from "../../services/api-hooks";
+import APIHooks, {
+  DeleteArgs,
+  DeleteDataContext,
+} from "../../services/api-hooks";
 import { CACHE_KEY_STUDENTS, Student, StudentData } from "../Student";
 import { CACHE_KEY_CAMPS } from "../../camps";
 import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
@@ -19,7 +22,10 @@ const useCampStudents = (campId?: number) => {
 };
 export default useCampStudents;
 
-export const useDisenrollStudent = (campId?: number) => {
+export const useDisenrollStudent = (
+  campId?: number,
+  options?: DeleteArgs<Student>
+) => {
   if (!campId)
     return {} as UseMutationResult<
       any,
@@ -28,7 +34,7 @@ export const useDisenrollStudent = (campId?: number) => {
       DeleteDataContext<Student>
     >;
   const studentHooks = useStudentHooks(campId);
-  return studentHooks.useDelete();
+  return studentHooks.useDelete(options);
 };
 
 export const useEnrollStudent = (campId?: number) => {
