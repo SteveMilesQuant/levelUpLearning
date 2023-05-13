@@ -1,21 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import APIClient from "../../services/api-client";
-import { User } from "../User";
+import { User, UserData } from "../User";
 import useAuth from "./useAuth";
+import APIHooks from "../../services/api-hooks";
+import ms from "ms";
 
 export const CACHE_KEY_USER = ["user"];
 
-const apiClient = new APIClient<User>("/user");
+const userHooks = new APIHooks<User, UserData>(
+  new APIClient<User, UserData>("/user"),
+  CACHE_KEY_USER,
+  ms("5m")
+);
 
-const useUser = () => {
-  const { signedIn } = useAuth();
+export const useUpdateUser = userHooks.useUpdate;
 
-  return useQuery<User, Error>({
-    queryKey: CACHE_KEY_USER,
-    queryFn: () => apiClient.get(),
-    staleTime: 0,
-    enabled: signedIn,
-  });
-};
+const useUser = () => userHooks.useData(undefined, true);
 
 export default useUser;

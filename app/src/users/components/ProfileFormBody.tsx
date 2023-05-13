@@ -1,31 +1,42 @@
 import { FormControl, FormLabel, Input, Stack } from "@chakra-ui/react";
-import { User } from "../User";
+import { FieldErrors, UseFormRegister } from "react-hook-form";
+import InputError from "../../components/InputError";
+import { FormData } from "../hooks/useUserForm";
 
 interface Props {
-  user: User;
+  register: UseFormRegister<FormData>;
+  errors: FieldErrors<FormData>;
   isReadOnly?: boolean;
 }
 
-const ProfileFormBody = ({ user, isReadOnly }: Props) => {
+const ProfileFormBody = ({ register, errors, isReadOnly }: Props) => {
   return (
     <Stack spacing={5}>
       <FormControl>
         <FormLabel>Name</FormLabel>
-        <Input
-          type="text"
-          isReadOnly={isReadOnly}
-          value={user.full_name}
-          onChange={() => {}}
-        />
+        <InputError
+          label={errors.full_name?.message}
+          isOpen={errors.full_name ? true : false}
+        >
+          <Input
+            type="text"
+            isReadOnly={isReadOnly}
+            {...register("full_name")}
+          />
+        </InputError>
       </FormControl>
       <FormControl>
         <FormLabel>Email</FormLabel>
-        <Input
-          type="email"
-          isReadOnly={isReadOnly}
-          value={user.email_address}
-          onChange={() => {}}
-        />
+        <InputError
+          label={errors.email_address?.message}
+          isOpen={errors.email_address ? true : false}
+        >
+          <Input
+            type="email"
+            isReadOnly={isReadOnly}
+            {...register("email_address")}
+          />
+        </InputError>
       </FormControl>
     </Stack>
   );

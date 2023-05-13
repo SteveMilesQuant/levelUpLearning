@@ -5,6 +5,7 @@ import {
   UseQueryResult,
 } from "@tanstack/react-query";
 import APIClient from "./api-client";
+import { useAuth } from "../users";
 
 export interface AddDataContext<S> {
   prevData: S[];
@@ -53,14 +54,15 @@ export default class APIHooks<S extends A, Q = S> {
     this.staleTime = staleTime;
   }
 
-  useData = (id?: number) => {
-    if (!id) return {} as UseQueryResult<S, Error>;
+  useData = (id?: number, requireSignIn?: boolean) => {
+    const { signedIn } = useAuth();
     const singleCacheKey = [...this.cacheKey];
-    singleCacheKey.push(id);
+    if (id) singleCacheKey.push(id);
     return useQuery<S, Error>({
       queryKey: singleCacheKey,
       queryFn: () => this.client.get(id),
       staleTime: this.staleTime,
+      enabled: !requireSignIn || signedIn,
     });
   };
 

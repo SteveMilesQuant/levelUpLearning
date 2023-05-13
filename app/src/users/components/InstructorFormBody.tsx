@@ -5,44 +5,51 @@ import {
   Stack,
   Textarea,
 } from "@chakra-ui/react";
-import { User } from "../User";
+import { FormData } from "../hooks/useUserForm";
+import { FieldErrors, UseFormRegister } from "react-hook-form";
+import InputError from "../../components/InputError";
 
 interface Props {
-  instructor: User;
+  register: UseFormRegister<FormData>;
+  errors: FieldErrors<FormData>;
   isReadOnly?: boolean;
 }
 
-const InstructorFormBody = ({ instructor, isReadOnly }: Props) => {
+const InstructorFormBody = ({ register, errors, isReadOnly }: Props) => {
   return (
     <Stack spacing={5}>
       <FormControl>
         <FormLabel>Name</FormLabel>
-        <Input
-          type="text"
-          isReadOnly={true}
-          value={instructor.full_name}
-          onChange={() => {}}
-        />
+
+        <Input type="text" isReadOnly={true} {...register("full_name")} />
       </FormControl>
       <FormControl>
         <FormLabel>Subjects</FormLabel>
-        <Input
-          type="text"
-          isReadOnly={isReadOnly}
-          value={instructor.instructor_subjects}
-          onChange={() => {}}
-        />
+        <InputError
+          label={errors.instructor_subjects?.message}
+          isOpen={errors.instructor_subjects ? true : false}
+        >
+          <Input
+            type="text"
+            isReadOnly={isReadOnly}
+            {...register("instructor_subjects")}
+          />
+        </InputError>
       </FormControl>
       <FormControl>
         <FormLabel>About</FormLabel>
-        <Input
-          as={Textarea}
-          size="xl"
-          height="250px"
-          isReadOnly={isReadOnly}
-          value={instructor.instructor_description}
-          onChange={() => {}}
-        />
+        <InputError
+          label={errors.instructor_description?.message}
+          isOpen={errors.instructor_description ? true : false}
+        >
+          <Input
+            as={Textarea}
+            size="xl"
+            height="250px"
+            isReadOnly={isReadOnly}
+            {...register("instructor_description")}
+          />
+        </InputError>
       </FormControl>
     </Stack>
   );

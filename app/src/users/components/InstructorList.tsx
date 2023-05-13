@@ -17,7 +17,7 @@ import useInstructors, {
 } from "../hooks/useInstructors";
 import { useEffect, useState } from "react";
 import { User } from "../User";
-import InstructorFormBody from "./InstructorFormBody";
+import InstructorForm from "./InstructorForm";
 import { BsChevronDown } from "react-icons/bs";
 import DeleteButton from "../../components/DeleteButton";
 import { CampGetType } from "../../camps";
@@ -97,7 +97,7 @@ const InstructorList = ({ campId, campGetType }: Props) => {
           {instructors
             ?.filter((instructor) => instructor.id === selectedInstructor?.id)
             .map((instructor) => (
-              <InstructorFormBody
+              <InstructorForm
                 key={instructor.id}
                 instructor={instructor}
                 isReadOnly={campGetType !== CampGetType.schedule}

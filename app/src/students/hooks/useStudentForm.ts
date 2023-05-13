@@ -1,11 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Student } from "../Student";
 import { useAddStudent, useUpdateStudent } from "./useStudents";
 
-export const studentSchema = z.object({
+const studentSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
   grade_level: z
     .number({ invalid_type_error: "Grade is required." })

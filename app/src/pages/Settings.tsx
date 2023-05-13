@@ -1,7 +1,7 @@
 import { Tab, TabList, Tabs, TabPanels, TabPanel } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import { InstructorFormBody, useUser } from "../users";
-import ProfileFormBody from "../users/components/ProfileFormBody";
+import { InstructorForm, useUser } from "../users";
+import { ProfileForm } from "../users";
 
 const Settings = () => {
   const { data: user, isLoading, error } = useUser();
@@ -13,7 +13,7 @@ const Settings = () => {
 
   return (
     <>
-      <PageHeader label="Profiles and settings" />
+      <PageHeader label="Profile and settings" />
       <Tabs variant="enclosed">
         <TabList>
           <Tab>Profile</Tab>
@@ -21,11 +21,11 @@ const Settings = () => {
         </TabList>
         <TabPanels>
           <TabPanel>
-            <ProfileFormBody user={user} />
+            <ProfileForm user={user} />
           </TabPanel>
           {isInstructor && (
             <TabPanel>
-              <InstructorFormBody instructor={user} />
+              <InstructorForm instructor={user} />
             </TabPanel>
           )}
         </TabPanels>
