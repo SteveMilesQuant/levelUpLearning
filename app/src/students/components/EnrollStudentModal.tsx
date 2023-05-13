@@ -9,6 +9,7 @@ import {
   ModalBody,
   ModalFooter,
   List,
+  HStack,
 } from "@chakra-ui/react";
 import SubmitButton from "../../components/SubmitButton";
 import useStudents from "../hooks/useStudents";
@@ -18,6 +19,7 @@ import useCampStudents, { useEnrollStudent } from "../hooks/useCampStudents";
 import { useQueryClient } from "@tanstack/react-query";
 import { CACHE_KEY_STUDENTS } from "../Student";
 import { CACHE_KEY_CAMPS } from "../../camps";
+import CancelButton from "../../components/CancelButton";
 
 interface Props {
   title: string;
@@ -73,23 +75,26 @@ const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
           </List>
         </ModalBody>
         <ModalFooter>
-          <SubmitButton
-            onClick={() => {
-              if (!selectedStudentId) return;
-              enrollStudent.mutate(selectedStudentId);
-              queryClient.invalidateQueries({
-                queryKey: [
-                  ...CACHE_KEY_STUDENTS,
-                  selectedStudentId?.toString(),
-                  ...CACHE_KEY_CAMPS,
-                ],
-              });
-              setSelectedStudentId(undefined);
-              onClose();
-            }}
-          >
-            Submit
-          </SubmitButton>
+          <HStack justifyContent="right" spacing={3}>
+            <CancelButton onClick={onClose}>Cancel</CancelButton>
+            <SubmitButton
+              onClick={() => {
+                if (!selectedStudentId) return;
+                enrollStudent.mutate(selectedStudentId);
+                queryClient.invalidateQueries({
+                  queryKey: [
+                    ...CACHE_KEY_STUDENTS,
+                    selectedStudentId?.toString(),
+                    ...CACHE_KEY_CAMPS,
+                  ],
+                });
+                setSelectedStudentId(undefined);
+                onClose();
+              }}
+            >
+              Submit
+            </SubmitButton>
+          </HStack>
         </ModalFooter>
       </ModalContent>
     </Modal>

@@ -12,7 +12,9 @@ import {
   HStack,
   Box,
   Heading,
+  useDisclosure,
 } from "@chakra-ui/react";
+import CancelButton from "./CancelButton";
 
 interface Props {
   children?: string; // name of the thing you want to delete
@@ -21,15 +23,23 @@ interface Props {
 }
 
 const DeleteButton = ({ onConfirm, children, disabled }: Props) => {
+  const { isOpen, onToggle, onClose } = useDisclosure();
+
   return (
     <Box>
       {/* Put popover in a box, to avoid warnings about it, when container might try to apply css*/}
-      <Popover>
+      <Popover
+        returnFocusOnClose={false}
+        isOpen={isOpen}
+        onClose={onClose}
+        closeOnBlur={false}
+      >
         <PopoverTrigger>
           <ActionButton
             Component={AiFillDelete}
             label="Delete"
             disabled={disabled}
+            onClick={onToggle}
           />
         </PopoverTrigger>
         <PopoverContent>
@@ -38,10 +48,10 @@ const DeleteButton = ({ onConfirm, children, disabled }: Props) => {
             <Heading fontSize="md">
               Are you sure you want to remove {children}?
             </Heading>
-            <PopoverCloseButton />
           </PopoverHeader>
           <PopoverBody>
             <HStack justifyContent="right">
+              <CancelButton onClick={onClose}>Cancel</CancelButton>
               <Button onClick={onConfirm} colorScheme="red">
                 Delete
               </Button>

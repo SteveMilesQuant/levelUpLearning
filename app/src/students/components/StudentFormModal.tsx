@@ -8,10 +8,12 @@ import {
   ModalOverlay,
   Divider,
   Heading,
+  HStack,
 } from "@chakra-ui/react";
 import StudentFormBody from "./StudentFormBody";
 import useStudentForm from "../hooks/useStudentForm";
 import SubmitButton from "../../components/SubmitButton";
+import CancelButton from "../../components/CancelButton";
 
 interface Props {
   title: string;
@@ -41,17 +43,20 @@ const StudentFormModal = ({ title, isOpen, onClose }: Props) => {
           <StudentFormBody {...studentForm} />
         </ModalBody>
         <ModalFooter>
-          <SubmitButton
-            onClick={() => {
-              studentForm.handleSubmit();
-              if (studentForm.isValid) {
-                studentForm.handleClose();
-                onClose();
-              }
-            }}
-          >
-            Submit
-          </SubmitButton>
+          <HStack justifyContent="right" spacing={3}>
+            <CancelButton onClick={onClose}>Cancel</CancelButton>
+            <SubmitButton
+              onClick={() => {
+                studentForm.handleSubmit();
+                if (studentForm.isValid) {
+                  studentForm.handleClose();
+                  onClose();
+                }
+              }}
+            >
+              Submit
+            </SubmitButton>
+          </HStack>
         </ModalFooter>
       </ModalContent>
     </Modal>

@@ -8,9 +8,11 @@ import {
   ModalOverlay,
   Divider,
   Heading,
+  HStack,
 } from "@chakra-ui/react";
 import CampFormBody from "./CampFormBody";
 import useCampForm from "../hooks/useCampForm";
+import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
 
 interface Props {
@@ -42,17 +44,20 @@ const CampFormModal = ({ title, isOpen, onClose }: Props) => {
           <CampFormBody {...campForm} />
         </ModalBody>
         <ModalFooter>
-          <SubmitButton
-            onClick={() => {
-              campForm.handleSubmit();
-              if (campForm.isValid) {
-                campForm.handleClose();
-                onClose();
-              }
-            }}
-          >
-            Submit
-          </SubmitButton>
+          <HStack justifyContent="right" spacing={3}>
+            <CancelButton onClick={onClose}>Cancel</CancelButton>
+            <SubmitButton
+              onClick={() => {
+                campForm.handleSubmit();
+                if (campForm.isValid) {
+                  campForm.handleClose();
+                  onClose();
+                }
+              }}
+            >
+              Submit
+            </SubmitButton>
+          </HStack>
         </ModalFooter>
       </ModalContent>
     </Modal>
