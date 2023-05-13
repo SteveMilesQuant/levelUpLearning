@@ -86,7 +86,7 @@ export default class APIHooks<S extends A, Q = S> {
           if (queryMutation) {
             return queryMutation(newData, dataList);
           } else {
-            return [{ id: 0, ...newData } as unknown as S, ...dataList];
+            return [...dataList, { id: 0, ...newData } as unknown as S];
           }
         });
         if (onAdd) onAdd();
@@ -123,7 +123,6 @@ export default class APIHooks<S extends A, Q = S> {
         if (!endpointIgnoresId) {
           prevDataList = queryClient.getQueryData<S[]>(this.cacheKey) || [];
           queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) => {
-            debugger;
             if (queryMutation) {
               return queryMutation(newData, dataList);
             } else {

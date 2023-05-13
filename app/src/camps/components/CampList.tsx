@@ -1,16 +1,15 @@
 import { List } from "@chakra-ui/react";
-import { Student } from "../../students";
 import useCamps, { CampGetType } from "../hooks/useCamps";
 import CampCard from "./CampCard";
 
 interface Props {
-  student?: Student;
+  studentId: number;
   marginBottom?: string | number;
 }
 
-const CampList = ({ student, marginBottom }: Props) => {
+const CampList = ({ studentId, marginBottom }: Props) => {
   const campGetType = CampGetType.camps;
-  const { data: camps, isLoading, error } = useCamps(campGetType, student?.id);
+  const { data: camps, isLoading, error } = useCamps(campGetType, studentId);
 
   if (isLoading) return null;
   if (error) throw error;

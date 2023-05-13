@@ -1,34 +1,55 @@
-import { useState } from "react";
-import { GridItem, LinkBox, Button, SimpleGrid } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
-import { StudentList, Student } from "../students";
-import { CampList } from "../camps";
+import {
+  Tab,
+  TabList,
+  TabPanels,
+  Tabs,
+  Box,
+  useDisclosure,
+  TabPanel,
+} from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
+import useStudents from "../students/hooks/useStudents";
+import ActionButton from "../components/ActionButton";
+import { IoMdAddCircleOutline } from "react-icons/io";
+import { StudentPage, StudentFormModal } from "../students";
 
 const Students = () => {
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const { data: students } = useStudents();
+  const {
+    isOpen: newIsOpen,
+    onOpen: newOnOpen,
+    onClose: newOnClose,
+  } = useDisclosure();
 
   return (
     <>
-      <PageHeader label="Students"></PageHeader>
-      <SimpleGrid columns={2} spacing={5}>
-        <GridItem>
-          <StudentList
-            selectedStudent={selectedStudent}
-            onSelectStudent={(student) => setSelectedStudent(student)}
-          />
-        </GridItem>
-        <GridItem>
-          {selectedStudent && (
-            <CampList student={selectedStudent} marginBottom={5} />
-          )}
-          <LinkBox as={RouterLink} to="/camps">
-            <Button size="lg" variant="outline">
-              Find camps
-            </Button>
-          </LinkBox>
-        </GridItem>
-      </SimpleGrid>
+      <PageHeader label="My Students" hideUnderline={true}></PageHeader>
+      <Tabs variant="enclosed">
+        <TabList>
+          {students?.map((student) => (
+            <Tab key={student.id}>{student.name}</Tab>
+          ))}
+          <Box padding="4px">
+            <ActionButton
+              Component={IoMdAddCircleOutline}
+              label="Add student"
+              onClick={newOnOpen}
+            />
+          </Box>
+        </TabList>
+        <TabPanels>
+          {students?.map((student) => (
+            <TabPanel key={student.id}>
+              <StudentPage student={student} />
+            </TabPanel>
+          ))}
+        </TabPanels>
+      </Tabs>
+      <StudentFormModal
+        title="Add Student"
+        isOpen={newIsOpen}
+        onClose={newOnClose}
+      />
     </>
   );
 };

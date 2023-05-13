@@ -12,9 +12,10 @@ import { FormData } from "../hooks/useStudentForm";
 interface Props {
   register: UseFormRegister<FormData>;
   errors: FieldErrors<FormData>;
+  isReadOnly?: boolean;
 }
 
-const StudentFormBody = ({ register, errors }: Props) => {
+const StudentFormBody = ({ register, errors, isReadOnly }: Props) => {
   const grades = Array.from(Array(12).keys()).map((x) => (x + 1).toString());
 
   return (
@@ -25,7 +26,7 @@ const StudentFormBody = ({ register, errors }: Props) => {
           label={errors.name?.message}
           isOpen={errors.name ? true : false}
         >
-          <Input {...register("name")} type="text" />
+          <Input {...register("name")} type="text" isReadOnly={isReadOnly} />
         </InputError>
       </FormControl>
       <FormControl>
@@ -34,7 +35,11 @@ const StudentFormBody = ({ register, errors }: Props) => {
           label={errors.grade_level?.message}
           isOpen={errors.grade_level ? true : false}
         >
-          <Select {...register("grade_level")}>
+          <Select
+            {...register("grade_level")}
+            disabled={isReadOnly}
+            _disabled={{ opacity: 1 }}
+          >
             <option value="">Select grade</option>
             {grades.map((grade) => (
               <option key={grade} value={grade}>
