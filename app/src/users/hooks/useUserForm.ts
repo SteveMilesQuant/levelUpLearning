@@ -6,8 +6,12 @@ import { useMemo } from "react";
 import { useUpdateUser } from "./useUser";
 
 const userSchema = z.object({
-  full_name: z.string(),
-  email_address: z.string().email(),
+  full_name: z
+    .string()
+    .min(3, { message: "Name must be at least 3 characters." }),
+  email_address: z
+    .string()
+    .email({ message: "Please enter a valid email address." }),
   instructor_subjects: z.string(),
   instructor_description: z.string(),
 });

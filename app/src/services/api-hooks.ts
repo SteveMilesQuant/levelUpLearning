@@ -12,7 +12,7 @@ export interface AddDataContext<S> {
 }
 
 export interface UpdateDataContext<S> {
-  prevDataList: S[];
+  prevDataList?: S[];
   prevData?: S;
 }
 
@@ -34,6 +34,7 @@ export interface UpdateArgs<S> {
   onUpdate?: () => void;
   onSuccess?: () => void;
   queryMutation?: (newData: S, dataList: S[]) => S[];
+  endpointIgnoresId?: boolean;
 }
 
 export interface DeleteArgs<S> {
@@ -107,28 +108,35 @@ export default class APIHooks<S extends A, Q = S> {
   };
 
   useUpdate = (updateArgs?: UpdateArgs<S>) => {
-    const { onUpdate, onSuccess, queryMutation } = updateArgs || {};
+    const { onUpdate, onSuccess, queryMutation, endpointIgnoresId } =
+      updateArgs || {};
     const queryClient = useQueryClient();
 
     const udpateData = useMutation<S, Error, S, UpdateDataContext<S>>({
       mutationFn: (data: S) =>
-        this.client.put(data.id, { ...data } as unknown as Q),
+        this.client.put(endpointIgnoresId ? undefined : data.id, {
+          ...data,
+        } as unknown as Q),
       onMutate: (newData: S) => {
         // Update in list
-        const prevDataList = queryClient.getQueryData<S[]>(this.cacheKey) || [];
-        queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) => {
-          if (queryMutation) {
-            return queryMutation(newData, dataList);
-          } else {
-            return dataList.map((data) =>
-              data.id === newData.id ? newData : data
-            );
-          }
-        });
+        let prevDataList = undefined;
+        if (!endpointIgnoresId) {
+          prevDataList = queryClient.getQueryData<S[]>(this.cacheKey) || [];
+          queryClient.setQueryData<S[]>(this.cacheKey, (dataList = []) => {
+            debugger;
+            if (queryMutation) {
+              return queryMutation(newData, dataList);
+            } else {
+              return dataList.map((data) =>
+                data.id === newData.id ? newData : data
+              );
+            }
+          });
+        }
 
         // Also update individual data cache
         const singleCacheKey = [...this.cacheKey];
-        singleCacheKey.push(newData.id);
+        if (!endpointIgnoresId) singleCacheKey.push(newData.id);
         const prevData = queryClient.getQueryData<S[]>(singleCacheKey);
         if (prevData) queryClient.setQueryData<S>(singleCacheKey, newData);
 
@@ -138,10 +146,13 @@ export default class APIHooks<S extends A, Q = S> {
       onSuccess: onSuccess,
       onError: (error, newData, context) => {
         if (!context) return;
-        queryClient.setQueryData<S[]>(
-          this.cacheKey,
-          () => context.prevDataList
-        );
+
+        if (context.prevDataList) {
+          queryClient.setQueryData<S[]>(
+            this.cacheKey,
+            () => context.prevDataList
+          );
+        }
 
         if (context.prevData) {
           const singleCacheKey = [...this.cacheKey];

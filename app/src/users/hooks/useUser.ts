@@ -13,7 +13,8 @@ const userHooks = new APIHooks<User, UserData>(
   ms("5m")
 );
 
-export const useUpdateUser = userHooks.useUpdate;
+export const useUpdateUser = () =>
+  userHooks.useUpdate({ endpointIgnoresId: true });
 
 const useUser = () => userHooks.useData(undefined, true);
 

@@ -37,9 +37,12 @@ class APIClient<S, Q = S> {
     }
   };
 
-  put = (id: number, data: Q) => {
+  put = (id?: number, data?: Q) => {
     return axiosInstance
-      .put<Q, AxiosResponse<S>>(this.endpoint + "/" + id, data)
+      .put<Q, AxiosResponse<S>>(
+        id ? this.endpoint + "/" + id : this.endpoint,
+        data
+      )
       .then((res) => res.data);
   };
 
