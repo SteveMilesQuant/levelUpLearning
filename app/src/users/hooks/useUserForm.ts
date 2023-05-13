@@ -22,7 +22,7 @@ const useUserForm = (user?: User) => {
   const {
     register,
     handleSubmit: handleFormSubmit,
-    formState: { errors, isValid: formIsValid },
+    formState: { errors, isValid },
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(userSchema),
@@ -30,7 +30,6 @@ const useUserForm = (user?: User) => {
       return { ...user };
     }, [user]),
   });
-  const isValid = formIsValid;
 
   const updateUser = useUpdateUser();
 

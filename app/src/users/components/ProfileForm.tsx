@@ -1,5 +1,5 @@
 import { HStack } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ActionButton from "../../components/ActionButton";
 import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
@@ -15,6 +15,11 @@ interface Props {
 const ProfileForm = ({ user }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const userForm = useUserForm(user);
+
+  // Force a reset when another component (e.g. InstructorForm) updates the user
+  useEffect(() => {
+    userForm.handleClose();
+  }, [user]);
 
   return (
     <>
