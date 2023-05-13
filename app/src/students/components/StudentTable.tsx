@@ -21,6 +21,7 @@ const StudentTable = ({ campId, campGetType }: Props) => {
           <Tr>
             <Th>Name</Th>
             <Th>Grade</Th>
+            <Th>Guardians</Th>
             {campGetType === CampGetType.schedule && (
               <Th>
                 {/* Placeholder for delete button, which needs no header */}
