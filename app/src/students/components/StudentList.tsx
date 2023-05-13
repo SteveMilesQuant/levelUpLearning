@@ -3,6 +3,7 @@ import useStudents from "../hooks/useStudents";
 import StudentCard from "./StudentCard";
 import { Student } from "../Student";
 import StudentFormModal from "./StudentFormModal";
+import { useEffect } from "react";
 
 interface Props {
   selectedStudent: Student | null;
@@ -16,6 +17,10 @@ const StudentList = ({ selectedStudent, onSelectStudent }: Props) => {
     onOpen: newOnOpen,
     onClose: newOnClose,
   } = useDisclosure();
+
+  useEffect(() => {
+    if (students) onSelectStudent(students[0]);
+  }, [!!students]);
 
   if (isLoading) return null;
   if (error) throw error;
