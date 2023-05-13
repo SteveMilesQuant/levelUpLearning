@@ -19,7 +19,7 @@ const InstructorFormBody = ({ instructor, isReadOnly }: Props) => {
         <FormLabel>Name</FormLabel>
         <Input
           type="text"
-          isReadOnly={isReadOnly}
+          isReadOnly={true}
           value={instructor.full_name}
           onChange={() => {}}
         />

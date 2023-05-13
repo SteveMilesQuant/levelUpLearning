@@ -10,6 +10,7 @@ import Programs from "./Programs";
 import PrivateRoutes from "./PrivateRoutes";
 import Members from "./Members";
 import { CampGetType } from "../camps";
+import Settings from "./Settings";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
             element: <Camp campGetType={CampGetType.schedule} />,
           },
           { path: "members", element: <Members /> },
+          { path: "settings", element: <Settings /> },
         ],
       },
     ],

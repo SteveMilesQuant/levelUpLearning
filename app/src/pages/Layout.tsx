@@ -12,8 +12,7 @@ interface Props {
 }
 
 const Layout = ({ children }: Props) => {
-  const { signedIn } = useAuth();
-  const { data: user } = useUser(signedIn);
+  const { data: user } = useUser();
 
   return (
     <>

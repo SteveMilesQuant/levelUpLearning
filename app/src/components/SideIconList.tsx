@@ -1,6 +1,10 @@
 import { FaGraduationCap, FaSearch } from "react-icons/fa";
 import { GiTeacher } from "react-icons/gi";
-import { MdManageAccounts, MdOutlineDesignServices } from "react-icons/md";
+import {
+  MdManageAccounts,
+  MdOutlineDesignServices,
+  MdSettings,
+} from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
 import { Box } from "@chakra-ui/react";
 import { Role } from "../users";
@@ -78,6 +82,14 @@ const SideIconList = ({ roles }: Props) => {
           </Box>
         ))
       )}
+      <Box marginBottom={4} width="fit-content">
+        <LinkIcon
+          icon={<MdSettings size="2em" />}
+          endpoint="/settings"
+          label="Profile and settings"
+          withTooltip={true}
+        />
+      </Box>
     </Box>
   );
 };
