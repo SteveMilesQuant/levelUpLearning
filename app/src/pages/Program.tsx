@@ -1,8 +1,6 @@
 import { useParams } from "react-router-dom";
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import { ProgramForm, useProgram } from "../programs";
-import LevelList from "../programs/components/LevelList";
+import { ProgramTabs, useProgram } from "../programs";
 
 const Program = () => {
   const { id: idStr } = useParams();
@@ -15,21 +13,8 @@ const Program = () => {
 
   return (
     <>
-      <PageHeader hideUnderline={true}>program.title</PageHeader>
-      <Tabs variant="enclosed">
-        <TabList>
-          <Tab>Program</Tab>
-          <Tab>Levels</Tab>
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <ProgramForm program={program} isReadOnly={false} />
-          </TabPanel>
-          <TabPanel>
-            <LevelList programId={program.id} />
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+      <PageHeader hideUnderline={true}>{program.title}</PageHeader>
+      <ProgramTabs program={program} />
     </>
   );
 };

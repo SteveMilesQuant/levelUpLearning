@@ -1,18 +1,8 @@
 import { useParams } from "react-router-dom";
-import {
-  Button,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  useDisclosure,
-} from "@chakra-ui/react";
+import { Button, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import { useCamp, LevelScheduleList, CACHE_KEY_CAMPS } from "../camps";
-import { ProgramForm } from "../programs";
-import { EnrollStudentModal, StudentTable } from "../students";
-import { InstructorList } from "../users";
+import { useCamp, CACHE_KEY_CAMPS, CampTabs } from "../camps";
+import { EnrollStudentModal } from "../students";
 import { CampGetType, useUpdateCamp } from "../camps/hooks/useCamps";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -43,60 +33,32 @@ const Camp = ({ campGetType }: Props) => {
   if (isLoading) return null;
   if (error) throw error;
 
+  const headerButton =
+    campGetType === CampGetType.schedule ? (
+      <Button
+        size="lg"
+        variant="outline"
+        onClick={() => {
+          updateCamp.mutate({
+            ...camp,
+            is_published: !camp.is_published,
+          });
+        }}
+      >
+        {camp.is_published ? "Unpublish" : "Publish"}
+      </Button>
+    ) : campGetType === CampGetType.camps ? (
+      <Button size="lg" variant="outline" onClick={newOnOpen}>
+        Enroll Student
+      </Button>
+    ) : undefined;
+
   return (
     <>
-      <PageHeader
-        hideUnderline={true}
-        rightButton={
-          <>
-            {campGetType === CampGetType.schedule && (
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => {
-                  updateCamp.mutate({
-                    ...camp,
-                    is_published: !camp.is_published,
-                  });
-                }}
-              >
-                {camp.is_published ? "Unpublish" : "Publish"}
-              </Button>
-            )}
-            {campGetType === CampGetType.camps && (
-              <Button size="lg" variant="outline" onClick={newOnOpen}>
-                Enroll Student
-              </Button>
-            )}
-          </>
-        }
-      >
-        camp?.program.title
+      <PageHeader hideUnderline={true} rightButton={headerButton}>
+        {camp?.program.title}
       </PageHeader>
-      <Tabs variant="enclosed">
-        <TabList>
-          <Tab>Camp</Tab>
-          <Tab>Levels</Tab>
-          <Tab>Instructors</Tab>
-          {campGetType !== CampGetType.camps && <Tab>Students</Tab>}
-        </TabList>
-        <TabPanels>
-          <TabPanel>
-            <ProgramForm program={camp?.program} isReadOnly={true} />
-          </TabPanel>
-          <TabPanel>
-            <LevelScheduleList campId={camp.id} campGetType={campGetType} />
-          </TabPanel>
-          <TabPanel>
-            <InstructorList campId={camp.id} campGetType={campGetType} />
-          </TabPanel>
-          {campGetType !== CampGetType.camps && (
-            <TabPanel>
-              <StudentTable campId={camp.id} campGetType={campGetType} />
-            </TabPanel>
-          )}
-        </TabPanels>
-      </Tabs>
+      <CampTabs campGetType={campGetType} camp={camp} />
       {campGetType === CampGetType.camps && (
         <EnrollStudentModal
           title="Enroll Student"

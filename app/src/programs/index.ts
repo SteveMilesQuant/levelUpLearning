@@ -7,3 +7,4 @@ export { default as ProgramFormModal } from "./components/ProgramFormModal";
 export { default as LevelFormModal } from "./components/LevelFormModal";
 export { default as LevelForm } from "./components/LevelForm";
 export { default as ProgramForm } from "./components/ProgramForm";
+export { default as ProgramTabs } from "./components/ProgramTabs";

@@ -1,18 +1,8 @@
-import {
-  Tab,
-  TabList,
-  TabPanels,
-  Tabs,
-  useDisclosure,
-  TabPanel,
-  Button,
-} from "@chakra-ui/react";
+import { useDisclosure, Button } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import useStudents from "../students/hooks/useStudents";
-import { StudentPage, StudentFormModal } from "../students";
+import { StudentTabs, StudentFormModal } from "../students";
 
 const Students = () => {
-  const { data: students } = useStudents();
   const {
     isOpen: newIsOpen,
     onOpen: newOnOpen,
@@ -31,20 +21,7 @@ const Students = () => {
       >
         My Students
       </PageHeader>
-      <Tabs variant="enclosed">
-        <TabList>
-          {students?.map((student) => (
-            <Tab key={student.id}>{student.name}</Tab>
-          ))}
-        </TabList>
-        <TabPanels>
-          {students?.map((student) => (
-            <TabPanel key={student.id}>
-              <StudentPage student={student} />
-            </TabPanel>
-          ))}
-        </TabPanels>
-      </Tabs>
+      <StudentTabs />
       <StudentFormModal
         title="Add Student"
         isOpen={newIsOpen}

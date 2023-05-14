@@ -7,8 +7,8 @@ export {
   CampGetType,
 } from "./hooks/useCamps";
 export { default as LevelScheduleForm } from "./components/LevelScheduleForm";
-export { default as CampCard } from "./components/CampCard";
+export { default as CampGrid } from "./components/CampGrid";
 export { default as CampFormModal } from "./components/CampFormModal";
 export { default as CampList } from "./components/CampList";
-export { default as LevelScheduleList } from "./components/LevelScheduleList";
+export { default as CampTabs } from "./components/CampTabs";
 export { CACHE_KEY_CAMPS } from "./Camp";
