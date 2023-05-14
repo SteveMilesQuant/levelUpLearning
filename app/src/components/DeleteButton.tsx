@@ -4,7 +4,6 @@ import {
   Popover,
   PopoverArrow,
   PopoverBody,
-  PopoverCloseButton,
   PopoverContent,
   PopoverHeader,
   PopoverTrigger,
@@ -39,7 +38,9 @@ const DeleteButton = ({ onConfirm, children, disabled }: Props) => {
             Component={AiFillDelete}
             label="Delete"
             disabled={disabled}
-            onClick={onToggle}
+            onClick={() => {
+              if (!disabled) onToggle();
+            }}
           />
         </PopoverTrigger>
         <PopoverContent>

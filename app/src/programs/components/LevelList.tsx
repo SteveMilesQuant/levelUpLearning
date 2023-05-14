@@ -1,11 +1,10 @@
 import { Box, Button, HStack, Stack, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Level } from "../Level";
-import useLevels, { useDeleteLevel } from "../hooks/useLevels";
+import useLevels from "../hooks/useLevels";
 import ListButton from "../../components/ListButton";
 import LevelForm from "./LevelForm";
 import LevelFormModal from "./LevelFormModal";
-import DeleteButton from "../../components/DeleteButton";
 
 interface Props {
   programId: number;
@@ -17,7 +16,7 @@ const LevelList = ({ programId }: Props) => {
     undefined
   );
   const { data: levels, error, isLoading } = useLevels(programId);
-  const deleteLevel = useDeleteLevel(programId);
+
   useEffect(() => {
     if (levels) setSelectedLevel(levels[0]);
   }, [!!levels]);
@@ -39,13 +38,6 @@ const LevelList = ({ programId }: Props) => {
                 >
                   {level.list_index + ": " + level.title}
                 </ListButton>
-                <DeleteButton
-                  onConfirm={() => {
-                    deleteLevel.mutate(level.id);
-                  }}
-                >
-                  {level?.title}
-                </DeleteButton>
               </HStack>
             ))}
           <Button onClick={onOpen}>Add level</Button>
