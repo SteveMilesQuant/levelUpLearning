@@ -7,18 +7,28 @@ import SubmitButton from "../../components/SubmitButton";
 import useUserForm from "../hooks/useUserForm";
 import { User } from "../User";
 import InstructorFormBody from "./InstructorFormBody";
-import { useDeleteCampInstructor } from "../hooks/useInstructors";
 import DeleteButton from "../../components/DeleteButton";
+import { UseMutationResult } from "@tanstack/react-query";
+import { DeleteDataContext } from "../../services/api-hooks";
 
 interface Props {
-  campId?: number;
   instructor: User;
   isReadOnly?: boolean;
+  deleteInstructor?: UseMutationResult<
+    any,
+    Error,
+    number,
+    DeleteDataContext<User>
+  >; // delete only needed for InstructorList (within camp)
 }
 
-const InstructorForm = ({ campId, instructor, isReadOnly }: Props) => {
+const InstructorForm = ({
+  instructor,
+  isReadOnly,
+  deleteInstructor,
+}: Props) => {
   const [isEditing, setIsEditing] = useState(false);
-  const deleteInstructor = useDeleteCampInstructor(campId);
+
   const userForm = useUserForm(instructor);
 
   // Force a reset when another component (e.g. ProfileForm) updates the instructor
@@ -29,39 +39,45 @@ const InstructorForm = ({ campId, instructor, isReadOnly }: Props) => {
   return (
     <>
       <InstructorFormBody {...userForm} isReadOnly={isReadOnly || !isEditing} />
-      {!isReadOnly && (
-        <HStack justifyContent="right" spacing={3} paddingTop={3}>
-          <ActionButton
-            Component={AiFillEdit}
-            label="Edit"
-            onClick={() => setIsEditing(true)}
-            disabled={isEditing}
-          />
+
+      <HStack justifyContent="right" spacing={3} paddingTop={3}>
+        {deleteInstructor && (
           <DeleteButton
             onConfirm={() => deleteInstructor.mutate(instructor.id)}
           >
             {instructor.full_name}
           </DeleteButton>
-          <CancelButton
-            onClick={() => {
-              userForm.handleClose();
-              setIsEditing(false);
-            }}
-            disabled={!isEditing}
-          >
-            Cancel
-          </CancelButton>
-          <SubmitButton
-            onClick={() => {
-              userForm.handleSubmit();
-              if (userForm.isValid) setIsEditing(false);
-            }}
-            disabled={!isEditing}
-          >
-            Update
-          </SubmitButton>
-        </HStack>
-      )}
+        )}
+        {!isReadOnly && (
+          <>
+            <ActionButton
+              Component={AiFillEdit}
+              label="Edit"
+              onClick={() => setIsEditing(true)}
+              disabled={isEditing}
+            />
+
+            <CancelButton
+              onClick={() => {
+                userForm.handleClose();
+                setIsEditing(false);
+              }}
+              disabled={!isEditing}
+            >
+              Cancel
+            </CancelButton>
+            <SubmitButton
+              onClick={() => {
+                userForm.handleSubmit();
+                if (userForm.isValid) setIsEditing(false);
+              }}
+              disabled={!isEditing}
+            >
+              Update
+            </SubmitButton>
+          </>
+        )}
+      </HStack>
     </>
   );
 };
