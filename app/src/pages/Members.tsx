@@ -4,7 +4,7 @@ import { UserTable } from "../users";
 const Members = () => {
   return (
     <>
-      <PageHeader label="Members" />
+      <PageHeader>Members</PageHeader>
       <UserTable />
     </>
   );

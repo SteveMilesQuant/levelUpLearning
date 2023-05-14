@@ -27,19 +27,19 @@ const Camps = ({ campGetType }: Props) => {
   return (
     <>
       <PageHeader
-        label={
-          campGetType === CampGetType.schedule
-            ? "Schedule Camps"
-            : campGetType === CampGetType.teach
-            ? "Teach Camps"
-            : "Camps"
+        rightButton={
+          campGetType === CampGetType.schedule && (
+            <Button size="lg" variant="outline" onClick={newOnOpen}>
+              Add Camp
+            </Button>
+          )
         }
       >
-        {campGetType === CampGetType.schedule && (
-          <Button size="lg" variant="outline" onClick={newOnOpen}>
-            Add Camp
-          </Button>
-        )}
+        {campGetType === CampGetType.schedule
+          ? "Schedule Camps"
+          : campGetType === CampGetType.teach
+          ? "Teach Camps"
+          : "Camps"}
       </PageHeader>
       <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 2 }} spacing={5}>
         {camps.map((camp) => (

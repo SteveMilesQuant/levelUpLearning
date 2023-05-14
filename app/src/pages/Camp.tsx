@@ -45,23 +45,33 @@ const Camp = ({ campGetType }: Props) => {
 
   return (
     <>
-      <PageHeader label={camp?.program.title} hideUnderline={true}>
-        {campGetType === CampGetType.schedule && (
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={() => {
-              updateCamp.mutate({ ...camp, is_published: !camp.is_published });
-            }}
-          >
-            {camp.is_published ? "Unpublish" : "Publish"}
-          </Button>
-        )}
-        {campGetType === CampGetType.camps && (
-          <Button size="lg" variant="outline" onClick={newOnOpen}>
-            Enroll Student
-          </Button>
-        )}
+      <PageHeader
+        hideUnderline={true}
+        rightButton={
+          <>
+            {campGetType === CampGetType.schedule && (
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => {
+                  updateCamp.mutate({
+                    ...camp,
+                    is_published: !camp.is_published,
+                  });
+                }}
+              >
+                {camp.is_published ? "Unpublish" : "Publish"}
+              </Button>
+            )}
+            {campGetType === CampGetType.camps && (
+              <Button size="lg" variant="outline" onClick={newOnOpen}>
+                Enroll Student
+              </Button>
+            )}
+          </>
+        }
+      >
+        camp?.program.title
       </PageHeader>
       <Tabs variant="enclosed">
         <TabList>

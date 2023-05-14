@@ -12,10 +12,14 @@ const Programs = () => {
 
   return (
     <>
-      <PageHeader label="Programs">
-        <Button size="lg" variant="outline" onClick={newOnOpen}>
-          Add Program
-        </Button>
+      <PageHeader
+        rightButton={
+          <Button size="lg" variant="outline" onClick={newOnOpen}>
+            Add Program
+          </Button>
+        }
+      >
+        Programs
       </PageHeader>
       <ProgramList />
       <ProgramFormModal

@@ -15,7 +15,7 @@ const Program = () => {
 
   return (
     <>
-      <PageHeader label={program.title} hideUnderline={true} />
+      <PageHeader hideUnderline={true}>program.title</PageHeader>
       <Tabs variant="enclosed">
         <TabList>
           <Tab>Program</Tab>

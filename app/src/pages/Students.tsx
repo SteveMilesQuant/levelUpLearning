@@ -23,7 +23,7 @@ const Students = () => {
 
   return (
     <>
-      <PageHeader label="My Students" hideUnderline={true}></PageHeader>
+      <PageHeader hideUnderline={true}>My Students</PageHeader>
       <Tabs variant="enclosed">
         <TabList>
           {students?.map((student) => (

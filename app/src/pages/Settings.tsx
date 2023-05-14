@@ -13,7 +13,7 @@ const Settings = () => {
 
   return (
     <>
-      <PageHeader label="Profile and settings" />
+      <PageHeader hideUnderline={true}>Profile and settings</PageHeader>
       <Tabs variant="enclosed">
         <TabList>
           <Tab>Profile</Tab>

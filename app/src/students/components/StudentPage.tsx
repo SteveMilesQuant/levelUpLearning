@@ -1,4 +1,4 @@
-import { Box, SimpleGrid, LinkBox, Button } from "@chakra-ui/react";
+import { Box, Stack, LinkBox, Button } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { CampList } from "../../camps";
 import PageHeader from "../../components/PageHeader";
@@ -12,10 +12,10 @@ interface Props {
 const StudentPage = ({ student }: Props) => {
   return (
     <>
-      <SimpleGrid columns={1} spacing={5}>
+      <Stack spacing={5}>
         <StudentForm student={student} />
         <Box>
-          <PageHeader label="Enrolled Camps" fontSize="2xl" />
+          <PageHeader fontSize="2xl">Enrolled Camps</PageHeader>
           <CampList studentId={student.id} />
           <Box marginY={5}>
             <LinkBox as={RouterLink} to="/camps">
@@ -25,7 +25,7 @@ const StudentPage = ({ student }: Props) => {
             </LinkBox>
           </Box>
         </Box>
-      </SimpleGrid>
+      </Stack>
     </>
   );
 };
