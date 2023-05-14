@@ -3,14 +3,12 @@ import {
   TabList,
   TabPanels,
   Tabs,
-  Box,
   useDisclosure,
   TabPanel,
+  Button,
 } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import useStudents from "../students/hooks/useStudents";
-import ActionButton from "../components/ActionButton";
-import { IoMdAddCircleOutline } from "react-icons/io";
 import { StudentPage, StudentFormModal } from "../students";
 
 const Students = () => {
@@ -23,19 +21,21 @@ const Students = () => {
 
   return (
     <>
-      <PageHeader hideUnderline={true}>My Students</PageHeader>
+      <PageHeader
+        hideUnderline={true}
+        rightButton={
+          <Button size="lg" variant="outline" onClick={newOnOpen}>
+            Add Student
+          </Button>
+        }
+      >
+        My Students
+      </PageHeader>
       <Tabs variant="enclosed">
         <TabList>
           {students?.map((student) => (
             <Tab key={student.id}>{student.name}</Tab>
           ))}
-          <Box padding="4px">
-            <ActionButton
-              Component={IoMdAddCircleOutline}
-              label="Add student"
-              onClick={newOnOpen}
-            />
-          </Box>
         </TabList>
         <TabPanels>
           {students?.map((student) => (
