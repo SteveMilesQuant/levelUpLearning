@@ -2,10 +2,7 @@ import { LevelSchedule } from "../LevelSchedule";
 import LevelScheduleFormBody from "./LevelScheduleFormBody";
 import useLevelScheduleForm from "../hooks/useLevelScheduleForm";
 import { useState } from "react";
-import { HStack } from "@chakra-ui/react";
-import CancelButton from "../../components/CancelButton";
-import SubmitButton from "../../components/SubmitButton";
-import EditButton from "../../components/EditButton";
+import CrudButtonSet from "../../components/CrudButtonSet";
 
 interface Props {
   campId?: number;
@@ -25,27 +22,13 @@ const LevelScheduleForm = ({ campId, levelSchedule, isReadOnly }: Props) => {
         isReadOnly={!isEditing}
       />
       {!isReadOnly && (
-        <HStack justifyContent="right" spacing={3} paddingTop={3}>
-          <EditButton isEditing={isEditing} setIsEditing={setIsEditing} />
-          <CancelButton
-            onClick={() => {
-              levelScheduleForm.handleClose();
-              setIsEditing(false);
-            }}
-            disabled={!isEditing}
-          >
-            Cancel
-          </CancelButton>
-          <SubmitButton
-            onClick={() => {
-              levelScheduleForm.handleSubmit();
-              if (levelScheduleForm.isValid) setIsEditing(false);
-            }}
-            disabled={!isEditing}
-          >
-            Update
-          </SubmitButton>
-        </HStack>
+        <CrudButtonSet
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          onCancel={levelScheduleForm.handleClose}
+          onSubmit={levelScheduleForm.handleSubmit}
+          isSubmitValid={levelScheduleForm.isValid}
+        />
       )}
     </>
   );

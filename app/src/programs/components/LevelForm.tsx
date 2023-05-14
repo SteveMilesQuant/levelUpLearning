@@ -1,13 +1,9 @@
-import { HStack } from "@chakra-ui/react";
 import useLevelForm from "../hooks/useLevelForm";
 import LevelFormBody from "./LevelFormBody";
 import { Level } from "../Level";
-import CancelButton from "../../components/CancelButton";
-import SubmitButton from "../../components/SubmitButton";
 import { useState } from "react";
-import DeleteButton from "../../components/DeleteButton";
 import { useDeleteLevel } from "../hooks/useLevels";
-import EditButton from "../../components/EditButton";
+import CrudButtonSet from "../../components/CrudButtonSet";
 
 interface Props {
   programId?: number;
@@ -20,39 +16,23 @@ const LevelForm = ({ programId, level, isReadOnly }: Props) => {
   const levelForm = useLevelForm(programId, level);
   const deleteLevel = useDeleteLevel(programId);
 
+  const handleDelete = () => {
+    deleteLevel.mutate(level.id);
+  };
+
   return (
     <>
       <LevelFormBody {...levelForm} isReadOnly={!isEditing} />
       {!isReadOnly && (
-        <HStack justifyContent="right" spacing={3} paddingTop={3}>
-          <EditButton isEditing={isEditing} setIsEditing={setIsEditing} />
-          <DeleteButton
-            onConfirm={() => {
-              deleteLevel.mutate(level.id);
-            }}
-            disabled={isEditing}
-          >
-            {level?.title}
-          </DeleteButton>
-          <CancelButton
-            onClick={() => {
-              levelForm.handleClose();
-              setIsEditing(false);
-            }}
-            disabled={!isEditing}
-          >
-            Cancel
-          </CancelButton>
-          <SubmitButton
-            onClick={() => {
-              levelForm.handleSubmit();
-              if (levelForm.isValid) setIsEditing(false);
-            }}
-            disabled={!isEditing}
-          >
-            Update
-          </SubmitButton>
-        </HStack>
+        <CrudButtonSet
+          isEditing={isEditing}
+          setIsEditing={setIsEditing}
+          onDelete={handleDelete}
+          confirmationLabel={level?.title}
+          onCancel={levelForm.handleClose}
+          onSubmit={levelForm.handleSubmit}
+          isSubmitValid={levelForm.isValid}
+        />
       )}
       ;
     </>

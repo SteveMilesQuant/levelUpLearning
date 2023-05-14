@@ -1,14 +1,12 @@
 import { HStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import CancelButton from "../../components/CancelButton";
-import SubmitButton from "../../components/SubmitButton";
 import useUserForm from "../hooks/useUserForm";
 import { User } from "../User";
 import InstructorFormBody from "./InstructorFormBody";
 import DeleteButton from "../../components/DeleteButton";
 import { UseMutationResult } from "@tanstack/react-query";
 import { DeleteDataContext } from "../../services/api-hooks";
-import EditButton from "../../components/EditButton";
+import CrudButtonSet from "../../components/CrudButtonSet";
 
 interface Props {
   instructor: User;
@@ -37,7 +35,7 @@ const InstructorForm = ({
 
   return (
     <>
-      <InstructorFormBody {...userForm} isReadOnly={isReadOnly || !isEditing} />
+      <InstructorFormBody {...userForm} isReadOnly={!isEditing} />
 
       <HStack justifyContent="right" spacing={3} paddingTop={3}>
         {deleteInstructor && (
@@ -48,27 +46,13 @@ const InstructorForm = ({
           </DeleteButton>
         )}
         {!isReadOnly && (
-          <>
-            <EditButton isEditing={isEditing} setIsEditing={setIsEditing} />
-            <CancelButton
-              onClick={() => {
-                userForm.handleClose();
-                setIsEditing(false);
-              }}
-              disabled={!isEditing}
-            >
-              Cancel
-            </CancelButton>
-            <SubmitButton
-              onClick={() => {
-                userForm.handleSubmit();
-                if (userForm.isValid) setIsEditing(false);
-              }}
-              disabled={!isEditing}
-            >
-              Update
-            </SubmitButton>
-          </>
+          <CrudButtonSet
+            isEditing={isEditing}
+            setIsEditing={setIsEditing}
+            onCancel={userForm.handleClose}
+            onSubmit={userForm.handleSubmit}
+            isSubmitValid={userForm.isValid}
+          />
         )}
       </HStack>
     </>
