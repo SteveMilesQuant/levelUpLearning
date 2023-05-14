@@ -43,10 +43,15 @@ const useStudentForm = (student?: Student) => {
   const addStudent = useAddStudent();
   const updateStudent = useUpdateStudent({
     onSuccess: () => {
-      // Invalidate all camps, to update their student lists
-      queryClient.invalidateQueries({
-        queryKey: [...CACHE_KEY_CAMPS],
-        exact: false,
+      // Invalidate each of this student's camps
+      student?.camps.forEach((student) => {
+        queryClient.invalidateQueries({
+          queryKey: [
+            ...CACHE_KEY_CAMPS,
+            student.id.toString(),
+            ...CACHE_KEY_STUDENTS,
+          ],
+        });
       });
     },
   });
