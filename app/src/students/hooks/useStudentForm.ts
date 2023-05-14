@@ -2,8 +2,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import { Student } from "../Student";
+import { CACHE_KEY_STUDENTS, Student } from "../Student";
 import { useAddStudent, useUpdateStudent } from "./useStudents";
+import { useQueryClient } from "@tanstack/react-query";
+import { CACHE_KEY_CAMPS } from "../../camps";
 
 const studentSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters." }),
@@ -37,8 +39,17 @@ const useStudentForm = (student?: Student) => {
   });
   const isValid = formIsValid;
 
+  const queryClient = useQueryClient();
   const addStudent = useAddStudent();
-  const updateStudent = useUpdateStudent();
+  const updateStudent = useUpdateStudent({
+    onSuccess: () => {
+      // Invalidate all camps, to update their student lists
+      queryClient.invalidateQueries({
+        queryKey: [...CACHE_KEY_CAMPS],
+        exact: false,
+      });
+    },
+  });
 
   const handleClose = () => {
     reset({ ...student });

@@ -40,7 +40,7 @@ export const useDeleteCampInstructor = (campId?: number) => {
 };
 
 export const useAddCampInstructor = (campId?: number) => {
-  if (!campId) return {} as UseMutationResult<any, Error, any, unknown>;
+  if (!campId) return {} as UseMutationResult<User, Error, number, unknown>;
   const campInstructorHooks = useCampInstructorHooks(campId);
   return campInstructorHooks.useEnroll();
 };
