@@ -195,6 +195,7 @@ def test_camp_student(camp_index: int, student: StudentData):
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     new_student_json = response.json()
+    student_json['camps'] = [camp_json]
     assert new_student_json == student_json
 
     response = client.get(f'/camps/{camp_id}/students/{student_id}', headers = app.test.users.admin_headers)
@@ -208,12 +209,6 @@ def test_camp_student(camp_index: int, student: StudentData):
     assert 'application/json' in content_type
     student_list_json = response.json()
     assert student_list_json[0] == student_json
-
-    response = client.get(f'/students/{student_id}/camps', headers = app.test.users.admin_headers)
-    content_type = response.headers['content-type']
-    assert 'application/json' in content_type
-    camp_list_json = response.json()
-    assert camp_list_json[0] == camp_json
 
     response = client.delete(f'/camps/{camp_id}/students/{student_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_200_OK, f'Error deleting {camp_json}'

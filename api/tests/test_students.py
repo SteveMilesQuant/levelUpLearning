@@ -21,6 +21,7 @@ def test_post_students(student: StudentData):
     assert response.status_code == status.HTTP_201_CREATED, f'Error posting {student_json}'
     new_student_json = response.json()
     student_json['id'] = new_student_json['id']
+    student_json['camps'] = []
     assert student_json == new_student_json, f'Returned student {new_student_json} does not match posted student {student_json}.'
     all_students_json[new_student_json['name']] = new_student_json
 
@@ -59,6 +60,7 @@ def test_put_student(student: StudentData):
     assert response.status_code == status.HTTP_200_OK, f'Error putting {student_json}'
     new_student_json = response.json()
     student_json['id'] = student_id
+    student_json['camps'] = []
     assert student_json == new_student_json, f'Returned student {new_student_json} does not match put student {student_json}.'
 
     response = client.get(f'/students/{student_id}', headers = app.test.users.guardian_headers)

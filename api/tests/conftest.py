@@ -1,6 +1,8 @@
 import httpx, asyncio, os, pymysql
 from user import User, Role
 from authentication import user_id_to_auth_token
+
+os.environ['API_ROOT_PATH'] = ''
 from main import app, Object
 
 

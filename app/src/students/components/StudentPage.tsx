@@ -16,7 +16,7 @@ const StudentPage = ({ student }: Props) => {
         <StudentForm student={student} />
         <Box>
           <PageHeader fontSize="2xl">Enrolled Camps</PageHeader>
-          <CampList studentId={student.id} />
+          <CampList camps={student.camps} />
           <Box marginY={5}>
             <LinkBox as={RouterLink} to="/camps">
               <Button size="lg" variant="outline">

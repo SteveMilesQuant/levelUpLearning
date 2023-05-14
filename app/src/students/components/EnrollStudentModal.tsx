@@ -15,7 +15,7 @@ import SubmitButton from "../../components/SubmitButton";
 import useStudents from "../hooks/useStudents";
 import ListButton from "../../components/ListButton";
 import { useState } from "react";
-import useCampStudents, { useEnrollStudent } from "../hooks/useCampStudents";
+import { useEnrollStudent } from "../hooks/useCampStudents";
 import { useQueryClient } from "@tanstack/react-query";
 import { CACHE_KEY_STUDENTS } from "../Student";
 import { CACHE_KEY_CAMPS } from "../../camps";
@@ -30,7 +30,6 @@ interface Props {
 
 const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
   const { data: allStudents, isLoading, error } = useStudents();
-  const { data: enrolledStudents } = useCampStudents(campId);
   const [selectedStudentId, setSelectedStudentId] = useState<
     number | undefined
   >(undefined);
@@ -41,7 +40,7 @@ const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
   if (error) throw error;
 
   const unenrolledStudents = allStudents.filter(
-    (student) => !enrolledStudents?.find((s) => s.id === student.id)
+    (student) => !student.camps.find((camp) => camp.id === campId)
   );
 
   return (

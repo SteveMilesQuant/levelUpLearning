@@ -102,7 +102,8 @@ class StudentDb(Base):
     def dict(self):
         returnVal = {}
         for key, value in StudentResponse():
-            returnVal[key] = getattr(self, key)
+            if key != 'camps':
+                returnVal[key] = getattr(self, key)
         return returnVal
 
 

@@ -8,7 +8,6 @@ import {
   Camp,
   CampData,
 } from "../Camp";
-import { CACHE_KEY_STUDENTS } from "../../students";
 
 export enum CampGetType {
   camps,
@@ -40,18 +39,11 @@ const writeCampHooks = new APIHooks<Camp, CampData>(
   ms("5m")
 );
 
-const useCamps = (getType?: CampGetType, studentId?: number) => {
+const useCamps = (getType?: CampGetType) => {
   if (getType === CampGetType.schedule) {
     return scheduleHooks.useDataList();
   } else if (getType === CampGetType.teach) {
     return teachHooks.useDataList();
-  } else if (studentId) {
-    const studentCampHooks = new APIHooks<Camp, CampData>(
-      new APIClient<Camp, CampData>(`/students/${studentId}/camps`),
-      [...CACHE_KEY_STUDENTS, studentId.toString(), ...CACHE_KEY_CAMPS],
-      ms("5m")
-    );
-    return studentCampHooks.useDataList();
   }
   return campHooks.useDataList();
 };

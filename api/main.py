@@ -208,25 +208,6 @@ async def delete_student(request: Request, student_id: int):
 
 
 
-@api_router.get("/students/{student_id}/camps", response_model = List[CampResponse])
-async def get_student_camps(request: Request, student_id: int):
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/students')
-        for db_student in await user.students(session):
-            if db_student.id == student_id:
-                student = Student(db_obj = db_student)
-                await student.create(session)
-                camps = []
-                for db_camp in await student.camps(session):
-                    camp = Camp(db_obj = db_camp)
-                    await camp.create(session)
-                    camps.append(camp)
-                return camps
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for student id={student_id}")
-
-
-
-
 ###############################################################################
 # PROGRAMS/TEACH
 ###############################################################################
@@ -428,29 +409,6 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
 
 
-@api_router.get("/camps/{camp_id}/students/{student_id}/camps", response_model = List[CampResponse])
-async def get_camp_student_camps(request: Request, camp_id: int, student_id: int):
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/teach')
-        camp = Camp(id = camp_id)
-        await camp.create(session)
-        if camp.id is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        if not await camp.user_authorized(session, user):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
-        for db_student in await camp.students(session):
-            if db_student.id == student_id:
-                student = Student(db_obj = db_student)
-                await student.create(session)
-                camps = []
-                for db_camp in await student.camps(session):
-                    camp_i = Camp(db_obj = db_camp)
-                    await camp_i.create(session)
-                    camps.append(camp_i)
-                return camps
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
-
-
 @api_router.get("/camps/{camp_id}/students/{student_id}/guardians", response_model = List[UserResponse])
 async def get_camp_student_guardians(request: Request, camp_id: int, student_id: int):
     async with app.db_sessionmaker() as session:
@@ -578,6 +536,7 @@ async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int
                 student = Student(db_obj = db_student)
                 await student.create(session)
                 await camp.add_student(session = session, student = student)
+                await student.create(session) # refresh the student, so that it is updated with new camp
                 return student
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={student_id} does not belong to this user.")
 

@@ -49,15 +49,6 @@ class UserResponse(UserData):
         return ret
 
 
-class StudentData(BaseModel):
-    name: Optional[str] = None
-    grade_level: Optional[int] = None
-
-
-class StudentResponse(StudentData):
-    id: Optional[int] = None
-
-
 class ProgramData(BaseModel):
     title: Optional[str] = ''
     grade_range: Optional[Tuple[int, int]]
@@ -102,3 +93,19 @@ class LevelScheduleResponse(LevelScheduleData):
     level_id: Optional[int]
     id: Optional[int]
     level: Optional[LevelResponse] = None
+
+
+class StudentData(BaseModel):
+    name: Optional[str] = None
+    grade_level: Optional[int] = None
+
+
+class StudentResponse(StudentData):
+    id: Optional[int] = None
+    camps: Optional[List[CampResponse]] = []
+
+    def dict(self, *args, **kwargs):
+        ret = super().dict(*args, **kwargs)
+        ret['camps'] = [camp.dict() for camp in self.camps]
+        return ret
+

@@ -49,6 +49,7 @@ const useStudentForm = (student?: Student) => {
 
     const newStudent = {
       id: 0,
+      camps: [],
       ...student,
       ...data,
     } as Student;
