@@ -1,12 +1,11 @@
 import { HStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import ActionButton from "../../components/ActionButton";
-import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
 import useUserForm from "../hooks/useUserForm";
 import { User } from "../User";
 import ProfileFormBody from "./ProfileFormBody";
+import EditButton from "../../components/EditButton";
 
 interface Props {
   user: User;
@@ -25,12 +24,7 @@ const ProfileForm = ({ user }: Props) => {
     <>
       <ProfileFormBody {...userForm} isReadOnly={!isEditing} />
       <HStack justifyContent="right" spacing={3} paddingTop={3}>
-        <ActionButton
-          Component={AiFillEdit}
-          label="Edit"
-          onClick={() => setIsEditing(true)}
-          disabled={isEditing}
-        />
+        <EditButton isEditing={isEditing} setIsEditing={setIsEditing} />
         <CancelButton
           onClick={() => {
             userForm.handleClose();

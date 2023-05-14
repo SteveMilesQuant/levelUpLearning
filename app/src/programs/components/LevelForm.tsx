@@ -2,13 +2,12 @@ import { HStack } from "@chakra-ui/react";
 import useLevelForm from "../hooks/useLevelForm";
 import LevelFormBody from "./LevelFormBody";
 import { Level } from "../Level";
-import ActionButton from "../../components/ActionButton";
-import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
 import { useState } from "react";
 import DeleteButton from "../../components/DeleteButton";
 import { useDeleteLevel } from "../hooks/useLevels";
+import EditButton from "../../components/EditButton";
 
 interface Props {
   programId?: number;
@@ -26,12 +25,7 @@ const LevelForm = ({ programId, level, isReadOnly }: Props) => {
       <LevelFormBody {...levelForm} isReadOnly={!isEditing} />
       {!isReadOnly && (
         <HStack justifyContent="right" spacing={3} paddingTop={3}>
-          <ActionButton
-            Component={AiFillEdit}
-            label="Edit"
-            onClick={() => setIsEditing(true)}
-            disabled={isEditing}
-          />
+          <EditButton isEditing={isEditing} setIsEditing={setIsEditing} />
           <DeleteButton
             onConfirm={() => {
               deleteLevel.mutate(level.id);

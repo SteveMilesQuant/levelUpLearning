@@ -3,13 +3,12 @@ import useProgramForm from "../hooks/useProgramForm";
 import ProgramFormBody from "./ProgramFormBody";
 import { Program } from "../Program";
 import { useNavigate } from "react-router-dom";
-import ActionButton from "../../components/ActionButton";
 import DeleteButton from "../../components/DeleteButton";
-import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
 import { useState } from "react";
 import { useDeleteProgram } from "../hooks/usePrograms";
+import EditButton from "../../components/EditButton";
 
 interface Props {
   program?: Program;
@@ -31,12 +30,7 @@ const ProgramForm = ({ program, isReadOnly }: Props) => {
       <ProgramFormBody {...programForm} isReadOnly={!isEditing} />
       {!isReadOnly && (
         <HStack justifyContent="right" spacing={3} paddingTop={3}>
-          <ActionButton
-            Component={AiFillEdit}
-            label="Edit"
-            onClick={() => setIsEditing(true)}
-            disabled={isEditing}
-          />
+          <EditButton isEditing={isEditing} setIsEditing={setIsEditing} />
           <DeleteButton
             onConfirm={() => {
               if (program) deleteProgram.mutate(program.id);

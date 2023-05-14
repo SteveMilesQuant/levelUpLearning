@@ -3,12 +3,11 @@ import useStudentForm from "../hooks/useStudentForm";
 import { Student } from "../Student";
 import StudentFormBody from "./StudentFormBody";
 import { HStack } from "@chakra-ui/react";
-import ActionButton from "../../components/ActionButton";
-import { AiFillEdit } from "react-icons/ai";
 import { useDeleteStudent } from "../hooks/useStudents";
 import DeleteButton from "../../components/DeleteButton";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
+import EditButton from "../../components/EditButton";
 
 interface Props {
   student: Student;
@@ -23,12 +22,7 @@ const StudentForm = ({ student }: Props) => {
     <>
       <StudentFormBody {...studentForm} isReadOnly={!isEditing} />
       <HStack justifyContent="right" spacing={3} paddingTop={3}>
-        <ActionButton
-          Component={AiFillEdit}
-          label="Edit"
-          onClick={() => setIsEditing(true)}
-          disabled={isEditing}
-        />
+        <EditButton isEditing={isEditing} setIsEditing={setIsEditing} />
         <DeleteButton
           onConfirm={() => {
             deleteStudent.mutate(student.id);

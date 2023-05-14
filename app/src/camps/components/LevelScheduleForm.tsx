@@ -3,10 +3,9 @@ import LevelScheduleFormBody from "./LevelScheduleFormBody";
 import useLevelScheduleForm from "../hooks/useLevelScheduleForm";
 import { useState } from "react";
 import { HStack } from "@chakra-ui/react";
-import ActionButton from "../../components/ActionButton";
-import { AiFillEdit } from "react-icons/ai";
 import CancelButton from "../../components/CancelButton";
 import SubmitButton from "../../components/SubmitButton";
+import EditButton from "../../components/EditButton";
 
 interface Props {
   campId?: number;
@@ -27,12 +26,7 @@ const LevelScheduleForm = ({ campId, levelSchedule, isReadOnly }: Props) => {
       />
       {!isReadOnly && (
         <HStack justifyContent="right" spacing={3} paddingTop={3}>
-          <ActionButton
-            Component={AiFillEdit}
-            label="Edit"
-            onClick={() => setIsEditing(true)}
-            disabled={isEditing}
-          />
+          <EditButton isEditing={isEditing} setIsEditing={setIsEditing} />
           <CancelButton
             onClick={() => {
               levelScheduleForm.handleClose();
