@@ -56,13 +56,13 @@ const Camp = ({ campGetType }: Props) => {
   return (
     <>
       <PageHeader hideUnderline={true} rightButton={headerButton}>
-        {camp?.program.title}
+        {camp.program.title}
       </PageHeader>
       <CampTabs campGetType={campGetType} camp={camp} />
       {campGetType === CampGetType.camps && (
         <EnrollStudentModal
           title="Enroll Student"
-          campId={camp?.id}
+          campId={camp.id}
           isOpen={newIsOpen}
           onClose={newOnClose}
         />

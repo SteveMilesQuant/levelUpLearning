@@ -23,7 +23,7 @@ import CancelButton from "../../components/CancelButton";
 
 interface Props {
   title: string;
-  campId?: number;
+  campId: number;
   isOpen: boolean;
   onClose: () => void;
 }
