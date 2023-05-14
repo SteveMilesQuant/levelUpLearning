@@ -7,14 +7,18 @@ import SubmitButton from "../../components/SubmitButton";
 import useUserForm from "../hooks/useUserForm";
 import { User } from "../User";
 import InstructorFormBody from "./InstructorFormBody";
+import { useDeleteCampInstructor } from "../hooks/useInstructors";
+import DeleteButton from "../../components/DeleteButton";
 
 interface Props {
+  campId?: number;
   instructor: User;
   isReadOnly?: boolean;
 }
 
-const InstructorForm = ({ instructor, isReadOnly }: Props) => {
+const InstructorForm = ({ campId, instructor, isReadOnly }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
+  const deleteInstructor = useDeleteCampInstructor(campId);
   const userForm = useUserForm(instructor);
 
   // Force a reset when another component (e.g. ProfileForm) updates the instructor
@@ -33,6 +37,11 @@ const InstructorForm = ({ instructor, isReadOnly }: Props) => {
             onClick={() => setIsEditing(true)}
             disabled={isEditing}
           />
+          <DeleteButton
+            onConfirm={() => deleteInstructor.mutate(instructor.id)}
+          >
+            {instructor.full_name}
+          </DeleteButton>
           <CancelButton
             onClick={() => {
               userForm.handleClose();

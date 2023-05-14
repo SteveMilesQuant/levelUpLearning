@@ -2,8 +2,7 @@ import {
   Box,
   Button,
   HStack,
-  List,
-  ListItem,
+  Stack,
   Menu,
   MenuButton,
   MenuItem,
@@ -13,13 +12,11 @@ import ListButton from "../../components/ListButton";
 import useInstructors, {
   useAddCampInstructor,
   useCampInstructors,
-  useDeleteCampInstructor,
 } from "../hooks/useInstructors";
 import { useEffect, useState } from "react";
 import { User } from "../User";
 import InstructorForm from "./InstructorForm";
 import { BsChevronDown } from "react-icons/bs";
-import DeleteButton from "../../components/DeleteButton";
 import { CampGetType } from "../../camps";
 
 interface Props {
@@ -30,7 +27,6 @@ interface Props {
 const InstructorList = ({ campId, campGetType }: Props) => {
   const { data: instructors, isLoading, error } = useCampInstructors(campId);
   const { data: allInstructors } = useInstructors();
-  const deleteInstructor = useDeleteCampInstructor(campId);
   const addInstructor = useAddCampInstructor(campId);
 
   const [selectedInstructor, setSelectedInstructor] = useState<
@@ -50,7 +46,7 @@ const InstructorList = ({ campId, campGetType }: Props) => {
   return (
     <>
       <HStack alignItems="start" spacing={10}>
-        <List spacing={3}>
+        <Stack spacing={3}>
           {instructors?.map((instructor) => (
             <HStack key={instructor.id}>
               <ListButton
@@ -59,19 +55,13 @@ const InstructorList = ({ campId, campGetType }: Props) => {
               >
                 {instructor.full_name}
               </ListButton>
-              {campGetType === CampGetType.schedule && (
-                <DeleteButton
-                  onConfirm={() => deleteInstructor.mutate(instructor.id)}
-                >
-                  {instructor.full_name}
-                </DeleteButton>
-              )}
             </HStack>
           ))}
           {campGetType === CampGetType.schedule &&
             addableInstructors &&
             addableInstructors.length > 0 && (
-              <ListItem>
+              <Box>
+                {/* Wrap menu in box to avoid warnings ("applying css to popover") */}
                 <Menu>
                   <MenuButton as={Button} rightIcon={<BsChevronDown />}>
                     Add instructor
@@ -90,15 +80,16 @@ const InstructorList = ({ campId, campGetType }: Props) => {
                     ))}
                   </MenuList>
                 </Menu>
-              </ListItem>
+              </Box>
             )}
-        </List>
+        </Stack>
         <Box width="100%">
           {instructors
             ?.filter((instructor) => instructor.id === selectedInstructor?.id)
             .map((instructor) => (
               <InstructorForm
                 key={instructor.id}
+                campId={campId}
                 instructor={instructor}
                 isReadOnly={campGetType !== CampGetType.schedule}
               />
