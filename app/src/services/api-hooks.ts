@@ -1,9 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  UseQueryResult,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import APIClient from "./api-client";
 import { useAuth } from "../users";
 
@@ -41,6 +36,11 @@ export interface DeleteArgs<S> {
   onDelete?: () => void;
   onSuccess?: () => void;
   queryMutation?: (dataId: number, dataList: S[]) => S[];
+}
+
+export interface EnrollArgs<S> {
+  onEnroll?: () => void;
+  onSuccess?: () => void;
 }
 
 // Typical API hooks (S: response body; Q: request body)
@@ -194,18 +194,22 @@ export default class APIHooks<S extends A, Q = S> {
 
   // "Enroll" uses post to add one existing object to another
   // E.g. a student to a camp: neiher is created as an object, but the student is added to the camp
-  useEnroll = () => {
+  useEnroll = (enrollArgs?: EnrollArgs<S>) => {
     const queryClient = useQueryClient();
+    const { onEnroll, onSuccess } = enrollArgs || {};
 
-    const deleteData = useMutation<any, Error, any>({
+    const enrollData = useMutation<S, Error, number>({
       mutationFn: (dataId: number) => this.client.post(dataId),
-      onMutate: () => {},
+      onMutate: () => {
+        if (onEnroll) onEnroll();
+      },
       onError: () => {},
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: this.cacheKey });
+        if (onSuccess) onSuccess();
       },
     });
 
-    return deleteData;
+    return enrollData;
   };
 }

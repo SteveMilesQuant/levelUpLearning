@@ -3,7 +3,7 @@ import { CACHE_KEY_STUDENTS, Student } from "../Student";
 import DeleteButton from "../../components/DeleteButton";
 import { useDisenrollStudent } from "../hooks/useCampStudents";
 import { useQueryClient } from "@tanstack/react-query";
-import { CACHE_KEY_CAMPS, CampGetType } from "../../camps";
+import { CampGetType } from "../../camps";
 import useGuardians from "../../users/hooks/useGuardians";
 
 interface Props {
@@ -17,11 +17,8 @@ const StudentRow = ({ campId, campGetType, student }: Props) => {
   const disenrollStudent = useDisenrollStudent(campId, {
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [
-          ...CACHE_KEY_STUDENTS,
-          student.id.toString(),
-          ...CACHE_KEY_CAMPS,
-        ],
+        queryKey: [...CACHE_KEY_STUDENTS],
+        exact: false,
       });
     },
   });

@@ -33,7 +33,14 @@ const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
   const [selectedStudentId, setSelectedStudentId] = useState<
     number | undefined
   >(undefined);
-  const enrollStudent = useEnrollStudent(campId);
+  const enrollStudent = useEnrollStudent(campId, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [...CACHE_KEY_STUDENTS],
+        exact: false,
+      });
+    },
+  });
   const queryClient = useQueryClient();
 
   if (isLoading) return null;

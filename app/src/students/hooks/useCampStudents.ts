@@ -3,6 +3,7 @@ import APIClient from "../../services/api-client";
 import APIHooks, {
   DeleteArgs,
   DeleteDataContext,
+  EnrollArgs,
 } from "../../services/api-hooks";
 import { CACHE_KEY_STUDENTS, Student, StudentData } from "../Student";
 import { CACHE_KEY_CAMPS } from "../../camps";
@@ -37,8 +38,11 @@ export const useDisenrollStudent = (
   return studentHooks.useDelete(options);
 };
 
-export const useEnrollStudent = (campId?: number) => {
-  if (!campId) return {} as UseMutationResult<any, Error, any>;
+export const useEnrollStudent = (
+  campId?: number,
+  options?: EnrollArgs<Student>
+) => {
+  if (!campId) return {} as UseMutationResult<Student, Error, number>;
   const studentHooks = useStudentHooks(campId);
-  return studentHooks.useEnroll();
+  return studentHooks.useEnroll(options);
 };
