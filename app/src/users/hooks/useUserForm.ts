@@ -37,6 +37,11 @@ const useUserForm = (user?: User) => {
     reset({ ...user });
   };
 
+  // Most form hooks don't need this because they only have one form for updating, but users have two
+  useMemo(() => {
+    if (user) reset({ ...user });
+  }, [user]);
+
   const handleSubmitLocal = (data: FieldValues) => {
     if (!isValid) return;
 

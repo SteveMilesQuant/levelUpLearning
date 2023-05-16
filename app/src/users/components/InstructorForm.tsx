@@ -28,11 +28,6 @@ const InstructorForm = ({
 
   const userForm = useUserForm(instructor);
 
-  // Force a reset when another component (e.g. ProfileForm) updates the instructor
-  useEffect(() => {
-    userForm.handleClose();
-  }, [instructor]);
-
   return (
     <>
       <InstructorFormBody {...userForm} isReadOnly={!isEditing} />

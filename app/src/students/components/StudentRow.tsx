@@ -17,7 +17,7 @@ const StudentRow = ({ campId, campGetType, student }: Props) => {
   const disenrollStudent = useDisenrollStudent(campId, {
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [...CACHE_KEY_STUDENTS],
+        queryKey: CACHE_KEY_STUDENTS,
         exact: false,
       });
     },

@@ -13,11 +13,6 @@ const ProfileForm = ({ user }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const userForm = useUserForm(user);
 
-  // Force a reset when another component (e.g. InstructorForm) updates the user
-  useEffect(() => {
-    userForm.handleClose();
-  }, [user]);
-
   return (
     <>
       <ProfileFormBody {...userForm} isReadOnly={!isEditing} />
