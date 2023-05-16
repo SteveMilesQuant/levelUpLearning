@@ -1,10 +1,19 @@
-import { Tabs, TabList, Tab, TabPanels, TabPanel } from "@chakra-ui/react";
+import {
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+  HStack,
+} from "@chakra-ui/react";
 import { ProgramForm } from "../../programs";
 import { StudentTable } from "../../students";
 import { InstructorList } from "../../users";
-import { CampGetType } from "../hooks/useCamps";
+import { CampGetType, useDeleteCamp } from "../hooks/useCamps";
 import LevelScheduleList from "./LevelScheduleList";
 import { Camp } from "../Camp";
+import DeleteButton from "../../components/DeleteButton";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   campGetType: CampGetType;
@@ -12,6 +21,14 @@ interface Props {
 }
 
 const CampTabs = ({ campGetType, camp }: Props) => {
+  const deleteCamp = useDeleteCamp();
+  const navigate = useNavigate();
+
+  const handleDelete = () => {
+    deleteCamp.mutate(camp.id);
+    navigate("/schedule");
+  };
+
   return (
     <Tabs variant="enclosed">
       <TabList>
@@ -22,7 +39,14 @@ const CampTabs = ({ campGetType, camp }: Props) => {
       </TabList>
       <TabPanels>
         <TabPanel>
-          <ProgramForm program={camp?.program} isReadOnly={true} />
+          <ProgramForm program={camp.program} isReadOnly={true} />
+          {campGetType === CampGetType.schedule && (
+            <HStack justifyContent="right" paddingTop={3}>
+              <DeleteButton onConfirm={handleDelete}>
+                {camp.program.title}
+              </DeleteButton>
+            </HStack>
+          )}
         </TabPanel>
         <TabPanel>
           <LevelScheduleList campId={camp.id} campGetType={campGetType} />
