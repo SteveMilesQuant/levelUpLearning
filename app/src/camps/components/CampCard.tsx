@@ -28,9 +28,10 @@ const CampCard = ({ camp, campGetType, onDelete }: Props) => {
   if (isLoading) return null;
   if (error) throw error;
 
-  const startDate = levelSchedules
-    ? new Date(levelSchedules[0]?.start_time)
-    : undefined;
+  const startDate =
+    levelSchedules && levelSchedules[0]?.start_time
+      ? new Date(levelSchedules[0]?.start_time)
+      : undefined;
 
   return (
     <LinkBox
