@@ -1,23 +1,10 @@
-import {
-  Box,
-  Button,
-  HStack,
-  List,
-  ListItem,
-  useDisclosure,
-} from "@chakra-ui/react";
+import { Box, Button, HStack, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from "react-beautiful-dnd";
 import { Level } from "../Level";
-import useLevels, { useUpdateLevel } from "../hooks/useLevels";
-import ListButton from "../../components/ListButton";
+import useLevels from "../hooks/useLevels";
 import LevelForm from "./LevelForm";
 import LevelFormModal from "./LevelFormModal";
+import LevelList from "./LevelList";
 
 interface Props {
   programId: number;
@@ -29,7 +16,6 @@ const LevelsPage = ({ programId }: Props) => {
     undefined
   );
   const { data: levels, error, isLoading } = useLevels(programId);
-  const updateLevel = useUpdateLevel(programId);
 
   useEffect(() => {
     if (levels) setSelectedLevel(levels[0]);
@@ -38,60 +24,16 @@ const LevelsPage = ({ programId }: Props) => {
   if (isLoading) return null;
   if (error) throw error;
 
-  const handleDragEnd = (result: DropResult) => {
-    const origLevel = levels.find(
-      (level) => level.id.toString() === result.draggableId
-    );
-    if (!origLevel || !result.destination) return;
-    const newLevel = {
-      ...origLevel,
-      list_index: result.destination.index,
-    } as Level;
-    updateLevel.mutate(newLevel);
-  };
-
   return (
     <>
       <HStack alignItems="start" spacing={10}>
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="levels">
-            {(provided) => (
-              <List
-                spacing={3}
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-              >
-                {levels
-                  .sort((a, b) => a.list_index - b.list_index)
-                  .map((level) => (
-                    <Draggable
-                      key={level.id.toString()}
-                      draggableId={level.id.toString()}
-                      index={level.list_index}
-                    >
-                      {(provided) => (
-                        <ListItem
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                        >
-                          <ListButton
-                            isSelected={selectedLevel?.id === level.id}
-                            onClick={() => setSelectedLevel(level)}
-                            hoverCursor="grab"
-                          >
-                            {level.list_index + ": " + level.title}
-                          </ListButton>
-                        </ListItem>
-                      )}
-                    </Draggable>
-                  ))}
-                {provided.placeholder}
-                <Button onClick={onOpen}>Add level</Button>
-              </List>
-            )}
-          </Droppable>
-        </DragDropContext>
+        <LevelList
+          programId={programId}
+          selectedLevel={selectedLevel}
+          setSelectedLevel={setSelectedLevel}
+        >
+          <Button onClick={onOpen}>Add level</Button>
+        </LevelList>
         <Box width="100%">
           {levels
             ?.filter((level) => level.id === selectedLevel?.id)
