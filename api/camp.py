@@ -28,8 +28,7 @@ class LevelSchedule(LevelScheduleResponse):
             for key, value in self._db_obj.dict().items():
                 setattr(self, key, value)
 
-        # Always get the associated level (TODO: do this in db - will be faster)
-        await session.refresh(self._db_obj, ['level'])
+        # Always get the associated level
         self.level = LevelResponse(**self._db_obj.level.dict())
         self.id = self.level_id # make ID copy to make it easy for front end
 
@@ -40,10 +39,8 @@ class LevelSchedule(LevelScheduleResponse):
         for key, value in level_schedule_data.items():
             setattr(self._db_obj, key, value)
         await session.commit()
-        await session.refresh(self._db_obj, ['level'])
 
     async def delete(self, session: Any):
-        await session.refresh(self._db_obj, ['program'])
         db_program = self._db_obj.program
         await session.refresh(self._db_obj, ['levels'])
         for db_level in db_program.levels:
@@ -76,16 +73,15 @@ class Camp(CampResponse):
             await session.commit()
             self.id = self._db_obj.id
 
-            await session.refresh(self._db_obj, ['program', 'level_schedules'])
-            db_program = self._db_obj.program
-            await session.refresh(db_program, ['levels'])
-            for db_level in db_program.levels:
+            await session.refresh(self._db_obj, ['program', 'level_schedules']) # not sure why I have to refresh program here
+            await session.refresh(self._db_obj.program, ['levels'])
+            for db_level in self._db_obj.program.levels:
                 level_schedule = LevelSchedule(camp_id = self.id, level_id = db_level.id)
                 await level_schedule.create(session)
                 self._db_obj.level_schedules.append(level_schedule._db_obj)
             await session.commit()
 
-            await session.refresh(self._db_obj, ['primary_instructor', 'instructors'])
+            await session.refresh(self._db_obj, ['instructors'])
             self._db_obj.instructors.append(self._db_obj.primary_instructor)
             await session.commit()
         else:
@@ -93,8 +89,7 @@ class Camp(CampResponse):
             for key, value in self._db_obj.dict().items():
                 setattr(self, key, value)
 
-        # Always get the associated primary instructor and program (TODO: do this in db - will be faster)
-        await session.refresh(self._db_obj, ['primary_instructor', 'program'])
+        # Always get the associated primary instructor and program
         self.primary_instructor = UserResponse(**self._db_obj.primary_instructor.dict())
         self.program = ProgramResponse(**self._db_obj.program.dict())
 
@@ -127,6 +122,7 @@ class Camp(CampResponse):
         if instructor.id == self.primary_instructor_id:
             self.primary_instructor_id = self._db_obj.instructors[0].id
             self._db_obj.primary_instructor_id = self._db_obj.instructors[0].id
+            self.primary_instructor = UserResponse(**self._db_obj.primary_instructor.dict())
         await session.commit()
 
     async def instructors(self, session: Any) -> List[UserDb]:
@@ -171,8 +167,8 @@ async def all_camps(session: Any, published = None):
         stmt = select(CampDb).where(CampDb.is_published == published)
     result = await session.execute(stmt)
     camps = []
-    for db_camp in result.scalars():
-        camp = Camp(db_obj = db_camp)
+    for db_camp in result.unique():
+        camp = Camp(db_obj = db_camp[0])
         await camp.create(session)
         camps.append(camp)
     return camps

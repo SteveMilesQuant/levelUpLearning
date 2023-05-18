@@ -156,8 +156,8 @@ class CampDb(Base):
     primary_instructor_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     is_published: Mapped[bool]
 
-    program: Mapped['ProgramDb'] = relationship(back_populates='camps', lazy='raise')
-    primary_instructor: Mapped['UserDb'] = relationship(lazy='raise')
+    program: Mapped['ProgramDb'] = relationship(back_populates='camps', lazy='joined')
+    primary_instructor: Mapped['UserDb'] = relationship(lazy='joined')
     level_schedules: Mapped[List['LevelScheduleDb']] = relationship(back_populates='camp', lazy='raise', cascade='all, delete')
     instructors: Mapped[List['UserDb']] = relationship(secondary=camp_x_instructors, back_populates='camps', lazy='raise')
     students: Mapped[List['StudentDb']] = relationship(secondary=camp_x_students, back_populates='camps', lazy='raise')
@@ -179,7 +179,7 @@ class LevelScheduleDb(Base):
     end_time: Mapped[datetime] = mapped_column(nullable=True)
 
     camp: Mapped['CampDb'] = relationship(back_populates='level_schedules', lazy='raise')
-    level: Mapped['LevelDb'] = relationship(back_populates='level_schedules', lazy='raise')
+    level: Mapped['LevelDb'] = relationship(back_populates='level_schedules', lazy='joined')
 
     def dict(self):
         returnVal = {}
