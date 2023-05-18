@@ -23,7 +23,7 @@ interface Props {
   programId: number;
 }
 
-const LevelList = ({ programId }: Props) => {
+const LevelsPage = ({ programId }: Props) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedLevel, setSelectedLevel] = useState<Level | undefined>(
     undefined
@@ -115,4 +115,4 @@ const LevelList = ({ programId }: Props) => {
   );
 };
 
-export default LevelList;
+export default LevelsPage;

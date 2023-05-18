@@ -1,6 +1,6 @@
 import { Tabs, TabList, Tab, TabPanels, TabPanel } from "@chakra-ui/react";
 import { Program } from "../Program";
-import LevelList from "./LevelList";
+import LevelsPage from "./LevelsPage";
 import ProgramForm from "./ProgramForm";
 
 interface Props {
@@ -19,7 +19,7 @@ const ProgramTabs = ({ program }: Props) => {
           <ProgramForm program={program} isReadOnly={false} />
         </TabPanel>
         <TabPanel>
-          <LevelList programId={program.id} />
+          <LevelsPage programId={program.id} />
         </TabPanel>
       </TabPanels>
     </Tabs>
