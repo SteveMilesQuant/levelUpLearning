@@ -196,6 +196,7 @@ def test_camp_student(camp_index: int, student: StudentData):
     assert 'application/json' in content_type
     new_student_json = response.json()
     student_json['camps'] = [camp_json]
+    student_json['guardians'] = [app.test.users.admin.dict(include=UserResponse().dict())]
     assert new_student_json == student_json
 
     response = client.get(f'/camps/{camp_id}/students/{student_id}', headers = app.test.users.admin_headers)

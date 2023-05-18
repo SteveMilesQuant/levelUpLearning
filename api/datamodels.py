@@ -103,9 +103,11 @@ class StudentData(BaseModel):
 class StudentResponse(StudentData):
     id: Optional[int] = None
     camps: Optional[List[CampResponse]] = []
+    guardians: Optional[List[UserResponse]] = []
 
     def dict(self, *args, **kwargs):
         ret = super().dict(*args, **kwargs)
         ret['camps'] = [camp.dict() for camp in self.camps]
+        ret['guardians'] = [guardian.dict() for guardian in self.guardians]
         return ret
 

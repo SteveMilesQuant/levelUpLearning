@@ -76,7 +76,7 @@ class UserDb(Base):
     instructor_subjects: Mapped[str] = mapped_column(Text, nullable=True)
     instructor_description: Mapped[str] = mapped_column(Text, nullable=True)
 
-    roles: Mapped[List[RoleDb]] = relationship(secondary=user_x_roles, back_populates='users', lazy='raise')
+    roles: Mapped[List[RoleDb]] = relationship(secondary=user_x_roles, back_populates='users', lazy='joined')
     students: Mapped[List['StudentDb']] = relationship(secondary=user_x_students, back_populates='guardians', lazy='raise')
     programs: Mapped[List['ProgramDb']] = relationship(secondary=user_x_programs, back_populates='designers', lazy='raise')
     camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_instructors, back_populates='instructors', lazy='raise')
@@ -96,13 +96,13 @@ class StudentDb(Base):
     name: Mapped[str] = mapped_column(Text)
     grade_level: Mapped[int] = mapped_column(nullable=True)
 
-    guardians: Mapped[List['UserDb']] = relationship(secondary=user_x_students, back_populates='students', lazy='raise')
-    camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_students, back_populates='students', lazy='raise')
+    guardians: Mapped[List['UserDb']] = relationship(secondary=user_x_students, back_populates='students', lazy='joined')
+    camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_students, back_populates='students', lazy='joined')
 
     def dict(self):
         returnVal = {}
         for key, value in StudentResponse():
-            if key != 'camps':
+            if key not in ['camps', 'guardians']:
                 returnVal[key] = getattr(self, key)
         return returnVal
 

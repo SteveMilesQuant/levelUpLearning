@@ -191,6 +191,7 @@ async def post_new_student(request: Request, new_student_data: StudentData):
         if new_student.id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new student failed")
         await user.add_student(session = session, student = new_student)
+        await new_student.create(session) # refresh from database (guardians)
         return new_student
 
 
@@ -406,29 +407,6 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
                 student = Student(db_obj = db_student)
                 await student.create(session)
                 return student
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
-
-
-@api_router.get("/camps/{camp_id}/students/{student_id}/guardians", response_model = List[UserResponse])
-async def get_camp_student_guardians(request: Request, camp_id: int, student_id: int):
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/teach')
-        camp = Camp(id = camp_id)
-        await camp.create(session)
-        if camp.id is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        if not await camp.user_authorized(session, user):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
-        for db_student in await camp.students(session):
-            if db_student.id == student_id:
-                student = Student(db_obj = db_student)
-                await student.create(session)
-                guardians = []
-                for db_guardian in await student.guardians(session):
-                    guardian = User(db_obj = db_guardian)
-                    await guardian.create(session)
-                    guardians.append(guardian)
-                return guardians
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
 
 

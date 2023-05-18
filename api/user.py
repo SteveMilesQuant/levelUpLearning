@@ -86,7 +86,6 @@ class User(UserResponse):
                     setattr(self, key, getattr(self._db_obj, key))
             self.google_id = self._db_obj.google_id
 
-            await session.refresh(self._db_obj, ['roles'])
             self.roles = []
             for db_role in self._db_obj.roles:
                 role = Role(db_obj=db_role)
@@ -107,14 +106,12 @@ class User(UserResponse):
         await session.commit()
 
     async def add_role(self, session: Any, role: Role):
-        await session.refresh(self._db_obj, ['roles'])
         if role._db_obj in self._db_obj.roles:
             return
         self._db_obj.roles.append(role._db_obj)
         await session.commit()
 
     async def remove_role(self, session: Any, role: Role):
-        await session.refresh(self._db_obj, ['roles'])
         self._db_obj.roles.remove(role._db_obj)
         await session.commit()
 
@@ -129,7 +126,6 @@ class User(UserResponse):
     async def remove_student(self, session: Any, student: Any):
         await session.refresh(self._db_obj, ['students'])
         self._db_obj.students.remove(student._db_obj)
-        await session.refresh(student._db_obj, ['guardians', 'camps'])
         if len(student._db_obj.guardians) == 0:
             student.camps = []
             await student.delete(session)
@@ -177,8 +173,8 @@ async def all_users(session: Any, by_role: Optional[str] = None):
     else:
         stmt = select(UserDb)
         result = await session.execute(stmt)
-        for db_user in result.scalars():
-            user = User(db_obj = db_user)
+        for db_user in result.unique():
+            user = User(db_obj = db_user[0])
             await user.create(session)
             users.append(user)
     return users

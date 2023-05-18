@@ -2,8 +2,9 @@ from pydantic import BaseModel, PrivateAttr
 from typing import Dict, List, Optional, Any
 from datetime import date
 from db import StudentDb, UserDb, CampDb
-from datamodels import StudentData, StudentResponse, CampResponse
+from datamodels import StudentData, StudentResponse, CampResponse, UserResponse
 from camp import Camp
+from user import User
 
 
 class Student(StudentResponse):
@@ -31,15 +32,20 @@ class Student(StudentResponse):
         else:
             # Otherwise, update attributes from fetched object
             for key, value in StudentResponse():
-                if key != 'camps':
+                if key not in ['camps', 'guardians']:
                     setattr(self, key, getattr(self._db_obj, key))
 
         self.camps = []
-        await session.refresh(self._db_obj, ['camps'])
         for db_camp in self._db_obj.camps:
             camp = Camp(db_obj = db_camp)
             await camp.create(session)
             self.camps.append(CampResponse(**camp.dict()))
+
+        self.guardians = []
+        for db_guardian in self._db_obj.guardians:
+            guardian = User(db_obj = db_guardian)
+            await guardian.create(session)
+            self.guardians.append(UserResponse(**guardian.dict()))
 
     async def update(self, session: Any):
         for key, value in StudentData():
@@ -49,9 +55,5 @@ class Student(StudentResponse):
     async def delete(self, session: Any):
         await session.delete(self._db_obj)
         await session.commit()
-
-    async def guardians(self, session: Any) -> List[UserDb]:
-        await session.refresh(self._db_obj, ['guardians'])
-        return self._db_obj.guardians
 
 
