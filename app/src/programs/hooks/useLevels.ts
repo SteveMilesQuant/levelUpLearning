@@ -74,7 +74,7 @@ export const useUpdateLevel = (programId?: number) => {
     const newList = dataList.map((level) =>
       level.id === newData.id
         ? newData
-        : level.list_index > minIdx || level.list_index > maxIdx
+        : level.list_index < minIdx || level.list_index > maxIdx
         ? level
         : { ...level, list_index: level.list_index + direction }
     );
