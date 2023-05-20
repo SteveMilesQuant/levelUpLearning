@@ -116,29 +116,6 @@ async def get_user(request: Request):
         return user
 
 
-@api_router.put("/user", response_model = UserResponse)
-async def put_user(request: Request, updated_user: UserData):
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/', required = True)
-        user = user.copy(update=updated_user.dict(exclude_unset=True))
-        await user.update(session = session)
-        return user
-
-
-@api_router.get("/instructors/{user_id}", response_model = Optional[UserResponse])
-async def instructor_get_one(request: Request, user_id: int, accept: Optional[str] = Header(None)):
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/')
-        instructor = User(id = user_id)
-        await instructor.create(session)
-        role = Role(name = 'INSTRUCTOR')
-        await role.create(session)
-        if instructor.id is None or role._db_obj not in instructor._db_obj.roles:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={user_id} does not exist.")
-        return user
-
-
-
 ###############################################################################
 # STUDENTS
 ###############################################################################
@@ -646,15 +623,9 @@ async def camp_update_level_schedule(request: Request, camp_id: int, level_id: i
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for camp id={camp_id}")
 
 
-@api_router.get("/instructors", response_model = List[UserResponse])
-async def get_all_possible_instructors(request: Request):
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/schedule')
-        return await all_users(session, by_role = 'INSTRUCTOR')
-
 
 ###############################################################################
-# MEMBERS (full access to users)
+# USERS
 ###############################################################################
 
 
@@ -701,6 +672,34 @@ async def user_remove_role(request: Request, user_id: int, role_name: str):
         if role.name is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role={role_name} not found.")
         await tgt_user.remove_role(session = session, role = role)
+
+@api_router.get("/instructors", response_model = List[UserResponse])
+async def get_all_possible_instructors(request: Request):
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/schedule')
+        return await all_users(session, by_role = 'INSTRUCTOR')
+
+
+@api_router.put("/user", response_model = UserResponse)
+async def put_user(request: Request, updated_user: UserData):
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/', required = True)
+        user = user.copy(update=updated_user.dict(exclude_unset=True))
+        await user.update(session = session)
+        return user
+
+
+@api_router.get("/instructors/{user_id}", response_model = Optional[UserResponse])
+async def instructor_get_one(request: Request, user_id: int, accept: Optional[str] = Header(None)):
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session, '/')
+        instructor = User(id = user_id)
+        await instructor.create(session)
+        role = Role(name = 'INSTRUCTOR')
+        await role.create(session)
+        if instructor.id is None or role._db_obj not in instructor._db_obj.roles:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={user_id} does not exist.")
+        return user
 
 
 ###############################################################################
