@@ -122,7 +122,7 @@ async def get_user(request: Request):
 
 
 @api_router.get("/students", response_model = List[StudentResponse])
-async def get_students(request: Request, accept: Optional[str] = Header(None)):
+async def get_students(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/students')
         students = []
@@ -192,7 +192,7 @@ async def delete_student(request: Request, student_id: int):
 
 
 @api_router.get("/teach", response_model = List[CampResponse])
-async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
+async def get_teach_all(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/teach')
         camp_list = []
@@ -204,7 +204,7 @@ async def get_teach_all(request: Request, accept: Optional[str] = Header(None)):
         return camp_list
 
 @api_router.get("/programs", response_model = List[ProgramResponse])
-async def get_programs(request: Request, accept: Optional[str] = Header(None)):
+async def get_programs(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/programs')
         for role in user.roles:
@@ -219,7 +219,7 @@ async def get_programs(request: Request, accept: Optional[str] = Header(None)):
 
 
 @api_router.get("/programs/{program_id}", response_model = ProgramResponse)
-async def get_program(request: Request, program_id: int, accept: Optional[str] = Header(None)):
+async def get_program(request: Request, program_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
         program = Program(id = program_id)
@@ -393,14 +393,14 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
 
 
 @api_router.get("/camps", response_model = List[CampResponse])
-async def get_camps(request: Request, accept: Optional[str] = Header(None)):
+async def get_camps(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps')
         return await all_camps(session = session, published = True)
 
 
 @api_router.get("/camps/{camp_id}", response_model = CampResponse)
-async def get_camp(request: Request, camp_id: int, accept: Optional[str] = Header(None)):
+async def get_camp(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/camps')
         camp = Camp(id = camp_id)
@@ -503,7 +503,7 @@ async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int
 
 
 @api_router.get("/schedule", response_model = List[CampResponse])
-async def get_schedule(request: Request, accept: Optional[str] = Header(None)):
+async def get_schedule(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/schedule')
         return await all_camps(session = session)
@@ -687,15 +687,7 @@ async def put_user(request: Request, updated_user: UserData):
         return user
 
 
-@api_router.get("/instructors/{user_id}", response_model = Optional[UserResponse])
-async def instructor_get_one(request: Request, user_id: int, accept: Optional[str] = Header(None)):
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/')
-        instructor = User(id = user_id)
-        await instructor.create(session)
-        if not instructor.has_role('INSTRUCTOR'):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={user_id} does not exist.")
-        return user
+
 
 
 ###############################################################################

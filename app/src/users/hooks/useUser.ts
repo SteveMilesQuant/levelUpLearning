@@ -1,7 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
 import APIClient from "../../services/api-client";
 import { User, UserData } from "../User";
-import useAuth from "./useAuth";
 import APIHooks from "../../services/api-hooks";
 import ms from "ms";
 
