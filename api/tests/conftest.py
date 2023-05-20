@@ -1,5 +1,5 @@
 import httpx, asyncio, os, pymysql
-from user import User, Role
+from user import User
 from authentication import user_id_to_auth_token
 
 os.environ['API_ROOT_PATH'] = ''
@@ -16,9 +16,6 @@ async def startup():
         app.test = Object()
         app.test.users = Object()
 
-        instructor_role = Role(name = 'INSTRUCTOR')
-        await instructor_role.create(session)
-
         app.test.users.admin = User(
             google_id = 1,
             full_name = 'Steve Admin',
@@ -33,7 +30,7 @@ async def startup():
             full_name = 'Steve Instructor'
         )
         await app.test.users.instructor.create(session)
-        await app.test.users.instructor.add_role(session, instructor_role)
+        await app.test.users.instructor.add_role(session, 'INSTRUCTOR')
         auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.instructor.id)
         app.test.users.instructor_headers = {'Authorization': auth_token}
 

@@ -77,7 +77,7 @@ class User(UserResponse):
                 roles.append(Role(name = 'ADMIN'))
             for role in roles:
                 await role.create(session)
-                await self.add_role(session, role)
+                await self.add_role(session, role.name)
                 self.roles.append(RoleResponse(**role.dict()))
         else:
             # Otherwise, update attributes from fetched object
@@ -105,15 +105,25 @@ class User(UserResponse):
         await session.delete(self._db_obj)
         await session.commit()
 
-    async def add_role(self, session: Any, role: Role):
+    async def add_role(self, session: Any, role_name: str):
+        role = Role(name = role_name)
+        await role.create(session)
         if role._db_obj in self._db_obj.roles:
             return
         self._db_obj.roles.append(role._db_obj)
         await session.commit()
 
-    async def remove_role(self, session: Any, role: Role):
+    async def remove_role(self, session: Any, role_name: str):
+        role = Role(name = role_name)
+        await role.create(session)
         self._db_obj.roles.remove(role._db_obj)
         await session.commit()
+        
+    def has_role(self, role_name: str) -> bool:
+        for role in self.roles:
+            if role.name == role_name:
+                return true
+        return false
 
     async def add_student(self, session: Any, student: Any):
         await session.refresh(self._db_obj, ['students'])

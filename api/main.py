@@ -12,7 +12,7 @@ from datamodels import RoleResponse, UserData, UserResponse, StudentData, Studen
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse, LevelScheduleData, LevelScheduleResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
-from user import User, Role, init_roles, all_users
+from user import User, init_roles, all_users
 from student import Student
 from program import Program, all_programs
 from program import Level
@@ -632,46 +632,51 @@ async def camp_update_level_schedule(request: Request, camp_id: int, level_id: i
 @api_router.get("/users", response_model = List[UserResponse])
 async def users_get_all(request: Request):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/members')
+        user = await get_authorized_user(request, session, '/')
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to full list of users.")
         return await all_users(session)
 
 
 @api_router.get("/roles", response_model = List[RoleResponse])
 async def roles_get_all(request: Request):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/members')
+        user = await get_authorized_user(request, session, '/')
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to full list of roles.")
         return user.roles # cheating a little here - admin user (i.e. this user) will have all roles
 
 
-@api_router.post("/users/{user_id}/roles/{role_name}", response_model = RoleResponse)
+@api_router.post("/users/{user_id}/roles/{role_name}", response_model = str)
 async def user_add_role(request: Request, user_id: int, role_name: str):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/members')
+        user = await get_authorized_user(request, session, '/')
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User is not authorized to change user roles.")
         tgt_user = User(id = user_id)
         await tgt_user.create(session)
         if tgt_user.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User id={tgt_user.id} not found.")
-        role = Role(name = role_name)
-        await role.create(session)
-        if role.name is None:
+        if role_name not in RoleEnum.__members__:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role={role_name} not found.")
-        await tgt_user.add_role(session = session, role = role)
-        return role
+        await tgt_user.add_role(session, role_name)
+        return role_name
 
 
 @api_router.delete("/users/{user_id}/roles/{role_name}")
 async def user_remove_role(request: Request, user_id: int, role_name: str):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/members')
+        user = await get_authorized_user(request, session, '/')
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User is not authorized to change user roles.")
         tgt_user = User(id = user_id)
         await tgt_user.create(session)
         if tgt_user.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User id={tgt_user.id} not found.")
-        role = Role(name = role_name)
-        await role.create(session)
-        if role.name is None:
+        if role_name not in RoleEnum.__members__:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role={role_name} not found.")
-        await tgt_user.remove_role(session = session, role = role)
+        await tgt_user.remove_role(session, role_name)
+
 
 @api_router.get("/instructors", response_model = List[UserResponse])
 async def get_all_possible_instructors(request: Request):
@@ -695,9 +700,7 @@ async def instructor_get_one(request: Request, user_id: int, accept: Optional[st
         user = await get_authorized_user(request, session, '/')
         instructor = User(id = user_id)
         await instructor.create(session)
-        role = Role(name = 'INSTRUCTOR')
-        await role.create(session)
-        if instructor.id is None or role._db_obj not in instructor._db_obj.roles:
+        if not instructor.has_role('INSTRUCTOR'):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={user_id} does not exist.")
         return user
 
