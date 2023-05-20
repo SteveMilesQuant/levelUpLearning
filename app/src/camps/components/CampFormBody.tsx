@@ -3,7 +3,7 @@ import { FieldErrors, UseFormRegister } from "react-hook-form";
 import { FormData } from "../hooks/useCampForm";
 import InputError from "../../components/InputError";
 import { usePrograms } from "../../programs";
-import { useInstructors } from "../../users";
+import { useUsers } from "../../users";
 
 interface Props {
   register: UseFormRegister<FormData>;
@@ -13,7 +13,7 @@ interface Props {
 
 const CampFormBody = ({ register, errors, isReadOnly }: Props) => {
   const { data: programs } = usePrograms();
-  const { data: instructors } = useInstructors();
+  const { data: instructors } = useUsers({ role: "INSTRUCTOR" });
 
   return (
     <SimpleGrid columns={1} gap={5}>

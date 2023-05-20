@@ -8,7 +8,8 @@ import {
 } from "@chakra-ui/react";
 import { BsChevronDown } from "react-icons/bs";
 import { User } from "../User";
-import useInstructors, { useAddCampInstructor } from "../hooks/useInstructors";
+import { useAddCampInstructor } from "../hooks/useCampInstructors";
+import useUsers from "../hooks/useUsers";
 
 interface Props {
   campId: number;
@@ -16,7 +17,11 @@ interface Props {
 }
 
 const AddInstructorMenu = ({ campId, instructors }: Props) => {
-  const { data: allInstructors, isLoading, error } = useInstructors();
+  const {
+    data: allInstructors,
+    isLoading,
+    error,
+  } = useUsers({ role: "INSTRUCTOR" });
   const addInstructor = useAddCampInstructor(campId);
 
   if (isLoading) return null;

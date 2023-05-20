@@ -3,7 +3,7 @@ import ListButton from "../../components/ListButton";
 import {
   useCampInstructors,
   useDeleteCampInstructor,
-} from "../hooks/useInstructors";
+} from "../hooks/useCampInstructors";
 import { useEffect, useState } from "react";
 import { User } from "../User";
 import InstructorForm from "./InstructorForm";

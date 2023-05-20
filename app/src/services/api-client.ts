@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 // Create axios instance
 export const axiosInstance = axios.create({
@@ -13,8 +13,10 @@ class APIClient<S, Q = S> {
     this.endpoint = endpoint;
   }
 
-  getAll = () => {
-    return axiosInstance.get<S[]>(this.endpoint).then((res) => res.data);
+  getAll = (config?: AxiosRequestConfig) => {
+    return axiosInstance
+      .get<S[]>(this.endpoint, config)
+      .then((res) => res.data);
   };
 
   get = (id?: number) => {

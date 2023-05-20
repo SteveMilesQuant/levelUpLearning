@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Camp } from "../Camp";
 import { useAddCamp, useUpdateCamp } from "./useCamps";
 import { usePrograms } from "../../programs";
-import { useInstructors } from "../../users";
+import { useUsers } from "../../users";
 
 export const campSchema = z.object({
   program_id: z
@@ -38,7 +38,7 @@ export type FormData = z.infer<typeof campSchema>;
 
 const useCampForm = (camp?: Camp) => {
   const { data: programs } = usePrograms();
-  const { data: instructors } = useInstructors();
+  const { data: instructors } = useUsers({ role: "INSTRUCTOR" });
   const {
     register,
     handleSubmit: handleFormSubmit,

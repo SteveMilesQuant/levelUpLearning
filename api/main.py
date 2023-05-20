@@ -630,12 +630,12 @@ async def camp_update_level_schedule(request: Request, camp_id: int, level_id: i
 
 
 @api_router.get("/users", response_model = List[UserResponse])
-async def users_get_all(request: Request):
+async def users_get_all(request: Request, role: Optional[str] = None):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, '/')
-        if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to full list of users.")
-        return await all_users(session)
+        if role != 'INSTRUCTOR' and not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to users with role={role or '(all)'}.")
+        return await all_users(session, by_role = role)
 
 
 @api_router.get("/roles", response_model = List[RoleResponse])
@@ -676,13 +676,6 @@ async def user_remove_role(request: Request, user_id: int, role_name: str):
         if role_name not in RoleEnum.__members__:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Role={role_name} not found.")
         await tgt_user.remove_role(session, role_name)
-
-
-@api_router.get("/instructors", response_model = List[UserResponse])
-async def get_all_possible_instructors(request: Request):
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/schedule')
-        return await all_users(session, by_role = 'INSTRUCTOR')
 
 
 @api_router.put("/user", response_model = UserResponse)

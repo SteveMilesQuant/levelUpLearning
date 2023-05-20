@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import APIClient from "./api-client";
 import { useAuth } from "../users";
+import { AxiosRequestConfig } from "axios";
 
 export interface AddDataContext<S> {
   prevData: S[];
@@ -67,10 +68,10 @@ export default class APIHooks<S extends A, Q = S> {
     });
   };
 
-  useDataList = () =>
+  useDataList = (config?: AxiosRequestConfig) =>
     useQuery<S[], Error>({
-      queryKey: this.cacheKey,
-      queryFn: this.client.getAll,
+      queryKey: config ? [...this.cacheKey, config] : this.cacheKey,
+      queryFn: () => this.client.getAll(config),
       staleTime: this.staleTime,
     });
 

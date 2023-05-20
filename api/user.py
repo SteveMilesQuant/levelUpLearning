@@ -118,12 +118,12 @@ class User(UserResponse):
         await role.create(session)
         self._db_obj.roles.remove(role._db_obj)
         await session.commit()
-        
+
     def has_role(self, role_name: str) -> bool:
         for role in self.roles:
             if role.name == role_name:
-                return true
-        return false
+                return True
+        return False
 
     async def add_student(self, session: Any, student: Any):
         await session.refresh(self._db_obj, ['students'])
