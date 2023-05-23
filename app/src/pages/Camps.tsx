@@ -1,22 +1,25 @@
 import { Button, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import { CampFormModal, CampGrid, CampsPageContext } from "../camps";
+import {
+  CampFormModal,
+  CampGrid,
+  CampsContext,
+  CampsContextType,
+} from "../camps";
+import { useContext } from "react";
 
-interface Props {
-  campsPageContext: CampsPageContext;
-}
-
-const Camps = ({ campsPageContext }: Props) => {
+const Camps = () => {
   const {
     isOpen: newIsOpen,
     onOpen: newOnOpen,
     onClose: newOnClose,
   } = useDisclosure();
+  const campsContextType = useContext(CampsContext);
 
   const pageTitle =
-    campsPageContext === CampsPageContext.schedule
+    campsContextType === CampsContextType.schedule
       ? "Schedule Camps"
-      : campsPageContext === CampsPageContext.teach
+      : campsContextType === CampsContextType.teach
       ? "Teach Camps"
       : "Camps";
 
@@ -24,7 +27,7 @@ const Camps = ({ campsPageContext }: Props) => {
     <>
       <PageHeader
         rightButton={
-          campsPageContext === CampsPageContext.schedule && (
+          campsContextType === CampsContextType.schedule && (
             <Button size="lg" variant="outline" onClick={newOnOpen}>
               Add Camp
             </Button>
@@ -33,8 +36,8 @@ const Camps = ({ campsPageContext }: Props) => {
       >
         {pageTitle}
       </PageHeader>
-      <CampGrid campsPageContext={campsPageContext} />
-      {campsPageContext === CampsPageContext.schedule && (
+      <CampGrid />
+      {campsContextType === CampsContextType.schedule && (
         <CampFormModal
           title="Add Camp"
           isOpen={newIsOpen}

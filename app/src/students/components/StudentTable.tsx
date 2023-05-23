@@ -1,14 +1,13 @@
 import { Table, TableContainer, Tbody, Th, Thead, Tr } from "@chakra-ui/react";
 import useCampStudents from "../hooks/useCampStudents";
 import StudentRow from "./StudentRow";
-import { CampsPageContext } from "../../camps";
 
 interface Props {
   campId: number;
-  campsPageContext: CampsPageContext;
+  isReadOnly?: boolean;
 }
 
-const StudentTable = ({ campId, campsPageContext }: Props) => {
+const StudentTable = ({ campId, isReadOnly }: Props) => {
   const { data: students, isLoading, error } = useCampStudents(campId);
 
   if (isLoading) return null;
@@ -22,7 +21,7 @@ const StudentTable = ({ campId, campsPageContext }: Props) => {
             <Th>Name</Th>
             <Th>Grade</Th>
             <Th>Guardians</Th>
-            {campsPageContext === CampsPageContext.schedule && (
+            {!isReadOnly && (
               <Th>
                 {/* Placeholder for delete button, which needs no header */}
               </Th>
@@ -35,7 +34,7 @@ const StudentTable = ({ campId, campsPageContext }: Props) => {
               key={student.id}
               campId={campId}
               student={student}
-              campsPageContext={campsPageContext}
+              isReadOnly={isReadOnly}
             />
           ))}
         </Tbody>

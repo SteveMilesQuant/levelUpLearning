@@ -9,7 +9,7 @@ import Program from "./Program";
 import Programs from "./Programs";
 import PrivateRoutes from "./PrivateRoutes";
 import Members from "./Members";
-import { CampsPageContext } from "../camps";
+import { CampsContext, CampsContextType } from "../camps";
 import Settings from "./Settings";
 
 const router = createBrowserRouter([
@@ -29,29 +29,53 @@ const router = createBrowserRouter([
           { path: "students", element: <Students /> },
           {
             path: "camps",
-            element: <Camps campsPageContext={CampsPageContext.camps} />,
+            element: (
+              <CampsContext.Provider value={CampsContextType.camps}>
+                <Camps />
+              </CampsContext.Provider>
+            ),
           },
           {
             path: "camps/:id",
-            element: <Camp campsPageContext={CampsPageContext.camps} />,
+            element: (
+              <CampsContext.Provider value={CampsContextType.camps}>
+                <Camp />
+              </CampsContext.Provider>
+            ),
           },
           {
             path: "teach",
-            element: <Camps campsPageContext={CampsPageContext.teach} />,
+            element: (
+              <CampsContext.Provider value={CampsContextType.teach}>
+                <Camps />
+              </CampsContext.Provider>
+            ),
           },
           {
             path: "teach/:id",
-            element: <Camp campsPageContext={CampsPageContext.teach} />,
+            element: (
+              <CampsContext.Provider value={CampsContextType.teach}>
+                <Camp />
+              </CampsContext.Provider>
+            ),
           },
           { path: "programs", element: <Programs /> },
           { path: "programs/:id", element: <Program /> },
           {
             path: "schedule",
-            element: <Camps campsPageContext={CampsPageContext.schedule} />,
+            element: (
+              <CampsContext.Provider value={CampsContextType.schedule}>
+                <Camps />
+              </CampsContext.Provider>
+            ),
           },
           {
             path: "schedule/:id",
-            element: <Camp campsPageContext={CampsPageContext.schedule} />,
+            element: (
+              <CampsContext.Provider value={CampsContextType.schedule}>
+                <Camp />
+              </CampsContext.Provider>
+            ),
           },
           { path: "members", element: <Members /> },
           { path: "settings", element: <Settings /> },

@@ -8,14 +8,13 @@ import { useEffect, useState } from "react";
 import { User } from "../User";
 import InstructorForm from "./InstructorForm";
 import AddInstructorMenu from "./AddInstructorMenu";
-import { CampsPageContext } from "../../camps";
 
 interface Props {
   campId: number;
-  campsPageContext?: CampsPageContext;
+  isReadOnly?: boolean;
 }
 
-const InstructorList = ({ campId, campsPageContext }: Props) => {
+const InstructorList = ({ campId, isReadOnly }: Props) => {
   const { data: instructors, isLoading, error } = useCampInstructors(campId);
   const deleteInstructor = useDeleteCampInstructor(campId);
 
@@ -41,7 +40,7 @@ const InstructorList = ({ campId, campsPageContext }: Props) => {
               </ListButton>
             </HStack>
           ))}
-          {campsPageContext === CampsPageContext.schedule && (
+          {!isReadOnly && (
             <AddInstructorMenu campId={campId} instructors={instructors} />
           )}
         </Stack>
@@ -53,11 +52,7 @@ const InstructorList = ({ campId, campsPageContext }: Props) => {
                 key={instructor.id}
                 instructor={instructor}
                 isReadOnly={true}
-                deleteInstructor={
-                  campsPageContext === CampsPageContext.schedule
-                    ? deleteInstructor
-                    : undefined
-                }
+                deleteInstructor={!isReadOnly ? deleteInstructor : undefined}
               />
             ))}
         </Box>

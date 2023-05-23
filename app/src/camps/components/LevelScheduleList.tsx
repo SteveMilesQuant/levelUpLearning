@@ -4,14 +4,13 @@ import useLevelSchedules from "../hooks/useLevelSchedules";
 import { LevelSchedule } from "../LevelSchedule";
 import ListButton from "../../components/ListButton";
 import LevelScheduleForm from "./LevelScheduleForm";
-import { CampsPageContext } from "../Camp";
 
 interface Props {
   campId: number;
-  campsPageContext: CampsPageContext;
+  isReadOnly?: boolean;
 }
 
-const LevelScheduleList = ({ campId, campsPageContext }: Props) => {
+const LevelScheduleList = ({ campId, isReadOnly }: Props) => {
   const { data: levelSchedules, isLoading, error } = useLevelSchedules(campId);
 
   const [selectedLevelSched, setSelectedLevelSched] = useState<
@@ -50,7 +49,7 @@ const LevelScheduleList = ({ campId, campsPageContext }: Props) => {
               key={levelSchedule.level.id}
               campId={campId}
               levelSchedule={levelSchedule}
-              isReadOnly={campsPageContext !== CampsPageContext.schedule}
+              isReadOnly={isReadOnly}
             ></LevelScheduleForm>
           ))}
       </Box>

@@ -1,16 +1,19 @@
 import { useParams } from "react-router-dom";
 import { Button, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import { useCamp, CACHE_KEY_CAMPS, CampTabs } from "../camps";
+import {
+  useCamp,
+  CACHE_KEY_CAMPS,
+  CampTabs,
+  CampsContext,
+  CampsContextType,
+} from "../camps";
 import { EnrollStudentModal } from "../students";
-import { CampsPageContext, useUpdateCamp } from "../camps";
+import { useUpdateCamp } from "../camps";
 import { useQueryClient } from "@tanstack/react-query";
+import { useContext } from "react";
 
-interface Props {
-  campsPageContext: CampsPageContext;
-}
-
-const Camp = ({ campsPageContext }: Props) => {
+const Camp = () => {
   const { id: idStr } = useParams();
   const id = idStr ? parseInt(idStr) : undefined;
 
@@ -29,12 +32,13 @@ const Camp = ({ campsPageContext }: Props) => {
       });
     },
   });
+  const campsContextType = useContext(CampsContext);
 
   if (isLoading) return null;
   if (error) throw error;
 
   const headerButton =
-    campsPageContext === CampsPageContext.schedule ? (
+    campsContextType === CampsContextType.schedule ? (
       <Button
         size="lg"
         variant="outline"
@@ -47,7 +51,7 @@ const Camp = ({ campsPageContext }: Props) => {
       >
         {camp.is_published ? "Unpublish" : "Publish"}
       </Button>
-    ) : campsPageContext === CampsPageContext.camps ? (
+    ) : campsContextType === CampsContextType.camps ? (
       <Button size="lg" variant="outline" onClick={newOnOpen}>
         Enroll Student
       </Button>
@@ -58,8 +62,8 @@ const Camp = ({ campsPageContext }: Props) => {
       <PageHeader hideUnderline={true} rightButton={headerButton}>
         {camp.program.title}
       </PageHeader>
-      <CampTabs campsPageContext={campsPageContext} camp={camp} />
-      {campsPageContext === CampsPageContext.camps && (
+      <CampTabs camp={camp} />
+      {campsContextType === CampsContextType.camps && (
         <EnrollStudentModal
           title="Enroll Student"
           campId={camp.id}

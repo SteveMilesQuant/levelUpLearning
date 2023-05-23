@@ -3,15 +3,14 @@ import { CACHE_KEY_STUDENTS, Student } from "../Student";
 import DeleteButton from "../../components/DeleteButton";
 import { useDisenrollStudent } from "../hooks/useCampStudents";
 import { useQueryClient } from "@tanstack/react-query";
-import { CampsPageContext } from "../../camps";
 
 interface Props {
   campId: number;
-  campsPageContext: CampsPageContext;
   student: Student;
+  isReadOnly?: boolean;
 }
 
-const StudentRow = ({ campId, campsPageContext, student }: Props) => {
+const StudentRow = ({ campId, student, isReadOnly }: Props) => {
   const queryClient = useQueryClient();
   const disenrollStudent = useDisenrollStudent(campId, {
     onSuccess: () => {
@@ -31,7 +30,7 @@ const StudentRow = ({ campId, campsPageContext, student }: Props) => {
           ?.map((g) => `${g.full_name} (${g.email_address})`)
           .join(", ")}
       </Td>
-      {campsPageContext === CampsPageContext.schedule && (
+      {!isReadOnly && (
         <Td>
           <DeleteButton
             onConfirm={() => {

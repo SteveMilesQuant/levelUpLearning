@@ -1,25 +1,23 @@
 import { SimpleGrid } from "@chakra-ui/react";
 import useCamps, { CampQuery, useDeleteCamp } from "../hooks/useCamps";
 import CampCard from "./CampCard";
-import { CampsPageContext } from "../Camp";
 import { useUser } from "../../users";
+import { useContext } from "react";
+import CampsContext, { CampsContextType } from "../campsContext";
 
-interface Props {
-  campsPageContext: CampsPageContext;
-}
-
-const CampGrid = ({ campsPageContext }: Props) => {
+const CampGrid = () => {
   const { data: user } = useUser();
   const campQuery = {} as CampQuery;
-  if (campsPageContext !== CampsPageContext.schedule)
+  const campsContextType = useContext(CampsContext);
+  if (campsContextType !== CampsContextType.schedule)
     campQuery["is_published"] = true;
-  if (campsPageContext === CampsPageContext.teach)
+  if (campsContextType === CampsContextType.teach)
     campQuery["instructor_id"] = user?.id;
   const {
     data: camps,
     isLoading,
     error,
-  } = useCamps(campQuery, campsPageContext === CampsPageContext.teach && !user);
+  } = useCamps(campQuery, campsContextType === CampsContextType.teach && !user);
   const deleteCamp = useDeleteCamp();
 
   if (isLoading) return null;
@@ -32,11 +30,10 @@ const CampGrid = ({ campsPageContext }: Props) => {
           key={camp.id}
           camp={camp}
           onDelete={
-            campsPageContext === CampsPageContext.schedule
+            campsContextType === CampsContextType.schedule
               ? () => deleteCamp.mutate(camp.id)
               : undefined
           }
-          campsPageContext={campsPageContext}
         />
       ))}
     </SimpleGrid>
