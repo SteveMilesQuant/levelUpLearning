@@ -10,6 +10,7 @@ import {
   ModalFooter,
   List,
   HStack,
+  Text,
 } from "@chakra-ui/react";
 import SubmitButton from "../../components/SubmitButton";
 import useStudents from "../hooks/useStudents";
@@ -24,11 +25,18 @@ import CancelButton from "../../components/CancelButton";
 interface Props {
   title: string;
   campId: number;
+  gradeRange: number[];
   isOpen: boolean;
   onClose: () => void;
 }
 
-const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
+const EnrollStudentModal = ({
+  title,
+  campId,
+  gradeRange,
+  isOpen,
+  onClose,
+}: Props) => {
   const { data: allStudents, isLoading, error } = useStudents();
   const [selectedStudentId, setSelectedStudentId] = useState<
     number | undefined
@@ -61,7 +69,12 @@ const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Heading fontSize="2xl">{title}</Heading>
+          <Heading fontSize="2xl" marginY={3}>
+            {title}
+          </Heading>
+          <Text fontSize="md" marginY={3}>
+            Camp grade range: {`${gradeRange[0]} to ${gradeRange[1]}`}
+          </Text>
           <Divider orientation="horizontal" marginTop={1}></Divider>
         </ModalHeader>
         <ModalCloseButton />
@@ -75,7 +88,14 @@ const EnrollStudentModal = ({ title, campId, isOpen, onClose }: Props) => {
                   setSelectedStudentId(s.id);
                 }}
               >
-                {s.name}
+                <Text
+                  color={
+                    s.grade_level < gradeRange[0] ||
+                    s.grade_level > gradeRange[1]
+                      ? "red.400"
+                      : undefined
+                  }
+                >{`${s.name} (Grade ${s.grade_level})`}</Text>
               </ListButton>
             ))}
           </List>

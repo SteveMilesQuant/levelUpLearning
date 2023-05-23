@@ -67,6 +67,7 @@ const Camp = () => {
         <EnrollStudentModal
           title="Enroll Student"
           campId={camp.id}
+          gradeRange={camp.program.grade_range}
           isOpen={newIsOpen}
           onClose={newOnClose}
         />
