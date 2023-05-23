@@ -68,11 +68,12 @@ export default class APIHooks<S extends A, Q = S> {
     });
   };
 
-  useDataList = (config?: AxiosRequestConfig) =>
+  useDataList = (config?: AxiosRequestConfig, disabled?: boolean) =>
     useQuery<S[], Error>({
       queryKey: config ? [...this.cacheKey, config] : this.cacheKey,
       queryFn: () => this.client.getAll(config),
       staleTime: this.staleTime,
+      enabled: !disabled,
     });
 
   useAdd = (addArgs?: AddArgs<S, Q>) => {

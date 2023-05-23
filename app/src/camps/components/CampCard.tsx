@@ -9,19 +9,18 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { Camp } from "../Camp";
+import { Camp, CampsPageContext } from "../Camp";
 import DeleteButton from "../../components/DeleteButton";
 import useLevelSchedules from "../hooks/useLevelSchedules";
 import { locale } from "../../constants";
-import { CampGetType } from "../hooks/useCamps";
 
 interface Props {
   camp: Camp;
-  campGetType: CampGetType;
+  campsPageContext: CampsPageContext;
   onDelete?: () => void;
 }
 
-const CampCard = ({ camp, campGetType, onDelete }: Props) => {
+const CampCard = ({ camp, campsPageContext, onDelete }: Props) => {
   const byLine = "with " + camp.primary_instructor.full_name;
   const { data: levelSchedules, error, isLoading } = useLevelSchedules(camp.id);
 
@@ -45,9 +44,9 @@ const CampCard = ({ camp, campGetType, onDelete }: Props) => {
           <LinkOverlay
             as={RouterLink}
             to={
-              campGetType === CampGetType.schedule
+              campsPageContext === CampsPageContext.schedule
                 ? "/schedule/" + camp.id
-                : campGetType === CampGetType.teach
+                : campsPageContext === CampsPageContext.teach
                 ? "/teach/" + camp.id
                 : "/camps/" + camp.id
             }

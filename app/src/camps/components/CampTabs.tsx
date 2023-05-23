@@ -9,18 +9,18 @@ import {
 import { ProgramForm } from "../../programs";
 import { StudentTable } from "../../students";
 import { InstructorList } from "../../users";
-import { CampGetType, useDeleteCamp } from "../hooks/useCamps";
+import { useDeleteCamp } from "../hooks/useCamps";
 import LevelScheduleList from "./LevelScheduleList";
-import { Camp } from "../Camp";
+import { Camp, CampsPageContext } from "../Camp";
 import DeleteButton from "../../components/DeleteButton";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
-  campGetType: CampGetType;
+  campsPageContext: CampsPageContext;
   camp: Camp;
 }
 
-const CampTabs = ({ campGetType, camp }: Props) => {
+const CampTabs = ({ campsPageContext, camp }: Props) => {
   const deleteCamp = useDeleteCamp();
   const navigate = useNavigate();
 
@@ -35,12 +35,12 @@ const CampTabs = ({ campGetType, camp }: Props) => {
         <Tab>Camp</Tab>
         <Tab>Levels</Tab>
         <Tab>Instructors</Tab>
-        {campGetType !== CampGetType.camps && <Tab>Students</Tab>}
+        {campsPageContext !== CampsPageContext.camps && <Tab>Students</Tab>}
       </TabList>
       <TabPanels>
         <TabPanel>
           <ProgramForm program={camp.program} isReadOnly={true} />
-          {campGetType === CampGetType.schedule && (
+          {campsPageContext === CampsPageContext.schedule && (
             <HStack justifyContent="right" paddingTop={3}>
               <DeleteButton onConfirm={handleDelete}>
                 {camp.program.title}
@@ -49,14 +49,23 @@ const CampTabs = ({ campGetType, camp }: Props) => {
           )}
         </TabPanel>
         <TabPanel>
-          <LevelScheduleList campId={camp.id} campGetType={campGetType} />
+          <LevelScheduleList
+            campId={camp.id}
+            campsPageContext={campsPageContext}
+          />
         </TabPanel>
         <TabPanel>
-          <InstructorList campId={camp.id} campGetType={campGetType} />
+          <InstructorList
+            campId={camp.id}
+            campsPageContext={campsPageContext}
+          />
         </TabPanel>
-        {campGetType !== CampGetType.camps && (
+        {campsPageContext !== CampsPageContext.camps && (
           <TabPanel>
-            <StudentTable campId={camp.id} campGetType={campGetType} />
+            <StudentTable
+              campId={camp.id}
+              campsPageContext={campsPageContext}
+            />
           </TabPanel>
         )}
       </TabPanels>

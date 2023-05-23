@@ -13,6 +13,10 @@ export interface Camp extends CampData {
   is_published: boolean;
 }
 
+export enum CampsPageContext {
+  camps,
+  teach,
+  schedule,
+}
+
 export const CACHE_KEY_CAMPS = ["camps"];
-export const CACHE_KEY_TEACH = ["teach"];
-export const CACHE_KEY_SCHEDULE = ["schedule"];

@@ -9,7 +9,7 @@ import Program from "./Program";
 import Programs from "./Programs";
 import PrivateRoutes from "./PrivateRoutes";
 import Members from "./Members";
-import { CampGetType } from "../camps";
+import { CampsPageContext } from "../camps";
 import Settings from "./Settings";
 
 const router = createBrowserRouter([
@@ -27,25 +27,31 @@ const router = createBrowserRouter([
         element: <PrivateRoutes />,
         children: [
           { path: "students", element: <Students /> },
-          { path: "camps", element: <Camps campGetType={CampGetType.camps} /> },
+          {
+            path: "camps",
+            element: <Camps campsPageContext={CampsPageContext.camps} />,
+          },
           {
             path: "camps/:id",
-            element: <Camp campGetType={CampGetType.camps} />,
+            element: <Camp campsPageContext={CampsPageContext.camps} />,
           },
-          { path: "teach", element: <Camps campGetType={CampGetType.teach} /> },
+          {
+            path: "teach",
+            element: <Camps campsPageContext={CampsPageContext.teach} />,
+          },
           {
             path: "teach/:id",
-            element: <Camp campGetType={CampGetType.teach} />,
+            element: <Camp campsPageContext={CampsPageContext.teach} />,
           },
           { path: "programs", element: <Programs /> },
           { path: "programs/:id", element: <Program /> },
           {
             path: "schedule",
-            element: <Camps campGetType={CampGetType.schedule} />,
+            element: <Camps campsPageContext={CampsPageContext.schedule} />,
           },
           {
             path: "schedule/:id",
-            element: <Camp campGetType={CampGetType.schedule} />,
+            element: <Camp campsPageContext={CampsPageContext.schedule} />,
           },
           { path: "members", element: <Members /> },
           { path: "settings", element: <Settings /> },

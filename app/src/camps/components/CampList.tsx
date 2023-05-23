@@ -1,7 +1,6 @@
 import { List } from "@chakra-ui/react";
-import { CampGetType } from "../hooks/useCamps";
 import CampCard from "./CampCard";
-import { Camp } from "../Camp";
+import { Camp, CampsPageContext } from "../Camp";
 
 interface Props {
   camps: Camp[];
@@ -12,7 +11,11 @@ const CampList = ({ camps, marginBottom }: Props) => {
   return (
     <List spacing={5} marginBottom={camps.length > 0 ? marginBottom : ""}>
       {camps.map((camp) => (
-        <CampCard key={camp.id} camp={camp} campGetType={CampGetType.camps} />
+        <CampCard
+          key={camp.id}
+          camp={camp}
+          campsPageContext={CampsPageContext.camps}
+        />
       ))}
     </List>
   );

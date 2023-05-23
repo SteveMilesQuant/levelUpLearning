@@ -1,18 +1,11 @@
 import ms from "ms";
 import APIHooks from "../../services/api-hooks";
 import APIClient from "../../services/api-client";
-import {
-  CACHE_KEY_CAMPS,
-  CACHE_KEY_TEACH,
-  CACHE_KEY_SCHEDULE,
-  Camp,
-  CampData,
-} from "../Camp";
+import { CACHE_KEY_CAMPS, Camp, CampData } from "../Camp";
 
-export enum CampGetType {
-  camps,
-  teach,
-  schedule,
+export interface CampQuery {
+  is_published?: boolean;
+  instructor_id?: number;
 }
 
 const campHooks = new APIHooks<Camp, CampData>(
@@ -21,35 +14,15 @@ const campHooks = new APIHooks<Camp, CampData>(
   ms("5m")
 );
 
-const scheduleHooks = new APIHooks<Camp, CampData>(
-  new APIClient<Camp, CampData>("/schedule"),
-  CACHE_KEY_SCHEDULE,
-  ms("5m")
-);
-
-const teachHooks = new APIHooks<Camp, CampData>(
-  new APIClient<Camp, CampData>("/teach"),
-  CACHE_KEY_TEACH,
-  ms("5m")
-);
-
-const writeCampHooks = new APIHooks<Camp, CampData>(
-  new APIClient<Camp, CampData>("/camps"),
-  CACHE_KEY_SCHEDULE,
-  ms("5m")
-);
-
-const useCamps = (getType?: CampGetType) => {
-  if (getType === CampGetType.schedule) {
-    return scheduleHooks.useDataList();
-  } else if (getType === CampGetType.teach) {
-    return teachHooks.useDataList();
-  }
-  return campHooks.useDataList();
+const useCamps = (campQuery: CampQuery, disabled: boolean) => {
+  return campHooks.useDataList(
+    Object.keys(campQuery).length ? { params: { ...campQuery } } : undefined,
+    disabled
+  );
 };
 
 export default useCamps;
 export const useCamp = campHooks.useData;
-export const useAddCamp = writeCampHooks.useAdd;
-export const useUpdateCamp = writeCampHooks.useUpdate;
-export const useDeleteCamp = writeCampHooks.useDelete;
+export const useAddCamp = campHooks.useAdd;
+export const useUpdateCamp = campHooks.useUpdate;
+export const useDeleteCamp = campHooks.useDelete;

@@ -160,11 +160,11 @@ class Camp(CampResponse):
         return (user._db_obj in await self.instructors(session))
 
 
-async def all_camps(session: Any, published = None):
-    if published is None:
+async def all_camps(session: Any, is_published = None):
+    if is_published is None:
         stmt = select(CampDb)
     else:
-        stmt = select(CampDb).where(CampDb.is_published == published)
+        stmt = select(CampDb).where(CampDb.is_published == is_published)
     result = await session.execute(stmt)
     camps = []
     for db_camp in result.unique():

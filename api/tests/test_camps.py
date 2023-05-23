@@ -44,6 +44,7 @@ program_response['grade_range'] = [program.grade_range[0], program.grade_range[1
 @pytest.mark.parametrize(('camp'), (
     (CampData(program_id = program.id, primary_instructor_id=app.test.users.admin.id, is_published=True)),
     (CampData(program_id = program.id, primary_instructor_id=app.test.users.instructor.id, is_published=True)),
+    (CampData(program_id = program.id, primary_instructor_id=app.test.users.instructor.id, is_published=False)),
 ))
 def test_post_camp(camp: CampData):
     camp_json = json.loads(json.dumps(camp.dict(), indent=4, sort_keys=True, default=str))
@@ -82,6 +83,30 @@ def test_get_camps():
     assert 'application/json' in content_type
     camps_list = response.json()
     assert camps_list == compare_camp_list
+    
+    # Get only published camps
+    response = client.get('/camps', headers = app.test.users.admin_headers, params = {'is_published': True})
+    content_type = response.headers['content-type']
+    assert response.status_code == status.HTTP_200_OK
+    assert 'application/json' in content_type
+    camps_list = response.json()
+    assert camps_list == list(filter(lambda camp: camp['is_published'], compare_camp_list))
+    
+    # Get only only camps for a particular instructor
+    response = client.get('/camps', headers = app.test.users.admin_headers, params = {'instructor_id': app.test.users.instructor.id})
+    content_type = response.headers['content-type']
+    assert response.status_code == status.HTTP_200_OK
+    assert 'application/json' in content_type
+    camps_list = response.json()
+    assert camps_list == list(filter(lambda camp: camp['primary_instructor_id'] == app.test.users.instructor.id, compare_camp_list))
+    
+    # Get only only camps for a particular instructor that have been published
+    response = client.get('/camps', headers = app.test.users.admin_headers, params = {'instructor_id': app.test.users.instructor.id, 'is_published': True})
+    content_type = response.headers['content-type']
+    assert response.status_code == status.HTTP_200_OK
+    assert 'application/json' in content_type
+    camps_list = response.json()
+    assert camps_list == list(filter(lambda camp: camp['primary_instructor_id'] == app.test.users.instructor.id and camp['is_published'], compare_camp_list))
 
 
 # Test adding instructors

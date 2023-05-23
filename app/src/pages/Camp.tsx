@@ -3,14 +3,14 @@ import { Button, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import { useCamp, CACHE_KEY_CAMPS, CampTabs } from "../camps";
 import { EnrollStudentModal } from "../students";
-import { CampGetType, useUpdateCamp } from "../camps/hooks/useCamps";
+import { CampsPageContext, useUpdateCamp } from "../camps";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
-  campGetType: CampGetType;
+  campsPageContext: CampsPageContext;
 }
 
-const Camp = ({ campGetType }: Props) => {
+const Camp = ({ campsPageContext }: Props) => {
   const { id: idStr } = useParams();
   const id = idStr ? parseInt(idStr) : undefined;
 
@@ -34,7 +34,7 @@ const Camp = ({ campGetType }: Props) => {
   if (error) throw error;
 
   const headerButton =
-    campGetType === CampGetType.schedule ? (
+    campsPageContext === CampsPageContext.schedule ? (
       <Button
         size="lg"
         variant="outline"
@@ -47,7 +47,7 @@ const Camp = ({ campGetType }: Props) => {
       >
         {camp.is_published ? "Unpublish" : "Publish"}
       </Button>
-    ) : campGetType === CampGetType.camps ? (
+    ) : campsPageContext === CampsPageContext.camps ? (
       <Button size="lg" variant="outline" onClick={newOnOpen}>
         Enroll Student
       </Button>
@@ -58,8 +58,8 @@ const Camp = ({ campGetType }: Props) => {
       <PageHeader hideUnderline={true} rightButton={headerButton}>
         {camp.program.title}
       </PageHeader>
-      <CampTabs campGetType={campGetType} camp={camp} />
-      {campGetType === CampGetType.camps && (
+      <CampTabs campsPageContext={campsPageContext} camp={camp} />
+      {campsPageContext === CampsPageContext.camps && (
         <EnrollStudentModal
           title="Enroll Student"
           campId={camp.id}

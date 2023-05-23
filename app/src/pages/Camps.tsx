@@ -1,12 +1,12 @@
 import { Button, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
-import { CampFormModal, CampGetType, CampGrid } from "../camps";
+import { CampFormModal, CampGrid, CampsPageContext } from "../camps";
 
 interface Props {
-  campGetType: CampGetType;
+  campsPageContext: CampsPageContext;
 }
 
-const Camps = ({ campGetType }: Props) => {
+const Camps = ({ campsPageContext }: Props) => {
   const {
     isOpen: newIsOpen,
     onOpen: newOnOpen,
@@ -14,9 +14,9 @@ const Camps = ({ campGetType }: Props) => {
   } = useDisclosure();
 
   const pageTitle =
-    campGetType === CampGetType.schedule
+    campsPageContext === CampsPageContext.schedule
       ? "Schedule Camps"
-      : campGetType === CampGetType.teach
+      : campsPageContext === CampsPageContext.teach
       ? "Teach Camps"
       : "Camps";
 
@@ -24,7 +24,7 @@ const Camps = ({ campGetType }: Props) => {
     <>
       <PageHeader
         rightButton={
-          campGetType === CampGetType.schedule && (
+          campsPageContext === CampsPageContext.schedule && (
             <Button size="lg" variant="outline" onClick={newOnOpen}>
               Add Camp
             </Button>
@@ -33,8 +33,8 @@ const Camps = ({ campGetType }: Props) => {
       >
         {pageTitle}
       </PageHeader>
-      <CampGrid campGetType={campGetType} />
-      {campGetType === CampGetType.schedule && (
+      <CampGrid campsPageContext={campsPageContext} />
+      {campsPageContext === CampsPageContext.schedule && (
         <CampFormModal
           title="Add Camp"
           isOpen={newIsOpen}
