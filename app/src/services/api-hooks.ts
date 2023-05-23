@@ -56,15 +56,14 @@ export default class APIHooks<S extends A, Q = S> {
     this.staleTime = staleTime;
   }
 
-  useData = (id?: number, requireSignIn?: boolean) => {
-    const { signedIn } = useAuth();
+  useData = (id?: number, disabled?: boolean) => {
     const singleCacheKey = [...this.cacheKey];
     if (id) singleCacheKey.push(id);
     return useQuery<S, Error>({
       queryKey: singleCacheKey,
       queryFn: () => this.client.get(id),
       staleTime: this.staleTime,
-      enabled: !requireSignIn || signedIn,
+      enabled: !disabled,
     });
   };
 
