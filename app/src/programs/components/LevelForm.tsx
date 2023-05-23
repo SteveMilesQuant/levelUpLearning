@@ -4,6 +4,8 @@ import { Level } from "../Level";
 import { useState } from "react";
 import { useDeleteLevel } from "../hooks/useLevels";
 import CrudButtonSet from "../../components/CrudButtonSet";
+import { useQueryClient } from "@tanstack/react-query";
+import { CACHE_KEY_CAMPS } from "../../camps";
 
 interface Props {
   programId?: number;
@@ -13,8 +15,16 @@ interface Props {
 
 const LevelForm = ({ programId, level, isReadOnly }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
+  const queryClient = useQueryClient();
   const levelForm = useLevelForm(programId, level);
-  const deleteLevel = useDeleteLevel(programId);
+  const deleteLevel = useDeleteLevel(programId, {
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: CACHE_KEY_CAMPS,
+        exact: false,
+      });
+    },
+  });
 
   const handleDelete = () => {
     deleteLevel.mutate(level.id);

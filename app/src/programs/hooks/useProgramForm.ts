@@ -4,6 +4,8 @@ import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Program } from "../Program";
 import { useAddProgram, useUpdateProgram } from "./usePrograms";
+import { useQueryClient } from "@tanstack/react-query";
+import { CACHE_KEY_CAMPS } from "../../camps";
 
 const programSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),
@@ -14,6 +16,7 @@ const programSchema = z.object({
 export type FormData = z.infer<typeof programSchema>;
 
 const useProgramForm = (program?: Program) => {
+  const queryClient = useQueryClient();
   const [selectedGradeRange, setSelectedGradeRange] = useState(
     program?.grade_range || [6, 8]
   );
@@ -31,8 +34,21 @@ const useProgramForm = (program?: Program) => {
   });
   const isValid = isValidForm;
 
+  useMemo(() => {
+    // Reset required when we update "program" for via camps query invalidation
+    // Because we use program form to display program details on a camp page
+    reset({ ...program });
+  }, [program]);
+
+  const handleSuccess = () => {
+    queryClient.invalidateQueries({
+      queryKey: CACHE_KEY_CAMPS,
+      exact: false,
+    });
+  };
+
   const addProgram = useAddProgram();
-  const updateProgram = useUpdateProgram();
+  const updateProgram = useUpdateProgram({ onSuccess: handleSuccess });
 
   const handleClose = () => {
     reset({ ...program });

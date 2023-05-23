@@ -4,6 +4,8 @@ import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Level } from "../Level";
 import { useAddLevel, useUpdateLevel } from "./useLevels";
+import { CACHE_KEY_CAMPS } from "../../camps";
+import { useQueryClient } from "@tanstack/react-query";
 
 const levelSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),
@@ -13,6 +15,7 @@ const levelSchema = z.object({
 export type FormData = z.infer<typeof levelSchema>;
 
 const useLevelForm = (programId?: number, level?: Level) => {
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit: handleFormSubmit,
@@ -25,8 +28,15 @@ const useLevelForm = (programId?: number, level?: Level) => {
     }, [level]),
   });
 
-  const addLevel = useAddLevel(programId);
-  const updateLevel = useUpdateLevel(programId);
+  const handleSuccess = () => {
+    queryClient.invalidateQueries({
+      queryKey: CACHE_KEY_CAMPS,
+      exact: false,
+    });
+  };
+
+  const addLevel = useAddLevel(programId, { onSuccess: handleSuccess });
+  const updateLevel = useUpdateLevel(programId, { onSuccess: handleSuccess });
 
   const handleClose = () => {
     reset({ ...level });

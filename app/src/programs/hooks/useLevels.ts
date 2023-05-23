@@ -1,8 +1,11 @@
 import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
 import { CACHE_KEY_PROGRAMS } from "../Program";
 import APIHooks, {
+  AddArgs,
   AddDataContext,
+  DeleteArgs,
   DeleteDataContext,
+  UpdateArgs,
   UpdateDataContext,
 } from "../../services/api-hooks";
 import APIClient from "../../services/api-client";
@@ -30,7 +33,10 @@ export const useLevel = (programId?: number, levelId?: number) => {
   return levelHooks.useData(levelId);
 };
 
-export const useAddLevel = (programId?: number) => {
+export const useAddLevel = (
+  programId?: number,
+  addArgs?: AddArgs<Level, LevelData>
+) => {
   if (!programId)
     return {} as UseMutationResult<
       Level,
@@ -50,10 +56,13 @@ export const useAddLevel = (programId?: number) => {
     return [...dataList, newLevel];
   };
 
-  return levelHooks.useAdd({ queryMutation });
+  return levelHooks.useAdd({ queryMutation, ...addArgs });
 };
 
-export const useUpdateLevel = (programId?: number) => {
+export const useUpdateLevel = (
+  programId?: number,
+  updateArgs?: UpdateArgs<Level>
+) => {
   if (!programId)
     return {} as UseMutationResult<
       Level,
@@ -81,10 +90,13 @@ export const useUpdateLevel = (programId?: number) => {
     return newList;
   };
 
-  return levelHooks.useUpdate({ queryMutation });
+  return levelHooks.useUpdate({ queryMutation, ...updateArgs });
 };
 
-export const useDeleteLevel = (programId?: number) => {
+export const useDeleteLevel = (
+  programId?: number,
+  deleteArgs?: DeleteArgs<Level>
+) => {
   if (!programId)
     return {} as UseMutationResult<
       any,
@@ -107,5 +119,5 @@ export const useDeleteLevel = (programId?: number) => {
       );
   };
 
-  return levelHooks.useDelete({ queryMutation });
+  return levelHooks.useDelete({ queryMutation, ...deleteArgs });
 };
