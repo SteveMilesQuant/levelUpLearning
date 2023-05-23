@@ -25,7 +25,6 @@ const InstructorForm = ({
   deleteInstructor,
 }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
-
   const userForm = useUserForm(instructor);
 
   return (

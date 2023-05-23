@@ -4,6 +4,8 @@ import { z } from "zod";
 import { User } from "../User";
 import { useMemo } from "react";
 import { useUpdateUser } from "./useUser";
+import { useQueryClient } from "@tanstack/react-query";
+import { CACHE_KEY_CAMPS } from "../../camps";
 
 const userSchema = z.object({
   full_name: z
@@ -19,6 +21,7 @@ const userSchema = z.object({
 export type FormData = z.infer<typeof userSchema>;
 
 const useUserForm = (user?: User) => {
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit: handleFormSubmit,
@@ -31,7 +34,14 @@ const useUserForm = (user?: User) => {
     }, [user]),
   });
 
-  const updateUser = useUpdateUser();
+  const updateUser = useUpdateUser({
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: CACHE_KEY_CAMPS,
+        exact: false,
+      });
+    },
+  });
 
   const handleClose = () => {
     reset({ ...user });

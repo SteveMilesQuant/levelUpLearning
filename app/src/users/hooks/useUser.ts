@@ -1,6 +1,6 @@
 import APIClient from "../../services/api-client";
 import { User, UserData } from "../User";
-import APIHooks from "../../services/api-hooks";
+import APIHooks, { UpdateArgs } from "../../services/api-hooks";
 import ms from "ms";
 import useAuth from "./useAuth";
 
@@ -12,8 +12,8 @@ const userHooks = new APIHooks<User, UserData>(
   ms("5m")
 );
 
-export const useUpdateUser = () =>
-  userHooks.useUpdate({ endpointIgnoresId: true });
+export const useUpdateUser = (updateArgs?: UpdateArgs<User>) =>
+  userHooks.useUpdate({ ...updateArgs, endpointIgnoresId: true });
 
 const useUser = () => {
   const { signedIn } = useAuth();
