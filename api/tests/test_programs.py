@@ -201,3 +201,36 @@ def test_permission():
     response = client.put(f'/programs/{program_id}/levels/{bad_level_id}', json=level_json, headers=app.test.users.instructor_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
+    # Guardians should be blocked from any access to programs
+    response = client.get(f'/programs', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.get(f'/programs/{program_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.post(f'/programs', json=program_json, headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.put(f'/programs/{program_id}', json=program_json, headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.delete(f'/programs/{program_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Guardians should be blocked from any access to levels
+    response = client.get(f'/programs/{program_id}/levels', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.get(f'/programs/{program_id}/levels/{level_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.post(f'/programs/{program_id}/levels', json=level_json, headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.put(f'/programs/{program_id}/levels/{level_id}', json=level_json, headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.delete(f'/programs/{program_id}/levels/{level_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+

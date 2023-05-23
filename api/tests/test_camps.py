@@ -83,7 +83,7 @@ def test_get_camps():
     assert 'application/json' in content_type
     camps_list = response.json()
     assert camps_list == compare_camp_list
-    
+
     # Get only published camps
     response = client.get('/camps', headers = app.test.users.admin_headers, params = {'is_published': True})
     content_type = response.headers['content-type']
@@ -91,7 +91,7 @@ def test_get_camps():
     assert 'application/json' in content_type
     camps_list = response.json()
     assert camps_list == list(filter(lambda camp: camp['is_published'], compare_camp_list))
-    
+
     # Get only only camps for a particular instructor
     response = client.get('/camps', headers = app.test.users.admin_headers, params = {'instructor_id': app.test.users.instructor.id})
     content_type = response.headers['content-type']
@@ -99,7 +99,7 @@ def test_get_camps():
     assert 'application/json' in content_type
     camps_list = response.json()
     assert camps_list == list(filter(lambda camp: camp['primary_instructor_id'] == app.test.users.instructor.id, compare_camp_list))
-    
+
     # Get only only camps for a particular instructor that have been published
     response = client.get('/camps', headers = app.test.users.admin_headers, params = {'instructor_id': app.test.users.instructor.id, 'is_published': True})
     content_type = response.headers['content-type']
@@ -288,6 +288,16 @@ def test_permission():
     bad_program_id = alt_program.id
     bad_level_id = alt_level.id
 
+    level_id = levels[0].id
+    level_schedule = LevelSchedule(start_time=FastApiDatetime(2023, 2, 6, 9, 0, 0), end_time=FastApiDatetime(2023, 2, 6, 12, 0, 0))
+    level_schedule_json = json.loads(json.dumps(level_schedule.dict(), indent=4, sort_keys=True, default=str))
+
+    instructor_id = app.test.users.instructor.id
+
+    response = client.get(f'/students', headers = app.test.users.admin_headers)
+    student_list_json = response.json()
+    student_id = student_list_json[0]['id']
+
     # camp get with bad id
     response = client.get(f'/camps/{bad_camp_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -308,5 +318,44 @@ def test_permission():
     # Get bad level id
     response = client.get(f'/camps/{camp_id}/levels/{bad_level_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    # Instructors and guardians should be blocked from updating camps
+    response = client.post(f'/camps', json=camp_json, headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response = client.post(f'/camps', json=camp_json, headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.put(f'/camps/{camp_id}', json=camp_json, headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response = client.put(f'/camps/{camp_id}', json=camp_json, headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.delete(f'/camps/{camp_id}', headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response = client.delete(f'/camps/{camp_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Instructors and guardians should be blocks from updating level schedules
+    response = client.put(f'/camps/{camp_id}/levels/{level_id}', json=level_schedule_json, headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response = client.put(f'/camps/{camp_id}/levels/{level_id}', json=level_schedule_json, headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Instructors and guardians should be blocked from adding or removing instructors to/from camps
+    response = client.post(f'/camps/{camp_id}/instructors/{instructor_id}', headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response = client.post(f'/camps/{camp_id}/instructors/{instructor_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.delete(f'/camps/{camp_id}/instructors/{instructor_id}', headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response = client.delete(f'/camps/{camp_id}/instructors/{instructor_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Instructors and guardians should be blocked from removing students from camps
+    response = client.delete(f'/camps/{camp_id}/students/{student_id}', headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response = client.delete(f'/camps/{camp_id}/students/{student_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
 
 

@@ -22,6 +22,9 @@ async def startup():
             email_address = 'steve.admin@fake.com'
         )
         await app.test.users.admin.create(session)
+        await app.test.users.admin.add_role(session, 'GUARDIAN')
+        await app.test.users.admin.add_role(session, 'INSTRUCTOR')
+        await app.test.users.admin.add_role(session, 'ADMIN')
         auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.admin.id)
         app.test.users.admin_headers = {'Authorization': auth_token}
 
@@ -30,7 +33,9 @@ async def startup():
             full_name = 'Steve Instructor'
         )
         await app.test.users.instructor.create(session)
+        await app.test.users.instructor.add_role(session, 'GUARDIAN')
         await app.test.users.instructor.add_role(session, 'INSTRUCTOR')
+        await app.test.users.instructor.remove_role(session, 'ADMIN')
         auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.instructor.id)
         app.test.users.instructor_headers = {'Authorization': auth_token}
 
@@ -39,9 +44,12 @@ async def startup():
             full_name = 'Steve Guardian'
         )
         await app.test.users.guardian.create(session)
+        await app.test.users.guardian.add_role(session, 'GUARDIAN')
+        await app.test.users.guardian.remove_role(session, 'INSTRUCTOR')
+        await app.test.users.guardian.remove_role(session, 'ADMIN')
         auth_token, token_expiration = user_id_to_auth_token(app, app.test.users.guardian.id)
         app.test.users.guardian_headers = {'Authorization': auth_token}
-        
+
         app.test.users.map = {
             app.test.users.admin.id: app.test.users.admin,
             app.test.users.instructor.id: app.test.users.instructor,

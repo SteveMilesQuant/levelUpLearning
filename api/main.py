@@ -190,7 +190,7 @@ async def get_programs(request: Request):
         if user.has_role('ADMIN'):
             return await all_programs(session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         program_list = []
         for db_program in await user.programs(session):
             program = Program(db_obj = db_program)
@@ -204,7 +204,7 @@ async def get_program(request: Request, program_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         program = Program(id = program_id)
         await program.create(session)
         if program.id is None:
@@ -217,7 +217,7 @@ async def put_update_program(request: Request, program_id: int, updated_program:
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -233,7 +233,7 @@ async def post_new_program(request: Request, new_program_data: ProgramData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         new_program = Program(**new_program_data.dict())
         await new_program.create(session)
         if new_program.id is None:
@@ -247,7 +247,7 @@ async def delete_program(request: Request, program_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -267,7 +267,7 @@ async def get_levels(request: Request, program_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         program = Program(id = program_id)
         await program.create(session)
         level_list = []
@@ -284,7 +284,7 @@ async def get_level(request: Request, program_id: int, level_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         program = Program(id = program_id)
         await program.create(session)
         if program.id is None:
@@ -302,7 +302,7 @@ async def put_update_level(request: Request, program_id: int, level_id: int, upd
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -323,7 +323,7 @@ async def post_new_level(request: Request, program_id: int, new_level_data: Leve
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -341,7 +341,7 @@ async def delete_level(request: Request, program_id: int, level_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -354,6 +354,7 @@ async def delete_level(request: Request, program_id: int, level_id: int):
                         return
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+
 
 
 ###############################################################################
@@ -374,7 +375,7 @@ async def get_camps(request: Request, is_published: Optional[bool] = None, instr
                 instructor = User(id = instructor_id)
                 await instructor.create(session)
                 if instructor.id is None:
-                    HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} not found.")
+                    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Instructor id={instructor_id} not found.")
             camps = [Camp(db_obj = db_camp) for db_camp in await instructor.camps(session)]
             for camp in camps:
                 await camp.create(session)
@@ -402,7 +403,7 @@ async def post_new_camp(request: Request, new_camp_data: CampData):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to create camps.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to create camps.")
         if new_camp_data.primary_instructor_id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Primary instructor id is required.")
         instructor = User(id = new_camp_data.primary_instructor_id)
@@ -421,7 +422,7 @@ async def put_update_camp(request: Request, camp_id: int, updated_camp_data: Cam
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -442,7 +443,7 @@ async def delete_camp(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to delete camps.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to delete camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -494,7 +495,7 @@ async def camp_update_level_schedule(request: Request, camp_id: int, level_id: i
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -552,7 +553,7 @@ async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: 
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -571,7 +572,7 @@ async def remove_instructor_from_camp(request: Request, camp_id: int, instructor
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -650,7 +651,7 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -675,7 +676,7 @@ async def users_get_all(request: Request, role: Optional[str] = None):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if role != 'INSTRUCTOR' and not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to users with role={role or '(all)'}.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to users with role={role or '(all)'}.")
         return await all_users(session, by_role = role)
 
 
@@ -684,7 +685,7 @@ async def roles_get_all(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to full list of roles.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to full list of roles.")
         return user.roles # cheating a little here - admin user (i.e. this user) will have all roles
 
 
@@ -693,7 +694,7 @@ async def user_add_role(request: Request, user_id: int, role_name: str):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User is not authorized to change user roles.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User is not authorized to change user roles.")
         tgt_user = User(id = user_id)
         await tgt_user.create(session)
         if tgt_user.id is None:
@@ -708,10 +709,10 @@ async def user_add_role(request: Request, user_id: int, role_name: str):
 async def user_remove_role(request: Request, user_id: int, role_name: str):
     async with app.db_sessionmaker() as session:
         if user_id == 1:
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User id = {user_id} is special and cannot have roles removed.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User id = {user_id} is special and cannot have roles removed.")
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
-            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User is not authorized to change user roles.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User is not authorized to change user roles.")
         tgt_user = User(id = user_id)
         await tgt_user.create(session)
         if tgt_user.id is None:
