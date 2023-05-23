@@ -48,19 +48,10 @@ camp_x_students = Table(
 )
 
 
-class EndpointDb(Base):
-    __tablename__ = 'endpoint'
-
-    role: Mapped[str] = mapped_column(ForeignKey('role.name'), primary_key=True)
-    url: Mapped[str] = mapped_column(String(32), primary_key=True)
-    title: Mapped[str] = mapped_column(Text)
-
-
 class RoleDb(Base):
     __tablename__ = 'role'
 
     name: Mapped[str] = mapped_column(String(32), primary_key=True)
-    endpoints: Mapped[List[EndpointDb]] = relationship(lazy='raise')
 
     users: Mapped[List['UserDb']] = relationship(secondary=user_x_roles, back_populates='roles', lazy='raise')
 

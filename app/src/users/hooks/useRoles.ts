@@ -1,5 +1,4 @@
 import APIClient from "../../services/api-client";
-import { Role } from "../Role";
 import { CACHE_KEY_ROLES } from "./useAllRoles";
 import { CACHE_KEY_USERS } from "./useUsers";
 import {
@@ -10,9 +9,9 @@ import {
 
 export const useAddRole = (userId?: number) => {
   const queryClient = useQueryClient();
-  if (!userId) return {} as UseMutationResult<Role, Error, string>;
-  const apiClient = new APIClient<Role>(`/users/${userId}/roles`);
-  return useMutation<Role, Error, string>({
+  if (!userId) return {} as UseMutationResult<string, Error, string>;
+  const apiClient = new APIClient<string>(`/users/${userId}/roles`);
+  return useMutation<string, Error, string>({
     mutationKey: [...CACHE_KEY_USERS, userId, ...CACHE_KEY_ROLES],
     mutationFn: (name: string) => apiClient.post(name),
     onSuccess: () => {
@@ -24,7 +23,7 @@ export const useAddRole = (userId?: number) => {
 export const useRemoveRole = (userId?: number) => {
   const queryClient = useQueryClient();
   if (!userId) return {} as UseMutationResult<any, Error, string>;
-  const apiClient = new APIClient<Role>(`/users/${userId}/roles`);
+  const apiClient = new APIClient<string>(`/users/${userId}/roles`);
   return useMutation<any, Error, string>({
     mutationKey: [...CACHE_KEY_USERS, userId, ...CACHE_KEY_ROLES],
     mutationFn: (name: string) => apiClient.delete(name),

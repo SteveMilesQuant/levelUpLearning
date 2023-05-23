@@ -7,12 +7,11 @@ import {
 } from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
 import { Box } from "@chakra-ui/react";
-import { Role } from "../users";
 import LinkIcon from "./LinkIcon";
 import { ReactElement } from "react";
 
 interface Props {
-  roles: Role[];
+  roles: string[];
 }
 
 interface SideIcon {
@@ -71,7 +70,7 @@ const SideIconList = ({ roles }: Props) => {
   return (
     <Box paddingX={4} paddingY={2} width="fit-content">
       {roles.map((role) =>
-        iconsByRole[role.name].map((sideIcon) => (
+        iconsByRole[role].map((sideIcon) => (
           <Box key={sideIcon.id} marginBottom={4} width="fit-content">
             <LinkIcon
               icon={sideIcon.icon}

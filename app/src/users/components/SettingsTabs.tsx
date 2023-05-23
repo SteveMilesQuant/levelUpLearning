@@ -9,7 +9,7 @@ const SettingsTabs = () => {
   if (isLoading) return null;
   if (error) throw error;
 
-  const isInstructor = !!user.roles.find((r) => r.name === "INSTRUCTOR");
+  const isInstructor = !!user.roles.find((r) => r === "INSTRUCTOR");
 
   return (
     <Tabs variant="enclosed">

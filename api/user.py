@@ -1,8 +1,8 @@
 from pydantic import BaseModel, PrivateAttr
 from typing import List, Optional, Any
 from sqlalchemy import select
-from datamodels import RoleResponse, UserData, UserResponse
-from db import UserDb, RoleDb, EndpointDb, StudentDb, ProgramDb, CampDb
+from datamodels import RoleEnum, RoleResponse, UserData, UserResponse
+from db import UserDb, RoleDb, StudentDb, ProgramDb, CampDb
 
 
 class Role(RoleResponse):
@@ -20,20 +20,15 @@ class Role(RoleResponse):
                 return
         self.name = self._db_obj.name
 
-        await session.refresh(self._db_obj, ['endpoints'])
-        self.permissible_endpoints = {}
-        for endpoint in self._db_obj.endpoints:
-            self.permissible_endpoints[endpoint.url] = endpoint.title
-
 
 async def init_roles(session: Any):
     stmt = select(RoleDb)
     result = await session.execute(stmt)
     if not result.first():
         session.add_all([
-            RoleDb(name='GUARDIAN', endpoints=[EndpointDb(url='/students', title='My Students'), EndpointDb(url='/camps', title='Find Camps')]),
-            RoleDb(name='INSTRUCTOR', endpoints=[EndpointDb(url='/teach', title='My Camps'), EndpointDb(url='/programs', title='Design Programs')]),
-            RoleDb(name='ADMIN', endpoints=[EndpointDb(url='/schedule', title='Schedule Camps'), EndpointDb(url='/members', title='Manage Members')])
+            RoleDb(name='GUARDIAN'),
+            RoleDb(name='INSTRUCTOR'),
+            RoleDb(name='ADMIN')
         ])
         await session.commit()
 
@@ -70,15 +65,13 @@ class User(UserResponse):
             await session.commit()
 
             # Create initial role(s)
-            self.roles = []
-            roles = [Role(name = 'GUARDIAN')]
-            roles.append(Role(name = 'INSTRUCTOR')) # TODO: temporarily making everyone an instructor - move down to next check later
+            await session.refresh(self._db_obj, ['roles']) # again, not sure why I have to do this when I have lazy='joined'
+            roles = ['GUARDIAN']
+            roles.append('INSTRUCTOR') # TODO: temporarily making everyone an instructor - move down to next check later
             if self._db_obj.id == 1:
-                roles.append(Role(name = 'ADMIN'))
+                roles.append('ADMIN')
             for role in roles:
-                await role.create(session)
-                await self.add_role(session, role.name)
-                self.roles.append(RoleResponse(**role.dict()))
+                await self.add_role(session, role)
         else:
             # Otherwise, update attributes from fetched object
             for key, value in UserResponse():
@@ -90,8 +83,8 @@ class User(UserResponse):
             for db_role in self._db_obj.roles:
                 role = Role(db_obj=db_role)
                 await role.create(session) # not really async when we use db_obj
-                self.roles.append(RoleResponse(**role.dict()))
-            self.roles.sort() # TODO: sort in database
+                self.roles.append(role.name)
+            self.roles.sort(key = lambda role: RoleEnum[role].value)
 
         # A couple cases require the id from the database (new or lookup by google_id)
         self.id = self._db_obj.id
@@ -106,24 +99,26 @@ class User(UserResponse):
         await session.commit()
 
     async def add_role(self, session: Any, role_name: str):
+        if role_name in self.roles:
+            return
         role = Role(name = role_name)
         await role.create(session)
-        if role._db_obj in self._db_obj.roles:
-            return
         self._db_obj.roles.append(role._db_obj)
         await session.commit()
+        self.roles.append(role_name)
+        self.roles.sort(key = lambda role: RoleEnum[role].value)
 
     async def remove_role(self, session: Any, role_name: str):
+        if role_name not in self.roles:
+            return
         role = Role(name = role_name)
         await role.create(session)
         self._db_obj.roles.remove(role._db_obj)
         await session.commit()
+        self.roles.remove(role_name)
 
     def has_role(self, role_name: str) -> bool:
-        for role in self.roles:
-            if role.name == role_name:
-                return True
-        return False
+        return (role_name in self.roles)
 
     async def add_student(self, session: Any, student: Any):
         await session.refresh(self._db_obj, ['students'])

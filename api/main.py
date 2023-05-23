@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, timedelta
 from db import init_db, close_db
-from datamodels import RoleEnum, RoleResponse, UserData, UserResponse, StudentData, StudentResponse
+from datamodels import RoleEnum, UserData, UserResponse, StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse, LevelScheduleData, LevelScheduleResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
@@ -65,7 +65,7 @@ async def get_google_provider_cfg() -> dict:
     return ret_json
 
 
-async def get_authorized_user(request, session, permission_url_path, required = True) -> Optional[User]:
+async def get_authorized_user(request, session, required = True) -> Optional[User]:
     token = request.headers.get('Authorization')
     user_id = auth_token_to_user_id(app, token)
     if user_id:
@@ -73,17 +73,9 @@ async def get_authorized_user(request, session, permission_url_path, required = 
         await user.create(session)
     else:
         user = None
-    if required:
-        if not user:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Auth: User not logged in.")
-        if permission_url_path == '/':
-            return user
-        for role in user.roles:
-            if permission_url_path in role.permissible_endpoints:
-                return user
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for {permission_url_path}")
-    else:
-        return user
+    if required and (not user or user.id is None):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Auth: User not logged in.")
+    return user
 
 
 @api_router.post("/signin")
@@ -112,7 +104,7 @@ async def signin_post(request: Request, google_response_token: dict):
 @api_router.get("/user", response_model = Optional[UserResponse])
 async def get_user(request: Request):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/', required = False)
+        user = await get_authorized_user(request, session, required = False)
         return user
 
 
@@ -124,7 +116,7 @@ async def get_user(request: Request):
 @api_router.get("/students", response_model = List[StudentResponse])
 async def get_students(request: Request):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/students')
+        user = await get_authorized_user(request, session)
         students = []
         for db_student in await user.students(session):
             student = Student(db_obj = db_student)
@@ -136,7 +128,7 @@ async def get_students(request: Request):
 @api_router.get("/students/{student_id}", response_model = StudentResponse)
 async def get_student(request: Request, student_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/students')
+        user = await get_authorized_user(request, session)
         for db_student in await user.students(session):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
@@ -148,7 +140,7 @@ async def get_student(request: Request, student_id: int):
 @api_router.put("/students/{student_id}", response_model = StudentResponse)
 async def put_update_student(request: Request, student_id: int, updated_student: StudentData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/students')
+        user = await get_authorized_user(request, session)
         for db_student in await user.students(session):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
@@ -162,7 +154,7 @@ async def put_update_student(request: Request, student_id: int, updated_student:
 @api_router.post("/students", response_model = StudentResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_student(request: Request, new_student_data: StudentData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/students')
+        user = await get_authorized_user(request, session)
         new_student = Student(**new_student_data.dict())
         await new_student.create(session)
         if new_student.id is None:
@@ -175,7 +167,7 @@ async def post_new_student(request: Request, new_student_data: StudentData):
 @api_router.delete("/students/{student_id}")
 async def delete_student(request: Request, student_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/students')
+        user = await get_authorized_user(request, session)
         for db_student in await user.students(session):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
@@ -194,10 +186,11 @@ async def delete_student(request: Request, student_id: int):
 @api_router.get("/programs", response_model = List[ProgramResponse])
 async def get_programs(request: Request):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/programs')
-        for role in user.roles:
-            if role.name == 'ADMIN':
-                return await all_programs(session)
+        user = await get_authorized_user(request, session)
+        if user.has_role('ADMIN'):
+            return await all_programs(session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         program_list = []
         for db_program in await user.programs(session):
             program = Program(db_obj = db_program)
@@ -209,7 +202,9 @@ async def get_programs(request: Request):
 @api_router.get("/programs/{program_id}", response_model = ProgramResponse)
 async def get_program(request: Request, program_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         program = Program(id = program_id)
         await program.create(session)
         if program.id is None:
@@ -220,7 +215,9 @@ async def get_program(request: Request, program_id: int):
 @api_router.put("/programs/{program_id}", response_model = ProgramResponse)
 async def put_update_program(request: Request, program_id: int, updated_program: ProgramData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/programs')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -234,7 +231,9 @@ async def put_update_program(request: Request, program_id: int, updated_program:
 @api_router.post("/programs", response_model = ProgramResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_program(request: Request, new_program_data: ProgramData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/programs')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         new_program = Program(**new_program_data.dict())
         await new_program.create(session)
         if new_program.id is None:
@@ -246,7 +245,9 @@ async def post_new_program(request: Request, new_program_data: ProgramData):
 @api_router.delete("/programs/{program_id}")
 async def delete_program(request: Request, program_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/programs')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -264,7 +265,9 @@ async def delete_program(request: Request, program_id: int):
 @api_router.get("/programs/{program_id}/levels", response_model = List[LevelResponse])
 async def get_levels(request: Request, program_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         program = Program(id = program_id)
         await program.create(session)
         level_list = []
@@ -279,7 +282,9 @@ async def get_levels(request: Request, program_id: int):
 @api_router.get("/programs/{program_id}/levels/{level_id}", response_model=LevelResponse)
 async def get_level(request: Request, program_id: int, level_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/camps') # special authorization: if you can get a camp, you can get a program/level
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         program = Program(id = program_id)
         await program.create(session)
         if program.id is None:
@@ -295,7 +300,9 @@ async def get_level(request: Request, program_id: int, level_id: int):
 @api_router.put("/programs/{program_id}/levels/{level_id}", response_model = LevelResponse)
 async def put_update_level(request: Request, program_id: int, level_id: int, updated_level: LevelData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/programs')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -314,7 +321,9 @@ async def put_update_level(request: Request, program_id: int, level_id: int, upd
 @api_router.post("/programs/{program_id}/levels", response_model = LevelResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_level(request: Request, program_id: int, new_level_data: LevelData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/programs')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -330,7 +339,9 @@ async def post_new_level(request: Request, program_id: int, new_level_data: Leve
 @api_router.delete("/programs/{program_id}/levels/{level_id}")
 async def delete_level(request: Request, program_id: int, level_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/programs')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
         for db_program in await user.programs(session):
             if db_program.id == program_id:
                 program = Program(db_obj = db_program)
@@ -353,7 +364,7 @@ async def delete_level(request: Request, program_id: int, level_id: int):
 @api_router.get("/camps", response_model = List[CampResponse])
 async def get_camps(request: Request, is_published: Optional[bool] = None, instructor_id: Optional[int] = None):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/')
+        user = await get_authorized_user(request, session)
         if instructor_id:
             if user.id != instructor_id and not user.has_role('ADMIN'):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for instructor id={instructor_id}.")
@@ -378,7 +389,7 @@ async def get_camps(request: Request, is_published: Optional[bool] = None, instr
 @api_router.get("/camps/{camp_id}", response_model = CampResponse)
 async def get_camp(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/')
+        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -389,7 +400,9 @@ async def get_camp(request: Request, camp_id: int):
 @api_router.post("/camps", response_model = CampResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_camp(request: Request, new_camp_data: CampData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/schedule')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to create camps.")
         if new_camp_data.primary_instructor_id is None:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Primary instructor id is required.")
         instructor = User(id = new_camp_data.primary_instructor_id)
@@ -406,7 +419,9 @@ async def post_new_camp(request: Request, new_camp_data: CampData):
 @api_router.put("/camps/{camp_id}", response_model = CampResponse)
 async def put_update_camp(request: Request, camp_id: int, updated_camp_data: CampData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/schedule')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -425,7 +440,9 @@ async def put_update_camp(request: Request, camp_id: int, updated_camp_data: Cam
 @api_router.delete("/camps/{camp_id}")
 async def delete_camp(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/schedule')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to delete camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -442,7 +459,7 @@ async def delete_camp(request: Request, camp_id: int):
 @api_router.get("/camps/{camp_id}/levels", response_model = List[LevelScheduleResponse])
 async def get_camp_level_schedules(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/camps')
+        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -459,7 +476,7 @@ async def get_camp_level_schedules(request: Request, camp_id: int):
 @api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
 async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/camps')
+        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -475,7 +492,9 @@ async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int)
 @api_router.put("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
 async def camp_update_level_schedule(request: Request, camp_id: int, level_id: int, updated_level_schedule: LevelScheduleData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/schedule')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -499,7 +518,7 @@ async def camp_update_level_schedule(request: Request, camp_id: int, level_id: i
 @api_router.get("/camps/{camp_id}/instructors", response_model = List[UserResponse])
 async def get_camp_instructors(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/camps')
+        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -515,7 +534,7 @@ async def get_camp_instructors(request: Request, camp_id: int):
 @api_router.get("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse)
 async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/camps')
+        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -531,7 +550,9 @@ async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int
 @api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
 async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/schedule')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -548,7 +569,9 @@ async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: 
 @api_router.delete("/camps/{camp_id}/instructors/{instructor_id}")
 async def remove_instructor_from_camp(request: Request, camp_id: int, instructor_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/schedule')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -569,13 +592,13 @@ async def remove_instructor_from_camp(request: Request, camp_id: int, instructor
 @api_router.get("/camps/{camp_id}/students", response_model = List[StudentResponse])
 async def get_camp_students(request: Request, camp_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/teach')
+        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
         if not await camp.user_authorized(session, user):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for detailed view of camp id={camp_id}.")
         students = []
         for db_student in await camp.students(session):
             student = Student(db_obj = db_student)
@@ -587,13 +610,13 @@ async def get_camp_students(request: Request, camp_id: int):
 @api_router.get("/camps/{camp_id}/students/{student_id}", response_model = StudentResponse)
 async def get_camp_student(request: Request, camp_id: int, student_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/teach')
+        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
         if not await camp.user_authorized(session, user):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for camp id={camp_id}.")
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for detailed view of camp id={camp_id}.")
         for db_student in await camp.students(session):
             if db_student.id == student_id:
                 student = Student(db_obj = db_student)
@@ -605,7 +628,7 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
 @api_router.post("/camps/{camp_id}/students/{student_id}", response_model = StudentResponse, status_code = status.HTTP_201_CREATED)
 async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/camps')
+        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -625,7 +648,9 @@ async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int
 @api_router.delete("/camps/{camp_id}/students/{student_id}")
 async def remove_student_from_camp(request: Request, camp_id: int, student_id: int):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/schedule')
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -648,16 +673,16 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
 @api_router.get("/users", response_model = List[UserResponse])
 async def users_get_all(request: Request, role: Optional[str] = None):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/')
+        user = await get_authorized_user(request, session)
         if role != 'INSTRUCTOR' and not user.has_role('ADMIN'):
             HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to users with role={role or '(all)'}.")
         return await all_users(session, by_role = role)
 
 
-@api_router.get("/roles", response_model = List[RoleResponse])
+@api_router.get("/roles", response_model = List[str])
 async def roles_get_all(request: Request):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/')
+        user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
             HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have access to full list of roles.")
         return user.roles # cheating a little here - admin user (i.e. this user) will have all roles
@@ -666,7 +691,7 @@ async def roles_get_all(request: Request):
 @api_router.post("/users/{user_id}/roles/{role_name}", response_model = str)
 async def user_add_role(request: Request, user_id: int, role_name: str):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/')
+        user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
             HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User is not authorized to change user roles.")
         tgt_user = User(id = user_id)
@@ -682,7 +707,9 @@ async def user_add_role(request: Request, user_id: int, role_name: str):
 @api_router.delete("/users/{user_id}/roles/{role_name}")
 async def user_remove_role(request: Request, user_id: int, role_name: str):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/')
+        if user_id == 1:
+            HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User id = {user_id} is special and cannot have roles removed.")
+        user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
             HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User is not authorized to change user roles.")
         tgt_user = User(id = user_id)
@@ -697,7 +724,7 @@ async def user_remove_role(request: Request, user_id: int, role_name: str):
 @api_router.put("/user", response_model = UserResponse)
 async def put_update_user(request: Request, updated_user: UserData):
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session, '/', required = True)
+        user = await get_authorized_user(request, session, required = True)
         user = user.copy(update=updated_user.dict(exclude_unset=True))
         await user.update(session = session)
         return user

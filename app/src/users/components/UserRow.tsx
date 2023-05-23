@@ -1,12 +1,11 @@
 import { Select, Td, Tr } from "@chakra-ui/react";
 import { User } from "../User";
-import { Role } from "../Role";
 import { useAddRole, useRemoveRole } from "../hooks/useRoles";
 import { ChangeEvent } from "react";
 
 interface Props {
   user: User;
-  roles?: Role[];
+  roles?: string[];
 }
 
 const UserRow = ({ user, roles }: Props) => {
@@ -15,18 +14,16 @@ const UserRow = ({ user, roles }: Props) => {
 
   const handleChangeRole = (e: ChangeEvent<HTMLSelectElement>) => {
     if (!roles) return;
-    const tgtIndex = roles.findIndex((role) => role.name === e.target.value);
+    const tgtIndex = roles.findIndex((role) => role === e.target.value);
     if (tgtIndex === -1) return;
     const newRoles = roles.filter(
-      (role, index) =>
-        index <= tgtIndex && !user.roles.find((r) => r.name == role.name)
+      (role, index) => index <= tgtIndex && !user.roles.find((r) => r === role)
     );
     const deleteRoles = roles.filter(
-      (role, index) =>
-        index > tgtIndex && user.roles.find((r) => r.name == role.name)
+      (role, index) => index > tgtIndex && user.roles.find((r) => r === role)
     );
-    newRoles.forEach((role) => addRole?.mutate(role.name));
-    deleteRoles.forEach((role) => removeRole?.mutate(role.name));
+    newRoles.forEach((role) => addRole?.mutate(role));
+    deleteRoles.forEach((role) => removeRole?.mutate(role));
   };
 
   return (
@@ -35,14 +32,14 @@ const UserRow = ({ user, roles }: Props) => {
       <Td>{user.email_address}</Td>
       <Td>
         <Select
-          value={user.roles.slice(-1)[0].name}
+          value={user.roles.slice(-1)[0]}
           isDisabled={user.id === 1}
           onChange={handleChangeRole}
         >
           {roles?.map((role) => (
-            <option key={role.name} value={role.name}>
-              {role.name.charAt(0).toUpperCase() +
-                role.name.slice(1, role.name.length).toLowerCase()}
+            <option key={role} value={role}>
+              {role.charAt(0).toUpperCase() +
+                role.slice(1, role.length).toLowerCase()}
             </option>
           ))}
         </Select>

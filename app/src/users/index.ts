@@ -1,5 +1,4 @@
 export { type User } from "./User";
-export { type Role } from "./Role";
 export { default as useAuth } from "./hooks/useAuth";
 export { useCampInstructors } from "./hooks/useCampInstructors";
 export { default as useAllRoles } from "./hooks/useAllRoles";

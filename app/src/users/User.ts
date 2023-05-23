@@ -1,5 +1,3 @@
-import { Role } from "./Role";
-
 export interface UserData {
   full_name: string;
   email_address: string;
@@ -9,5 +7,5 @@ export interface UserData {
 
 export interface User extends UserData {
   id: number;
-  roles: Role[];
+  roles: string[];
 }

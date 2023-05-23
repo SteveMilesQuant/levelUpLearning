@@ -22,7 +22,6 @@ class RoleEnum(Enum):
 
 class RoleResponse(BaseModel):
     name: Optional[str] = ''
-    permissible_endpoints: Optional[Dict[str, str]]
 
     def __eq__(self, other):
         return (self.name == other.name)
@@ -41,12 +40,7 @@ class UserData(BaseModel):
 
 class UserResponse(UserData):
     id: Optional[int] = None
-    roles: Optional[List[RoleResponse]] = []
-
-    def dict(self, *args, **kwargs):
-        ret = super().dict(*args, **kwargs)
-        ret['roles'] = [role.dict() for role in self.roles]
-        return ret
+    roles: Optional[List[str]] = []
 
 
 class ProgramData(BaseModel):

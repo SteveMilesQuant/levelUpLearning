@@ -154,9 +154,8 @@ class Camp(CampResponse):
         return self._db_obj.level_schedules
 
     async def user_authorized(self, session: Any, user: Any) -> bool:
-        for role in user.roles:
-            if role.name == 'ADMIN':
-                return True
+        if user.has_role('ADMIN'):
+            return True
         return (user._db_obj in await self.instructors(session))
 
 
