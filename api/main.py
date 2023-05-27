@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from oauthlib.oauth2 import WebApplicationClient
 from mangum import Mangum
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime, timedelta
 from db import init_db, close_db
 from datamodels import RoleEnum, UserData, UserResponse, StudentData, StudentResponse
@@ -23,7 +23,22 @@ class Object(object):
     pass
 
 
-app = FastAPI()
+description = """
+API for managing the Level Up Learning business for scheduling summer and year-round
+ educational track out camps. Guardians can define their students and enroll those
+ students in camps. Instructors can design "programs" (i.e. curriculum) and "levels"
+ (i.e. lessons) and see the camps they're currently teaching. Administrators can
+ schedule camps, adjust enrollments, and assign instructors to camps.
+"""
+app = FastAPI(
+    title="Level Up Learning",
+    description=description,
+    version="0.0.1",
+    contact={
+        "name": "Steve Miles",
+        "url": "https://www.stevenmilesquant.com",
+        "email": "steven.miles.quant@gmail.com",
+    })
 api_router = APIRouter(prefix=os.environ.get('API_ROOT_PATH') or '')
 
 
@@ -80,6 +95,7 @@ async def get_authorized_user(request, session, required = True) -> Optional[Use
 
 @api_router.post("/signin")
 async def signin_post(request: Request, google_response_token: dict):
+    '''Given the Google signin response token, returns this API's authentication token.'''
     google_provider_cfg = await get_google_provider_cfg()
     app.google_client.parse_request_body_response(json.dumps(google_response_token))
     userinfo_endpoint = google_provider_cfg["userinfo_endpoint"]
@@ -103,6 +119,7 @@ async def signin_post(request: Request, google_response_token: dict):
 
 @api_router.get("/user", response_model = Optional[UserResponse])
 async def get_user(request: Request):
+    '''Get the current user.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, required = False)
         return user
@@ -115,6 +132,7 @@ async def get_user(request: Request):
 
 @api_router.get("/students", response_model = List[StudentResponse])
 async def get_students(request: Request):
+    '''Get a list of students assigned to the current user.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         students = []
@@ -127,6 +145,7 @@ async def get_students(request: Request):
 
 @api_router.get("/students/{student_id}", response_model = StudentResponse)
 async def get_student(request: Request, student_id: int):
+    '''Get a single student.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         for db_student in await user.students(session):
@@ -139,6 +158,7 @@ async def get_student(request: Request, student_id: int):
 
 @api_router.put("/students/{student_id}", response_model = StudentResponse)
 async def put_update_student(request: Request, student_id: int, updated_student: StudentData):
+    '''Update a student.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         for db_student in await user.students(session):
@@ -153,6 +173,7 @@ async def put_update_student(request: Request, student_id: int, updated_student:
 
 @api_router.post("/students", response_model = StudentResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_student(request: Request, new_student_data: StudentData):
+    '''Create a new student.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         new_student = Student(**new_student_data.dict())
@@ -166,6 +187,7 @@ async def post_new_student(request: Request, new_student_data: StudentData):
 
 @api_router.delete("/students/{student_id}")
 async def delete_student(request: Request, student_id: int):
+    '''Remove a student from the current user. Delete if orphaned.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         for db_student in await user.students(session):
@@ -185,6 +207,7 @@ async def delete_student(request: Request, student_id: int):
 
 @api_router.get("/programs", response_model = List[ProgramResponse])
 async def get_programs(request: Request):
+    '''Get a list of programs. If the current user is an administrator, returns all programs. Otherwise, returns the programs this user has been invited to design.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if user.has_role('ADMIN'):
@@ -201,6 +224,7 @@ async def get_programs(request: Request):
 
 @api_router.get("/programs/{program_id}", response_model = ProgramResponse)
 async def get_program(request: Request, program_id: int):
+    '''Get a single program.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
@@ -214,6 +238,7 @@ async def get_program(request: Request, program_id: int):
 
 @api_router.put("/programs/{program_id}", response_model = ProgramResponse)
 async def put_update_program(request: Request, program_id: int, updated_program: ProgramData):
+    '''Update a program.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
@@ -230,6 +255,7 @@ async def put_update_program(request: Request, program_id: int, updated_program:
 
 @api_router.post("/programs", response_model = ProgramResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_program(request: Request, new_program_data: ProgramData):
+    '''Create a new program.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
@@ -244,6 +270,7 @@ async def post_new_program(request: Request, new_program_data: ProgramData):
 
 @api_router.delete("/programs/{program_id}")
 async def delete_program(request: Request, program_id: int):
+    '''Delete a program.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
@@ -264,6 +291,7 @@ async def delete_program(request: Request, program_id: int):
 
 @api_router.get("/programs/{program_id}/levels", response_model = List[LevelResponse])
 async def get_levels(request: Request, program_id: int):
+    '''Get all levels within a program.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
@@ -281,6 +309,7 @@ async def get_levels(request: Request, program_id: int):
 
 @api_router.get("/programs/{program_id}/levels/{level_id}", response_model=LevelResponse)
 async def get_level(request: Request, program_id: int, level_id: int):
+    '''Get a single level within a program.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
@@ -299,6 +328,7 @@ async def get_level(request: Request, program_id: int, level_id: int):
 
 @api_router.put("/programs/{program_id}/levels/{level_id}", response_model = LevelResponse)
 async def put_update_level(request: Request, program_id: int, level_id: int, updated_level: LevelData):
+    '''Update a level within a program.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
@@ -320,6 +350,7 @@ async def put_update_level(request: Request, program_id: int, level_id: int, upd
 
 @api_router.post("/programs/{program_id}/levels", response_model = LevelResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_level(request: Request, program_id: int, new_level_data: LevelData):
+    '''Create a new level within a program.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
@@ -338,6 +369,7 @@ async def post_new_level(request: Request, program_id: int, new_level_data: Leve
 
 @api_router.delete("/programs/{program_id}/levels/{level_id}")
 async def delete_level(request: Request, program_id: int, level_id: int):
+    '''Remove a level from its program and delete it.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
@@ -364,6 +396,7 @@ async def delete_level(request: Request, program_id: int, level_id: int):
 
 @api_router.get("/camps", response_model = List[CampResponse])
 async def get_camps(request: Request, is_published: Optional[bool] = None, instructor_id: Optional[int] = None):
+    '''Get a list of camps, subject to filter conditions.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if instructor_id:
@@ -389,6 +422,7 @@ async def get_camps(request: Request, is_published: Optional[bool] = None, instr
 
 @api_router.get("/camps/{camp_id}", response_model = CampResponse)
 async def get_camp(request: Request, camp_id: int):
+    '''Get a single camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
@@ -400,6 +434,7 @@ async def get_camp(request: Request, camp_id: int):
 
 @api_router.post("/camps", response_model = CampResponse, status_code = status.HTTP_201_CREATED)
 async def post_new_camp(request: Request, new_camp_data: CampData):
+    '''Create a new camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
@@ -419,6 +454,7 @@ async def post_new_camp(request: Request, new_camp_data: CampData):
 
 @api_router.put("/camps/{camp_id}", response_model = CampResponse)
 async def put_update_camp(request: Request, camp_id: int, updated_camp_data: CampData):
+    '''Update a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
@@ -440,6 +476,7 @@ async def put_update_camp(request: Request, camp_id: int, updated_camp_data: Cam
 
 @api_router.delete("/camps/{camp_id}")
 async def delete_camp(request: Request, camp_id: int):
+    '''Delete a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
@@ -459,6 +496,7 @@ async def delete_camp(request: Request, camp_id: int):
 
 @api_router.get("/camps/{camp_id}/levels", response_model = List[LevelScheduleResponse])
 async def get_camp_level_schedules(request: Request, camp_id: int):
+    '''Get all schedules for the levels of a camp. Level definitions come from the camp's program.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
@@ -476,6 +514,7 @@ async def get_camp_level_schedules(request: Request, camp_id: int):
 
 @api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
 async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int):
+    '''Get a single level schedule of a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
@@ -492,6 +531,7 @@ async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int)
 
 @api_router.put("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
 async def camp_update_level_schedule(request: Request, camp_id: int, level_id: int, updated_level_schedule: LevelScheduleData):
+    '''Update a single level schedule within a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
@@ -518,6 +558,7 @@ async def camp_update_level_schedule(request: Request, camp_id: int, level_id: i
 
 @api_router.get("/camps/{camp_id}/instructors", response_model = List[UserResponse])
 async def get_camp_instructors(request: Request, camp_id: int):
+    '''Get all instructors in a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
@@ -534,6 +575,7 @@ async def get_camp_instructors(request: Request, camp_id: int):
 
 @api_router.get("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse)
 async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int):
+    '''Get a single instructor in a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
@@ -550,6 +592,7 @@ async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int
 
 @api_router.post("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse, status_code = status.HTTP_201_CREATED)
 async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: int):
+    '''Assign an instructor to a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
@@ -569,6 +612,7 @@ async def add_instructor_to_camp(request: Request, camp_id: int, instructor_id: 
 
 @api_router.delete("/camps/{camp_id}/instructors/{instructor_id}")
 async def remove_instructor_from_camp(request: Request, camp_id: int, instructor_id: int):
+    '''Remove an instructor from a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
@@ -592,6 +636,7 @@ async def remove_instructor_from_camp(request: Request, camp_id: int, instructor
 
 @api_router.get("/camps/{camp_id}/students", response_model = List[StudentResponse])
 async def get_camp_students(request: Request, camp_id: int):
+    '''Get all students enrolled in a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
@@ -610,6 +655,7 @@ async def get_camp_students(request: Request, camp_id: int):
 
 @api_router.get("/camps/{camp_id}/students/{student_id}", response_model = StudentResponse)
 async def get_camp_student(request: Request, camp_id: int, student_id: int):
+    '''Get a single student enrolled in a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
@@ -628,6 +674,7 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
 
 @api_router.post("/camps/{camp_id}/students/{student_id}", response_model = StudentResponse, status_code = status.HTTP_201_CREATED)
 async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int):
+    '''Enroll a student in a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
@@ -648,6 +695,7 @@ async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int
 
 @api_router.delete("/camps/{camp_id}/students/{student_id}")
 async def remove_student_from_camp(request: Request, camp_id: int, student_id: int):
+    '''Disenroll a student from a camp.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
@@ -672,7 +720,8 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
 
 
 @api_router.get("/users", response_model = List[UserResponse])
-async def users_get_all(request: Request, role: Optional[str] = None):
+async def users_get_all(request: Request, role: Optional[Literal['ADMIN', 'INSTRUCTOR', 'GUARDIAN']] = None):
+    '''Get all users, or all users of a given role.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if role != 'INSTRUCTOR' and not user.has_role('ADMIN'):
@@ -680,8 +729,9 @@ async def users_get_all(request: Request, role: Optional[str] = None):
         return await all_users(session, by_role = role)
 
 
-@api_router.get("/roles", response_model = List[str])
+@api_router.get("/roles", response_model = List[Literal['ADMIN', 'INSTRUCTOR', 'GUARDIAN']])
 async def roles_get_all(request: Request):
+    '''Get all valid roles.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
@@ -690,7 +740,8 @@ async def roles_get_all(request: Request):
 
 
 @api_router.post("/users/{user_id}/roles/{role_name}", response_model = str)
-async def user_add_role(request: Request, user_id: int, role_name: str):
+async def user_add_role(request: Request, user_id: int, role_name: Literal['ADMIN', 'INSTRUCTOR', 'GUARDIAN']):
+    '''Add a role to a user.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
@@ -706,7 +757,8 @@ async def user_add_role(request: Request, user_id: int, role_name: str):
 
 
 @api_router.delete("/users/{user_id}/roles/{role_name}")
-async def user_remove_role(request: Request, user_id: int, role_name: str):
+async def user_remove_role(request: Request, user_id: int, role_name: Literal['ADMIN', 'INSTRUCTOR', 'GUARDIAN']):
+    '''Remove a role from a user.'''
     async with app.db_sessionmaker() as session:
         if user_id == 1:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User id = {user_id} is special and cannot have roles removed.")
@@ -724,6 +776,7 @@ async def user_remove_role(request: Request, user_id: int, role_name: str):
 
 @api_router.put("/user", response_model = UserResponse)
 async def put_update_user(request: Request, updated_user: UserData):
+    '''Update the current user's information.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, required = True)
         user = user.copy(update=updated_user.dict(exclude_unset=True))
