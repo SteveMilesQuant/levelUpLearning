@@ -11,11 +11,15 @@ import {
 import { EnrollStudentModal } from "../students";
 import { useUpdateCamp } from "../camps";
 import { useQueryClient } from "@tanstack/react-query";
-import { useContext } from "react";
+import { useContext, useState } from "react";
+import AlertMessage from "../components/AlertMessage";
 
 const Camp = () => {
   const { id: idStr } = useParams();
   const id = idStr ? parseInt(idStr) : undefined;
+  const [alertContext, setAlertContext] = useState<
+    undefined | { status: "error" | "success"; message: string }
+  >(undefined);
 
   const {
     isOpen: newIsOpen,
@@ -59,6 +63,14 @@ const Camp = () => {
 
   return (
     <>
+      {alertContext && (
+        <AlertMessage
+          status={alertContext.status}
+          onClose={() => setAlertContext(undefined)}
+        >
+          {alertContext.message}
+        </AlertMessage>
+      )}
       <PageHeader hideUnderline={true} rightButton={headerButton}>
         {camp.program.title}
       </PageHeader>
@@ -74,6 +86,18 @@ const Camp = () => {
           gradeRange={camp.program.grade_range}
           isOpen={newIsOpen}
           onClose={newOnClose}
+          onSuccess={(studentName) =>
+            setAlertContext({
+              status: "success",
+              message: `Successfully enrolled ${studentName}.`,
+            })
+          }
+          onError={(studentName) =>
+            setAlertContext({
+              status: "error",
+              message: `Failed to enroll ${studentName}. Please try again.`,
+            })
+          }
         />
       )}
     </>

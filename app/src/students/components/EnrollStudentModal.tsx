@@ -28,6 +28,8 @@ interface Props {
   gradeRange: number[];
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: (studentName: string) => void;
+  onError?: (studentName: string) => void;
 }
 
 const EnrollStudentModal = ({
@@ -36,17 +38,24 @@ const EnrollStudentModal = ({
   gradeRange,
   isOpen,
   onClose,
+  onSuccess,
+  onError,
 }: Props) => {
   const { data: allStudents, isLoading, error } = useStudents();
   const [selectedStudentId, setSelectedStudentId] = useState<
     number | undefined
   >(undefined);
+  const [selectedStudentName, setSelectedStudentName] = useState("");
   const enrollStudent = useEnrollStudent(campId, {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [...CACHE_KEY_STUDENTS],
         exact: false,
       });
+      if (onSuccess) onSuccess(selectedStudentName);
+    },
+    onError: () => {
+      if (onError) onError(selectedStudentName);
     },
   });
   const queryClient = useQueryClient();
@@ -86,6 +95,7 @@ const EnrollStudentModal = ({
                 isSelected={selectedStudentId === s.id}
                 onClick={() => {
                   setSelectedStudentId(s.id);
+                  setSelectedStudentName(s.name);
                 }}
               >
                 <Text

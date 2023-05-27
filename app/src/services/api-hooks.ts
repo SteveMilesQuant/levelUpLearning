@@ -41,6 +41,7 @@ export interface DeleteArgs<S> {
 export interface EnrollArgs<S> {
   onEnroll?: () => void;
   onSuccess?: () => void;
+  onError?: () => void;
 }
 
 // Typical API hooks (S: response body; Q: request body)
@@ -196,14 +197,14 @@ export default class APIHooks<S extends A, Q = S> {
   // E.g. a student to a camp: neiher is created as an object, but the student is added to the camp
   useEnroll = (enrollArgs?: EnrollArgs<S>) => {
     const queryClient = useQueryClient();
-    const { onEnroll, onSuccess } = enrollArgs || {};
+    const { onEnroll, onSuccess, onError } = enrollArgs || {};
 
     const enrollData = useMutation<S, Error, number>({
       mutationFn: (dataId: number) => this.client.post(dataId),
       onMutate: () => {
         if (onEnroll) onEnroll();
       },
-      onError: () => {},
+      onError: onError,
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: this.cacheKey });
         if (onSuccess) onSuccess();
