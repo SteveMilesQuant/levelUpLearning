@@ -1,7 +1,7 @@
 import os, aiohttp, json, asyncio
 from fastapi import FastAPI, APIRouter, Request, Header, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from oauthlib.oauth2 import WebApplicationClient
 from mangum import Mangum
 from pydantic import BaseModel
@@ -30,6 +30,7 @@ API for managing the Level Up Learning business for scheduling summer and year-r
  (i.e. lessons) and see the camps they're currently teaching. Administrators can
  schedule camps, adjust enrollments, and assign instructors to camps.
 """
+root_path = os.environ.get('API_ROOT_PATH') or ''
 app = FastAPI(
     title="Level Up Learning",
     description=description,
@@ -38,8 +39,18 @@ app = FastAPI(
         "name": "Steve Miles",
         "url": "https://www.stevenmilesquant.com",
         "email": "steven.miles.quant@gmail.com",
-    })
-api_router = APIRouter(prefix=os.environ.get('API_ROOT_PATH') or '')
+    },
+    docs_url=f'{root_path}/docs',
+    openapi_url=f'{root_path}/openapi.json',
+    redoc_url=None)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+api_router = APIRouter(prefix=root_path)
 
 
 @app.on_event('startup')
