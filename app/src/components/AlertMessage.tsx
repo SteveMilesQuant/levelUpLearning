@@ -15,11 +15,13 @@ interface Props {
 const AlertMessage = ({ status, children, onClose }: Props) => {
   const title = status === "error" ? "Error!" : "Success!";
   return (
-    <Alert status={status}>
+    <Alert status={status} marginBottom={5}>
       <AlertIcon />
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>{children}</AlertDescription>
-      {onClose && <CloseButton onClick={onClose} />}
+      {onClose && (
+        <CloseButton onClick={onClose} position="absolute" right={3} />
+      )}
     </Alert>
   );
 };
