@@ -14,17 +14,16 @@ import LevelScheduleList from "./LevelScheduleList";
 import { Camp } from "../Camp";
 import DeleteButton from "../../components/DeleteButton";
 import { useNavigate } from "react-router-dom";
-import { useContext } from "react";
-import CampsContext, { CampsContextType } from "../campsContext";
 
 interface Props {
   camp: Camp;
+  isReadOnly?: boolean;
+  showStudents?: boolean;
 }
 
-const CampTabs = ({ camp }: Props) => {
+const CampTabs = ({ camp, isReadOnly, showStudents }: Props) => {
   const deleteCamp = useDeleteCamp();
   const navigate = useNavigate();
-  const campsContextType = useContext(CampsContext);
 
   const handleDelete = () => {
     deleteCamp.mutate(camp.id);
@@ -37,12 +36,12 @@ const CampTabs = ({ camp }: Props) => {
         <Tab>Camp</Tab>
         <Tab>Levels</Tab>
         <Tab>Instructors</Tab>
-        {campsContextType !== CampsContextType.camps && <Tab>Students</Tab>}
+        {showStudents && <Tab>Students</Tab>}
       </TabList>
       <TabPanels>
         <TabPanel>
           <ProgramForm program={camp.program} isReadOnly={true} />
-          {campsContextType === CampsContextType.schedule && (
+          {!isReadOnly && (
             <HStack justifyContent="right" paddingTop={3}>
               <DeleteButton onConfirm={handleDelete}>
                 {camp.program.title}
@@ -51,23 +50,14 @@ const CampTabs = ({ camp }: Props) => {
           )}
         </TabPanel>
         <TabPanel>
-          <LevelScheduleList
-            campId={camp.id}
-            isReadOnly={campsContextType !== CampsContextType.schedule}
-          />
+          <LevelScheduleList campId={camp.id} isReadOnly={isReadOnly} />
         </TabPanel>
         <TabPanel>
-          <InstructorList
-            campId={camp.id}
-            isReadOnly={campsContextType !== CampsContextType.schedule}
-          />
+          <InstructorList campId={camp.id} isReadOnly={isReadOnly} />
         </TabPanel>
-        {campsContextType !== CampsContextType.camps && (
+        {showStudents && (
           <TabPanel>
-            <StudentTable
-              campId={camp.id}
-              isReadOnly={campsContextType !== CampsContextType.schedule}
-            />
+            <StudentTable campId={camp.id} isReadOnly={isReadOnly} />
           </TabPanel>
         )}
       </TabPanels>

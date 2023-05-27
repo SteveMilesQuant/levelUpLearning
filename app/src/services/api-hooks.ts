@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import APIClient from "./api-client";
-import { useAuth } from "../users";
 import { AxiosRequestConfig } from "axios";
 
 export interface AddDataContext<S> {

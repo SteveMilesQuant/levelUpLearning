@@ -62,7 +62,11 @@ const Camp = () => {
       <PageHeader hideUnderline={true} rightButton={headerButton}>
         {camp.program.title}
       </PageHeader>
-      <CampTabs camp={camp} />
+      <CampTabs
+        camp={camp}
+        isReadOnly={campsContextType !== CampsContextType.schedule}
+        showStudents={campsContextType !== CampsContextType.camps}
+      />
       {campsContextType === CampsContextType.camps && (
         <EnrollStudentModal
           title="Enroll Student"

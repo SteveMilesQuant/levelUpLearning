@@ -3,7 +3,6 @@ import { HStack } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import SideIconList from "../components/SideIconList";
 import BodyContainer from "../components/BodyContainer";
-import { useAuth } from "../users";
 import { ReactNode } from "react";
 import { useUser } from "../users";
 
@@ -13,6 +12,8 @@ interface Props {
 
 const Layout = ({ children }: Props) => {
   const { data: user } = useUser();
+
+  // Include both Outlet and children, to allow both contexts
 
   return (
     <>

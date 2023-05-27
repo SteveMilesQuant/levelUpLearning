@@ -1,5 +1,5 @@
 import { HStack } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useUserForm from "../hooks/useUserForm";
 import { User } from "../User";
 import InstructorFormBody from "./InstructorFormBody";

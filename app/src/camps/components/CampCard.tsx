@@ -14,31 +14,28 @@ interface Props {
 }
 
 const CampCard = ({ camp, onDelete }: Props) => {
-  const byLine = "with " + camp.primary_instructor.full_name;
-  const { data: levelSchedules, error, isLoading } = useLevelSchedules(camp.id);
   const campsContextType = useContext(CampsContext);
+  const { data: levelSchedules, error, isLoading } = useLevelSchedules(camp.id);
 
   if (isLoading) return null;
   if (error) throw error;
 
+  const byLine = "with " + camp.primary_instructor.full_name;
   const startDate =
     levelSchedules && levelSchedules[0]?.start_time
       ? new Date(levelSchedules[0]?.start_time)
       : undefined;
+  const linkTarget =
+    campsContextType === CampsContextType.schedule
+      ? "/schedule/" + camp.id
+      : campsContextType === CampsContextType.teach
+      ? "/teach/" + camp.id
+      : "/camps/" + camp.id;
 
   return (
     <CardContainer>
       <HStack justifyContent="space-between">
-        <LinkOverlay
-          as={RouterLink}
-          to={
-            campsContextType === CampsContextType.schedule
-              ? "/schedule/" + camp.id
-              : campsContextType === CampsContextType.teach
-              ? "/teach/" + camp.id
-              : "/camps/" + camp.id
-          }
-        >
+        <LinkOverlay as={RouterLink} to={linkTarget}>
           <HStack alignItems="end">
             <Heading fontSize="2xl">{camp.program.title}</Heading>
             <Text>{byLine}</Text>

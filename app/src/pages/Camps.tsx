@@ -12,13 +12,14 @@ import { useContext } from "react";
 import { useUser } from "../users";
 
 const Camps = () => {
+  const campsContextType = useContext(CampsContext);
+  const { data: user } = useUser();
   const {
     isOpen: newIsOpen,
     onOpen: newOnOpen,
     onClose: newOnClose,
   } = useDisclosure();
-  const campsContextType = useContext(CampsContext);
-  const { data: user } = useUser();
+
   const campQuery = {} as CampQuery;
   if (campsContextType !== CampsContextType.schedule)
     campQuery["is_published"] = true;
@@ -39,12 +40,13 @@ const Camps = () => {
       : campsContextType === CampsContextType.teach
       ? "Teach Camps"
       : "Camps";
+  const isReadOnly = campsContextType !== CampsContextType.schedule;
 
   return (
     <>
       <PageHeader
         rightButton={
-          campsContextType === CampsContextType.schedule && (
+          !isReadOnly && (
             <Button size="lg" variant="outline" onClick={newOnOpen}>
               Add Camp
             </Button>
@@ -53,11 +55,8 @@ const Camps = () => {
       >
         {pageTitle}
       </PageHeader>
-      <CampGrid
-        camps={camps}
-        isReadOnly={campsContextType !== CampsContextType.schedule}
-      />
-      {campsContextType === CampsContextType.schedule && (
+      <CampGrid camps={camps} isReadOnly={isReadOnly} />
+      {!isReadOnly && (
         <CampFormModal
           title="Add Camp"
           isOpen={newIsOpen}

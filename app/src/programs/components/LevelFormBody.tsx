@@ -37,7 +37,7 @@ const LevelFormBody = ({ register, errors, isReadOnly }: Props) => {
             {...register("description")}
             as={Textarea}
             size="xl"
-            height="250px"
+            height="15rem"
             isReadOnly={isReadOnly}
           />
         </InputError>

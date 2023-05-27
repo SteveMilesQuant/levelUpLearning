@@ -45,7 +45,7 @@ const InstructorFormBody = ({ register, errors, isReadOnly }: Props) => {
           <Input
             as={Textarea}
             size="xl"
-            height="250px"
+            height="15rem"
             isReadOnly={isReadOnly}
             {...register("instructor_description")}
           />

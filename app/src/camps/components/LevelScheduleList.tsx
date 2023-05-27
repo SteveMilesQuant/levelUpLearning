@@ -1,4 +1,4 @@
-import { Box, HStack, List } from "@chakra-ui/react";
+import { Box, HStack, Stack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import useLevelSchedules from "../hooks/useLevelSchedules";
 import { LevelSchedule } from "../LevelSchedule";
@@ -25,7 +25,7 @@ const LevelScheduleList = ({ campId, isReadOnly }: Props) => {
 
   return (
     <HStack alignItems="start" spacing={10}>
-      <List spacing={3}>
+      <Stack spacing={3}>
         {levelSchedules?.map((levelSchedule) => (
           <ListButton
             key={levelSchedule.level.id}
@@ -37,7 +37,7 @@ const LevelScheduleList = ({ campId, isReadOnly }: Props) => {
               levelSchedule.level?.title}
           </ListButton>
         ))}
-      </List>
+      </Stack>
       <Box width="100%">
         {levelSchedules
           ?.filter(

@@ -1,10 +1,9 @@
 import {
   FormControl,
   FormLabel,
-  Grid,
-  GridItem,
   HStack,
   Input,
+  Stack,
   Textarea,
 } from "@chakra-ui/react";
 import { Level } from "../../programs";
@@ -26,63 +25,50 @@ const LevelScheduleFormBody = ({
   isReadOnly,
 }: Props) => {
   return (
-    <Grid
-      templateAreas={{
-        base: `"title" "time" "desc"`,
-      }}
-      gap={5}
-    >
-      <GridItem area="title">
+    <Stack spacing={5}>
+      <FormControl>
+        <FormLabel>Title</FormLabel>
+        <Input type="text" isReadOnly={true} value={level.title} />
+      </FormControl>
+      <HStack spacing={3}>
         <FormControl>
-          <FormLabel>Title</FormLabel>
-          <Input type="text" isReadOnly={true} value={level.title} />
+          <FormLabel>Start time: </FormLabel>
+          <InputError
+            label={errors.start_time?.message}
+            isOpen={errors.start_time ? true : false}
+          >
+            <Input
+              {...register("start_time")}
+              type="datetime-local"
+              isReadOnly={isReadOnly}
+            />
+          </InputError>
         </FormControl>
-      </GridItem>
-
-      <GridItem area="time">
-        <HStack spacing={3}>
-          <FormControl>
-            <FormLabel>Start time: </FormLabel>
-            <InputError
-              label={errors.start_time?.message}
-              isOpen={errors.start_time ? true : false}
-            >
-              <Input
-                {...register("start_time")}
-                type="datetime-local"
-                isReadOnly={isReadOnly}
-              />
-            </InputError>
-          </FormControl>
-          <FormControl>
-            <FormLabel>End time: </FormLabel>
-            <InputError
-              label={errors.end_time?.message}
-              isOpen={errors.end_time ? true : false}
-            >
-              <Input
-                {...register("end_time")}
-                type="datetime-local"
-                isReadOnly={isReadOnly}
-              />
-            </InputError>
-          </FormControl>
-        </HStack>
-      </GridItem>
-
-      <GridItem area="desc">
         <FormControl>
-          <FormLabel>Description</FormLabel>
-          <Input
-            as={Textarea}
-            size="xl"
-            height="250px"
-            isReadOnly={true}
-            value={level.description}
-          />
+          <FormLabel>End time: </FormLabel>
+          <InputError
+            label={errors.end_time?.message}
+            isOpen={errors.end_time ? true : false}
+          >
+            <Input
+              {...register("end_time")}
+              type="datetime-local"
+              isReadOnly={isReadOnly}
+            />
+          </InputError>
         </FormControl>
-      </GridItem>
-    </Grid>
+      </HStack>
+      <FormControl>
+        <FormLabel>Description</FormLabel>
+        <Input
+          as={Textarea}
+          size="xl"
+          height="15rem"
+          isReadOnly={true}
+          value={level.description}
+        />
+      </FormControl>
+    </Stack>
   );
 };
 

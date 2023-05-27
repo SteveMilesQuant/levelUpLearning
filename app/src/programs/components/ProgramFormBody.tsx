@@ -1,15 +1,13 @@
 import {
   FormControl,
   FormLabel,
-  Grid,
-  GridItem,
   HStack,
   Input,
   RangeSlider,
   RangeSliderFilledTrack,
   RangeSliderThumb,
   RangeSliderTrack,
-  SimpleGrid,
+  Stack,
   Textarea,
 } from "@chakra-ui/react";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
@@ -32,7 +30,7 @@ const ProgramFormBody = ({
   isReadOnly,
 }: Props) => {
   return (
-    <SimpleGrid columns={1} gap={5}>
+    <Stack spacing={5}>
       <FormControl>
         <FormLabel>Title</FormLabel>
         <InputError
@@ -42,7 +40,6 @@ const ProgramFormBody = ({
           <Input {...register("title")} type="text" isReadOnly={isReadOnly} />
         </InputError>
       </FormControl>
-
       <HStack justifyContent="space-between" spacing={10}>
         <FormControl>
           <FormLabel>Tags</FormLabel>
@@ -53,7 +50,6 @@ const ProgramFormBody = ({
             <Input {...register("tags")} type="text" isReadOnly={isReadOnly} />
           </InputError>
         </FormControl>
-
         <FormControl>
           <FormLabel>Grade range: {selectedGradeRange.join(" to ")}</FormLabel>
           <RangeSlider
@@ -73,7 +69,6 @@ const ProgramFormBody = ({
           </RangeSlider>
         </FormControl>
       </HStack>
-
       <FormControl>
         <FormLabel>Description</FormLabel>
         <InputError
@@ -84,12 +79,12 @@ const ProgramFormBody = ({
             {...register("description")}
             as={Textarea}
             size="xl"
-            height="250px"
+            height="15rem"
             isReadOnly={isReadOnly}
           />
         </InputError>
       </FormControl>
-    </SimpleGrid>
+    </Stack>
   );
 };
 

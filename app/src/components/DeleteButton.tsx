@@ -21,7 +21,7 @@ interface Props {
   disabled?: boolean;
 }
 
-const DeleteButton = ({ onConfirm, children, disabled }: Props) => {
+const DeleteButton = ({ children, onConfirm, disabled }: Props) => {
   const { isOpen, onToggle, onClose } = useDisclosure();
 
   return (
