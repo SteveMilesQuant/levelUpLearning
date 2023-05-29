@@ -5,14 +5,9 @@ server {
 	ssl_certificate_key <your-ssl-cert-key-path>;
 	ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 	ssl_ciphers HIGH:!aNULL:!MD5;
-	location /api {
+	location / {
 		proxy_pass http://127.0.0.1:8000;
 		proxy_set_header Host $host;
-	}
-	location / {
-		root <app-build-directory>;
-		try_files $uri $uri/ /index.html;
-		index index.html;
 	}
 }
 
