@@ -108,8 +108,8 @@ If you want to get this website up and running on a single server (i.e. without 
 
 1. Configure log in to ECR
    - <code>aws configure</code>
-   - <code>aws ecr get-login-password | sudo docker login -u AWS --password-stdin https://############...dkr.ecr.us-east-1.amazonaws.com</code>
-2. <code>docker pull ############..dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
+   - <code>aws ecr get-login-password | sudo docker login -u AWS --password-stdin https://############.dkr.ecr.us-east-1.amazonaws.com</code>
+2. <code>docker pull ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
 3. Create file for env variables (e.g. .env) with the following env variables (search in this readme for where their values come from)
    - GOOGLE_CLIENT_ID=google-client-id-from-above
    - DB_HOST=database-url
