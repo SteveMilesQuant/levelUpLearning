@@ -78,7 +78,7 @@ jobs:
       - name: Login to Amazon ECR
         env:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-        run: aws ecr get-login-password | docker login -u AWS --password-stdin https://$ECR_REGISTRY
+        run: aws ecr get-login-password | sudo docker login -u AWS --password-stdin https://$ECR_REGISTRY
 
       - name: Pull docker image
         env:
