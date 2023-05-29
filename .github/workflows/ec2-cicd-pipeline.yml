@@ -50,7 +50,7 @@ jobs:
       - name: Login to Amazon ECR
         env:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-        run: aws ecr get-login-password | sudo docker login -u AWS --password-stdin https://$ECR_REGISTRY
+        run: aws ecr get-login-password | docker login -u AWS --password-stdin https://$ECR_REGISTRY
 
       - name: Build, tag, and push image to Amazon ECR
         env:
@@ -59,7 +59,8 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: lul
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID .
+          docker build -t lul --build-arg GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID .
+          docker tag lul $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
   CD:
