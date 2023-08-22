@@ -117,8 +117,39 @@ If you want to get this website up and running on a single server (i.e. without 
    - DB_PASSWORD=database-password
    - DB_PORT=3306
    - DB_SCHEMA_NAME=database-schema
+   - SECRET_KEY (optional number of your choosing)
 4. <code>sudo docker run -d --env-file .env --name lul-container -p 8000:8000 ############..dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
 
+## [[WORK IN PROGRESS]]
 ## Cluster deployment (EKS and Kubernetes)
 
-(To be continued)
+Command lines for using EKS and Kubernetes to deploy this website to a cluster of machines follow. In this example, we will have exactly two worker nodes.
+Be warned - AWS will charge you for cluster management.
+
+1. Install dependencies (on your build machine: e.g. Ubuntu on your PC)
+   - Install awscli, eksctl (I have v. 0.143.0), kubectl
+   - <code>aws configure</code>
+2. Create cluster and namespace
+   - <code>eksctl create cluster --name lul-cluster --nodegroup-name standard-workers --node-type t2.micro --nodes 2 --nodes-min 2 --nodes-max 2</code>
+   - <code>kubectl create namespace lul-app</code>
+3. Create secrets (i.e. environment variables for the containers)
+   - Rename ./secrets_template.yaml to secrets.yaml and replace the env variable values with the following values
+     - GOOGLE_CLIENT_ID=google-client-id-from-above
+     - DB_HOST=database-url
+     - DB_USER=database-user
+     - DB_PASSWORD=database-password
+     - DB_PORT=3306
+     - DB_SCHEMA_NAME=database-schema
+     - SECRET_KEY (**NOT OPTIONAL** number of your choosing)
+   - <code>kubectl apply -f secrets.yaml</code>
+4. Deploy docker image to workers
+   - Rename ./deployment_template.yaml to deployment.yaml and replace the value for image with the docker image you have registered in ECR
+   - <code>kubectl apply -f deployment.yaml</code>
+5. Request security certificates
+   - <code>aws acm request-certificate --domain-name <your-domain>.com --subject-alternative-names www.<your-domain>.com</code>
+   - Note the arn of your certificate
+6. Configure load balancer
+   - Rename ./load_balancer_template.yaml to load_balancer.yaml and replace your domain and arn in that file
+   - <code>kubectl apply -f load_balancer.yaml</code>
+7. Delete the cluster
+   - <code>eksctl delete cluster --name lul-cluster</code>

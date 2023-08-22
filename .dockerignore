@@ -1,0 +1,7 @@
+*
+!/api/*.py
+!/api/requirements.txt
+!/app/*.json
+!/app/index.html
+!/app/src
+!/nginx/nginx.conf
