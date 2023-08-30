@@ -38,13 +38,13 @@ You won't need to do this for localhost deployment, but for the AWS deployments,
    - Change directory to the git repo folder
    - Set env variable GOOGLE_CLIENT_ID to the value you noted above.
    - <code>docker build -t lul --build-arg GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID .</code>
-     - May need to run as sudo
+     - May need to run as sudo, if you haven't added your user to the "docker" group
      - This example chooses "lul" as the name of the image, but you may choose your own name
 3. Create ECR repository, noting the URI of the repo. In this example, I have chosen the name "lul-docker-repo" for the repo, but it can be anything you choose.
 4. Push the docker image you built up to the repo you created. Note that the login does not use the full URI of your repo. Note also that your region may be different.
-   - <code>aws ecr get-login-password | sudo docker login -u AWS --password-stdin https://############.dkr.ecr.us-east-1.amazonaws.com</code>
-   - <code>sudo docker tag lul ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
-   - <code>sudo docker push ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
+   - <code>aws ecr get-login-password | docker login -u AWS --password-stdin https://############.dkr.ecr.us-east-1.amazonaws.com</code>
+   - <code>docker tag lul ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
+   - <code>docker push ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
 
 ## Localhost development deployment
 
@@ -53,7 +53,7 @@ If you want to develop this locally, you can have live runs from your localhost 
 1. Configure nginx to route traffic
    - If /etc/nginx/sites-enabled does not exist
      - <code>sudo mkdir /etc/nginx/sites-enabled</code>
-     - Add <code>include /etc/nginx/sirm tes-enabled/\*;</code> to the http block of /etc/nginx/nginx.conf (as sudo)
+     - Add <code>include /etc/nginx/sites-enabled/\*;</code> to the http block of /etc/nginx/nginx.conf (as sudo)
    - <code>sudo cp ./nginx/lul_nginx_localhost /etc/nginx/sites-enabled/lul_nginx</code>
    - <code>sudo service nginx restart</code>
 2. Run app (front end)
@@ -85,6 +85,8 @@ If you want to get this website up and running on a single server (i.e. without 
 2. Install dependencies
    - <code>sudo yum install -y docker nginx</code>
    - <code>sudo service docker start</code>
+   - Be sure to also do the post-install steps you can find online for docker (add your user to the "docker" group, so you don't have to keep doing everything as "sudo")
+   - Additionally, install docker-compose, using steps you can google online
 3. Get SSL Certificates (one way is given here, but there are certainly a lot of ways to do this)
    - First, ensure your domain points to the IP address of this machine. See the "Get a domain" task in section "Common set up" above.
    - <code>python3 -m venv virt</code>
@@ -108,7 +110,7 @@ If you want to get this website up and running on a single server (i.e. without 
 
 1. Configure log in to ECR
    - <code>aws configure</code>
-   - <code>aws ecr get-login-password | sudo docker login -u AWS --password-stdin https://############.dkr.ecr.us-east-1.amazonaws.com</code>
+   - <code>aws ecr get-login-password | docker login -u AWS --password-stdin https://############.dkr.ecr.us-east-1.amazonaws.com</code>
 2. <code>docker pull ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
 3. Create file for env variables (e.g. .env) with the following env variables (search in this readme for where their values come from)
    - GOOGLE_CLIENT_ID=google-client-id-from-above
@@ -118,38 +120,6 @@ If you want to get this website up and running on a single server (i.e. without 
    - DB_PORT=3306
    - DB_SCHEMA_NAME=database-schema
    - SECRET_KEY (optional number of your choosing)
-4. <code>sudo docker run -d --env-file .env --name lul-container -p 8000:8000 ############..dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
+4. <code>docker run -d --env-file .env --name lul-container -p 8000:8000 ############..dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
 
-## [[WORK IN PROGRESS]]
-## Cluster deployment (EKS and Kubernetes)
 
-Command lines for using EKS and Kubernetes to deploy this website to a cluster of machines follow. In this example, we will have exactly two worker nodes.
-Be warned - AWS will charge you for cluster management.
-
-1. Install dependencies (on your build machine: e.g. Ubuntu on your PC)
-   - Install awscli, eksctl (I have v. 0.143.0), kubectl
-   - <code>aws configure</code>
-2. Create cluster and namespace
-   - <code>eksctl create cluster --name lul-cluster --nodegroup-name standard-workers --node-type t2.micro --nodes 2 --nodes-min 2 --nodes-max 2</code>
-   - <code>kubectl create namespace lul-app</code>
-3. Create secrets (i.e. environment variables for the containers)
-   - Rename ./secrets_template.yaml to secrets.yaml and replace the env variable values with the following values
-     - GOOGLE_CLIENT_ID=google-client-id-from-above
-     - DB_HOST=database-url
-     - DB_USER=database-user
-     - DB_PASSWORD=database-password
-     - DB_PORT=3306
-     - DB_SCHEMA_NAME=database-schema
-     - SECRET_KEY (**NOT OPTIONAL** number of your choosing)
-   - <code>kubectl apply -f secrets.yaml</code>
-4. Deploy docker image to workers
-   - Rename ./deployment_template.yaml to deployment.yaml and replace the value for image with the docker image you have registered in ECR
-   - <code>kubectl apply -f deployment.yaml</code>
-5. Request security certificates
-   - <code>aws acm request-certificate --domain-name <your-domain>.com --subject-alternative-names www.<your-domain>.com</code>
-   - Note the arn of your certificate
-6. Configure load balancer
-   - Rename ./load_balancer_template.yaml to load_balancer.yaml and replace your domain and arn in that file
-   - <code>kubectl apply -f load_balancer.yaml</code>
-7. Delete the cluster
-   - <code>eksctl delete cluster --name lul-cluster</code>

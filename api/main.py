@@ -30,9 +30,7 @@ API for managing the Level Up Learning business for scheduling summer and year-r
  (i.e. lessons) and see the camps they're currently teaching. Administrators can
  schedule camps, adjust enrollments, and assign instructors to camps.
 """
-root_path = os.environ.get("API_ROOT_PATH")
-if root_path is None:
-    root_path =  "/api"
+root_path = os.environ.get("API_ROOT_PATH") or ""
 app = FastAPI(
     title="Level Up Learning",
     description=description,
