@@ -26,51 +26,55 @@ Regardless of your deployment configuration, you will have to complete the follo
    - Follow instructions for creating new OAuth 2.0 Client IDs for a web application
    - Add your domain(s) to "Authorized JavaScript origins" (e.g. http://localhost or https://stevenmilesquant.com)
    - Note the value for "Client ID", for use with environment variables GOOGLE_CLIENT_ID later.
-4. Set up your build machine (e.g. Ubuntu on your PC is fine for any configuration)
+4. Set up your build machine (e.g. Ubuntu on your PC is fine for any configuration, but AWS EC2 instances may blow out the heap on "npm build")
    - Checkout the git repo https://github.com/SteveMilesQuant/teacherCamp.git
 
 ## Build Docker image and push to ECR (only for AWS deployments - not local dev deployment)
 
 You won't need to do this for localhost deployment, but for the AWS deployments, you will build a docker image and push it up to a repo in ECR.
 
-1. Install and start docker on your build machine
-2. Build docker image
+1. Install and start docker on your build machine, and install docker-compose
+2. Build docker images
    - Change directory to the git repo folder
-   - Set env variable GOOGLE_CLIENT_ID to the value you noted above.
-   - <code>docker build -t lul --build-arg GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID .</code>
-     - May need to run as sudo, if you haven't added your user to the "docker" group
-     - This example chooses "lul" as the name of the image, but you may choose your own name
+   - Copy /api/.env.template to /api/.env and update the values with values you noted before, or have chosen. Likewise for /app/.env.
+   - <code>docker-compose build</code>
 3. Create ECR repository, noting the URI of the repo. In this example, I have chosen the name "lul-docker-repo" for the repo, but it can be anything you choose.
-4. Push the docker image you built up to the repo you created. Note that the login does not use the full URI of your repo. Note also that your region may be different.
+4. Push the docker images you built up to the repo you created. Note that the login does not use the full URI of your repo. Note also that your region may be different.
    - <code>aws ecr get-login-password | docker login -u AWS --password-stdin https://############.dkr.ecr.us-east-1.amazonaws.com</code>
-   - <code>docker tag lul ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
-   - <code>docker push ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:lul</code>
+   - <code>docker tag leveluplearning_app ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_app</code>
+   - <code>docker tag leveluplearning_api ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_api</code>
+   - <code>docker push ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_app</code>
+   - <code>docker push ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_api</code>
 
 ## Localhost development deployment
 
 If you want to develop this locally, you can have live runs from your localhost (http://localhost), which will be faster to refresh as you make changes. Note that you will get a console error from your browser ("WebSocket connection to 'ws://localhost/' failed") that you can ignore for now. I will fix that later.
 
-1. Configure nginx to route traffic
-   - If /etc/nginx/sites-enabled does not exist
-     - <code>sudo mkdir /etc/nginx/sites-enabled</code>
-     - Add <code>include /etc/nginx/sites-enabled/\*;</code> to the http block of /etc/nginx/nginx.conf (as sudo)
-   - <code>sudo cp ./nginx/lul_nginx_localhost /etc/nginx/sites-enabled/lul_nginx</code>
-   - <code>sudo service nginx restart</code>
-2. Run app (front end)
-   - Change directory to /app
-   - Install dependencies
-     - Install nodejs
-     - <code>npm install</code>
-   - <code>npm run dev</code>
-3. Run api (back end)
-   - Change directory to /api
-   - Install dependencies
-     - Install python3 and pip
-   - (Optional, but recommended) create a virtual env for this project with the venv module
-     - <code>python3 -m venv virt</code>
-     - <code>source virt/bin/activate</code>
-   - <code>python3 -m pip install -r ./requirements.txt</code>
-   - <code>uvicorn main:app --port 8080</code>
+1. Either way...
+   - Copy /api/.env.template to /api/.env and update the values with values you noted before, or have chosen, except for the following the following change.
+      - Delete the line with "API_ROOT_PATH". You don't need to set this here.
+   - Likewise for /app/.env., except for the following values
+      - VITE_API_URL=http://localhost:3000/
+2. Option 1: as docker containers and open web page at http://localhost
+   - Install and start docker on your build machine, and install docker-compose
+   - <code>docker-compose up --build -d</code>
+3. Option 2: using npm and uvicorn command lines and open web page at http://localhost:5173
+   - Run app (front end)
+      - Change directory to the app directory
+      - Install dependencies
+         - Install nodejs
+         - <code>npm install</code>
+      - <code>npm run dev</code>
+   - Run api (back end)
+      - Change directory to the api direcotry
+      - Install dependencies
+         - Install python3 and pip
+      - (Optional, but recommended) create a virtual env for this project with the venv module
+         - <code>python3 -m venv virt</code>
+      - <code>source virt/bin/activate</code> (if using a virtual env)
+      - <code>python3 -m pip install -r ./requirements.txt</code> (only do once)
+      - <code>export $(grep -v '^#' .env | xargs)</code>
+      - <code>uvicorn main:app --port 3000</code>
 
 ## Single machine deployment (AWS EC2 and Docker)
 

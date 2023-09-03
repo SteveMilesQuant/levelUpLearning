@@ -1,4 +1,5 @@
 /virt
+/api/virt
 **/__pycache__
 *.pem
 mkcert*
