@@ -100,14 +100,15 @@ If you want to get this website up and running on a single server (i.e. without 
    - <code>sudo ./virt/bin/certbot certonly --nginx</code>
    - You can put these anywhere, but ensure you have <code>chmod o+x</code> wherever you put them.
 4. Configure nginx to route traffic
-   - If /etc/nginx/sites-enabled does not exist
-     - <code>sudo mkdir /etc/nginx/sites-enabled</code>
-     - Add <code>include /etc/nginx/sites-enabled/\*;</code> to http block of /etc/nginx/nginx.conf (as sudo)
-   - You may need to delete any default server in /etc/nginx/nginx.conf and run <code>sudo pkill -f nginx & wait $!</code>, if later nginx doesn't start because it's already listening on port 80
-   - <code>sudo cp ./nginx/lul_nginx_ec2 /etc/nginx/sites-enabled/lul_nginx</code>
-     - This step may require that you pull down the git repo, which requires you to install git
-     - Since this is the only step that requires the git repo, you may wish to just type/copy it in instead
-   - Update /etc/nginx/sites-enabled/lul_nginx to refer to your domain and ssl certificates
+   - Check /etc/nginx/nginx.conf
+      - It should have a line with <code>include /etc/nginx/conf.d/*.conf;</code>
+      - If it also has a server specification below that, comment it out or delete it
+   - Copy the template server configuration to the nginx location we set up
+     - <code>sudo cp ./nginx/lul_nginx_ec2.conf.template /etc/nginx/conf.d/lul_nginx_ec2.conf</code>
+     - This step may require that you pull down the git repo, which requires you to install git. Since this is the only step that requires the git repo, you may wish to just type/copy it in instead
+   - Update /etc/nginx/conf.d/lul_nginx_ec2.conf to refer to your domain and ssl certificates
+      - <code>sudo vi /etc/nginx/conf.d/lul_nginx_ec2.conf</code>
+      - Type ":%s/<your-domain>/" then followed by the replacement (e.g. ":%s/<your-domain>/stevenmilesquant")
    - <code>sudo service nginx restart</code>
 
 ### Pull down and run the docker container
