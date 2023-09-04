@@ -37,6 +37,7 @@ You won't need to do this for localhost deployment, but for the AWS deployments,
 1. Build docker images
    - Change directory to the git repo folder (i.e. that contains docker-compose.yml)
    - Copy ./app/.env.template to ./app/.env and update the values with values you noted before, or have chosen. No need to do this for the api; we will do this on the deployment machine(s) during the run phase.
+   - Create an empty ./api/.env (or with any values). We will create a new one to be used on the deployment machine, but we need a placeholder to run the build.
    - <code>docker-compose build</code>
 2. Create ECR repository, noting the URI of the repo. In this example, I have chosen the name "lul-docker-repo" for the repo, but it can be anything you choose.
 3. Push the docker images you built up to the repo you created. Note that the login does not use the full URI of your repo. Note also that your region may be different.

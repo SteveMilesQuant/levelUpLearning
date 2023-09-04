@@ -67,7 +67,7 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
 
   CD:
-    runs-on: [self-hosted, ec2]
+    runs-on: [self-hosted]
     needs: [CI]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
