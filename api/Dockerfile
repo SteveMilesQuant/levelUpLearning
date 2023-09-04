@@ -6,6 +6,8 @@ RUN python3 -m pip install --no-cache-dir --upgrade -r ./requirements.txt
 
 COPY ./*.py ./
 
-EXPOSE 3000
+RUN addgroup app && adduser -S -G app app
+USER app
 
+EXPOSE 3000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "3000"]
