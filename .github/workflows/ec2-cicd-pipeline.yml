@@ -59,6 +59,7 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
           printf "VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID\nVITE_API_URL=/api\n" > app/.env
+          touch api/.env
           docker-compose build
           docker tag leveluplearning_app $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
           docker tag leveluplearning_api $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
