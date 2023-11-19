@@ -15,8 +15,8 @@ const LinkIcon = ({ icon, endpoint, label, withTooltip }: Props) => {
       <Tooltip
         hasArrow
         label={label}
-        bg="blue.500"
-        color="blue.100"
+        bg="brand.secondary"
+        textColor="brand.primary"
         placement="right-start"
         openDelay={250}
         isDisabled={!withTooltip}
@@ -24,8 +24,8 @@ const LinkIcon = ({ icon, endpoint, label, withTooltip }: Props) => {
         <IconButton
           icon={icon}
           aria-label={label}
-          size="lg"
-          color="blue.300"
+          size="1.5em"
+          color="white"
           variant="ghost"
         />
       </Tooltip>
