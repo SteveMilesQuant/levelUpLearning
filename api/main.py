@@ -405,13 +405,14 @@ async def delete_level(request: Request, program_id: int, level_id: int):
 ###############################################################################
 
 
+# When not requesting an instructor, this is a public route
 @api_router.get("/camps", response_model = List[CampResponse])
 async def get_camps(request: Request, is_published: Optional[bool] = None, instructor_id: Optional[int] = None):
     '''Get a list of camps, subject to filter conditions.'''
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session)
+        user = await get_authorized_user(request, session, required=False)
         if instructor_id:
-            if user.id != instructor_id and not user.has_role('ADMIN'):
+            if user is None or (user.id != instructor_id and not user.has_role('ADMIN')):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User not authorized for instructor id={instructor_id}.")
             if user.id == instructor_id:
                 instructor = user
@@ -428,14 +429,15 @@ async def get_camps(request: Request, is_published: Optional[bool] = None, instr
             camps = list(filter(lambda camp: camp.is_published == is_published, camps))
             return camps
         else:
+            # Public access
             return await all_camps(session, is_published)
 
 
+# Public route
 @api_router.get("/camps/{camp_id}", response_model = CampResponse)
 async def get_camp(request: Request, camp_id: int):
     '''Get a single camp.'''
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -505,11 +507,11 @@ async def delete_camp(request: Request, camp_id: int):
 ###############################################################################
 
 
+# Public route
 @api_router.get("/camps/{camp_id}/levels", response_model = List[LevelScheduleResponse])
 async def get_camp_level_schedules(request: Request, camp_id: int):
     '''Get all schedules for the levels of a camp. Level definitions come from the camp's program.'''
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -523,11 +525,11 @@ async def get_camp_level_schedules(request: Request, camp_id: int):
         return level_schedules
 
 
+# Public route
 @api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
 async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int):
     '''Get a single level schedule of a camp.'''
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -567,11 +569,11 @@ async def camp_update_level_schedule(request: Request, camp_id: int, level_id: i
 ###############################################################################
 
 
+# Public route
 @api_router.get("/camps/{camp_id}/instructors", response_model = List[UserResponse])
 async def get_camp_instructors(request: Request, camp_id: int):
     '''Get all instructors in a camp.'''
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:
@@ -584,11 +586,11 @@ async def get_camp_instructors(request: Request, camp_id: int):
         return instructors
 
 
+# Public route
 @api_router.get("/camps/{camp_id}/instructors/{instructor_id}", response_model = UserResponse)
 async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int):
     '''Get a single instructor in a camp.'''
     async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session)
         camp = Camp(id = camp_id)
         await camp.create(session)
         if camp.id is None:

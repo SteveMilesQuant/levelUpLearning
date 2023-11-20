@@ -13,6 +13,7 @@ import { useUpdateCamp } from "../camps";
 import { useQueryClient } from "@tanstack/react-query";
 import { useContext, useState } from "react";
 import AlertMessage from "../components/AlertMessage";
+import { useUser } from "../users";
 
 const Camp = () => {
   const { id: idStr } = useParams();
@@ -20,6 +21,8 @@ const Camp = () => {
   const [alertContext, setAlertContext] = useState<
     undefined | { status: "error" | "success"; message: string }
   >(undefined);
+
+  const { data: user } = useUser();
 
   const {
     isOpen: newIsOpen,
@@ -56,8 +59,13 @@ const Camp = () => {
         {camp.is_published ? "Unpublish" : "Publish"}
       </Button>
     ) : campsContextType === CampsContextType.camps ? (
-      <Button size="lg" variant="outline" onClick={newOnOpen}>
-        Enroll Student
+      <Button
+        size="lg"
+        variant="outline"
+        onClick={newOnOpen}
+        isDisabled={!user}
+      >
+        {user ? "Enroll Student" : "Sign in to enroll"}
       </Button>
     ) : undefined;
 
@@ -79,7 +87,7 @@ const Camp = () => {
         isReadOnly={campsContextType !== CampsContextType.schedule}
         showStudents={campsContextType !== CampsContextType.camps}
       />
-      {campsContextType === CampsContextType.camps && (
+      {campsContextType === CampsContextType.camps && user && (
         <EnrollStudentModal
           title="Enroll Student"
           campId={camp.id}

@@ -24,25 +24,25 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       {
+        path: "camps",
+        element: (
+          <CampsContext.Provider value={CampsContextType.camps}>
+            <Camps />
+          </CampsContext.Provider>
+        ),
+      },
+      {
+        path: "camps/:id",
+        element: (
+          <CampsContext.Provider value={CampsContextType.camps}>
+            <Camp />
+          </CampsContext.Provider>
+        ),
+      },
+      {
         element: <PrivateRoutes />,
         children: [
           { path: "students", element: <Students /> },
-          {
-            path: "camps",
-            element: (
-              <CampsContext.Provider value={CampsContextType.camps}>
-                <Camps />
-              </CampsContext.Provider>
-            ),
-          },
-          {
-            path: "camps/:id",
-            element: (
-              <CampsContext.Provider value={CampsContextType.camps}>
-                <Camp />
-              </CampsContext.Provider>
-            ),
-          },
           {
             path: "teach",
             element: (
