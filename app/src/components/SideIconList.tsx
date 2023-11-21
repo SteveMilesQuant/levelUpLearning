@@ -106,17 +106,15 @@ const SideIconList = () => {
   ];
 
   return (
-    <Box bg="brand.primary" padding={2} position="fixed" zIndex={100}>
-      {!isOpen && (
-        <IconButton
-          icon={<GiHamburgerMenu size="1.5em" />}
-          aria-label="Navigation"
-          size="md"
-          color="white"
-          variant="ghost"
-          onClick={onOpen}
-        />
-      )}
+    <>
+      <IconButton
+        icon={<GiHamburgerMenu size="1.5em" />}
+        aria-label="Navigation"
+        size="md"
+        color="white"
+        variant="ghost"
+        onClick={onOpen}
+      />
       {isOpen && (
         <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
           <DrawerOverlay />
@@ -159,7 +157,7 @@ const SideIconList = () => {
           </DrawerContent>
         </Drawer>
       )}
-    </Box>
+    </>
   );
 };
 

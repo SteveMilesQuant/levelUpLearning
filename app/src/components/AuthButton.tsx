@@ -1,4 +1,4 @@
-import { Button, Text } from "@chakra-ui/react";
+import { Box, Button, Text } from "@chakra-ui/react";
 import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "../users";
 

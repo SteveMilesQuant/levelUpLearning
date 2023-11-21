@@ -1,7 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { Box, HStack } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
-import BodyContainer from "../components/BodyContainer";
 import { ReactNode } from "react";
 
 interface Props {

@@ -21,10 +21,7 @@ const Home = () => {
   ];
 
   return (
-    <Stack width="100%" alignItems="center" spacing={7}>
-      <Box width="100%">
-        <Image src={headerImage} width="100%" />
-      </Box>
+    <Stack width="100%" alignItems="center" marginY={5}>
       <Box width="90%">
         <Carousel
           autoPlay={true}

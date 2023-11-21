@@ -1,21 +1,22 @@
-import { Box, HStack } from "@chakra-ui/react";
+import { Box, HStack, Image } from "@chakra-ui/react";
+import headerImage from "../assets/homeHeader.svg";
 import AuthButton from "./AuthButton";
 import SideIconList from "./SideIconList";
 
 const NavBar = () => {
   return (
-    <>
-      <SideIconList />
+    <Box width="100%">
       <HStack
-        justifyContent="right"
-        alignItems="center"
-        padding={3}
-        spacing={4}
-        backgroundColor="brand.primary"
+        position="fixed"
+        justifyContent="space-between"
+        width="100%"
+        padding={2}
       >
+        <SideIconList />
         <AuthButton />
       </HStack>
-    </>
+      <Image src={headerImage} width="100%"></Image>
+    </Box>
   );
 };
 
