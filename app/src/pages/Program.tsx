@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import { ProgramTabs, useProgram } from "../programs";
+import BodyContainer from "../components/BodyContainer";
 
 const Program = () => {
   const { id: idStr } = useParams();
@@ -12,10 +13,10 @@ const Program = () => {
   if (error) throw error;
 
   return (
-    <>
+    <BodyContainer>
       <PageHeader hideUnderline={true}>{program.title}</PageHeader>
       <ProgramTabs program={program} />
-    </>
+    </BodyContainer>
   );
 };
 

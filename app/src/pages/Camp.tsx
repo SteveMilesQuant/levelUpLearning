@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useContext, useState } from "react";
 import AlertMessage from "../components/AlertMessage";
 import { useUser } from "../users";
+import BodyContainer from "../components/BodyContainer";
 
 const Camp = () => {
   const { id: idStr } = useParams();
@@ -70,7 +71,7 @@ const Camp = () => {
     ) : undefined;
 
   return (
-    <>
+    <BodyContainer>
       {alertContext && (
         <AlertMessage
           status={alertContext.status}
@@ -108,7 +109,7 @@ const Camp = () => {
           }
         />
       )}
-    </>
+    </BodyContainer>
   );
 };
 

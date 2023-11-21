@@ -1,22 +1,44 @@
-import { SimpleGrid, Icon, Text, Container } from "@chakra-ui/react";
-import { IoConstructOutline } from "react-icons/io5";
+import { Stack, Image, Box } from "@chakra-ui/react";
+import { Carousel } from "react-responsive-carousel";
+import headerImage from "../assets/homeHeader.svg";
+import carouselImage1 from "../assets/c1.svg";
+import carouselImage2 from "../assets/c2.svg";
+import carouselImage3 from "../assets/c3.svg";
+//import carouselImage4 from "../assets/c4.svg";
+import carouselImage5 from "../assets/c5.svg";
+import carouselImage6 from "../assets/c6.jpeg";
+import carouselImage7 from "../assets/c7.svg";
 
 const Home = () => {
+  const cards = [
+    { id: 0, img: carouselImage1 },
+    { id: 1, img: carouselImage2 },
+    { id: 2, img: carouselImage3 },
+    // { id: 3, img: carouselImage4 },
+    { id: 4, img: carouselImage5 },
+    { id: 5, img: carouselImage6 },
+    { id: 6, img: carouselImage7 },
+  ];
+
   return (
-    <SimpleGrid columns={1} spacing={5}>
-      <Container centerContent>
-        <Icon as={IoConstructOutline} boxSize="200px" />
-      </Container>
-      <Container centerContent>
-        <Text fontSize="xl">
-          Welcome to Level Up Writing! We are currently under construction, but
-          feel free to log in with Google and peruse the site. We are on a
-          temporary SQL server, so your information will be deleted at some
-          point, but if you need it done sooner, email Steve at
-          steven.miles.quant@gmail.com.
-        </Text>
-      </Container>
-    </SimpleGrid>
+    <Stack width="100%" alignItems="center" spacing={7}>
+      <Box width="100%">
+        <Image src={headerImage} width="100%" />
+      </Box>
+      <Box width="90%">
+        <Carousel
+          autoPlay={true}
+          infiniteLoop={true}
+          interval={3000}
+          showStatus={false}
+          showThumbs={false}
+        >
+          {cards.map((card) => (
+            <Image key={card.id} src={card.img} />
+          ))}
+        </Carousel>
+      </Box>
+    </Stack>
   );
 };
 

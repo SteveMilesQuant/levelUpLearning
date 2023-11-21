@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { HStack } from "@chakra-ui/react";
+import { Box, HStack } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import BodyContainer from "../components/BodyContainer";
 import { ReactNode } from "react";
@@ -15,10 +15,10 @@ const Layout = ({ children }: Props) => {
     <>
       <NavBar></NavBar>
       <HStack gap={0} alignItems="top">
-        <BodyContainer>
+        <Box>
           <Outlet />
           {children}
-        </BodyContainer>
+        </Box>
       </HStack>
     </>
   );

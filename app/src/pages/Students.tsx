@@ -1,6 +1,7 @@
 import { useDisclosure, Button } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import { StudentTabs, StudentFormModal } from "../students";
+import BodyContainer from "../components/BodyContainer";
 
 const Students = () => {
   const {
@@ -10,7 +11,7 @@ const Students = () => {
   } = useDisclosure();
 
   return (
-    <>
+    <BodyContainer>
       <PageHeader
         hideUnderline={true}
         rightButton={
@@ -27,7 +28,7 @@ const Students = () => {
         isOpen={newIsOpen}
         onClose={newOnClose}
       />
-    </>
+    </BodyContainer>
   );
 };
 

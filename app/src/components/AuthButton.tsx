@@ -13,7 +13,7 @@ const AuthButton = () => {
           variant="outline"
           bgColor="white"
           textColor="brand.primary"
-          fontSize="16px"
+          size="sm"
           onClick={() => onLogin()}
         >
           Sign In
@@ -24,7 +24,7 @@ const AuthButton = () => {
           variant="outline"
           bgColor="white"
           textColor="brand.primary"
-          fontSize="16px"
+          size="sm"
           onClick={() => onLogout()}
         >
           <Text>Sign Out</Text>

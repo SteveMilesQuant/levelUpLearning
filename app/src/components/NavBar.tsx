@@ -1,4 +1,4 @@
-import { HStack } from "@chakra-ui/react";
+import { Box, HStack } from "@chakra-ui/react";
 import AuthButton from "./AuthButton";
 import SideIconList from "./SideIconList";
 
@@ -8,7 +8,8 @@ const NavBar = () => {
       <SideIconList />
       <HStack
         justifyContent="right"
-        padding={2}
+        alignItems="center"
+        padding={3}
         spacing={4}
         backgroundColor="brand.primary"
       >

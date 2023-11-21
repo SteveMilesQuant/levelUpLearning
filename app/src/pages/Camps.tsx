@@ -10,6 +10,7 @@ import {
 } from "../camps";
 import { useContext } from "react";
 import { useUser } from "../users";
+import BodyContainer from "../components/BodyContainer";
 
 const Camps = () => {
   const campsContextType = useContext(CampsContext);
@@ -43,7 +44,7 @@ const Camps = () => {
   const isReadOnly = campsContextType !== CampsContextType.schedule;
 
   return (
-    <>
+    <BodyContainer>
       <PageHeader
         rightButton={
           !isReadOnly && (
@@ -63,7 +64,7 @@ const Camps = () => {
           onClose={newOnClose}
         />
       )}
-    </>
+    </BodyContainer>
   );
 };
 
