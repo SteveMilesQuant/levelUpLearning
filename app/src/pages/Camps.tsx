@@ -47,7 +47,7 @@ const Camps = () => {
       <PageHeader
         rightButton={
           !isReadOnly && (
-            <Button size="lg" variant="outline" onClick={newOnOpen}>
+            <Button size="md" variant="outline" onClick={newOnOpen}>
               Add Camp
             </Button>
           )

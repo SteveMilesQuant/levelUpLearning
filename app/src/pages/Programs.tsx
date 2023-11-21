@@ -14,7 +14,7 @@ const Programs = () => {
     <>
       <PageHeader
         rightButton={
-          <Button size="lg" variant="outline" onClick={newOnOpen}>
+          <Button size="md" variant="outline" onClick={newOnOpen}>
             Add Program
           </Button>
         }

@@ -14,7 +14,7 @@ const Students = () => {
       <PageHeader
         hideUnderline={true}
         rightButton={
-          <Button size="lg" variant="outline" onClick={newOnOpen}>
+          <Button size="md" variant="outline" onClick={newOnOpen}>
             Add Student
           </Button>
         }

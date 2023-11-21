@@ -47,7 +47,7 @@ const Camp = () => {
   const headerButton =
     campsContextType === CampsContextType.schedule ? (
       <Button
-        size="lg"
+        size="md"
         variant="outline"
         onClick={() => {
           updateCamp.mutate({
@@ -60,7 +60,7 @@ const Camp = () => {
       </Button>
     ) : campsContextType === CampsContextType.camps ? (
       <Button
-        size="lg"
+        size="md"
         variant="outline"
         onClick={newOnOpen}
         isDisabled={!user}
