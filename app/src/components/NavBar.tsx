@@ -7,7 +7,7 @@ const NavBar = () => {
   return (
     <Box width="100%">
       <HStack
-        position="fixed"
+        position="absolute"
         justifyContent="space-between"
         width="100%"
         padding={2}
