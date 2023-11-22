@@ -6,7 +6,7 @@ const AuthButton = () => {
   const { signedIn, onLogin, onLogout } = useAuth();
 
   return (
-    <>
+    <Box>
       {!signedIn && (
         <Button
           leftIcon={<FcGoogle />}
@@ -30,7 +30,7 @@ const AuthButton = () => {
           <Text>Sign Out</Text>
         </Button>
       )}
-    </>
+    </Box>
   );
 };
 

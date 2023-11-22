@@ -12,8 +12,12 @@ const NavBar = () => {
         width="100%"
         padding={2}
       >
-        <SideIconList />
-        <AuthButton />
+        <Box>
+          <SideIconList />
+        </Box>
+        <Box padding={1}>
+          <AuthButton />
+        </Box>
       </HStack>
       <Image src={headerImage} width="100%"></Image>
     </Box>
