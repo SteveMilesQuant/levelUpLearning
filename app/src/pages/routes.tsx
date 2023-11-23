@@ -11,6 +11,7 @@ import PrivateRoutes from "./PrivateRoutes";
 import Members from "./Members";
 import { CampsContext, CampsContextType } from "../camps";
 import Settings from "./Settings";
+import About from "./About";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <Home /> },
+      {
+        path: "about",
+        element: <About />,
+      },
       {
         path: "camps",
         element: (
