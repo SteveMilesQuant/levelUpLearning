@@ -1,4 +1,4 @@
-import { Heading, Stack, Image, Text } from "@chakra-ui/react";
+import { Heading, Stack, Image, Text, Box } from "@chakra-ui/react";
 
 interface Props {
   name: string;
@@ -18,7 +18,9 @@ const StaffProfile = ({
   return (
     <Stack spacing={5} alignContent="center" textAlign="center">
       <Heading fontSize="3xl">{name}</Heading>
-      <Image src={photo} alt={name + "'s photo"} paddingX="30%" />
+      <Box paddingX="30%">
+        <Image src={photo} alt={name + "'s photo"} />
+      </Box>
       <Heading fontSize="2xl" textDecor="underline">
         Education
       </Heading>
