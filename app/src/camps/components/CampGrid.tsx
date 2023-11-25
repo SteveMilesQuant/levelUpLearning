@@ -1,4 +1,4 @@
-import { Heading, SimpleGrid } from "@chakra-ui/react";
+import { Heading, SimpleGrid, Stack } from "@chakra-ui/react";
 import { useDeleteCamp } from "../hooks/useCamps";
 import CampCard from "./CampCard";
 import { Camp } from "../Camp";
@@ -45,20 +45,15 @@ const CampGrid = ({ camps, isReadOnly }: Props) => {
   return (
     <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 2 }} spacing={5}>
       {campList.map((item) => (
-        <>
-          {item.heading && (
-            <Heading key={"h" + item.camp.id} fontSize="2xl">
-              {item.heading}
-            </Heading>
-          )}
+        <Stack key={item.camp.id} spacing={5}>
+          {item.heading && <Heading fontSize="2xl">{item.heading}</Heading>}
           <CampCard
-            key={item.camp.id}
             camp={item.camp}
             onDelete={
               isReadOnly ? undefined : () => deleteCamp.mutate(item.camp.id)
             }
           />
-        </>
+        </Stack>
       ))}
     </SimpleGrid>
   );
