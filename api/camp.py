@@ -89,9 +89,14 @@ class Camp(CampResponse):
             for key, value in self._db_obj.dict().items():
                 setattr(self, key, value)
 
-        # Always get the associated primary instructor and program
+        # Always get the associated primary instructor, program, and start time
         self.primary_instructor = UserResponse(**self._db_obj.primary_instructor.dict())
         self.program = ProgramResponse(**self._db_obj.program.dict())
+        await session.refresh(self._db_obj, ['level_schedules'])
+        if len(self._db_obj.level_schedules) == 0:
+            self.start_time = None
+        else:
+            self.start_time = self._db_obj.level_schedules[0].start_time
 
     async def update(self, session: Any):
         for key, value in CampData():

@@ -1,7 +1,8 @@
-import { SimpleGrid } from "@chakra-ui/react";
+import { Heading, SimpleGrid } from "@chakra-ui/react";
 import { useDeleteCamp } from "../hooks/useCamps";
 import CampCard from "./CampCard";
 import { Camp } from "../Camp";
+import { locale } from "../../constants";
 
 interface Props {
   camps: Camp[];
@@ -11,14 +12,53 @@ interface Props {
 const CampGrid = ({ camps, isReadOnly }: Props) => {
   const deleteCamp = useDeleteCamp();
 
+  var lastMonth: number | undefined = -1;
+  var lastYear: number | undefined = -1;
+  const campsPlusDate = camps
+    .map((camp) => ({
+      startDate: camp.start_time ? new Date(camp.start_time) : undefined,
+      camp: camp,
+    }))
+    .sort((a, b) =>
+      !a.startDate || (b.startDate && a.startDate > b.startDate) ? 1 : -1
+    );
+
+  const campList = campsPlusDate.map((item) => {
+    const month = item.startDate?.getMonth();
+    const year = item.startDate?.getUTCFullYear();
+    var heading: string | undefined = undefined;
+    if ((!month || !year) && lastMonth && lastYear) {
+      heading = "Not yet scheduled";
+    } else if (
+      lastMonth &&
+      lastYear &&
+      (month !== lastMonth || year !== lastYear)
+    ) {
+      heading =
+        item.startDate?.toLocaleString(locale, { month: "long" }) + " " + year;
+    }
+    lastMonth = month;
+    lastYear = year;
+    return { heading: heading, ...item };
+  });
+
   return (
     <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 2 }} spacing={5}>
-      {camps.map((camp) => (
-        <CampCard
-          key={camp.id}
-          camp={camp}
-          onDelete={isReadOnly ? undefined : () => deleteCamp.mutate(camp.id)}
-        />
+      {campList.map((item) => (
+        <>
+          {item.heading && (
+            <Heading key={"h" + item.camp.id} fontSize="2xl">
+              {item.heading}
+            </Heading>
+          )}
+          <CampCard
+            key={item.camp.id}
+            camp={item.camp}
+            onDelete={
+              isReadOnly ? undefined : () => deleteCamp.mutate(item.camp.id)
+            }
+          />
+        </>
       ))}
     </SimpleGrid>
   );

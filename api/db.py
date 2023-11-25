@@ -156,7 +156,7 @@ class CampDb(Base):
     def dict(self):
         returnVal = {}
         for key, value in CampResponse():
-            if key not in ['program', 'primary_instructor']:
+            if key not in ['program', 'primary_instructor', 'start_time']:
                 returnVal[key] = getattr(self, key)
         return returnVal
 

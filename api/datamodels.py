@@ -75,6 +75,7 @@ class CampResponse(CampData):
     id: Optional[int]
     primary_instructor: Optional[UserResponse] = None
     program: Optional[ProgramResponse] = None
+    start_time: Optional[FastApiDatetime]
 
 
 class LevelScheduleData(BaseModel):
