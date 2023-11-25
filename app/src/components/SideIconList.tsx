@@ -1,6 +1,7 @@
 import {
   FaGraduationCap,
   FaHome,
+  FaPhoneAlt,
   FaRegQuestionCircle,
   FaSearch,
 } from "react-icons/fa";
@@ -89,19 +90,27 @@ const SideIconList = () => {
       endpoint: "/members",
       label: "Manage Members",
     },
+
     {
       id: 8,
-      role: "GUARDIAN",
-      icon: <MdSettings size="2em" />,
-      endpoint: "/settings",
-      label: "Profile and Settings",
-    },
-    {
-      id: 9,
       role: "PUBLIC",
       icon: <FaRegQuestionCircle size="2em" />,
       endpoint: "/about",
       label: "About",
+    },
+    {
+      id: 9,
+      role: "PUBLIC",
+      icon: <FaPhoneAlt size="2em" />,
+      endpoint: "/contact",
+      label: "Contact",
+    },
+    {
+      id: 10,
+      role: "GUARDIAN",
+      icon: <MdSettings size="2em" />,
+      endpoint: "/settings",
+      label: "Profile and Settings",
     },
   ];
 
