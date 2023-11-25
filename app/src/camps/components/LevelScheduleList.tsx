@@ -1,9 +1,17 @@
-import { Box, HStack, Stack } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Stack,
+} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import useLevelSchedules from "../hooks/useLevelSchedules";
 import { LevelSchedule } from "../LevelSchedule";
-import ListButton from "../../components/ListButton";
 import LevelScheduleForm from "./LevelScheduleForm";
+import { FaChevronDown } from "react-icons/fa";
 
 interface Props {
   campId: number;
@@ -24,20 +32,26 @@ const LevelScheduleList = ({ campId, isReadOnly }: Props) => {
   if (error) throw error;
 
   return (
-    <HStack alignItems="start" spacing={10}>
-      <Stack spacing={3}>
-        {levelSchedules?.map((levelSchedule) => (
-          <ListButton
-            key={levelSchedule.level.id}
-            isSelected={selectedLevelSched?.level.id === levelSchedule.level.id}
-            onClick={() => setSelectedLevelSched(levelSchedule)}
-          >
-            {levelSchedule.level?.list_index +
-              ": " +
-              levelSchedule.level?.title}
-          </ListButton>
-        ))}
-      </Stack>
+    <Stack spacing={5}>
+      <Menu autoSelect={true}>
+        <MenuButton as={Button} rightIcon={<FaChevronDown />}>
+          {selectedLevelSched?.level?.list_index +
+            ": " +
+            selectedLevelSched?.level?.title}
+        </MenuButton>
+        <MenuList>
+          {levelSchedules?.map((levelSchedule) => (
+            <MenuItem
+              key={levelSchedule.level.id}
+              onClick={() => setSelectedLevelSched(levelSchedule)}
+            >
+              {levelSchedule.level?.list_index +
+                ": " +
+                levelSchedule.level?.title}
+            </MenuItem>
+          ))}
+        </MenuList>
+      </Menu>
       <Box width="100%">
         {levelSchedules
           ?.filter(
@@ -53,7 +67,7 @@ const LevelScheduleList = ({ campId, isReadOnly }: Props) => {
             ></LevelScheduleForm>
           ))}
       </Box>
-    </HStack>
+    </Stack>
   );
 };
 

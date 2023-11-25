@@ -12,6 +12,7 @@ import Members from "./Members";
 import { CampsContext, CampsContextType } from "../camps";
 import Settings from "./Settings";
 import About from "./About";
+import Contact from "./Contact";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "about",
         element: <About />,
+      },
+      {
+        path: "contact",
+        element: <Contact />,
       },
       {
         path: "camps",

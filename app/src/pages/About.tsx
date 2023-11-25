@@ -1,13 +1,15 @@
 import { SimpleGrid } from "@chakra-ui/react";
 import BodyContainer from "../components/BodyContainer";
 import StaffProfile from "../components/StaffProfile";
+import megan from "../assets/meganmiller.jpeg";
+import karen from "../assets/karenmiles.jpeg";
 
 const About = () => {
   const staffProfiles = [
     {
       key: 1,
       name: "Megan Miller",
-      photo: "",
+      photo: megan,
       education: [
         "Bachelor's Degree in Interdisciplinary Liberal Studies James Madison University",
         "Master's Degree in Elementary Education James Madison University",
@@ -19,7 +21,7 @@ const About = () => {
     {
       key: 2,
       name: "Karen Miles",
-      photo: "",
+      photo: karen,
       education: [
         "Bachelor's Degree in English University of Illinois ",
         "Master's Degree in Middle School Teaching NC State University",

@@ -44,7 +44,6 @@ const LevelForm = ({ programId, level, isReadOnly }: Props) => {
           isSubmitValid={levelForm.isValid}
         />
       )}
-      ;
     </>
   );
 };

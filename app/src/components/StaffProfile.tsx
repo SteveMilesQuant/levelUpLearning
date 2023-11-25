@@ -18,7 +18,7 @@ const StaffProfile = ({
   return (
     <Stack spacing={5} alignContent="center" textAlign="center">
       <Heading fontSize="3xl">{name}</Heading>
-      <Image src={photo} alt={name + "'s photo"} />
+      <Image src={photo} alt={name + "'s photo"} paddingX="30%" />
       <Heading fontSize="2xl" textDecor="underline">
         Education
       </Heading>

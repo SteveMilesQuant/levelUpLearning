@@ -30,34 +30,32 @@ const LevelScheduleFormBody = ({
         <FormLabel>Title</FormLabel>
         <Input type="text" isReadOnly={true} value={level.title} />
       </FormControl>
-      <HStack spacing={3}>
-        <FormControl>
-          <FormLabel>Start time: </FormLabel>
-          <InputError
-            label={errors.start_time?.message}
-            isOpen={errors.start_time ? true : false}
-          >
-            <Input
-              {...register("start_time")}
-              type="datetime-local"
-              isReadOnly={isReadOnly}
-            />
-          </InputError>
-        </FormControl>
-        <FormControl>
-          <FormLabel>End time: </FormLabel>
-          <InputError
-            label={errors.end_time?.message}
-            isOpen={errors.end_time ? true : false}
-          >
-            <Input
-              {...register("end_time")}
-              type="datetime-local"
-              isReadOnly={isReadOnly}
-            />
-          </InputError>
-        </FormControl>
-      </HStack>
+      <FormControl>
+        <FormLabel>Start time: </FormLabel>
+        <InputError
+          label={errors.start_time?.message}
+          isOpen={errors.start_time ? true : false}
+        >
+          <Input
+            {...register("start_time")}
+            type="datetime-local"
+            isReadOnly={isReadOnly}
+          />
+        </InputError>
+      </FormControl>
+      <FormControl>
+        <FormLabel>End time: </FormLabel>
+        <InputError
+          label={errors.end_time?.message}
+          isOpen={errors.end_time ? true : false}
+        >
+          <Input
+            {...register("end_time")}
+            type="datetime-local"
+            isReadOnly={isReadOnly}
+          />
+        </InputError>
+      </FormControl>
       <FormControl>
         <FormLabel>Description</FormLabel>
         <Input

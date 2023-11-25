@@ -67,7 +67,6 @@ class User(UserResponse):
             # Create initial role(s)
             await session.refresh(self._db_obj, ['roles']) # again, not sure why I have to do this when I have lazy='joined'
             roles = ['GUARDIAN']
-            roles.append('INSTRUCTOR') # TODO: temporarily making everyone an instructor - move down to next check later
             if self._db_obj.id == 1:
                 roles.append('ADMIN')
             for role in roles:

@@ -8,7 +8,7 @@ interface Props {
 const BodyContainer = ({ children }: Props) => {
   if (!children) return null;
   return (
-    <Box paddingX={8} paddingY={10} width="100%">
+    <Box paddingX={8} paddingY={10} width="100vw">
       {children}
     </Box>
   );

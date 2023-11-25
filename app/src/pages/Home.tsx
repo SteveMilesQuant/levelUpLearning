@@ -1,6 +1,5 @@
 import { Stack, Image, Box } from "@chakra-ui/react";
 import { Carousel } from "react-responsive-carousel";
-import headerImage from "../assets/homeHeader.svg";
 import carouselImage1 from "../assets/c1.svg";
 import carouselImage2 from "../assets/c2.svg";
 import carouselImage3 from "../assets/c3.svg";

@@ -49,7 +49,7 @@ const CampTabs = ({ camp, isReadOnly, showStudents }: Props) => {
             </HStack>
           )}
         </TabPanel>
-        <TabPanel>
+        <TabPanel width="100%">
           <LevelScheduleList campId={camp.id} isReadOnly={isReadOnly} />
         </TabPanel>
         <TabPanel>

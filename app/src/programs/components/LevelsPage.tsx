@@ -1,4 +1,4 @@
-import { Box, Button, HStack, useDisclosure } from "@chakra-ui/react";
+import { Box, Button, Stack, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Level } from "../Level";
 import useLevels from "../hooks/useLevels";
@@ -26,7 +26,7 @@ const LevelsPage = ({ programId }: Props) => {
 
   return (
     <>
-      <HStack alignItems="start" spacing={10}>
+      <Stack spacing={5}>
         <LevelList
           programId={programId}
           selectedLevel={selectedLevel}
@@ -46,7 +46,7 @@ const LevelsPage = ({ programId }: Props) => {
               ></LevelForm>
             ))}
         </Box>
-      </HStack>
+      </Stack>
       <LevelFormModal
         title="Add level"
         isOpen={isOpen}

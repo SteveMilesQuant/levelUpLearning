@@ -1,4 +1,13 @@
-import { Box, HStack, Stack } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  HStack,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Stack,
+} from "@chakra-ui/react";
 import ListButton from "../../components/ListButton";
 import {
   useCampInstructors,
@@ -8,6 +17,7 @@ import { useEffect, useState } from "react";
 import { User } from "../User";
 import InstructorForm from "./InstructorForm";
 import AddInstructorMenu from "./AddInstructorMenu";
+import { FaChevronDown } from "react-icons/fa";
 
 interface Props {
   campId: number;
@@ -27,37 +37,38 @@ const InstructorList = ({ campId, isReadOnly }: Props) => {
   if (error) throw error;
 
   return (
-    <>
-      <HStack alignItems="start" spacing={10}>
-        <Stack spacing={3}>
+    <Stack spacing={5}>
+      <Menu autoSelect={true}>
+        <MenuButton as={Button} rightIcon={<FaChevronDown />}>
+          {selectedInstructor.full_name}
+        </MenuButton>
+        <MenuList>
           {instructors?.map((instructor) => (
-            <HStack key={instructor.id}>
-              <ListButton
-                isSelected={selectedInstructor?.id === instructor.id}
-                onClick={() => setSelectedInstructor(instructor)}
-              >
-                {instructor.full_name}
-              </ListButton>
-            </HStack>
+            <MenuItem
+              key={instructor.id}
+              onClick={() => setSelectedInstructor(instructor)}
+            >
+              {instructor.full_name}
+            </MenuItem>
           ))}
           {!isReadOnly && (
             <AddInstructorMenu campId={campId} instructors={instructors} />
           )}
-        </Stack>
-        <Box width="100%">
-          {instructors
-            ?.filter((instructor) => instructor.id === selectedInstructor?.id)
-            .map((instructor) => (
-              <InstructorForm
-                key={instructor.id}
-                instructor={instructor}
-                isReadOnly={true}
-                deleteInstructor={!isReadOnly ? deleteInstructor : undefined}
-              />
-            ))}
-        </Box>
-      </HStack>
-    </>
+        </MenuList>
+      </Menu>
+      <Box width="100%">
+        {instructors
+          ?.filter((instructor) => instructor.id === selectedInstructor?.id)
+          .map((instructor) => (
+            <InstructorForm
+              key={instructor.id}
+              instructor={instructor}
+              isReadOnly={true}
+              deleteInstructor={!isReadOnly ? deleteInstructor : undefined}
+            />
+          ))}
+      </Box>
+    </Stack>
   );
 };
 
