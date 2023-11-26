@@ -55,6 +55,7 @@ def test_post_camp(camp: CampData):
     camp_json['primary_instructor'] = app.test.users.map[camp_json['primary_instructor_id']].dict(include=UserResponse().dict())
     camp_json['primary_instructor']['roles'] = []
     camp_json['program'] = program_response
+    camp_json['start_time'] = None
     assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match posted camp {camp_json}.'
     all_camps_json.append(new_camp_json)
 
@@ -200,6 +201,12 @@ def test_update_level_schedules(camp_index: int, level_index: int, level_schedul
     assert 'application/json' in content_type
     get_level_schedule_json = response.json()
     assert get_level_schedule_json == level_schedule_json
+    
+    # Updating start times can update the camp, so update it here
+    response = client.get(f'/camps/{camp_id}', headers = app.test.users.admin_headers)
+    content_type = response.headers['content-type']
+    assert 'application/json' in content_type
+    all_camps_json[camp_index] = response.json()
 
 
 # Test enrolling, getting, and disenrolling students

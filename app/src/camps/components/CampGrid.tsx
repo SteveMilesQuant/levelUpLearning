@@ -14,14 +14,10 @@ const CampGrid = ({ camps, isReadOnly }: Props) => {
 
   var lastMonth: number | undefined = -1;
   var lastYear: number | undefined = -1;
-  const campsPlusDate = camps
-    .map((camp) => ({
-      startDate: camp.start_time ? new Date(camp.start_time) : undefined,
-      camp: camp,
-    }))
-    .sort((a, b) =>
-      !a.startDate || (b.startDate && a.startDate > b.startDate) ? 1 : -1
-    );
+  const campsPlusDate = camps.map((camp) => ({
+    startDate: camp.start_time ? new Date(camp.start_time) : undefined,
+    camp: camp,
+  })); // already sorted by start_time on server side
 
   const campList = campsPlusDate.map((item) => {
     const month = item.startDate?.getMonth();
