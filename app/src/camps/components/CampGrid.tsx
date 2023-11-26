@@ -30,7 +30,6 @@ const CampGrid = ({ camps, isReadOnly }: Props) => {
       };
     else campsByMonth[key].camps.push(camp);
   });
-  console.log(campsByMonth);
 
   return (
     <Stack spacing={5}>
