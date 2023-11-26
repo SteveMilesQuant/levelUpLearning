@@ -34,6 +34,7 @@ const Camps = () => {
 
   if (isLoading) return null;
   if (error) throw error;
+  console.log(camps);
 
   const pageTitle =
     campsContextType === CampsContextType.schedule
