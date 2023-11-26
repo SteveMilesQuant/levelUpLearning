@@ -254,14 +254,23 @@ async def put_update_program(request: Request, program_id: int, updated_program:
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
-        for db_program in await user.programs(session):
-            if db_program.id == program_id:
-                program = Program(db_obj = db_program)
-                await program.create(session)
-                program = program.copy(update=updated_program.dict(exclude_unset=True))
-                await program.update(session)
-                return program
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        program = None
+        if user.has_role('ADMIN'):
+            program = Program(id = program_id)
+            await program.create(session)
+            if program.id is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
+        else:
+            for db_program in await user.programs(session):
+                if db_program.id == program_id:
+                    program = Program(db_obj = db_program)
+                    await program.create(session)
+                    break
+        if program is None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        program = program.copy(update=updated_program.dict(exclude_unset=True))
+        await program.update(session)
+        return program
 
 
 @api_router.post("/programs", response_model = ProgramResponse, status_code = status.HTTP_201_CREATED)
@@ -286,12 +295,22 @@ async def delete_program(request: Request, program_id: int):
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
-        for db_program in await user.programs(session):
-            if db_program.id == program_id:
-                program = Program(db_obj = db_program)
-                await user.remove_program(session = session, program = program)
-                return
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+
+        program = None
+        if user.has_role('ADMIN'):
+            program = Program(id = program_id)
+            await program.create(session)
+            if program.id is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
+        else:
+            for db_program in await user.programs(session):
+                if db_program.id == program_id:
+                    program = Program(db_obj = db_program)
+                    await program.create(session)
+                    break
+        if program is None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        await user.remove_program(session = session, program = program)
 
 
 
@@ -344,19 +363,28 @@ async def put_update_level(request: Request, program_id: int, level_id: int, upd
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
-        for db_program in await user.programs(session):
-            if db_program.id == program_id:
-                program = Program(db_obj = db_program)
-                await program.create(session)
-                for db_level in await program.levels(session):
-                    if db_level.id == level_id:
-                        level = Level(db_obj = db_level)
-                        await level.create(session)
-                        level = level.copy(update=updated_level.dict(exclude_unset=True))
-                        await level.update(session)
-                        return level
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        program = None
+        if user.has_role('ADMIN'):
+            program = Program(id = program_id)
+            await program.create(session)
+            if program.id is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
+        else:
+            for db_program in await user.programs(session):
+                if db_program.id == program_id:
+                    program = Program(db_obj = db_program)
+                    await program.create(session)
+                    break
+        if program is None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        for db_level in await program.levels(session):
+            if db_level.id == level_id:
+                level = Level(db_obj = db_level)
+                await level.create(session)
+                level = level.copy(update=updated_level.dict(exclude_unset=True))
+                await level.update(session)
+                return level
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
 
 
 @api_router.post("/programs/{program_id}/levels", response_model = LevelResponse, status_code = status.HTTP_201_CREATED)
@@ -366,16 +394,25 @@ async def post_new_level(request: Request, program_id: int, new_level_data: Leve
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
-        for db_program in await user.programs(session):
-            if db_program.id == program_id:
-                program = Program(db_obj = db_program)
-                await program.create(session)
-                new_level = Level(**new_level_data.dict())
-                new_level.program_id = program_id
-                new_level.list_index = await program.get_next_level_index(session)
-                await new_level.create(session)
-                return new_level
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        program = None
+        if user.has_role('ADMIN'):
+            program = Program(id = program_id)
+            await program.create(session)
+            if program.id is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
+        else:
+            for db_program in await user.programs(session):
+                if db_program.id == program_id:
+                    program = Program(db_obj = db_program)
+                    await program.create(session)
+                    break
+        if program is None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        new_level = Level(**new_level_data.dict())
+        new_level.program_id = program_id
+        new_level.list_index = await program.get_next_level_index(session)
+        await new_level.create(session)
+        return new_level
 
 
 @api_router.delete("/programs/{program_id}/levels/{level_id}")
@@ -385,18 +422,27 @@ async def delete_level(request: Request, program_id: int, level_id: int):
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
-        for db_program in await user.programs(session):
-            if db_program.id == program_id:
-                program = Program(db_obj = db_program)
-                await program.create(session)
-                for db_level in await program.levels(session):
-                    if db_level.id == level_id:
-                        level = Level(db_obj = db_level)
-                        await level.create(session)
-                        await level.delete(session)
-                        return
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        program = None
+        if user.has_role('ADMIN'):
+            program = Program(id = program_id)
+            await program.create(session)
+            if program.id is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
+        else:
+            for db_program in await user.programs(session):
+                if db_program.id == program_id:
+                    program = Program(db_obj = db_program)
+                    await program.create(session)
+                    break
+        if program is None:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
+        for db_level in await program.levels(session):
+            if db_level.id == level_id:
+                level = Level(db_obj = db_level)
+                await level.create(session)
+                await level.delete(session)
+                return
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for program id={program_id}")
 
 
 
