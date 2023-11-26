@@ -11,6 +11,9 @@ import {
   List,
   HStack,
   Text,
+  LinkBox,
+  Button,
+  ListItem,
 } from "@chakra-ui/react";
 import SubmitButton from "../../components/SubmitButton";
 import useStudents from "../hooks/useStudents";
@@ -21,6 +24,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CACHE_KEY_STUDENTS } from "../Student";
 import { CACHE_KEY_CAMPS } from "../../camps";
 import CancelButton from "../../components/CancelButton";
+import { Link as RouterLink } from "react-router-dom";
 
 interface Props {
   title: string;
@@ -89,6 +93,11 @@ const EnrollStudentModal = ({
         <ModalCloseButton />
         <ModalBody>
           <List spacing={3}>
+            {unenrolledStudents.length == 0 && (
+              <ListItem paddingX={3}>
+                <Text>(no unenrolled students)</Text>
+              </ListItem>
+            )}
             {unenrolledStudents.map((s) => (
               <ListButton
                 key={s.id}
@@ -108,6 +117,18 @@ const EnrollStudentModal = ({
                 >{`${s.name} (Grade ${s.grade_level})`}</Text>
               </ListButton>
             ))}
+            <ListItem paddingX={3}>
+              <LinkBox as={RouterLink} to="/students">
+                <Button
+                  variant="outline"
+                  bgColor="white"
+                  textColor="brand.primary"
+                  size="md"
+                >
+                  Create student (go to "My Students")
+                </Button>
+              </LinkBox>
+            </ListItem>
           </List>
         </ModalBody>
         <ModalFooter>
