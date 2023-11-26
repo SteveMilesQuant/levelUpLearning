@@ -14,6 +14,7 @@ const CampGrid = ({ camps, isReadOnly }: Props) => {
 
   var lastMonth: number | undefined = -1;
   var lastYear: number | undefined = -1;
+  console.log(camps);
   const campsPlusDate = camps.map((camp) => ({
     startDate: camp.start_time ? new Date(camp.start_time) : undefined,
     camp: camp,
