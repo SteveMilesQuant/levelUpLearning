@@ -5,7 +5,7 @@ import carouselImage2 from "../assets/c2.svg";
 import carouselImage3 from "../assets/c3.svg";
 //import carouselImage4 from "../assets/c4.svg";
 import carouselImage5 from "../assets/c5.svg";
-import carouselImage6 from "../assets/c6.jpeg";
+import carouselImage6 from "../assets/c6.svg";
 import carouselImage7 from "../assets/c7.svg";
 
 const Home = () => {
