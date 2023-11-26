@@ -12,46 +12,45 @@ interface Props {
 const CampGrid = ({ camps, isReadOnly }: Props) => {
   const deleteCamp = useDeleteCamp();
 
-  var lastMonth: number | undefined = -1;
-  var lastYear: number | undefined = -1;
-  const campsPlusDate = camps.map((camp) => ({
-    startDate: camp.start_time ? new Date(camp.start_time) : undefined,
-    camp: camp,
-  })); // already sorted by start_time on server side
-
-  const campList = campsPlusDate.map((item) => {
-    const month = item.startDate?.getMonth();
-    const year = item.startDate?.getUTCFullYear();
-    var heading: string | undefined = undefined;
-    if ((!month || !year) && lastMonth && lastYear) {
-      heading = "Not yet scheduled";
-    } else if (
-      lastMonth &&
-      lastYear &&
-      (month !== lastMonth || year !== lastYear)
-    ) {
-      heading =
-        item.startDate?.toLocaleString(locale, { month: "long" }) + " " + year;
-    }
-    lastMonth = month;
-    lastYear = year;
-    return { heading: heading, ...item };
+  const campsByMonth: {
+    [id: string]: { id: string; heading: string; camps: Camp[] };
+  } = {};
+  camps.forEach((camp) => {
+    const startDate = camp.start_time ? new Date(camp.start_time) : undefined;
+    const month = startDate?.getMonth();
+    const year = startDate?.getUTCFullYear();
+    const key: string = month + "_" + year;
+    if (!campsByMonth[key])
+      campsByMonth[key] = {
+        id: key,
+        heading: startDate
+          ? startDate.toLocaleString(locale, { month: "long" }) + " " + year
+          : "Not yet scheduled",
+        camps: [camp],
+      };
+    else campsByMonth[key].camps.push(camp);
   });
+  console.log(campsByMonth);
 
   return (
-    <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 2 }} spacing={5}>
-      {campList.map((item) => (
-        <Stack key={item.camp.id} spacing={5}>
-          {item.heading && <Heading fontSize="2xl">{item.heading}</Heading>}
-          <CampCard
-            camp={item.camp}
-            onDelete={
-              isReadOnly ? undefined : () => deleteCamp.mutate(item.camp.id)
-            }
-          />
+    <Stack spacing={5}>
+      {Object.values(campsByMonth).map((month) => (
+        <Stack spacing={5} key={month.id}>
+          <Heading fontSize="2xl">{month.heading}</Heading>
+          <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 2 }} spacing={5}>
+            {month.camps.map((camp) => (
+              <CampCard
+                key={camp.id}
+                camp={camp}
+                onDelete={
+                  isReadOnly ? undefined : () => deleteCamp.mutate(camp.id)
+                }
+              />
+            ))}
+          </SimpleGrid>
         </Stack>
       ))}
-    </SimpleGrid>
+    </Stack>
   );
 };
 
