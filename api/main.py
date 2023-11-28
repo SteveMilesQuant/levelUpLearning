@@ -295,22 +295,21 @@ async def delete_program(request: Request, program_id: int):
         user = await get_authorized_user(request, session)
         if not user.has_role('INSTRUCTOR'):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to access programs.")
-
-        program = None
         if user.has_role('ADMIN'):
             program = Program(id = program_id)
             await program.create(session)
             if program.id is None:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Program id={program_id} does not exist")
+            await program.delete(session)
+            return
         else:
             for db_program in await user.programs(session):
                 if db_program.id == program_id:
                     program = Program(db_obj = db_program)
                     await program.create(session)
-                    break
-        if program is None:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
-        await user.remove_program(session = session, program = program)
+                    await user.remove_program(session = session, program = program)
+                    return
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission for program id={program_id}")
 
 
 
