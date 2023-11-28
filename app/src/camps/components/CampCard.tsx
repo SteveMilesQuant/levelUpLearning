@@ -7,6 +7,7 @@ import { locale } from "../../constants";
 import { useContext } from "react";
 import CampsContext, { CampsContextType } from "../campsContext";
 import CardContainer from "../../components/CardContainer";
+import { useCampInstructors } from "../../users";
 
 interface Props {
   camp: Camp;
@@ -15,12 +16,33 @@ interface Props {
 
 const CampCard = ({ camp, onDelete }: Props) => {
   const campsContextType = useContext(CampsContext);
-  const { data: levelSchedules, error, isLoading } = useLevelSchedules(camp.id);
+  const {
+    data: levelSchedules,
+    error: levelsError,
+    isLoading: areLevelsLoading,
+  } = useLevelSchedules(camp.id);
+  const {
+    data: instructors,
+    error: instructorsError,
+    isLoading: instructorsAreLoading,
+  } = useCampInstructors(camp.id);
 
-  if (isLoading) return null;
-  if (error) throw error;
+  if (areLevelsLoading || instructorsAreLoading) return null;
+  if (levelsError) throw levelsError;
+  if (instructorsError) throw instructorsError;
 
-  const byLine = "with " + camp.primary_instructor.full_name;
+  const byLine =
+    "with " +
+    instructors
+      .map((instructor, index) => {
+        if (index === 0) return instructor.full_name;
+        if (index === instructors.length - 1) {
+          if (instructors.length > 2) return ", and " + instructor.full_name;
+          return " and " + instructor.full_name;
+        }
+        return ", " + instructor.full_name;
+      })
+      .join("");
   const startDate =
     levelSchedules && levelSchedules[0]?.start_time
       ? new Date(levelSchedules[0]?.start_time)
