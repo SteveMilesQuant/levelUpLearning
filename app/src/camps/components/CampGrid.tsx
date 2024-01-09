@@ -1,4 +1,4 @@
-import { Divider, Heading, SimpleGrid, Stack } from "@chakra-ui/react";
+import { Box, Divider, Heading, SimpleGrid, Stack } from "@chakra-ui/react";
 import { useDeleteCamp } from "../hooks/useCamps";
 import CampCard from "./CampCard";
 import { Camp } from "../Camp";
@@ -37,17 +37,19 @@ const CampGrid = ({ camps, isReadOnly }: Props) => {
         <Stack spacing={5} key={month.id}>
           {month_idx > 0 && <Divider />}
           <Heading fontSize="2xl">{month.heading}</Heading>
-          <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 2 }} spacing={5}>
+          <Stack spacing={5}>
             {month.camps.map((camp) => (
-              <CampCard
-                key={camp.id}
-                camp={camp}
-                onDelete={
-                  isReadOnly ? undefined : () => deleteCamp.mutate(camp.id)
-                }
-              />
+              <Box width={{ lg: "50%" }}>
+                <CampCard
+                  key={camp.id}
+                  camp={camp}
+                  onDelete={
+                    isReadOnly ? undefined : () => deleteCamp.mutate(camp.id)
+                  }
+                />
+              </Box>
             ))}
-          </SimpleGrid>
+          </Stack>
         </Stack>
       ))}
     </Stack>
