@@ -34,7 +34,7 @@ const CampTabs = ({ camp, isReadOnly, isPublicFacing }: Props) => {
     <Tabs variant="enclosed">
       <TabList>
         <Tab>Camp</Tab>
-        <Tab>Skills</Tab>
+        {!isPublicFacing && <Tab>Schedule</Tab>}
         <Tab>Instructors</Tab>
         {!isPublicFacing && <Tab>Students</Tab>}
       </TabList>
@@ -53,13 +53,15 @@ const CampTabs = ({ camp, isReadOnly, isPublicFacing }: Props) => {
             </HStack>
           )}
         </TabPanel>
-        <TabPanel width="100%">
-          <LevelScheduleList
-            campId={camp.id}
-            isPublicFacing={isPublicFacing}
-            isReadOnly={isReadOnly}
-          />
-        </TabPanel>
+        {!isPublicFacing && (
+          <TabPanel width="100%">
+            <LevelScheduleList
+              campId={camp.id}
+              isPublicFacing={isPublicFacing}
+              isReadOnly={isReadOnly}
+            />
+          </TabPanel>
+        )}
         <TabPanel>
           <InstructorList
             campId={camp.id}
