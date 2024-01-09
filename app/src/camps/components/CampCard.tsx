@@ -34,7 +34,7 @@ const CampCard = ({ camp, onDelete }: Props) => {
   const byLine =
     "with " +
     instructors
-      .map((instructor, index) => {
+      ?.map((instructor, index) => {
         if (index === 0) return instructor.full_name;
         if (index === instructors.length - 1) {
           if (instructors.length > 2) return ", and " + instructor.full_name;
