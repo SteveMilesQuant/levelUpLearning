@@ -86,7 +86,7 @@ const Camp = () => {
       <CampTabs
         camp={camp}
         isReadOnly={campsContextType !== CampsContextType.schedule}
-        showStudents={campsContextType !== CampsContextType.camps}
+        isPublicFacing={campsContextType === CampsContextType.camps}
       />
       {campsContextType === CampsContextType.camps && user && (
         <EnrollStudentModal

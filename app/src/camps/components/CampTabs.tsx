@@ -18,10 +18,10 @@ import { useNavigate } from "react-router-dom";
 interface Props {
   camp: Camp;
   isReadOnly?: boolean;
-  showStudents?: boolean;
+  isPublicFacing?: boolean;
 }
 
-const CampTabs = ({ camp, isReadOnly, showStudents }: Props) => {
+const CampTabs = ({ camp, isReadOnly, isPublicFacing }: Props) => {
   const deleteCamp = useDeleteCamp();
   const navigate = useNavigate();
 
@@ -34,13 +34,17 @@ const CampTabs = ({ camp, isReadOnly, showStudents }: Props) => {
     <Tabs variant="enclosed">
       <TabList>
         <Tab>Camp</Tab>
-        <Tab>Levels</Tab>
+        <Tab>Skills</Tab>
         <Tab>Instructors</Tab>
-        {showStudents && <Tab>Students</Tab>}
+        {!isPublicFacing && <Tab>Students</Tab>}
       </TabList>
       <TabPanels>
         <TabPanel>
-          <ProgramForm program={camp.program} isReadOnly={true} />
+          <ProgramForm
+            program={camp.program}
+            isPublicFacing={isPublicFacing}
+            isReadOnly={true}
+          />
           {!isReadOnly && (
             <HStack justifyContent="right" paddingTop={3}>
               <DeleteButton onConfirm={handleDelete}>
@@ -55,7 +59,7 @@ const CampTabs = ({ camp, isReadOnly, showStudents }: Props) => {
         <TabPanel>
           <InstructorList campId={camp.id} isReadOnly={isReadOnly} />
         </TabPanel>
-        {showStudents && (
+        {!isPublicFacing && (
           <TabPanel>
             <StudentTable campId={camp.id} isReadOnly={isReadOnly} />
           </TabPanel>

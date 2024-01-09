@@ -8,10 +8,11 @@ import CrudButtonSet from "../../components/CrudButtonSet";
 
 interface Props {
   program?: Program;
+  isPublicFacing?: boolean;
   isReadOnly?: boolean;
 }
 
-const ProgramForm = ({ program, isReadOnly }: Props) => {
+const ProgramForm = ({ program, isPublicFacing, isReadOnly }: Props) => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const programForm = useProgramForm(program);
@@ -27,7 +28,11 @@ const ProgramForm = ({ program, isReadOnly }: Props) => {
 
   return (
     <>
-      <ProgramFormBody {...programForm} isReadOnly={!isEditing} />
+      <ProgramFormBody
+        {...programForm}
+        isPublicFacing={isPublicFacing}
+        isEditing={isEditing}
+      />
       {!isReadOnly && (
         <CrudButtonSet
           isEditing={isEditing}

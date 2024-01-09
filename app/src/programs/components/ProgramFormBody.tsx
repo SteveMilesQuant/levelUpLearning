@@ -19,7 +19,8 @@ interface Props {
   errors: FieldErrors<FormData>;
   selectedGradeRange: number[];
   setSelectedGradeRange: (value: number[]) => void;
-  isReadOnly?: boolean;
+  isPublicFacing?: boolean;
+  isEditing?: boolean;
 }
 
 const ProgramFormBody = ({
@@ -27,7 +28,8 @@ const ProgramFormBody = ({
   errors,
   selectedGradeRange,
   setSelectedGradeRange,
-  isReadOnly,
+  isPublicFacing,
+  isEditing,
 }: Props) => {
   return (
     <Stack spacing={5}>
@@ -37,19 +39,25 @@ const ProgramFormBody = ({
           label={errors.title?.message}
           isOpen={errors.title ? true : false}
         >
-          <Input {...register("title")} type="text" isReadOnly={isReadOnly} />
+          <Input {...register("title")} type="text" isReadOnly={!isEditing} />
         </InputError>
       </FormControl>
       <HStack justifyContent="space-between" spacing={10}>
-        <FormControl>
-          <FormLabel>Tags</FormLabel>
-          <InputError
-            label={errors.tags?.message}
-            isOpen={errors.tags ? true : false}
-          >
-            <Input {...register("tags")} type="text" isReadOnly={isReadOnly} />
-          </InputError>
-        </FormControl>
+        {!isPublicFacing && (
+          <FormControl>
+            <FormLabel>Tags</FormLabel>
+            <InputError
+              label={errors.tags?.message}
+              isOpen={errors.tags ? true : false}
+            >
+              <Input
+                {...register("tags")}
+                type="text"
+                isReadOnly={!isEditing}
+              />
+            </InputError>
+          </FormControl>
+        )}
         <FormControl>
           <FormLabel>Grade range: {selectedGradeRange.join(" to ")}</FormLabel>
           <RangeSlider
@@ -59,7 +67,7 @@ const ProgramFormBody = ({
             min={1}
             max={12}
             step={1}
-            isReadOnly={isReadOnly}
+            isReadOnly={!isEditing}
           >
             <RangeSliderTrack>
               <RangeSliderFilledTrack />
@@ -80,7 +88,7 @@ const ProgramFormBody = ({
             as={Textarea}
             size="xl"
             height="15rem"
-            isReadOnly={isReadOnly}
+            isReadOnly={!isEditing}
           />
         </InputError>
       </FormControl>
