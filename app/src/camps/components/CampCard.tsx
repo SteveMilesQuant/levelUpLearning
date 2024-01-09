@@ -19,7 +19,7 @@ const CampCard = ({ camp, onDelete }: Props) => {
   const {
     data: levelSchedules,
     error: levelsError,
-    isLoading: areLevelsLoading,
+    isLoading: levelsAreLoading,
   } = useLevelSchedules(camp.id);
   const {
     data: instructors,
@@ -27,7 +27,7 @@ const CampCard = ({ camp, onDelete }: Props) => {
     isLoading: instructorsAreLoading,
   } = useCampInstructors(camp.id);
 
-  if (areLevelsLoading || instructorsAreLoading) return null;
+  if (levelsAreLoading || instructorsAreLoading) return null;
   if (levelsError) throw levelsError;
   if (instructorsError) throw instructorsError;
 

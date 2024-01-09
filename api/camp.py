@@ -175,7 +175,7 @@ async def all_camps(session: Any, is_published = None):
         camp = Camp(db_obj = db_camp[0])
         await camp.create(session)
         camps.append(camp)
-    camps.sort(reverse=True, key=lambda c : c.start_time or datetime.min)
+    camps.sort(key=lambda c : c.start_time or datetime.min)
     return camps
 
 
