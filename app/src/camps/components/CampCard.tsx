@@ -73,10 +73,6 @@ const CampCard = ({ camp, onDelete }: Props) => {
       <Divider orientation="horizontal" marginTop={2} />
       <HStack marginTop={2} justifyContent="space-between">
         <Text>
-          <strong>Tags: </strong>
-          {camp.program.tags}
-        </Text>
-        <Text>
           <strong>Grades: </strong>
           {camp.program.grade_range[0] + " to " + camp.program.grade_range[1]}
         </Text>
