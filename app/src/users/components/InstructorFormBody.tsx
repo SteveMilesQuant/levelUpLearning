@@ -12,17 +12,25 @@ import InputError from "../../components/InputError";
 interface Props {
   register: UseFormRegister<FormData>;
   errors: FieldErrors<FormData>;
+  isPublicFacing?: boolean;
   isReadOnly?: boolean;
 }
 
-const InstructorFormBody = ({ register, errors, isReadOnly }: Props) => {
+const InstructorFormBody = ({
+  register,
+  errors,
+  isPublicFacing,
+  isReadOnly,
+}: Props) => {
   return (
     <Stack spacing={5}>
-      <FormControl>
-        <FormLabel>Name</FormLabel>
+      {!isPublicFacing && (
+        <FormControl>
+          <FormLabel>Name</FormLabel>
 
-        <Input type="text" isReadOnly={true} {...register("full_name")} />
-      </FormControl>
+          <Input type="text" isReadOnly={true} {...register("full_name")} />
+        </FormControl>
+      )}
       <FormControl>
         <FormLabel>Subjects</FormLabel>
         <InputError

@@ -21,10 +21,11 @@ import { FaChevronDown } from "react-icons/fa";
 
 interface Props {
   campId: number;
+  isPublicFacing?: boolean;
   isReadOnly?: boolean;
 }
 
-const InstructorList = ({ campId, isReadOnly }: Props) => {
+const InstructorList = ({ campId, isPublicFacing, isReadOnly }: Props) => {
   const { data: instructors, isLoading, error } = useCampInstructors(campId);
   const deleteInstructor = useDeleteCampInstructor(campId);
 
@@ -63,6 +64,7 @@ const InstructorList = ({ campId, isReadOnly }: Props) => {
             <InstructorForm
               key={instructor.id}
               instructor={instructor}
+              isPublicFacing={isPublicFacing}
               isReadOnly={true}
               deleteInstructor={!isReadOnly ? deleteInstructor : undefined}
             />

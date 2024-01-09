@@ -54,10 +54,18 @@ const CampTabs = ({ camp, isReadOnly, isPublicFacing }: Props) => {
           )}
         </TabPanel>
         <TabPanel width="100%">
-          <LevelScheduleList campId={camp.id} isReadOnly={isReadOnly} />
+          <LevelScheduleList
+            campId={camp.id}
+            isPublicFacing={isPublicFacing}
+            isReadOnly={isReadOnly}
+          />
         </TabPanel>
         <TabPanel>
-          <InstructorList campId={camp.id} isReadOnly={isReadOnly} />
+          <InstructorList
+            campId={camp.id}
+            isPublicFacing={isPublicFacing}
+            isReadOnly={isReadOnly}
+          />
         </TabPanel>
         {!isPublicFacing && (
           <TabPanel>

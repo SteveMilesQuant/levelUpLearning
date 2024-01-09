@@ -15,10 +15,11 @@ import { FaChevronDown } from "react-icons/fa";
 
 interface Props {
   campId: number;
+  isPublicFacing?: boolean;
   isReadOnly?: boolean;
 }
 
-const LevelScheduleList = ({ campId, isReadOnly }: Props) => {
+const LevelScheduleList = ({ campId, isPublicFacing, isReadOnly }: Props) => {
   const { data: levelSchedules, isLoading, error } = useLevelSchedules(campId);
 
   const [selectedLevelSched, setSelectedLevelSched] = useState<
@@ -63,6 +64,7 @@ const LevelScheduleList = ({ campId, isReadOnly }: Props) => {
               key={levelSchedule.level.id}
               campId={campId}
               levelSchedule={levelSchedule}
+              isPublicFacing={isPublicFacing}
               isReadOnly={isReadOnly}
             ></LevelScheduleForm>
           ))}

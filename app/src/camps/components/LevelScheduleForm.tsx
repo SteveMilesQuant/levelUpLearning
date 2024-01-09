@@ -7,10 +7,16 @@ import CrudButtonSet from "../../components/CrudButtonSet";
 interface Props {
   campId?: number;
   levelSchedule: LevelSchedule;
+  isPublicFacing?: boolean;
   isReadOnly?: boolean;
 }
 
-const LevelScheduleForm = ({ campId, levelSchedule, isReadOnly }: Props) => {
+const LevelScheduleForm = ({
+  campId,
+  levelSchedule,
+  isPublicFacing,
+  isReadOnly,
+}: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const levelScheduleForm = useLevelScheduleForm(campId, levelSchedule);
 
@@ -19,6 +25,7 @@ const LevelScheduleForm = ({ campId, levelSchedule, isReadOnly }: Props) => {
       <LevelScheduleFormBody
         {...levelScheduleForm}
         level={levelSchedule.level}
+        isPublicFacing={isPublicFacing}
         isReadOnly={!isEditing}
       />
       {!isReadOnly && (

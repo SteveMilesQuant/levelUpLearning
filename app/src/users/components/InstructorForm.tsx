@@ -10,6 +10,7 @@ import CrudButtonSet from "../../components/CrudButtonSet";
 
 interface Props {
   instructor: User;
+  isPublicFacing?: boolean;
   isReadOnly?: boolean;
   deleteInstructor?: UseMutationResult<
     any,
@@ -21,6 +22,7 @@ interface Props {
 
 const InstructorForm = ({
   instructor,
+  isPublicFacing,
   isReadOnly,
   deleteInstructor,
 }: Props) => {
@@ -29,7 +31,11 @@ const InstructorForm = ({
 
   return (
     <>
-      <InstructorFormBody {...userForm} isReadOnly={!isEditing} />
+      <InstructorFormBody
+        {...userForm}
+        isPublicFacing={isPublicFacing}
+        isReadOnly={!isEditing}
+      />
 
       <HStack justifyContent="right" spacing={3} paddingTop={3}>
         {deleteInstructor && (

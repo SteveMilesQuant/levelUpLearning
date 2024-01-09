@@ -34,7 +34,7 @@ const ProgramFormBody = ({
   return (
     <Stack spacing={5}>
       <FormControl>
-        <FormLabel>Title</FormLabel>
+        {!isPublicFacing && <FormLabel>Title</FormLabel>}
         <InputError
           label={errors.title?.message}
           isOpen={errors.title ? true : false}
@@ -60,25 +60,27 @@ const ProgramFormBody = ({
         )}
         <FormControl>
           <FormLabel>Grade range: {selectedGradeRange.join(" to ")}</FormLabel>
-          <RangeSlider
-            onChange={(value: number[]) => setSelectedGradeRange(value)}
-            aria-label={["min", "max"]}
-            value={selectedGradeRange}
-            min={1}
-            max={12}
-            step={1}
-            isReadOnly={!isEditing}
-          >
-            <RangeSliderTrack>
-              <RangeSliderFilledTrack />
-            </RangeSliderTrack>
-            <RangeSliderThumb index={0} />
-            <RangeSliderThumb index={1} />
-          </RangeSlider>
+          {!isPublicFacing && (
+            <RangeSlider
+              onChange={(value: number[]) => setSelectedGradeRange(value)}
+              aria-label={["min", "max"]}
+              value={selectedGradeRange}
+              min={1}
+              max={12}
+              step={1}
+              isReadOnly={!isEditing}
+            >
+              <RangeSliderTrack>
+                <RangeSliderFilledTrack />
+              </RangeSliderTrack>
+              <RangeSliderThumb index={0} />
+              <RangeSliderThumb index={1} />
+            </RangeSlider>
+          )}
         </FormControl>
       </HStack>
       <FormControl>
-        <FormLabel>Description</FormLabel>
+        {!isPublicFacing && <FormLabel>Description</FormLabel>}
         <InputError
           label={errors.description?.message}
           isOpen={errors.description ? true : false}
