@@ -39,7 +39,7 @@ const ProgramFormModal = ({ title, isOpen, onClose }: Props) => {
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <ProgramFormBody {...programForm} />
+          <ProgramFormBody {...programForm} isReadOnly={false} />
         </ModalBody>
         <ModalFooter>
           <SubmitButton

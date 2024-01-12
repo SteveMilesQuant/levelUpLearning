@@ -1,4 +1,4 @@
-from pydantic import BaseModel, PrivateAttr
+from pydantic import PrivateAttr
 from typing import List, Optional, Any
 from sqlalchemy import select
 from datamodels import RoleEnum, RoleResponse, UserData, UserResponse
@@ -65,9 +65,11 @@ class User(UserResponse):
             await session.commit()
 
             # Create initial role(s)
-            await session.refresh(self._db_obj, ['roles']) # again, not sure why I have to do this when I have lazy='joined'
+            # again, not sure why I have to do this when I have lazy='joined'
+            await session.refresh(self._db_obj, ['roles'])
             roles = ['GUARDIAN']
             if self._db_obj.id == 1:
+                roles.append('INSTRUCTOR')
                 roles.append('ADMIN')
             for role in roles:
                 await self.add_role(session, role)
@@ -81,9 +83,10 @@ class User(UserResponse):
             self.roles = []
             for db_role in self._db_obj.roles:
                 role = Role(db_obj=db_role)
-                await role.create(session) # not really async when we use db_obj
+                # not really async when we use db_obj
+                await role.create(session)
                 self.roles.append(role.name)
-            self.roles.sort(key = lambda role: RoleEnum[role].value)
+            self.roles.sort(key=lambda role: RoleEnum[role].value)
 
         # A couple cases require the id from the database (new or lookup by google_id)
         self.id = self._db_obj.id
@@ -100,17 +103,17 @@ class User(UserResponse):
     async def add_role(self, session: Any, role_name: str):
         if role_name in self.roles:
             return
-        role = Role(name = role_name)
+        role = Role(name=role_name)
         await role.create(session)
         self._db_obj.roles.append(role._db_obj)
         await session.commit()
         self.roles.append(role_name)
-        self.roles.sort(key = lambda role: RoleEnum[role].value)
+        self.roles.sort(key=lambda role: RoleEnum[role].value)
 
     async def remove_role(self, session: Any, role_name: str):
         if role_name not in self.roles:
             return
-        role = Role(name = role_name)
+        role = Role(name=role_name)
         await role.create(session)
         self._db_obj.roles.remove(role._db_obj)
         await session.commit()
@@ -167,20 +170,18 @@ class User(UserResponse):
 async def all_users(session: Any, by_role: Optional[str] = None):
     users = []
     if by_role:
-        role = Role(name = by_role)
+        role = Role(name=by_role)
         await role.create(session)
         await session.refresh(role._db_obj, ['users'])
         for db_user in role._db_obj.users:
-            user = User(db_obj = db_user)
+            user = User(db_obj=db_user)
             await user.create(session)
             users.append(user)
     else:
         stmt = select(UserDb)
         result = await session.execute(stmt)
         for db_user in result.unique():
-            user = User(db_obj = db_user[0])
+            user = User(db_obj=db_user[0])
             await user.create(session)
             users.append(user)
     return users
-
-

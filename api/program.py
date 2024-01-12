@@ -4,7 +4,6 @@ from typing import List, Tuple, Optional, Any
 from sqlalchemy import select
 from datamodels import ProgramData, ProgramResponse, LevelResponse
 from db import ProgramDb, LevelDb
-from camp import LevelSchedule
 
 
 class Level(LevelResponse):
@@ -29,15 +28,6 @@ class Level(LevelResponse):
             session.add(self._db_obj)
             await session.commit()
             self.id = self._db_obj.id
-
-            # Add a level schedule to each existing camp associated with this program
-            await session.refresh(self._db_obj, ['program'])
-            db_program = self._db_obj.program
-            await session.refresh(db_program, ['camps'])
-            for db_camp in db_program.camps:
-                level_schedule = LevelSchedule(camp_id = db_camp.id, level_id = self.id)
-                await level_schedule.create(session)
-            await session.commit()
         else:
             # Otherwise, update attributes from fetched object
             for key, value in LevelResponse():
@@ -58,7 +48,7 @@ class Level(LevelResponse):
         await session.commit()
 
     async def delete(self, session: Any):
-        await session.refresh(self._db_obj, ['program', 'level_schedules'])
+        await session.refresh(self._db_obj, ['program'])
         db_program = self._db_obj.program
         await session.refresh(db_program, ['levels'])
         for level in db_program.levels:
@@ -110,10 +100,6 @@ class Program(ProgramResponse):
 
     async def delete(self, session: Any):
         await session.refresh(self._db_obj, ['levels', 'camps'])
-        for db_level in self._db_obj.levels:
-            await session.refresh(db_level, ['level_schedules'])
-        for db_camp in self._db_obj.camps:
-            await session.refresh(db_camp, ['level_schedules'])
         await session.delete(self._db_obj)
         await session.commit()
 

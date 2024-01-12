@@ -7,7 +7,6 @@ from datamodels import StudentData, FastApiDate
 from datamodels import CampData, FastApiDatetime
 from user import User
 from program import Program, Level
-from camp import LevelSchedule
 from main import app
 
 
@@ -55,7 +54,6 @@ def test_post_camp(camp: CampData):
     camp_json['primary_instructor'] = app.test.users.map[camp_json['primary_instructor_id']].dict(include=UserResponse().dict())
     camp_json['primary_instructor']['roles'] = []
     camp_json['program'] = program_response
-    camp_json['start_time'] = None
     assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match posted camp {camp_json}.'
     all_camps_json.append(new_camp_json)
 
@@ -175,40 +173,6 @@ def test_change_primary_instructor(camp_index: int, instructor_id: int):
     assert got_camp_json == camp_json
 
 
-# Test updating the level schedules
-@pytest.mark.parametrize(('camp_index', 'level_index', 'level_schedule'), (
-    (0, 0, LevelSchedule(start_time=FastApiDatetime(2023, 2, 6, 9, 0, 0), end_time=FastApiDatetime(2023, 2, 6, 12, 0, 0))),
-    (0, 1, LevelSchedule(start_time=None, end_time=FastApiDatetime(2023, 2, 6, 16, 0, 0))),
-    (0, 1, LevelSchedule(start_time=FastApiDatetime(2023, 2, 7, 9, 0, 0), end_time=None)),
-))
-def test_update_level_schedules(camp_index: int, level_index: int, level_schedule: LevelSchedule):
-    camp_json = all_camps_json[camp_index]
-    camp_id = camp_json['id']
-    level = levels[level_index]
-    level_schedule_json = json.loads(json.dumps(level_schedule.dict(), indent=4, sort_keys=True, default=str))
-    response = client.put(f'/camps/{camp_id}/levels/{level.id}', json=level_schedule_json, headers = app.test.users.admin_headers)
-    content_type = response.headers['content-type']
-    assert 'application/json' in content_type
-    new_level_schedule_json = response.json()
-    level_schedule_json['camp_id'] = camp_id
-    level_schedule_json['level_id'] = level.id
-    level_schedule_json['id'] = level.id
-    level_schedule_json['level'] = level.dict(include=LevelResponse().dict())
-    assert new_level_schedule_json == level_schedule_json
-
-    response = client.get(f'/camps/{camp_id}/levels/{level.id}', headers = app.test.users.admin_headers)
-    content_type = response.headers['content-type']
-    assert 'application/json' in content_type
-    get_level_schedule_json = response.json()
-    assert get_level_schedule_json == level_schedule_json
-    
-    # Updating start times can update the camp, so update it here
-    response = client.get(f'/camps/{camp_id}', headers = app.test.users.admin_headers)
-    content_type = response.headers['content-type']
-    assert 'application/json' in content_type
-    all_camps_json[camp_index] = response.json()
-
-
 # Test enrolling, getting, and disenrolling students
 @pytest.mark.parametrize(('camp_index', 'student'), (
     (0, StudentData(name='Karen Tester', birthdate=FastApiDate(1987, 6, 15), grade_level=6)),
@@ -295,10 +259,6 @@ def test_permission():
     bad_program_id = alt_program.id
     bad_level_id = alt_level.id
 
-    level_id = levels[0].id
-    level_schedule = LevelSchedule(start_time=FastApiDatetime(2023, 2, 6, 9, 0, 0), end_time=FastApiDatetime(2023, 2, 6, 12, 0, 0))
-    level_schedule_json = json.loads(json.dumps(level_schedule.dict(), indent=4, sort_keys=True, default=str))
-
     instructor_id = app.test.users.instructor.id
 
     response = client.get(f'/students', headers = app.test.users.admin_headers)
@@ -340,12 +300,6 @@ def test_permission():
     response = client.delete(f'/camps/{camp_id}', headers=app.test.users.instructor_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     response = client.delete(f'/camps/{camp_id}', headers=app.test.users.guardian_headers)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-
-    # Instructors and guardians should be blocks from updating level schedules
-    response = client.put(f'/camps/{camp_id}/levels/{level_id}', json=level_schedule_json, headers=app.test.users.instructor_headers)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-    response = client.put(f'/camps/{camp_id}/levels/{level_id}', json=level_schedule_json, headers=app.test.users.guardian_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
     # Instructors and guardians should be blocked from adding or removing instructors to/from camps

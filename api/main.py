@@ -10,13 +10,13 @@ from datetime import datetime, timedelta
 from db import init_db, close_db
 from datamodels import RoleEnum, UserData, UserResponse, StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
-from datamodels import CampData, CampResponse, LevelScheduleData, LevelScheduleResponse
+from datamodels import CampData, CampResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
 from user import User, init_roles, all_users
 from student import Student
 from program import Program, all_programs
 from program import Level
-from camp import Camp, LevelSchedule, all_camps
+from camp import Camp, all_camps
 
 
 class Object(object):
@@ -521,8 +521,6 @@ async def put_update_camp(request: Request, camp_id: int, updated_camp_data: Cam
         await camp.create(session)
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        if updated_camp_data.program_id != camp.program_id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Once created, the program cannot be changed for a camp. Schedule a new camp, instead.")
         instructor = User(id = updated_camp_data.primary_instructor_id)
         await instructor.create(session)
         if instructor.id is None:
@@ -544,69 +542,6 @@ async def delete_camp(request: Request, camp_id: int):
         if camp.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
         await camp.delete(session = session)
-
-
-
-###############################################################################
-# CAMPS -> LEVELS
-###############################################################################
-
-
-# Public route
-@api_router.get("/camps/{camp_id}/levels", response_model = List[LevelScheduleResponse])
-async def get_camp_level_schedules(request: Request, camp_id: int):
-    '''Get all schedules for the levels of a camp. Level definitions come from the camp's program.'''
-    async with app.db_sessionmaker() as session:
-        camp = Camp(id = camp_id)
-        await camp.create(session)
-        if camp.id is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        level_schedules = []
-        for db_level_schedule in await camp.level_schedules(session):
-            level_schedule = LevelSchedule(db_obj = db_level_schedule)
-            await level_schedule.create(session)
-            level_schedules.append(level_schedule)
-        level_schedules.sort(key = lambda l: l.level.list_index)
-        return level_schedules
-
-
-# Public route
-@api_router.get("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
-async def get_camp_level_schedule(request: Request, camp_id: int, level_id: int):
-    '''Get a single level schedule of a camp.'''
-    async with app.db_sessionmaker() as session:
-        camp = Camp(id = camp_id)
-        await camp.create(session)
-        if camp.id is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} does not exist.")
-        for db_level_schedule in await camp.level_schedules(session):
-            if db_level_schedule.level_id == level_id:
-                level_schedule = LevelSchedule(db_obj = db_level_schedule)
-                await level_schedule.create(session)
-                return level_schedule
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} not found for camp id={camp_id}")
-
-
-@api_router.put("/camps/{camp_id}/levels/{level_id}", response_model = LevelScheduleResponse)
-async def camp_update_level_schedule(request: Request, camp_id: int, level_id: int, updated_level_schedule: LevelScheduleData):
-    '''Update a single level schedule within a camp.'''
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session)
-        if not user.has_role('ADMIN'):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"User does not have permission to update camps.")
-        camp = Camp(id = camp_id)
-        await camp.create(session)
-        if camp.id is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        for db_level_schedule in await camp.level_schedules(session):
-            if db_level_schedule.level_id == level_id:
-                level_schedule = LevelSchedule(db_obj = db_level_schedule)
-                await level_schedule.create(session)
-                level_schedule = level_schedule.copy(update=updated_level_schedule.dict(exclude_unset=True))
-                await level_schedule.update(session)
-                return level_schedule
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Level id={level_id} does not exist for camp id={camp_id}")
-
 
 
 ###############################################################################

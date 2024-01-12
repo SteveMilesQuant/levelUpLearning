@@ -41,7 +41,7 @@ const CampFormModal = ({ title, isOpen, onClose }: Props) => {
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <CampFormBody {...campForm} />
+          <CampFormBody {...campForm} showPrimaryInstructor={true} />
         </ModalBody>
         <ModalFooter>
           <HStack justifyContent="right" spacing={3}>

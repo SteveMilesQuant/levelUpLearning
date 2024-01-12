@@ -54,30 +54,30 @@ If you want to develop this locally, you can have live runs from your localhost 
 1. Either way...
    - Change directory to the git repo folder (i.e. that contains docker-compose.yml)
    - Copy ./app/.env.template to ./app/.env and update the values with values you noted before, or have chosen, except for the following the following change.
-      - VITE_API_URL=http://localhost:3000/
+     - VITE_API_URL=http://localhost:3000/
    - Copy ./api/.env.template to ./api/.env and update the values with values you noted before, or have chosen, except for the following the following change.
-      - Delete the line with "API_ROOT_PATH". You don't need to set this here.
+     - Delete the line with "API_ROOT_PATH". You don't need to set this here.
 2. Option 1: as docker containers and open web page at http://localhost (slower turnover, but obviously easier)
    - <code>docker-compose up --build -d</code>
 3. Option 2: using npm and uvicorn command lines and open web page at http://localhost:5173 (faster turnover for really active development)
    - Run app (front end)
-      - Change directory to the app directory
-      - Install dependencies
-         - Install nodejs
-         - <code>npm install</code>
-      - Run the server: <code>npm run dev</code>
+     - Change directory to the app directory
+     - Install dependencies
+       - Install nodejs
+       - <code>npm install</code>
+     - Run the server: <code>npm run dev</code>
    - Run api (back end; separate terminal)
-      - Change directory to the api direcotry
-      - Install dependencies
-         - Install python3 and pip
-      - (Optional, but recommended) create a virtual env for this project with the venv module
-         - <code>python3 -m venv virt</code>
-      - (if using a virtual env, do every login) <code>source virt/bin/activate</code> 
-      - (only do once) <code>python3 -m pip install -r ./requirements.txt</code>
-      - Convert text in .env to environment variables
-         - <code>export $(grep -v '^#' .env | xargs)</code>
-         - Note that <code>source .env</code> will not work because it will not set the variables for subprocesses
-      - Run the server: <code>uvicorn main:app --port 3000</code>
+     - Change directory to the api direcotry
+     - Install dependencies
+       - Install python3 and pip
+     - (Optional, but recommended) create a virtual env for this project with the venv module
+       - <code>python3 -m venv virt</code>
+     - (if using a virtual env, do every login) <code>source virt/bin/activate</code>
+     - (only do once) <code>python3 -m pip install -r ./requirements.txt</code>
+     - Convert text in .env to environment variables
+       - <code>export $(grep -v '^#' .env | xargs)</code>
+       - Note that <code>source .env</code> will not work because it will not set the variables for subprocesses
+     - Run the server: <code>uvicorn main:app --port 3000</code>
 
 ## Single machine deployment (AWS EC2 and Docker)
 
@@ -96,8 +96,9 @@ If you want to get this website up and running on a single server (i.e. without 
    - Additionally, install docker-compose, using steps you can Google
 3. Get SSL Certificates (one way is given here using certbot, but there are certainly a lot of ways to do this)
    - First, ensure your domain points to the IP address of this machine. See the "Get a domain" task in section "Common set up" above. Certbot will ping that address and expects to reach itself running on your server.
-   - Second, ensure nginx is down for the time being: <code>sudo service nginx stop</code>. Nginx will get in the way of the communication certbox is trying to do.
-   - Pull down the certbox docker image, run it to generate the certificates, and copy them to the target location. (Replace <code>\<your-domain\></code> and <code>\<your-email\></code> in the block below)
+   - Second, ensure nginx is down for the time being: <code>sudo service nginx stop</code>. Nginx will get in the way of the communication certbot is trying to do.
+   - Pull down the certbot docker image, run it to generate the certificates, and copy them to the target location. (Replace <code>\<your-domain\></code> and <code>\<your-email\></code> in the block below)
+
 ```
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 LETSENCRYPT_VOLUME_DIR=$DIR/letsencrypt
@@ -119,19 +120,20 @@ docker run \
 sudo cp --recursive --dereference $DIR/letsencrypt/live/$DOMAIN /usr/local/nginx/conf
 sudo chown $USER:$USER --recursive /usr/local/nginx/conf/$DOMAIN
 ```
+
 4. Configure nginx to route traffic
    - Open /etc/nginx/nginx.conf in a text editor (e.g. <code>sudo vi /etc/nginx/nginx.conf</code>)
-      - It should have a line with <code>include /etc/nginx/conf.d/*.conf;</code>
-      - If it also has a server specification below that, comment it out or delete it
+     - It should have a line with <code>include /etc/nginx/conf.d/\*.conf;</code>
+     - If it also has a server specification below that, comment it out or delete it
    - Copy the template server configuration to the nginx location we set up
      - <code>sudo cp ~/levelUpLearning/nginx/lul_nginx_ec2.conf.template /etc/nginx/conf.d/lul_nginx_ec2.conf</code>
      - This step may require that you pull down the git repo, which requires you to install git. Since this is the only step that requires the git repo, you may wish to just type/copy it in instead
    - Update /etc/nginx/conf.d/lul_nginx_ec2.conf to refer to your domain and ssl certificates
-      - <code>sudo vi /etc/nginx/conf.d/lul_nginx_ec2.conf</code>
-      - Type <code>:%s/\<your-domain\>/</code> then followed by your domain name (e.g. <code>:%s/\<your-domain\>/stevenmilesquant</code>)
+     - <code>sudo vi /etc/nginx/conf.d/lul_nginx_ec2.conf</code>
+     - Type <code>:%s/\<your-domain\>/</code> then followed by your domain name (e.g. <code>:%s/\<your-domain\>/stevenmilesquant</code>)
    - Restart nginx: <code>sudo service nginx restart</code>
 
-### Build the docker images and push up to AWS ECR ###
+### Build the docker images and push up to AWS ECR
 
 Follow the steps in the secion above on this topic, if you haven't already. Be sure to do this on your build machine (e.g. on Ubuntu), not on you AWS EC2 instance. The build can blow out the heap on these lightweight servers.
 
@@ -150,5 +152,3 @@ From your deployment server (e.g. AWS EC2 instance)...
 4. Run the containers
    - <code>docker run -d --name lul-app -p 8080:8080 ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_app</code>
    - <code>docker run -d --env-file ~/lul.env --name lul-api -p 3000:3000 ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_api</code>
-
-

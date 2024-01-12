@@ -10,10 +10,12 @@ import { ProgramForm } from "../../programs";
 import { StudentTable } from "../../students";
 import { InstructorList } from "../../users";
 import { useDeleteCamp } from "../hooks/useCamps";
-import LevelScheduleList from "./LevelScheduleList";
 import { Camp } from "../Camp";
 import DeleteButton from "../../components/DeleteButton";
 import { useNavigate } from "react-router-dom";
+import LevelList from "../../programs/components/LevelList";
+import CampForm from "./CampForm";
+import CampTabPublic from "./CampTabPublic";
 
 interface Props {
   camp: Camp;
@@ -34,34 +36,23 @@ const CampTabs = ({ camp, isReadOnly, isPublicFacing }: Props) => {
     <Tabs variant="enclosed">
       <TabList>
         <Tab>Camp</Tab>
-        {!isPublicFacing && <Tab>Schedule</Tab>}
         <Tab>Instructors</Tab>
         {!isPublicFacing && <Tab>Students</Tab>}
       </TabList>
       <TabPanels>
         <TabPanel>
-          <ProgramForm
-            program={camp.program}
-            isPublicFacing={isPublicFacing}
-            isReadOnly={true}
-          />
+          {isReadOnly && <CampTabPublic camp={camp} />}
           {!isReadOnly && (
-            <HStack justifyContent="right" paddingTop={3}>
-              <DeleteButton onConfirm={handleDelete}>
-                {camp.program.title}
-              </DeleteButton>
-            </HStack>
+            <>
+              <CampForm camp={camp} isReadOnly={isReadOnly} />
+              <HStack justifyContent="right" paddingTop={3}>
+                <DeleteButton onConfirm={handleDelete}>
+                  {camp.program.title}
+                </DeleteButton>
+              </HStack>
+            </>
           )}
         </TabPanel>
-        {!isPublicFacing && (
-          <TabPanel width="100%">
-            <LevelScheduleList
-              campId={camp.id}
-              isPublicFacing={isPublicFacing}
-              isReadOnly={isReadOnly}
-            />
-          </TabPanel>
-        )}
         <TabPanel>
           <InstructorList
             campId={camp.id}

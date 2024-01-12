@@ -1,4 +1,4 @@
-import { Box, Divider, Heading, SimpleGrid, Stack } from "@chakra-ui/react";
+import { Box, Divider, Heading, Stack } from "@chakra-ui/react";
 import { useDeleteCamp } from "../hooks/useCamps";
 import CampCard from "./CampCard";
 import { Camp } from "../Camp";
@@ -16,7 +16,8 @@ const CampGrid = ({ camps, isReadOnly }: Props) => {
     [id: string]: { id: string; heading: string; camps: Camp[] };
   } = {};
   camps.forEach((camp) => {
-    const startDate = camp.start_time ? new Date(camp.start_time) : undefined;
+    const startDate =
+      camp.dates && camp.dates.length > 0 ? new Date(camp.dates[0]) : undefined;
     const month = startDate?.getMonth();
     const year = startDate?.getUTCFullYear();
     const key: string = month + "_" + year;

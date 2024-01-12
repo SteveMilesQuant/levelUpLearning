@@ -1,11 +1,11 @@
-from datetime import date, datetime
+from datetime import date, datetime, time
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy import BigInteger, Text, String
+from sqlalchemy import BigInteger, Text, String, Date, Time
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, mapper
 from sqlalchemy.pool import NullPool
-from datamodels import UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse, LevelScheduleResponse
+from datamodels import UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse
 
 
 class Base(DeclarativeBase):
@@ -129,7 +129,6 @@ class LevelDb(Base):
     description: Mapped[str] = mapped_column(Text)
     list_index: Mapped[int] = mapped_column(nullable=True)
 
-    level_schedules: Mapped[List['LevelScheduleDb']] = relationship(back_populates='level', lazy='raise', cascade='all, delete')
     program: Mapped['ProgramDb'] = relationship(back_populates='levels', lazy='raise')
 
     def dict(self):
@@ -139,6 +138,13 @@ class LevelDb(Base):
         return returnVal
 
 
+class CampDateDb(Base):
+    __tablename__ = 'camp_x_dates'
+
+    date: Mapped[date] = mapped_column(Date, primary_key=True)
+    camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
+
+
 class CampDb(Base):
     __tablename__ = 'camp'
 
@@ -146,10 +152,12 @@ class CampDb(Base):
     program_id: Mapped[int] = mapped_column(ForeignKey('program.id'))
     primary_instructor_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     is_published: Mapped[bool]
+    daily_start_time: Mapped[time] = mapped_column(Time, nullable=True)
+    daily_end_time: Mapped[time] = mapped_column(Time, nullable=True)
 
     program: Mapped['ProgramDb'] = relationship(back_populates='camps', lazy='joined')
     primary_instructor: Mapped['UserDb'] = relationship(lazy='joined')
-    level_schedules: Mapped[List['LevelScheduleDb']] = relationship(back_populates='camp', lazy='raise', cascade='all, delete')
+    dates: Mapped[List['CampDateDb']] = relationship(lazy='joined', cascade='all, delete')
     instructors: Mapped[List['UserDb']] = relationship(secondary=camp_x_instructors, back_populates='camps', lazy='raise')
     students: Mapped[List['StudentDb']] = relationship(secondary=camp_x_students, back_populates='camps', lazy='raise')
 
@@ -157,25 +165,6 @@ class CampDb(Base):
         returnVal = {}
         for key, value in CampResponse():
             if key not in ['program', 'primary_instructor', 'start_time']:
-                returnVal[key] = getattr(self, key)
-        return returnVal
-
-
-class LevelScheduleDb(Base):
-    __tablename__ = 'level_schedule'
-
-    camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'), primary_key=True)
-    level_id: Mapped[int] = mapped_column(ForeignKey('level.id'), primary_key=True)
-    start_time: Mapped[datetime] = mapped_column(nullable=True)
-    end_time: Mapped[datetime] = mapped_column(nullable=True)
-
-    camp: Mapped['CampDb'] = relationship(back_populates='level_schedules', lazy='raise')
-    level: Mapped['LevelDb'] = relationship(back_populates='level_schedules', lazy='joined')
-
-    def dict(self):
-        returnVal = {}
-        for key, value in LevelScheduleResponse():
-            if key not in ['id', 'level']:
                 returnVal[key] = getattr(self, key)
         return returnVal
 

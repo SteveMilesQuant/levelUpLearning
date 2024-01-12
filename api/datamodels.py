@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, Tuple, Dict, List
-from datetime import date, datetime
+from datetime import date, datetime, time
 from enum import Enum
 
 
@@ -12,6 +12,10 @@ class FastApiDate(date):
 class FastApiDatetime(datetime):
     def __str__(self) -> str:
         return self.strftime('%Y-%m-%dT%H:%M:%S')
+
+class FastApiTime(time):
+    def __str__(self) -> str:
+        return self.strftime('%H:%M:%S')
 
 
 class RoleEnum(Enum):
@@ -65,29 +69,31 @@ class LevelResponse(LevelData):
     program_id: Optional[int]
 
 
-class CampData(BaseModel):
+class CampCore(BaseModel):
     program_id: Optional[int]
     primary_instructor_id: Optional[int]
     is_published: Optional[bool] = False
+    daily_start_time: Optional[FastApiTime]
+    daily_end_time: Optional[FastApiTime]
+
+
+class CampData(CampCore):
+    dates: Optional[List[FastApiDate]] = []
+
+    def dict(self, *args, **kwargs):
+        ret = super().dict(*args, **kwargs)
+        ret['dates'] = [date.dict() for date in self.dates]
+        return ret
 
 
 class CampResponse(CampData):
     id: Optional[int]
     primary_instructor: Optional[UserResponse] = None
     program: Optional[ProgramResponse] = None
-    start_time: Optional[FastApiDatetime]
 
-
-class LevelScheduleData(BaseModel):
-    start_time: Optional[FastApiDatetime]
-    end_time: Optional[FastApiDatetime]
-
-
-class LevelScheduleResponse(LevelScheduleData):
-    camp_id: Optional[int]
-    level_id: Optional[int]
-    id: Optional[int]
-    level: Optional[LevelResponse] = None
+    def dict(self, *args, **kwargs):
+        ret = super().dict(*args, **kwargs)
+        return ret
 
 
 class StudentData(BaseModel):
