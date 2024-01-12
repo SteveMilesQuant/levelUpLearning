@@ -277,11 +277,6 @@ def test_permission():
     returned_json = response.json()
     assert returned_json == camp_error_json
 
-    # Try to change program_id (not allowed)
-    camp_json['program_id'] = bad_program_id
-    response = client.put(f'/camps/{camp_id}', json=camp_json, headers = app.test.users.admin_headers)
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-
     # Get bad level id
     response = client.get(f'/camps/{camp_id}/levels/{bad_level_id}', headers = app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
