@@ -39,24 +39,27 @@ const InstructorList = ({ campId, isPublicFacing, isReadOnly }: Props) => {
 
   return (
     <Stack spacing={5}>
-      <Menu autoSelect={true}>
-        <MenuButton as={Button} rightIcon={<FaChevronDown />}>
-          {selectedInstructor.full_name}
-        </MenuButton>
-        <MenuList>
-          {instructors?.map((instructor) => (
-            <MenuItem
-              key={instructor.id}
-              onClick={() => setSelectedInstructor(instructor)}
-            >
-              {instructor.full_name}
-            </MenuItem>
-          ))}
-          {!isReadOnly && (
-            <AddInstructorMenu campId={campId} instructors={instructors} />
-          )}
-        </MenuList>
-      </Menu>
+      <Box>
+        {/* Wrap menu in box to avoid warnings ("applying css to popover") */}
+        <Menu autoSelect={true}>
+          <MenuButton as={Button} rightIcon={<FaChevronDown />}>
+            {selectedInstructor.full_name}
+          </MenuButton>
+          <MenuList>
+            {instructors?.map((instructor) => (
+              <MenuItem
+                key={instructor.id}
+                onClick={() => setSelectedInstructor(instructor)}
+              >
+                {instructor.full_name}
+              </MenuItem>
+            ))}
+          </MenuList>
+        </Menu>
+      </Box>
+      {!isReadOnly && (
+        <AddInstructorMenu campId={campId} instructors={instructors} />
+      )}
       <Box width="100%">
         {instructors
           ?.filter((instructor) => instructor.id === selectedInstructor?.id)

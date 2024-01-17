@@ -8,10 +8,9 @@ import { useState } from "react";
 
 interface Props {
   camp?: Camp;
-  isReadOnly?: boolean;
 }
 
-const CampForm = ({ camp, isReadOnly }: Props) => {
+const CampForm = ({ camp }: Props) => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const campForm = useCampForm(camp);
@@ -33,17 +32,15 @@ const CampForm = ({ camp, isReadOnly }: Props) => {
         isReadOnly={!isEditing}
         showPrimaryInstructor={false}
       />
-      {!isReadOnly && (
-        <CrudButtonSet
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
-          onDelete={handleDelete}
-          confirmationLabel={camp?.program.title}
-          onCancel={campForm.handleClose}
-          onSubmit={campForm.handleSubmit}
-          isSubmitValid={campForm.isValid}
-        />
-      )}
+      <CrudButtonSet
+        isEditing={isEditing}
+        setIsEditing={setIsEditing}
+        onDelete={handleDelete}
+        confirmationLabel={camp?.program.title}
+        onCancel={campForm.handleClose}
+        onSubmit={campForm.handleSubmit}
+        isSubmitValid={campForm.isValid}
+      />
     </>
   );
 };
