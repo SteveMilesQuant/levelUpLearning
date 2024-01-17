@@ -9,7 +9,9 @@ interface Props {
 const CampTabPublic = ({ camp }: Props) => {
   if (!camp) return null;
 
-  const datesList = camp.dates?.map((date_str) => new Date(date_str));
+  const datesList = camp.dates?.map(
+    (date_str) => new Date(date_str + "T00:00:00")
+  );
   let useDateRange = camp.dates !== undefined && camp.dates.length > 1;
   let lastDate: Date | undefined = undefined;
   datesList?.forEach((date: Date) => {

@@ -98,7 +98,7 @@ const CampFormBody = ({
         <FormLabel>Dates</FormLabel>
         <SimpleGrid columns={1}>
           {camp?.dates?.map((dateStr: string) => {
-            const date = new Date(dateStr);
+            const date = new Date(dateStr + "T00:00:00");
             return (
               <Fragment key={dateStr}>
                 <Text>
