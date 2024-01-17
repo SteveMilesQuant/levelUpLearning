@@ -30,7 +30,8 @@ class Camp(CampResponse):
             await session.commit()
             self.id = self._db_obj.id
 
-            await session.refresh(self._db_obj, ['program']) # not sure why I have to refresh program here
+            # not sure why I have to refresh program here
+            await session.refresh(self._db_obj, ['program'])
             await session.refresh(self._db_obj.program, ['levels'])
             await session.commit()
 
@@ -43,7 +44,8 @@ class Camp(CampResponse):
                 setattr(self, key, value)
 
         # Always get the associated primary instructor, program, and start time
-        self.primary_instructor = UserResponse(**self._db_obj.primary_instructor.dict())
+        self.primary_instructor = UserResponse(
+            **self._db_obj.primary_instructor.dict())
         self.program = ProgramResponse(**self._db_obj.program.dict())
 
     async def update(self, session: Any):
@@ -52,7 +54,8 @@ class Camp(CampResponse):
         await session.commit()
         if self.primary_instructor_id != self.primary_instructor.id:
             await session.refresh(self._db_obj, ['primary_instructor'])
-            self.primary_instructor = UserResponse(**self._db_obj.primary_instructor.dict())
+            self.primary_instructor = UserResponse(
+                **self._db_obj.primary_instructor.dict())
 
     async def delete(self, session: Any):
         await session.delete(self._db_obj)
@@ -74,7 +77,8 @@ class Camp(CampResponse):
         if instructor.id == self.primary_instructor_id:
             self.primary_instructor_id = self._db_obj.instructors[0].id
             self._db_obj.primary_instructor_id = self._db_obj.instructors[0].id
-            self.primary_instructor = UserResponse(**self._db_obj.primary_instructor.dict())
+            self.primary_instructor = UserResponse(
+                **self._db_obj.primary_instructor.dict())
         await session.commit()
 
     async def instructors(self, session: Any) -> List[UserDb]:
@@ -112,7 +116,8 @@ def camp_sort(camp: Camp) -> date:
         return camp.dates[0]
     return date.min
 
-async def all_camps(session: Any, is_published = None):
+
+async def all_camps(session: Any, is_published=None):
     if is_published is None:
         stmt = select(CampDb)
     else:
@@ -120,10 +125,8 @@ async def all_camps(session: Any, is_published = None):
     result = await session.execute(stmt)
     camps = []
     for db_camp in result.unique():
-        camp = Camp(db_obj = db_camp[0])
+        camp = Camp(db_obj=db_camp[0])
         await camp.create(session)
         camps.append(camp)
     camps.sort(key=camp_sort)
     return camps
-
-

@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date as dt_date, time
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
 from sqlalchemy import Text, String, Date, Time
@@ -152,7 +152,7 @@ class LevelDb(Base):
 class CampDateDb(Base):
     __tablename__ = 'camp_x_dates'
 
-    date: Mapped[date] = mapped_column(Date, primary_key=True)
+    date: Mapped[dt_date] = mapped_column(Date, primary_key=True)
     camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
 
     def __str__(self) -> str:

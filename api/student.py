@@ -37,13 +37,13 @@ class Student(StudentResponse):
 
         self.camps = []
         for db_camp in self._db_obj.camps:
-            camp = Camp(db_obj = db_camp)
+            camp = Camp(db_obj=db_camp)
             await camp.create(session)
             self.camps.append(CampResponse(**camp.dict()))
 
         self.guardians = []
         for db_guardian in self._db_obj.guardians:
-            guardian = User(db_obj = db_guardian)
+            guardian = User(db_obj=db_guardian)
             await guardian.create(session)
             self.guardians.append(UserResponse(**guardian.dict()))
 
@@ -55,5 +55,3 @@ class Student(StudentResponse):
     async def delete(self, session: Any):
         await session.delete(self._db_obj)
         await session.commit()
-
-

@@ -86,7 +86,8 @@ class Program(ProgramResponse):
             # Otherwise, update attributes from fetched object
             for key, value in ProgramResponse():
                 if key == 'grade_range':
-                    self.grade_range = (self._db_obj.from_grade, self._db_obj.to_grade)
+                    self.grade_range = (
+                        self._db_obj.from_grade, self._db_obj.to_grade)
                 else:
                     setattr(self, key, getattr(self._db_obj, key))
 
@@ -119,9 +120,7 @@ async def all_programs(session: Any):
     result = await session.execute(stmt)
     programs = []
     for db_program in result.scalars():
-        program = Program(db_obj = db_program)
+        program = Program(db_obj=db_program)
         await program.create(session)
         programs.append(program.dict(include=ProgramResponse().dict()))
     return programs
-
-
