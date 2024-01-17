@@ -1,6 +1,5 @@
-from enum import Enum
-from pydantic import BaseModel, PrivateAttr
-from typing import List, Tuple, Optional, Any
+from pydantic import PrivateAttr
+from typing import List, Optional, Any
 from sqlalchemy import select
 from datamodels import ProgramData, ProgramResponse, LevelResponse
 from db import ProgramDb, LevelDb

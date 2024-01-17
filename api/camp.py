@@ -1,4 +1,4 @@
-from pydantic import BaseModel, PrivateAttr
+from pydantic import PrivateAttr
 from typing import Optional, Any, List, Dict
 from datamodels import CampData, CampResponse
 from datamodels import UserResponse, ProgramResponse, LevelResponse
@@ -113,7 +113,7 @@ class Camp(CampResponse):
 
 def camp_sort(camp: Camp) -> date:
     if len(camp.dates) > 0:
-        return camp.dates[0]
+        return camp.dates[0].date
     return date.min
 
 
