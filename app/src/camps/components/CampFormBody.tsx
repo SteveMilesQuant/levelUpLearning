@@ -1,10 +1,11 @@
 import {
-  Box,
   FormControl,
   FormLabel,
   Input,
   LinkOverlay,
+  Text,
   Select,
+  SimpleGrid,
   Stack,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
@@ -14,6 +15,8 @@ import InputError from "../../components/InputError";
 import { usePrograms } from "../../programs";
 import { useUsers } from "../../users";
 import { Camp } from "../Camp";
+import { locale } from "../../constants";
+import { Fragment } from "react";
 
 interface Props {
   camp?: Camp;
@@ -32,6 +35,8 @@ const CampFormBody = ({
 }: Props) => {
   const { data: programs } = usePrograms();
   const { data: instructors } = useUsers({ role: "INSTRUCTOR" });
+
+  const today = new Date();
 
   return (
     <Stack spacing={5}>
@@ -89,6 +94,31 @@ const CampFormBody = ({
           </InputError>
         </FormControl>
       )}
+      <FormControl>
+        <FormLabel>Dates</FormLabel>
+        <SimpleGrid columns={1}>
+          {camp?.dates?.map((dateStr: string) => {
+            const date = new Date(dateStr);
+            return (
+              <Fragment key={dateStr}>
+                <Text>
+                  {date.toLocaleDateString(locale, {
+                    dateStyle: "short",
+                  })}
+                </Text>
+              </Fragment>
+            );
+          })}
+        </SimpleGrid>
+      </FormControl>
+      <FormControl>
+        <FormLabel>Daily start time</FormLabel>
+        <Text>{camp?.daily_start_time}</Text>
+      </FormControl>
+      <FormControl>
+        <FormLabel>Daily end time</FormLabel>
+        <Text>{camp?.daily_end_time}</Text>
+      </FormControl>
     </Stack>
   );
 };

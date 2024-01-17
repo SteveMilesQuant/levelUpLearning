@@ -1,11 +1,11 @@
 from datetime import date, datetime, time
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy import BigInteger, Text, String, Date, Time
+from sqlalchemy import Text, String, Date, Time
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, mapper
 from sqlalchemy.pool import NullPool
-from datamodels import UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse
+from datamodels import FastApiDate, UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse
 
 
 class Base(DeclarativeBase):
@@ -53,7 +53,8 @@ class RoleDb(Base):
 
     name: Mapped[str] = mapped_column(String(32), primary_key=True)
 
-    users: Mapped[List['UserDb']] = relationship(secondary=user_x_roles, back_populates='roles', lazy='raise')
+    users: Mapped[List['UserDb']] = relationship(
+        secondary=user_x_roles, back_populates='roles', lazy='raise')
 
 
 class UserDb(Base):
@@ -67,10 +68,14 @@ class UserDb(Base):
     instructor_subjects: Mapped[str] = mapped_column(Text, nullable=True)
     instructor_description: Mapped[str] = mapped_column(Text, nullable=True)
 
-    roles: Mapped[List[RoleDb]] = relationship(secondary=user_x_roles, back_populates='users', lazy='joined')
-    students: Mapped[List['StudentDb']] = relationship(secondary=user_x_students, back_populates='guardians', lazy='raise')
-    programs: Mapped[List['ProgramDb']] = relationship(secondary=user_x_programs, back_populates='designers', lazy='raise')
-    camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_instructors, back_populates='instructors', lazy='raise')
+    roles: Mapped[List[RoleDb]] = relationship(
+        secondary=user_x_roles, back_populates='users', lazy='joined')
+    students: Mapped[List['StudentDb']] = relationship(
+        secondary=user_x_students, back_populates='guardians', lazy='raise')
+    programs: Mapped[List['ProgramDb']] = relationship(
+        secondary=user_x_programs, back_populates='designers', lazy='raise')
+    camps: Mapped[List['CampDb']] = relationship(
+        secondary=camp_x_instructors, back_populates='instructors', lazy='raise')
 
     def dict(self):
         returnVal = {}
@@ -87,8 +92,10 @@ class StudentDb(Base):
     name: Mapped[str] = mapped_column(Text)
     grade_level: Mapped[int] = mapped_column(nullable=True)
 
-    guardians: Mapped[List['UserDb']] = relationship(secondary=user_x_students, back_populates='students', lazy='joined')
-    camps: Mapped[List['CampDb']] = relationship(secondary=camp_x_students, back_populates='students', lazy='joined')
+    guardians: Mapped[List['UserDb']] = relationship(
+        secondary=user_x_students, back_populates='students', lazy='joined')
+    camps: Mapped[List['CampDb']] = relationship(
+        secondary=camp_x_students, back_populates='students', lazy='joined')
 
     def dict(self):
         returnVal = {}
@@ -108,9 +115,12 @@ class ProgramDb(Base):
     tags: Mapped[str] = mapped_column(Text)
     description: Mapped[str] = mapped_column(Text)
 
-    levels: Mapped[List['LevelDb']] = relationship(back_populates='program', lazy='raise', cascade='all, delete')
-    designers: Mapped[List['UserDb']] = relationship(secondary=user_x_programs, back_populates='programs', lazy='raise')
-    camps: Mapped[List['CampDb']] = relationship(back_populates='program', lazy='raise', cascade='all, delete')
+    levels: Mapped[List['LevelDb']] = relationship(
+        back_populates='program', lazy='raise', cascade='all, delete')
+    designers: Mapped[List['UserDb']] = relationship(
+        secondary=user_x_programs, back_populates='programs', lazy='raise')
+    camps: Mapped[List['CampDb']] = relationship(
+        back_populates='program', lazy='raise', cascade='all, delete')
 
     def dict(self):
         returnVal = {'grade_range': (self.from_grade, self.to_grade)}
@@ -129,7 +139,8 @@ class LevelDb(Base):
     description: Mapped[str] = mapped_column(Text)
     list_index: Mapped[int] = mapped_column(nullable=True)
 
-    program: Mapped['ProgramDb'] = relationship(back_populates='levels', lazy='raise')
+    program: Mapped['ProgramDb'] = relationship(
+        back_populates='levels', lazy='raise')
 
     def dict(self):
         returnVal = {}
@@ -144,6 +155,11 @@ class CampDateDb(Base):
     date: Mapped[date] = mapped_column(Date, primary_key=True)
     camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
 
+    def __str__(self) -> str:
+        fastApiDate = FastApiDate(
+            self.date.year, self.date.month, self.date.day)
+        return f'{fastApiDate}'
+
 
 class CampDb(Base):
     __tablename__ = 'camp'
@@ -155,11 +171,15 @@ class CampDb(Base):
     daily_start_time: Mapped[time] = mapped_column(Time, nullable=True)
     daily_end_time: Mapped[time] = mapped_column(Time, nullable=True)
 
-    program: Mapped['ProgramDb'] = relationship(back_populates='camps', lazy='joined')
+    program: Mapped['ProgramDb'] = relationship(
+        back_populates='camps', lazy='joined')
     primary_instructor: Mapped['UserDb'] = relationship(lazy='joined')
-    dates: Mapped[List['CampDateDb']] = relationship(lazy='joined', cascade='all, delete')
-    instructors: Mapped[List['UserDb']] = relationship(secondary=camp_x_instructors, back_populates='camps', lazy='raise')
-    students: Mapped[List['StudentDb']] = relationship(secondary=camp_x_students, back_populates='camps', lazy='raise')
+    dates: Mapped[List['CampDateDb']] = relationship(
+        lazy='joined', cascade='all, delete')
+    instructors: Mapped[List['UserDb']] = relationship(
+        secondary=camp_x_instructors, back_populates='camps', lazy='raise')
+    students: Mapped[List['StudentDb']] = relationship(
+        secondary=camp_x_students, back_populates='camps', lazy='raise')
 
     def dict(self):
         returnVal = {}
@@ -172,9 +192,11 @@ class CampDb(Base):
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):
     if for_pytest:
         # Workaround for pytest issues
-        engine = create_async_engine(f'mysql+aiomysql://{user}:{password}@{url}:{port}/{schema_name}?charset=utf8mb4', poolclass=NullPool)
+        engine = create_async_engine(
+            f'mysql+aiomysql://{user}:{password}@{url}:{port}/{schema_name}?charset=utf8mb4', poolclass=NullPool)
     else:
-        engine = create_async_engine(f'mysql+aiomysql://{user}:{password}@{url}:{port}/{schema_name}?charset=utf8mb4')
+        engine = create_async_engine(
+            f'mysql+aiomysql://{user}:{password}@{url}:{port}/{schema_name}?charset=utf8mb4')
     sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

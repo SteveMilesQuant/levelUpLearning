@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Tuple, Dict, List
+from typing import Optional, Tuple, List
 from datetime import date, datetime, time
 from enum import Enum
 
@@ -12,6 +12,7 @@ class FastApiDate(date):
 class FastApiDatetime(datetime):
     def __str__(self) -> str:
         return self.strftime('%Y-%m-%dT%H:%M:%S')
+
 
 class FastApiTime(time):
     def __str__(self) -> str:
@@ -82,7 +83,7 @@ class CampData(CampCore):
 
     def dict(self, *args, **kwargs):
         ret = super().dict(*args, **kwargs)
-        ret['dates'] = [date.dict() for date in self.dates]
+        ret['dates'] = [f'{date}' for date in self.dates]
         return ret
 
 
@@ -111,4 +112,3 @@ class StudentResponse(StudentData):
         ret['camps'] = [camp.dict() for camp in self.camps]
         ret['guardians'] = [guardian.dict() for guardian in self.guardians]
         return ret
-

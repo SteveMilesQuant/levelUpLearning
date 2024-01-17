@@ -66,9 +66,21 @@ const CampCard = ({ camp, onDelete }: Props) => {
         : datesListStr.join(" ")
       : "TBD";
 
+  const startTime = camp.daily_start_time
+    ? new Date("2023-01-01T" + camp.daily_start_time)
+    : null;
+  const endTime = camp.daily_end_time
+    ? new Date("2023-01-01T" + camp.daily_end_time)
+    : null;
   const timeStr =
-    camp.daily_start_time && camp.daily_end_time
-      ? camp.daily_start_time + " to " + camp.daily_end_time
+    startTime && endTime
+      ? startTime.toLocaleString(locale, {
+          timeStyle: "short",
+        }) +
+        " to " +
+        endTime.toLocaleString(locale, {
+          timeStyle: "short",
+        })
       : "TBD";
 
   return (
