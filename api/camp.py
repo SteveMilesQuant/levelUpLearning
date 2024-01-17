@@ -1,9 +1,9 @@
 from pydantic import PrivateAttr
-from typing import Optional, Any, List, Dict
+from typing import Optional, Any, List
 from datamodels import CampData, CampResponse
-from datamodels import UserResponse, ProgramResponse, LevelResponse
-from db import CampDb, UserDb, StudentDb
-from datetime import date
+from datamodels import UserResponse, ProgramResponse
+from db import CampDb, CampDateDb, UserDb, StudentDb
+from datetime import date, datetime
 from sqlalchemy import select
 
 
@@ -41,7 +41,10 @@ class Camp(CampResponse):
         else:
             # Otherwise, update attributes from fetched object
             for key, value in self._db_obj.dict().items():
-                setattr(self, key, value)
+                if key == 'dates':
+                    self.dates = [dbDate.date for dbDate in self._db_obj.dates]
+                else:
+                    setattr(self, key, value)
 
         # Always get the associated primary instructor, program, and start time
         self.primary_instructor = UserResponse(
@@ -50,7 +53,16 @@ class Camp(CampResponse):
 
     async def update(self, session: Any):
         for key, value in CampData():
-            setattr(self._db_obj, key, getattr(self, key))
+            if key == 'dates':
+                for dbDate in self._db_obj.dates:
+                    await session.delete(dbDate)
+                for date in self.dates:
+                    if isinstance(date, str):
+                        date = datetime.strptime(date, '%Y-%m-%d').date()
+                    dbDate = CampDateDb(camp_id=self.id, date=date)
+                    session.add(dbDate)
+            else:
+                setattr(self._db_obj, key, getattr(self, key))
         await session.commit()
         if self.primary_instructor_id != self.primary_instructor.id:
             await session.refresh(self._db_obj, ['primary_instructor'])
@@ -113,7 +125,7 @@ class Camp(CampResponse):
 
 def camp_sort(camp: Camp) -> date:
     if len(camp.dates) > 0:
-        return camp.dates[0].date
+        return camp.dates[0]
     return date.min
 
 
