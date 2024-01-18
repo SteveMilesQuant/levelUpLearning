@@ -3,10 +3,11 @@ import {
   FormLabel,
   Input,
   LinkOverlay,
-  Text,
   Select,
-  SimpleGrid,
   Stack,
+  Grid,
+  GridItem,
+  Box,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { FieldErrors, UseFormRegister } from "react-hook-form";
@@ -15,8 +16,11 @@ import InputError from "../../components/InputError";
 import { usePrograms } from "../../programs";
 import { useUsers } from "../../users";
 import { Camp } from "../Camp";
-import { locale } from "../../constants";
+import DatePicker from "react-datepicker";
 import { Fragment } from "react";
+import { AiFillDelete } from "react-icons/ai";
+import ActionButton from "../../components/ActionButton";
+import { FaRegCalendarPlus } from "react-icons/fa";
 
 interface Props {
   camp?: Camp;
@@ -36,7 +40,12 @@ const CampFormBody = ({
   const { data: programs } = usePrograms();
   const { data: instructors } = useUsers({ role: "INSTRUCTOR" });
 
-  const today = new Date();
+  const startTime = camp?.daily_start_time
+    ? new Date("2023-01-01T" + camp.daily_start_time)
+    : null;
+  const endTime = camp?.daily_end_time
+    ? new Date("2023-01-01T" + camp.daily_end_time)
+    : null;
 
   return (
     <Stack spacing={5}>
@@ -96,28 +105,68 @@ const CampFormBody = ({
       )}
       <FormControl>
         <FormLabel>Dates</FormLabel>
-        <SimpleGrid columns={1}>
+        <Grid templateColumns="repeat(3, 1fr)" paddingX={3}>
           {camp?.dates?.map((dateStr: string) => {
             const date = new Date(dateStr + "T00:00:00");
             return (
               <Fragment key={dateStr}>
-                <Text>
-                  {date.toLocaleDateString(locale, {
-                    dateStyle: "short",
-                  })}
-                </Text>
+                <GridItem colSpan={2} marginY="auto">
+                  <DatePicker
+                    selected={date}
+                    onChange={() => {}}
+                    readOnly={isReadOnly}
+                  />
+                </GridItem>
+                <GridItem marginY="auto">
+                  <ActionButton
+                    Component={AiFillDelete}
+                    label="Delete"
+                    disabled={isReadOnly}
+                    onClick={() => {}}
+                  />
+                </GridItem>
               </Fragment>
             );
           })}
-        </SimpleGrid>
+          <GridItem marginY="auto">
+            <ActionButton
+              Component={FaRegCalendarPlus}
+              label="Add date"
+              disabled={isReadOnly}
+              onClick={() => {}}
+            />
+          </GridItem>
+        </Grid>
       </FormControl>
       <FormControl>
         <FormLabel>Daily start time</FormLabel>
-        <Text>{camp?.daily_start_time}</Text>
+        <Box paddingX={3}>
+          <DatePicker
+            selected={startTime}
+            onChange={() => {}}
+            showTimeSelect
+            showTimeSelectOnly
+            timeIntervals={15}
+            timeCaption="Time"
+            dateFormat="h:mm aa"
+            readOnly={isReadOnly}
+          />
+        </Box>
       </FormControl>
       <FormControl>
         <FormLabel>Daily end time</FormLabel>
-        <Text>{camp?.daily_end_time}</Text>
+        <Box paddingX={3}>
+          <DatePicker
+            selected={endTime}
+            onChange={() => {}}
+            showTimeSelect
+            showTimeSelectOnly
+            timeIntervals={15}
+            timeCaption="Time"
+            dateFormat="h:mm aa"
+            readOnly={isReadOnly}
+          />
+        </Box>
       </FormControl>
     </Stack>
   );

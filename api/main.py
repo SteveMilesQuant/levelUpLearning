@@ -61,7 +61,7 @@ async def startup():
     app.config.GOOGLE_CLIENT_SECRET = os.environ.get(
         "GOOGLE_CLIENT_SECRET", None)
     app.config.GOOGLE_DISCOVERY_URL = "https://accounts.google.com/.well-known/openid-configuration"
-    app.config.jwt_lifetime = timedelta(minutes=30)
+    app.config.jwt_lifetime = timedelta(days=1)
     app.config.jwt_algorithm = "HS256"
     app.config.jwt_subject = "access"
 
