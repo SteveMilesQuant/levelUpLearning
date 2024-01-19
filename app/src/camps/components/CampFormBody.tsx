@@ -47,13 +47,6 @@ const CampFormBody = ({
   const { data: programs } = usePrograms();
   const { data: instructors } = useUsers({ role: "INSTRUCTOR" });
 
-  const startTime = camp?.daily_start_time
-    ? new Date("2023-01-01T" + camp.daily_start_time)
-    : null;
-  const endTime = camp?.daily_end_time
-    ? new Date("2023-01-01T" + camp.daily_end_time)
-    : null;
-
   return (
     <Stack spacing={5}>
       <FormControl>
