@@ -32,6 +32,8 @@ export const campSchema = z.object({
       }
       throw ctx.error;
     }),
+  start_datetime: z.date().optional(),
+  end_datetime: z.date().optional(),
 });
 
 export type FormData = z.infer<typeof campSchema>;
@@ -41,13 +43,24 @@ const useCampForm = (camp?: Camp) => {
   const { data: instructors } = useUsers({ role: "INSTRUCTOR" });
   const {
     register,
+    control,
     handleSubmit: handleFormSubmit,
     formState: { errors, isValid: formIsValid },
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(campSchema),
     defaultValues: useMemo(() => {
-      return { ...camp };
+      return {
+        ...camp,
+        start_datetime:
+          camp && camp.daily_start_time
+            ? new Date("2023-01-01T" + camp.daily_start_time)
+            : undefined,
+        end_datetime:
+          camp && camp.daily_end_time
+            ? new Date("2023-01-01T" + camp.daily_end_time)
+            : undefined,
+      };
     }, [camp]),
   });
   const isValid = formIsValid;
@@ -67,10 +80,17 @@ const useCampForm = (camp?: Camp) => {
       (i) => i.id === data.primary_instructor_id
     );
 
+    const start = data.start_datetime;
+    const end = data.end_datetime;
+
     const newCamp = {
       id: 0,
       ...camp,
       ...data,
+      daily_start_time:
+        start.getHours() + ":" + start.getMinutes() + ":" + start.getSeconds(),
+      daily_end_time:
+        end.getHours() + ":" + end.getMinutes() + ":" + end.getSeconds(),
       program: { ...program },
       primary_instructor: { ...instructor },
     } as Camp;
@@ -90,6 +110,7 @@ const useCampForm = (camp?: Camp) => {
 
   return {
     register,
+    control,
     errors,
     handleClose,
     handleSubmit,

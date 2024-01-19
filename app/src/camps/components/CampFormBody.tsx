@@ -10,7 +10,12 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { FieldErrors, UseFormRegister } from "react-hook-form";
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  UseFormRegister,
+} from "react-hook-form";
 import { FormData } from "../hooks/useCampForm";
 import InputError from "../../components/InputError";
 import { usePrograms } from "../../programs";
@@ -25,6 +30,7 @@ import { FaRegCalendarPlus } from "react-icons/fa";
 interface Props {
   camp?: Camp;
   register: UseFormRegister<FormData>;
+  control: Control<FormData>;
   errors: FieldErrors<FormData>;
   isReadOnly?: boolean;
   showPrimaryInstructor?: boolean;
@@ -33,6 +39,7 @@ interface Props {
 const CampFormBody = ({
   camp,
   register,
+  control,
   errors,
   isReadOnly,
   showPrimaryInstructor,
@@ -71,7 +78,12 @@ const CampFormBody = ({
             label={errors.program_id?.message}
             isOpen={errors.program_id ? true : false}
           >
-            <Select {...register("program_id")}>
+            <Select
+              {...register("program_id")}
+              onChange={(event) => {
+                console.log(event);
+              }}
+            >
               <option value="">Select program</option>{" "}
               {programs?.map((program) => (
                 <option key={program.id} value={program.id}>
@@ -141,30 +153,44 @@ const CampFormBody = ({
       <FormControl>
         <FormLabel>Daily start time</FormLabel>
         <Box paddingX={3}>
-          <DatePicker
-            selected={startTime}
-            onChange={() => {}}
-            showTimeSelect
-            showTimeSelectOnly
-            timeIntervals={15}
-            timeCaption="Time"
-            dateFormat="h:mm aa"
-            readOnly={isReadOnly}
+          <Controller
+            control={control}
+            name="start_datetime"
+            render={({ field }) => (
+              <DatePicker
+                placeholderText="Select date"
+                onChange={(date) => field.onChange(date)}
+                selected={field.value}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={15}
+                timeCaption="Time"
+                dateFormat="h:mm aa"
+                readOnly={isReadOnly}
+              />
+            )}
           />
         </Box>
       </FormControl>
       <FormControl>
         <FormLabel>Daily end time</FormLabel>
         <Box paddingX={3}>
-          <DatePicker
-            selected={endTime}
-            onChange={() => {}}
-            showTimeSelect
-            showTimeSelectOnly
-            timeIntervals={15}
-            timeCaption="Time"
-            dateFormat="h:mm aa"
-            readOnly={isReadOnly}
+          <Controller
+            control={control}
+            name="end_datetime"
+            render={({ field }) => (
+              <DatePicker
+                placeholderText="Select date"
+                onChange={(date) => field.onChange(date)}
+                selected={field.value}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={15}
+                timeCaption="Time"
+                dateFormat="h:mm aa"
+                readOnly={isReadOnly}
+              />
+            )}
           />
         </Box>
       </FormControl>
