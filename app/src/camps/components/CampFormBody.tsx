@@ -110,45 +110,66 @@ const CampFormBody = ({
       )}
       <FormControl>
         <FormLabel>Dates</FormLabel>
-        <Grid templateColumns="repeat(3, 1fr)" paddingX={3}>
-          {camp?.dates?.map((dateStr: string) => {
-            const date = new Date(dateStr + "T00:00:00");
-            return (
-              <Fragment key={dateStr}>
-                <GridItem colSpan={2} marginY="auto">
-                  <DatePicker
-                    selected={date}
-                    onChange={() => {}}
-                    readOnly={isReadOnly}
-                  />
-                </GridItem>
-                <GridItem marginY="auto">
-                  <ActionButton
-                    Component={AiFillDelete}
-                    label="Delete"
-                    disabled={isReadOnly}
-                    onClick={() => {}}
-                  />
-                </GridItem>
-              </Fragment>
-            );
-          })}
-          <GridItem marginY="auto">
-            <ActionButton
-              Component={FaRegCalendarPlus}
-              label="Add date"
-              disabled={isReadOnly}
-              onClick={() => {}}
-            />
-          </GridItem>
-        </Grid>
+        <Controller
+          control={control}
+          name="z_dates"
+          render={({ field }) => (
+            <Grid templateColumns="repeat(3, 1fr)" paddingX={3}>
+              {field.value?.map((date, index) => (
+                <Fragment key={index}>
+                  <GridItem colSpan={2} marginY="auto">
+                    <DatePicker
+                      selected={date}
+                      onChange={(d) =>
+                        field.onChange([
+                          ...field.value.slice(0, index),
+                          d,
+                          ...field.value.slice(index + 1),
+                        ])
+                      }
+                      readOnly={isReadOnly}
+                    />
+                  </GridItem>
+                  <GridItem marginY="auto">
+                    <ActionButton
+                      Component={AiFillDelete}
+                      label="Delete"
+                      disabled={isReadOnly}
+                      onClick={() => {
+                        field.onChange([
+                          ...field.value.slice(0, index),
+                          ...field.value.slice(index + 1),
+                        ]);
+                      }}
+                    />
+                  </GridItem>
+                </Fragment>
+              ))}
+              <GridItem marginY="auto">
+                <ActionButton
+                  Component={FaRegCalendarPlus}
+                  label="Add date"
+                  disabled={isReadOnly}
+                  onClick={() => {
+                    const lastDate = field.value[field.value.length - 1];
+                    const newDate = lastDate
+                      ? new Date(lastDate.getTime())
+                      : new Date();
+                    newDate.setDate(newDate.getDate() + 1);
+                    field.onChange([...field.value, newDate]);
+                  }}
+                />
+              </GridItem>
+            </Grid>
+          )}
+        />
       </FormControl>
       <FormControl>
         <FormLabel>Daily start time</FormLabel>
         <Box paddingX={3}>
           <Controller
             control={control}
-            name="start_datetime"
+            name="z_daily_start_time"
             render={({ field }) => (
               <DatePicker
                 placeholderText="Select date"
@@ -170,7 +191,7 @@ const CampFormBody = ({
         <Box paddingX={3}>
           <Controller
             control={control}
-            name="end_datetime"
+            name="z_daily_end_time"
             render={({ field }) => (
               <DatePicker
                 placeholderText="Select date"

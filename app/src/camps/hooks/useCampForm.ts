@@ -32,8 +32,9 @@ export const campSchema = z.object({
       }
       throw ctx.error;
     }),
-  start_datetime: z.date().optional(),
-  end_datetime: z.date().optional(),
+  z_daily_start_time: z.date().optional(),
+  z_daily_end_time: z.date().optional(),
+  z_dates: z.date().optional().array(),
 });
 
 export type FormData = z.infer<typeof campSchema>;
@@ -52,14 +53,17 @@ const useCampForm = (camp?: Camp) => {
     defaultValues: useMemo(() => {
       return {
         ...camp,
-        start_datetime:
+        z_daily_start_time:
           camp && camp.daily_start_time
             ? new Date("2023-01-01T" + camp.daily_start_time)
             : undefined,
-        end_datetime:
+        z_daily_end_time:
           camp && camp.daily_end_time
             ? new Date("2023-01-01T" + camp.daily_end_time)
             : undefined,
+        z_dates: camp?.dates?.map(
+          (date_str) => new Date(date_str + "T00:00:00")
+        ),
       };
     }, [camp]),
   });
@@ -80,8 +84,12 @@ const useCampForm = (camp?: Camp) => {
       (i) => i.id === data.primary_instructor_id
     );
 
-    const start = data.start_datetime;
-    const end = data.end_datetime;
+    const start = data.z_daily_start_time;
+    const end = data.z_daily_end_time;
+    const dates = data.z_dates.map(
+      (date: Date) =>
+        date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
+    );
 
     const newCamp = {
       id: 0,
@@ -91,6 +99,7 @@ const useCampForm = (camp?: Camp) => {
         start.getHours() + ":" + start.getMinutes() + ":" + start.getSeconds(),
       daily_end_time:
         end.getHours() + ":" + end.getMinutes() + ":" + end.getSeconds(),
+      dates,
       program: { ...program },
       primary_instructor: { ...instructor },
     } as Camp;
