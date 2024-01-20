@@ -13,19 +13,22 @@ import {
 } from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
 import {
-  Box,
   Drawer,
   DrawerBody,
   DrawerContent,
   DrawerOverlay,
   IconButton,
-  Stack,
   useDisclosure,
+  Text,
+  Grid,
+  GridItem,
+  LinkBox,
 } from "@chakra-ui/react";
 import LinkIcon from "./LinkIcon";
-import { ReactElement } from "react";
+import { Fragment, ReactElement } from "react";
 import { IoClose } from "react-icons/io5";
 import { useUser } from "../users";
+import { Link as RouterLink } from "react-router-dom";
 
 interface SideIcon {
   id: number;
@@ -67,28 +70,28 @@ const SideIconList = () => {
       role: "INSTRUCTOR",
       icon: <GiTeacher size="2em" />,
       endpoint: "/teach",
-      label: "Teach Camps",
+      label: "Teach",
     },
     {
       id: 5,
       role: "INSTRUCTOR",
       icon: <MdOutlineDesignServices size="2em" />,
       endpoint: "/programs",
-      label: "Design Programs",
+      label: "Design",
     },
     {
       id: 6,
       role: "ADMIN",
       icon: <AiOutlineSchedule size="2em" />,
       endpoint: "/schedule",
-      label: "Schedule Camps",
+      label: "Schedule",
     },
     {
       id: 7,
       role: "ADMIN",
       icon: <MdManageAccounts size="2em" />,
       endpoint: "/members",
-      label: "Manage Members",
+      label: "Members",
     },
 
     {
@@ -110,7 +113,7 @@ const SideIconList = () => {
       role: "GUARDIAN",
       icon: <MdSettings size="2em" />,
       endpoint: "/settings",
-      label: "Profile and Settings",
+      label: "Settings",
     },
   ];
 
@@ -134,9 +137,10 @@ const SideIconList = () => {
               bg="brand.primary"
               width="fit-content"
               boxShadow="var(--drawer-box-shadow)"
+              padding={3}
             >
-              <Stack paddingY={2} spacing={6} width="fit-content">
-                <Box key={0} width="fit-content" onClick={onClose}>
+              <Grid templateColumns="repeat(3, 1fr)" gap={3}>
+                <GridItem onClick={onClose}>
                   <IconButton
                     icon={<IoClose size="1.5em" />}
                     aria-label="Navigation"
@@ -144,26 +148,29 @@ const SideIconList = () => {
                     color="white"
                     variant="ghost"
                   />
-                </Box>
+                </GridItem>
+                <GridItem colSpan={2}></GridItem>
                 {allIcons
                   .filter((x) =>
                     ["PUBLIC", ...(user?.roles || [])].find((r) => x.role == r)
                   )
                   .map((sideIcon) => (
-                    <Box
-                      key={sideIcon.id}
-                      width="fit-content"
-                      onClick={onClose}
-                    >
-                      <LinkIcon
-                        icon={sideIcon.icon}
-                        endpoint={sideIcon.endpoint}
-                        label={sideIcon.label}
-                        withTooltip={true}
-                      />
-                    </Box>
+                    <Fragment key={sideIcon.id}>
+                      <GridItem onClick={onClose}>
+                        <LinkIcon
+                          icon={sideIcon.icon}
+                          endpoint={sideIcon.endpoint}
+                          label={sideIcon.label}
+                        />
+                      </GridItem>
+                      <GridItem marginY="auto" colSpan={2} onClick={onClose}>
+                        <LinkBox as={RouterLink} to={sideIcon.endpoint}>
+                          <Text color="white">{sideIcon.label}</Text>
+                        </LinkBox>
+                      </GridItem>
+                    </Fragment>
                   ))}
-              </Stack>
+              </Grid>
             </DrawerBody>
           </DrawerContent>
         </Drawer>

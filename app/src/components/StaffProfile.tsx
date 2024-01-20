@@ -3,7 +3,7 @@ import { Heading, Stack, Image, Text, Box } from "@chakra-ui/react";
 interface Props {
   name: string;
   photo: string;
-  education: string[];
+  education: { id: number; desc: string }[];
   experience: string;
   interests: string;
 }
@@ -25,7 +25,7 @@ const StaffProfile = ({
         Education
       </Heading>
       {education.map((edu) => (
-        <Text>{edu}</Text>
+        <Text key={edu.id}>{edu.desc}</Text>
       ))}
       <Heading fontSize="2xl" textDecor="underline">
         Experience
