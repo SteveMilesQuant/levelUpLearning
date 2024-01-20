@@ -35,6 +35,19 @@ export const campSchema = z.object({
   z_daily_start_time: z.date().optional(),
   z_daily_end_time: z.date().optional(),
   z_dates: z.date().optional().array(),
+  cost: z
+    .number({ invalid_type_error: "Cost is required." })
+    .nonnegative({ message: "Cost must be non-negative." })
+    .catch((ctx) => {
+      // I'd prefer use transform (string to number), but that doesn't play well with defaultValues
+      // You end up getting numbers you have to catch from the default values, which must be numbers
+      // Zod should fix this, or allow valueAsNumber (which it ignores)
+      if (typeof ctx.input === "string") {
+        const num = parseFloat(ctx.input);
+        if (!isNaN(num) && num >= 0.0) return num;
+      }
+      throw ctx.error;
+    }),
 });
 
 export type FormData = z.infer<typeof campSchema>;
@@ -46,7 +59,7 @@ const useCampForm = (camp?: Camp) => {
     register,
     control,
     handleSubmit: handleFormSubmit,
-    formState: { errors, isValid: formIsValid },
+    formState: { errors, isValid },
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(campSchema),
@@ -67,7 +80,6 @@ const useCampForm = (camp?: Camp) => {
       };
     }, [camp]),
   });
-  const isValid = formIsValid;
 
   const addCamp = useAddCamp();
   const updateCamp = useUpdateCamp();
@@ -95,10 +107,12 @@ const useCampForm = (camp?: Camp) => {
       id: 0,
       ...camp,
       ...data,
-      daily_start_time:
-        start.getHours() + ":" + start.getMinutes() + ":" + start.getSeconds(),
-      daily_end_time:
-        end.getHours() + ":" + end.getMinutes() + ":" + end.getSeconds(),
+      daily_start_time: start
+        ? start.getHours() + ":" + start.getMinutes() + ":" + start.getSeconds()
+        : undefined,
+      daily_end_time: end
+        ? end.getHours() + ":" + end.getMinutes() + ":" + end.getSeconds()
+        : undefined,
       dates,
       program: { ...program },
       primary_instructor: { ...instructor },

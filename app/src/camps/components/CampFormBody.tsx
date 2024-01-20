@@ -71,12 +71,7 @@ const CampFormBody = ({
             label={errors.program_id?.message}
             isOpen={errors.program_id ? true : false}
           >
-            <Select
-              {...register("program_id")}
-              onChange={(event) => {
-                console.log(event);
-              }}
-            >
+            <Select {...register("program_id")}>
               <option value="">Select program</option>{" "}
               {programs?.map((program) => (
                 <option key={program.id} value={program.id}>
@@ -151,12 +146,15 @@ const CampFormBody = ({
                   label="Add date"
                   disabled={isReadOnly}
                   onClick={() => {
-                    const lastDate = field.value[field.value.length - 1];
+                    const lastDate = field.value
+                      ? field.value[field.value.length - 1]
+                      : undefined;
                     const newDate = lastDate
                       ? new Date(lastDate.getTime())
                       : new Date();
                     newDate.setDate(newDate.getDate() + 1);
-                    field.onChange([...field.value, newDate]);
+                    const origArray = field.value ? [...field.value] : [];
+                    field.onChange([...origArray, newDate]);
                   }}
                 />
               </GridItem>
@@ -207,6 +205,15 @@ const CampFormBody = ({
             )}
           />
         </Box>
+      </FormControl>
+      <FormControl>
+        <FormLabel>Cost</FormLabel>
+        <InputError
+          label={errors.cost?.message}
+          isOpen={errors.cost ? true : false}
+        >
+          <Input {...register("cost")} type="number" isReadOnly={isReadOnly} />
+        </InputError>
       </FormControl>
     </Stack>
   );

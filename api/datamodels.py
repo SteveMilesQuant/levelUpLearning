@@ -76,6 +76,7 @@ class CampCore(BaseModel):
     is_published: Optional[bool] = False
     daily_start_time: Optional[FastApiTime]
     daily_end_time: Optional[FastApiTime]
+    cost: Optional[float]
 
 
 class CampData(CampCore):

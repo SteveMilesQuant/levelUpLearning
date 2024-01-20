@@ -67,6 +67,12 @@ const CampTabPublic = ({ camp }: Props) => {
         <strong>Time: </strong>
         {timeStr}
       </Text>
+      {(camp.cost || camp.cost === 0.0) && (
+        <Text>
+          <strong>Cost: </strong>
+          {camp.cost > 0.0 ? "$" + camp.cost : "Free"}
+        </Text>
+      )}
       <Textarea
         size="xl"
         height="15rem"

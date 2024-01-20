@@ -170,6 +170,7 @@ class CampDb(Base):
     is_published: Mapped[bool]
     daily_start_time: Mapped[time] = mapped_column(Time, nullable=True)
     daily_end_time: Mapped[time] = mapped_column(Time, nullable=True)
+    cost: Mapped[float] = mapped_column(nullable=True)
 
     program: Mapped['ProgramDb'] = relationship(
         back_populates='camps', lazy='joined')

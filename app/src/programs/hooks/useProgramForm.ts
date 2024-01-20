@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Program } from "../Program";
@@ -24,7 +24,7 @@ const useProgramForm = (program?: Program) => {
   const {
     register,
     handleSubmit: handleFormSubmit,
-    formState: { errors, isValid: isValidForm },
+    formState: { errors, isValid },
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(programSchema),
@@ -32,7 +32,6 @@ const useProgramForm = (program?: Program) => {
       return { ...program };
     }, [program]),
   });
-  const isValid = isValidForm;
 
   useMemo(() => {
     // Reset required when we update "program" for via camps query invalidation

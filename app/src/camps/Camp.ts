@@ -7,6 +7,7 @@ export interface CampData {
   is_published: boolean;
   daily_start_time?: string;
   daily_end_time?: string;
+  cost?: number;
   dates?: string[];
 }
 
