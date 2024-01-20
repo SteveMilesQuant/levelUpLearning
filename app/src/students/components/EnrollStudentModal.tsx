@@ -122,7 +122,7 @@ const EnrollStudentModal = ({
                 <Button
                   variant="outline"
                   bgColor="white"
-                  textColor="brand.primary"
+                  textColor="brand.100"
                   size="md"
                 >
                   Create student (go to "My Students")

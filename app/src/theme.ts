@@ -8,12 +8,13 @@ const config: ThemeConfig = {
 const theme = extendTheme({
   config,
   styles: {
-    global: { body: { fontFamily: "Georgia", textColor: "brand.primary" } },
+    global: { body: { fontFamily: "Georgia", textColor: "brand.100" } },
   },
   colors: {
     brand: {
-      primary: "rgb(4,0,154)",
-      secondary: "rgb(62, 219, 240)",
+      100: "rgb(4,0,154)",
+      200: "rgb(192,254,252)",
+      300: "rgb(119,172,241)",
     },
   },
 });

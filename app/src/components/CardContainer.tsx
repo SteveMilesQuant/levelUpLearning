@@ -15,7 +15,7 @@ const CardContainer = ({ children }: Props) => {
         transition: "transform .2s ease-in",
       }}
     >
-      <CardBody textColor="brand.primary">{children}</CardBody>
+      <CardBody textColor="brand.100">{children}</CardBody>
     </LinkBox>
   );
 };

@@ -12,7 +12,7 @@ const AuthButton = () => {
           leftIcon={<FcGoogle />}
           variant="outline"
           bgColor="white"
-          textColor="brand.primary"
+          textColor="brand.100"
           size="sm"
           onClick={() => onLogin()}
         >
@@ -23,7 +23,7 @@ const AuthButton = () => {
         <Button
           variant="outline"
           bgColor="white"
-          textColor="brand.primary"
+          textColor="brand.100"
           size="sm"
           onClick={() => onLogout()}
         >
