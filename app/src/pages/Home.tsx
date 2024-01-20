@@ -21,7 +21,7 @@ const Home = () => {
 
   return (
     <Stack width="100%" alignItems="center" marginY={5}>
-      <Box width="90%">
+      <Box width={{ base: "90%", md: "50%" }}>
         <Carousel
           autoPlay={true}
           infiniteLoop={true}
