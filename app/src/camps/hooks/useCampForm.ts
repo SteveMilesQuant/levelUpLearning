@@ -100,7 +100,11 @@ const useCampForm = (camp?: Camp) => {
     const end = data.z_daily_end_time;
     const dates = data.z_dates.map(
       (date: Date) =>
-        date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
+        date.getFullYear() +
+        (date.getMonth() < 9 ? "-0" : "-") +
+        (date.getMonth() + 1) +
+        (date.getDate() < 9 ? "-0" : "-") +
+        date.getDate()
     );
 
     const newCamp = {
@@ -108,10 +112,18 @@ const useCampForm = (camp?: Camp) => {
       ...camp,
       ...data,
       daily_start_time: start
-        ? start.getHours() + ":" + start.getMinutes() + ":" + start.getSeconds()
+        ? start.getHours() +
+          (start.getMinutes() < 10 ? ":0" : ":") +
+          +start.getMinutes() +
+          (start.getSeconds() < 10 ? ":0" : ":") +
+          start.getSeconds()
         : undefined,
       daily_end_time: end
-        ? end.getHours() + ":" + end.getMinutes() + ":" + end.getSeconds()
+        ? end.getHours() +
+          (start.getMinutes() < 10 ? ":0" : ":") +
+          end.getMinutes() +
+          (start.getSeconds() < 10 ? ":0" : ":") +
+          end.getSeconds()
         : undefined,
       dates,
       program: { ...program },
