@@ -24,7 +24,7 @@ const NavBar = () => {
           </Box>
         </HStack>
         <Image
-          width={{ base: "160px", lg: "200px" }}
+          width={{ base: "160px", lg: "300px" }}
           marginX="auto"
           paddingY={2}
           objectFit="cover"
@@ -37,9 +37,9 @@ const NavBar = () => {
         width="100%"
         spacing={-1}
         paddingY={1}
-        fontSize={10}
         fontWeight="bold"
         fontFamily="montserrat"
+        fontSize={{ base: 11, lg: 16 }}
       >
         <Text textAlign="center" textColor="white">
           LANGUAGE ARTS CLINICS & CAMPS
