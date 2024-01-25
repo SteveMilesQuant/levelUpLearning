@@ -3,7 +3,7 @@ from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
 from sqlalchemy import Text, String, Date, Time
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, mapper
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
 from datamodels import FastApiDate, UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse
 
