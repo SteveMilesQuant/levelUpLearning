@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { Box, HStack } from "@chakra-ui/react";
+import { Box, HStack, Link, Text } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import { ReactNode } from "react";
 
@@ -18,6 +18,16 @@ const Layout = ({ children }: Props) => {
           <Outlet />
           {children}
         </Box>
+      </HStack>
+      <HStack
+        spacing={3}
+        width="100%"
+        justifyContent="center"
+        marginY={5}
+        bgColor="brand.200"
+      >
+        <Link href="/about">About</Link>
+        <Link href="/privacy">Privacy</Link>
       </HStack>
     </>
   );
