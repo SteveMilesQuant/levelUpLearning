@@ -28,6 +28,7 @@ const Layout = ({ children }: Props) => {
       >
         <Link href="/about">About</Link>
         <Link href="/privacy">Privacy</Link>
+        <Link href="/data-request">Data requests</Link>
       </HStack>
     </>
   );

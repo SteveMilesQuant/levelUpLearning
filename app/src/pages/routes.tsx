@@ -13,7 +13,8 @@ import { CampsContext, CampsContextType } from "../camps";
 import Settings from "./Settings";
 import About from "./About";
 import Contact from "./Contact";
-import Privacy from "./privacy";
+import Privacy from "./Privacy";
+import DataRequest from "./DataRequest";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "privacy",
         element: <Privacy />,
+      },
+      {
+        path: "data-request",
+        element: <DataRequest />,
       },
       {
         path: "camps",
