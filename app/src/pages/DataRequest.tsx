@@ -1,4 +1,3 @@
-import React from "react";
 import BodyContainer from "../components/BodyContainer";
 import PageHeader from "../components/PageHeader";
 import { Text } from "@chakra-ui/react";

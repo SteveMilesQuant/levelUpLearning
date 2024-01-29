@@ -1,7 +1,8 @@
 import { Outlet } from "react-router-dom";
-import { Box, HStack, Link, Text } from "@chakra-ui/react";
+import { Box, HStack, Link } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import { ReactNode } from "react";
+import { BsDot } from "react-icons/bs";
 
 interface Props {
   children?: ReactNode;
@@ -20,14 +21,16 @@ const Layout = ({ children }: Props) => {
         </Box>
       </HStack>
       <HStack
-        spacing={3}
+        spacing={1}
         width="100%"
         justifyContent="center"
         marginY={5}
         bgColor="brand.200"
       >
         <Link href="/about">About</Link>
+        <BsDot />
         <Link href="/privacy">Privacy</Link>
+        <BsDot />
         <Link href="/data-request">Data requests</Link>
       </HStack>
     </>

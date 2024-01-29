@@ -12,11 +12,23 @@
       property="og:description"
       content="Language arts clinics and camps brought to you by local middle school teachers."
     />
-    <meta name="og:image" content="/src/assets/logo.png" />
-    <link rel="icon" type="image/png" href="/src/assets/logo.png" />
+    <meta name="og:image" id="meta-og-image" content="" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="/src/assets/logo.png"
+      id="meta-link"
+    />
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      window.onload = function () {
+        const metaLink = document.getElementById("meta-link");
+        const metaOgImage = document.getElementById("meta-og-image");
+        metaOgImage.content = metaLink.href;
+      };
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
