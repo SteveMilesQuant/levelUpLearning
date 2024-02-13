@@ -113,3 +113,13 @@ class StudentResponse(StudentData):
         ret['camps'] = [camp.dict() for camp in self.camps]
         ret['guardians'] = [guardian.dict() for guardian in self.guardians]
         return ret
+
+
+class SingleEnrollment(BaseModel):
+    student_id: int
+    camp_id: int
+
+
+class EnrollmentData(BaseModel):
+    payment_token: Optional[str] = None
+    enrollments: List[SingleEnrollment]

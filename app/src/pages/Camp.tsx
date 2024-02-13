@@ -91,22 +91,10 @@ const Camp = () => {
       {campsContextType === CampsContextType.camps && user && (
         <EnrollStudentModal
           title="Enroll Student"
-          campId={camp.id}
+          camp={camp}
           gradeRange={camp.program.grade_range}
           isOpen={newIsOpen}
           onClose={newOnClose}
-          onSuccess={(studentName) =>
-            setAlertContext({
-              status: "success",
-              message: `Successfully enrolled ${studentName}.`,
-            })
-          }
-          onError={(studentName) =>
-            setAlertContext({
-              status: "error",
-              message: `Failed to enroll ${studentName}. Please try again.`,
-            })
-          }
         />
       )}
     </BodyContainer>

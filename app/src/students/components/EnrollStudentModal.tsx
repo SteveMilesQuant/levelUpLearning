@@ -14,61 +14,44 @@ import {
   LinkBox,
   Button,
   ListItem,
+  IconButton,
 } from "@chakra-ui/react";
-import SubmitButton from "../../components/SubmitButton";
 import useStudents from "../hooks/useStudents";
 import ListButton from "../../components/ListButton";
 import { useState } from "react";
-import { useEnrollStudent } from "../hooks/useCampStudents";
-import { useQueryClient } from "@tanstack/react-query";
-import { CACHE_KEY_STUDENTS } from "../Student";
-import { CACHE_KEY_CAMPS } from "../../camps";
-import CancelButton from "../../components/CancelButton";
+import { Camp } from "../../camps";
+import { MdAddShoppingCart } from "react-icons/md";
 import { Link as RouterLink } from "react-router-dom";
+import useShoppingCart from "../../hooks/useShoppingCart";
 
 interface Props {
   title: string;
-  campId: number;
+  camp: Camp;
   gradeRange: number[];
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: (studentName: string) => void;
-  onError?: (studentName: string) => void;
 }
 
 const EnrollStudentModal = ({
   title,
-  campId,
+  camp,
   gradeRange,
   isOpen,
   onClose,
-  onSuccess,
-  onError,
 }: Props) => {
   const { data: allStudents, isLoading, error } = useStudents();
   const [selectedStudentId, setSelectedStudentId] = useState<
     number | undefined
   >(undefined);
-  const [selectedStudentName, setSelectedStudentName] = useState("");
-  const enrollStudent = useEnrollStudent(campId, {
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [...CACHE_KEY_STUDENTS],
-        exact: false,
-      });
-      if (onSuccess) onSuccess(selectedStudentName);
-    },
-    onError: () => {
-      if (onError) onError(selectedStudentName);
-    },
-  });
-  const queryClient = useQueryClient();
+  const { items, addItem } = useShoppingCart();
 
   if (isLoading) return null;
   if (error) throw error;
 
   const unenrolledStudents = allStudents.filter(
-    (student) => !student.camps.find((camp) => camp.id === campId)
+    (student) =>
+      !student.camps.find((s_camp) => s_camp.id === camp.id) &&
+      !items.find((i) => i.camp_id === camp.id && i.student_id === student.id)
   );
 
   return (
@@ -102,10 +85,7 @@ const EnrollStudentModal = ({
               <ListButton
                 key={s.id}
                 isSelected={selectedStudentId === s.id}
-                onClick={() => {
-                  setSelectedStudentId(s.id);
-                  setSelectedStudentName(s.name);
-                }}
+                onClick={() => setSelectedStudentId(s.id)}
               >
                 <Text
                   color={
@@ -132,25 +112,20 @@ const EnrollStudentModal = ({
           </List>
         </ModalBody>
         <ModalFooter>
-          <HStack justifyContent="right" spacing={3}>
-            <CancelButton onClick={onClose}>Cancel</CancelButton>
-            <SubmitButton
+          <HStack justifyContent="right">
+            <IconButton
+              icon={<MdAddShoppingCart size="2em" />}
+              aria-label="Navigation"
+              size="md"
+              color={selectedStudentId ? undefined : "gray.200"}
+              variant="ghost"
               onClick={() => {
-                if (!selectedStudentId) return;
-                enrollStudent.mutate(selectedStudentId);
-                queryClient.invalidateQueries({
-                  queryKey: [
-                    ...CACHE_KEY_STUDENTS,
-                    selectedStudentId?.toString(),
-                    ...CACHE_KEY_CAMPS,
-                  ],
-                });
-                setSelectedStudentId(undefined);
-                onClose();
+                if (selectedStudentId) {
+                  addItem({ camp_id: camp.id, student_id: selectedStudentId });
+                  onClose();
+                }
               }}
-            >
-              Submit
-            </SubmitButton>
+            />
           </HStack>
         </ModalFooter>
       </ModalContent>

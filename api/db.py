@@ -190,6 +190,17 @@ class CampDb(Base):
         return returnVal
 
 
+class PaymentRecordDb(Base):
+    __tablename__ = 'payment_record'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    square_payment_id: Mapped[Text] = mapped_column(Text)
+    square_order_id: Mapped[Text] = mapped_column(Text)
+    square_receipt_number: Mapped[Text] = mapped_column(Text)
+    camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
+    student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
+
+
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):
     if for_pytest:
         # Workaround for pytest issues

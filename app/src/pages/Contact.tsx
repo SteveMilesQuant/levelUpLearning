@@ -9,7 +9,7 @@ const Contact = () => {
           Megan and Karen would love to hear from you! Please reach out if you
           have any questions!
         </Heading>
-        <Text>Email: LevelUpLearningNC@gmail.com </Text>
+        <Text>Email: support@leveluplearningnc.com </Text>
         <Text>Phone: (919) 439-0924</Text>
         <Text>
           Location: As a new small business, we are currently working toward

@@ -10,6 +10,7 @@ const studentHooks = new APIHooks<Student, StudentData>(
 );
 
 export default studentHooks.useDataList;
+export const useStudent = studentHooks.useData;
 export const useAddStudent = studentHooks.useAdd;
 export const useUpdateStudent = studentHooks.useUpdate;
 export const useDeleteStudent = studentHooks.useDelete;

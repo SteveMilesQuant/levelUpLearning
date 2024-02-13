@@ -2,6 +2,7 @@ import { Box, HStack, Image, Stack, Text } from "@chakra-ui/react";
 import headerImage from "../assets/fullLogo.svg";
 import AuthButton from "./AuthButton";
 import SideIconList from "./SideIconList";
+import ShoppingCart from "./ShoppingCart";
 
 const NavBar = () => {
   return (
@@ -19,9 +20,10 @@ const NavBar = () => {
           <Box>
             <SideIconList />
           </Box>
-          <Box padding={1}>
+          <HStack spacing={3}>
+            <ShoppingCart />
             <AuthButton />
-          </Box>
+          </HStack>
         </HStack>
         <Image
           width={{ base: "160px", lg: "300px" }}

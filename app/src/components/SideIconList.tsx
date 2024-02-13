@@ -143,7 +143,7 @@ const SideIconList = () => {
                 <GridItem onClick={onClose}>
                   <IconButton
                     icon={<IoClose size="1.5em" />}
-                    aria-label="Navigation"
+                    aria-label="Close navigation"
                     size="1.5em"
                     color="white"
                     variant="ghost"

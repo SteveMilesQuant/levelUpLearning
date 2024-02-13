@@ -65,7 +65,7 @@ const CampCard = ({ camp, onDelete }: Props) => {
     datesListStr && datesListStr.length > 0
       ? useDateRange
         ? datesListStr[0] + " to " + datesListStr[datesListStr.length - 1]
-        : datesListStr.join(" ")
+        : datesListStr.join(", ")
       : "TBD";
 
   const startTime = camp.daily_start_time

@@ -15,6 +15,7 @@ import About from "./About";
 import Contact from "./Contact";
 import Privacy from "./Privacy";
 import DataRequest from "./DataRequest";
+import Checkout from "./Checkout";
 
 const router = createBrowserRouter([
   {
@@ -62,6 +63,7 @@ const router = createBrowserRouter([
       {
         element: <PrivateRoutes />,
         children: [
+          { path: "checkout", element: <Checkout /> },
           { path: "students", element: <Students /> },
           {
             path: "teach",

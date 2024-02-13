@@ -25,12 +25,12 @@ class APIClient<S, Q = S> {
       .then((res) => res.data);
   };
 
-  post = (data: Q | number | string) => {
+  post = (data: Q | number | string, token?: string) => {
     if (typeof data === "number" || typeof data === "string") {
       // This isn't the best way to do this - maybe come back to it later
       // instanceof doesn't work with generic types
       return axiosInstance
-        .post<null, AxiosResponse<S>>(this.endpoint + `/${data}`)
+        .post<null, AxiosResponse<S>>(this.endpoint + `/${data}`, { token })
         .then((res) => res.data);
     } else {
       return axiosInstance

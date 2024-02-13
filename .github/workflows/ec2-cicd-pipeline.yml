@@ -55,10 +55,12 @@ jobs:
       - name: Build, tag, and push image to Amazon ECR
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+          SQUARE_LOCATION_ID: ${{ secrets.SQUARE_LOCATION_ID }}
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
-          printf "VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID\nVITE_API_URL=/api\n" > app/.env
+          printf "VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID\nVITE_API_URL=/api\nVITE_SQUARE_APPLICATION_ID=$SQUARE_APPLICATION_ID\nVITE_SQUARE_LOCATION_ID=$SQUARE_LOCATION_ID" > app/.env
           touch api/.env
           docker-compose build
           docker tag leveluplearning_app $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app

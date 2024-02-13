@@ -8,6 +8,7 @@ import { axiosInstance } from "../../services/api-client";
 import { create } from "zustand";
 import { mountStoreDevtool } from "simple-zustand-devtools";
 import { useQueryClient } from "@tanstack/react-query";
+import useShoppingCart from "../../hooks/useShoppingCart";
 
 interface UserStore {
   signedIn: boolean;
@@ -22,12 +23,13 @@ const useUserStore = create<UserStore>((set) => ({
 }));
 
 if (process.env.NODE_ENV === "development")
-  mountStoreDevtool("Counter store", useUserStore);
+  mountStoreDevtool("User store", useUserStore);
 
 const useAuth = () => {
   const { signedIn, login, logout } = useUserStore();
   const [isChecking, setIsChecking] = useState(true);
   const queryClient = useQueryClient();
+  const { clearCart } = useShoppingCart();
 
   // Check to see if we're already signed in
   useEffect(() => {
@@ -64,6 +66,7 @@ const useAuth = () => {
     localStorage.removeItem("authToken");
     axiosInstance.defaults.headers.common = {};
     queryClient.clear();
+    clearCart();
     logout();
   };
 

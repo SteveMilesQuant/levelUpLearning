@@ -29,6 +29,7 @@
     "react-icons": "^4.8.0",
     "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^6.10.0",
+    "react-square-web-payments-sdk": "^3.2.1",
     "simple-zustand-devtools": "^1.1.0",
     "zod": "^3.21.4",
     "zod-joda": "^1.1.3",

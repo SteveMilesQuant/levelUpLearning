@@ -5,18 +5,22 @@ from fastapi import FastAPI, APIRouter, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from oauthlib.oauth2 import WebApplicationClient
 from mangum import Mangum
+from pydantic import BaseModel
 from typing import Optional, List, Literal
 from datetime import timedelta
-from db import init_db, close_db
-from datamodels import RoleEnum, UserData, UserResponse, StudentData, StudentResponse
+from db import PaymentRecordDb, init_db, close_db
+from datamodels import EnrollmentData, RoleEnum, UserData, UserResponse, StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
+from datamodels import EnrollmentData
 from authentication import user_id_to_auth_token, auth_token_to_user_id
 from user import User, init_roles, all_users
 from student import Student
 from program import Program, all_programs
 from program import Level
 from camp import Camp, all_camps
+from square.client import Client as SquareClient
+from uuid import uuid4
 
 
 class Object(object):
@@ -66,6 +70,14 @@ async def startup():
     app.config.jwt_subject = "access"
 
     app.google_client = WebApplicationClient(app.config.GOOGLE_CLIENT_ID)
+
+    app.config.SQUARE_ACCESS_TOKEN = os.environ.get(
+        "SQUARE_ACCESS_TOKEN", None)
+    app.config.SQUARE_ENVIRONMENT = os.environ.get(
+        "SQUARE_ENVIRONMENT", 'sandbox')
+    app.square_client = SquareClient(
+        access_token=app.config.SQUARE_ACCESS_TOKEN,
+        environment=app.config.SQUARE_ENVIRONMENT)
 
     app.db_engine, app.db_sessionmaker = await init_db(
         user=os.environ.get('DB_USER'),
@@ -724,29 +736,85 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
                             detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
 
 
-@api_router.post("/camps/{camp_id}/students/{student_id}", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
-async def enroll_student_in_camp(request: Request, camp_id: int, student_id: int):
+class Enrollment(BaseModel):
+    student: Student
+    camp: Camp
+
+
+@api_router.post("/enroll", response_model=List[StudentResponse], status_code=status.HTTP_201_CREATED)
+async def enroll_students_in_camps(request: Request, enrollment_data: EnrollmentData):
     '''Enroll a student in a camp.'''
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session)
-        camp = Camp(id=camp_id)
-        await camp.create(session)
-        if camp.id is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        if not camp.is_published:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                detail=f"Camp id={camp_id} is not yet published for enrollment.")
-        for db_student in await user.students(session):
-            if db_student.id == student_id:
-                student = Student(db_obj=db_student)
-                await student.create(session)
-                await camp.add_student(session=session, student=student)
-                # refresh the student, so that it is updated with new camp
-                await student.create(session)
-                return student
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail=f"Student id={student_id} does not belong to this user.")
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        students = await user.students(db_session)
+
+        # Verify each enrollment and get total cost
+        total_cost = 0
+        enrollments: List[Enrollment] = []
+        for e_in in enrollment_data.enrollments:
+            camp = Camp(id=e_in.camp_id)
+            await camp.create(db_session)
+            if camp.id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={e_in.camp_id} not found.")
+            if not camp.is_published:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                    detail=f"Camp id={e.camp_id} is not yet published for enrollment.")
+
+            student = Student(id=e_in.student_id)
+            await student.create(db_session)
+            if student.id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={e_in.student_id} not found.")
+            if student._db_obj not in students:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} does not belong to this user.")
+
+            enrollment = Enrollment(student=student, camp=camp)
+            enrollments.append(enrollment)
+            total_cost = total_cost + (camp.cost or 0)
+
+        # Check that the bill was paid in the correct amount
+        if total_cost > 0:
+            if enrollment_data.payment_token is None:
+                raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                                    detail=f"Square payment token is required on non-free camps.")
+            create_payment_request = Object()
+            create_payment_request.source_id = enrollment_data.payment_token
+            create_payment_request.idempotency_key = str(uuid4())
+            create_payment_request.amount_money = Object()
+            create_payment_request.amount_money.currency = "USD"
+            create_payment_request.amount_money.amount = total_cost*100
+            square_response = app.square_client.payments.create_payment(
+                create_payment_request)
+
+            if square_response.is_error():
+                raise HTTPException(status_code=square_response.status_code,
+                                    detail=f"From square: {square_response.errors[0]['detail']}")
+
+            square_payment = square_response.body['payment']
+            for enrollment in enrollments:
+                camp = enrollment.camp
+                student = enrollment.student
+                payment_record = PaymentRecordDb(
+                    square_payment_id=square_payment['id'],
+                    square_order_id=square_payment['order_id'],
+                    square_receipt_number=square_payment['receipt_number'],
+                    camp_id=camp.id,
+                    student_id=student.id
+                )
+                db_session.add(payment_record)
+            await db_session.commit()
+
+        # Finally, execute enrollments and return the updated students
+        response: List[StudentResponse] = []
+        for enrollment in enrollments:
+            camp = enrollment.camp
+            student = enrollment.student
+            await camp.add_student(session=db_session, student=student)
+            await student.create(db_session)
+            response.append(student)
+        return response
 
 
 @api_router.delete("/camps/{camp_id}/students/{student_id}")
