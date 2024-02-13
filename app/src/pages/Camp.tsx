@@ -11,17 +11,13 @@ import {
 import { EnrollStudentModal } from "../students";
 import { useUpdateCamp } from "../camps";
 import { useQueryClient } from "@tanstack/react-query";
-import { useContext, useState } from "react";
-import AlertMessage from "../components/AlertMessage";
+import { useContext } from "react";
 import { useUser } from "../users";
 import BodyContainer from "../components/BodyContainer";
 
 const Camp = () => {
   const { id: idStr } = useParams();
   const id = idStr ? parseInt(idStr) : undefined;
-  const [alertContext, setAlertContext] = useState<
-    undefined | { status: "error" | "success"; message: string }
-  >(undefined);
 
   const { data: user } = useUser();
 
@@ -72,14 +68,6 @@ const Camp = () => {
 
   return (
     <BodyContainer>
-      {alertContext && (
-        <AlertMessage
-          status={alertContext.status}
-          onClose={() => setAlertContext(undefined)}
-        >
-          {alertContext.message}
-        </AlertMessage>
-      )}
       <PageHeader hideUnderline={true} rightButton={headerButton}>
         {camp.program.title}
       </PageHeader>

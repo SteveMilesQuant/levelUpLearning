@@ -793,6 +793,11 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
                                     detail=f"From square: {square_response.errors[0]['detail']}")
 
             square_payment = square_response.body['payment']
+            paid_amount = square_payment['amount_money']['amount']
+            if paid_amount < total_cost*100:
+                raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                                    detail=f"Paid amount, ${paid_amount/100}, was less than expected amount, ${total_cost}.")
+
             for enrollment in enrollments:
                 camp = enrollment.camp
                 student = enrollment.student
