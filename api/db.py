@@ -199,6 +199,7 @@ class PaymentRecordDb(Base):
     square_receipt_number: Mapped[Text] = mapped_column(Text)
     camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
     student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
 
 
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):

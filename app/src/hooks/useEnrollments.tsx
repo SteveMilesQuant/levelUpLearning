@@ -1,8 +1,10 @@
 import { useQueryClient } from "@tanstack/react-query";
 import APIClient from "../services/api-client";
 import { Student } from "../students";
-import { CACHE_KEY_CAMPS } from "../camps";
-import { AxiosError } from "axios";
+import { CACHE_KEY_CAMPS, Camp } from "../camps";
+import APIHooks from "../services/api-hooks";
+import { User } from "../users";
+import ms from "ms";
 
 export interface SingleEnrollment {
   student_id: number;
@@ -14,6 +16,16 @@ export interface EnrollmentData {
   enrollments: SingleEnrollment[];
 }
 
+interface Enrollment {
+  id: number;
+  guardian: User;
+  camp: Camp;
+  student: Student;
+  square_receipt_number: string;
+}
+
+const CACHE_KEY_ENROLLMENTS = ["enrollments"];
+
 const enrollmentClient = new APIClient<Student[], EnrollmentData>("/enroll");
 
 interface EnrollmentArgs {
@@ -21,6 +33,7 @@ interface EnrollmentArgs {
   onError?: (detail?: string) => void;
 }
 
+// useEnrollment is only for enrolling (purchasing)
 export const useEnrollment = ({ onSuccess, onError }: EnrollmentArgs) => {
   const queryClient = useQueryClient();
 
@@ -32,6 +45,10 @@ export const useEnrollment = ({ onSuccess, onError }: EnrollmentArgs) => {
           queryKey: CACHE_KEY_CAMPS,
           exact: false,
         });
+        queryClient.invalidateQueries({
+          queryKey: CACHE_KEY_ENROLLMENTS,
+          exact: true,
+        });
         if (onSuccess) onSuccess();
       })
       .catch((error) => {
@@ -41,3 +58,11 @@ export const useEnrollment = ({ onSuccess, onError }: EnrollmentArgs) => {
 
   return enroll;
 };
+
+// useEnrollments is for an admin to see all existing enrollments
+const enrollmentsHooks = new APIHooks<Enrollment>(
+  new APIClient<Enrollment>("/enrollments"),
+  CACHE_KEY_ENROLLMENTS,
+  ms("5m")
+);
+export default enrollmentsHooks.useDataList;

@@ -123,3 +123,11 @@ class SingleEnrollment(BaseModel):
 class EnrollmentData(BaseModel):
     payment_token: Optional[str] = None
     enrollments: List[SingleEnrollment]
+
+
+class EnrollmentResponse(BaseModel):
+    id: int
+    guardian: Optional[UserResponse]
+    student: Optional[StudentResponse]
+    camp: Optional[CampResponse]
+    square_receipt_number: Optional[str]

@@ -6,10 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from oauthlib.oauth2 import WebApplicationClient
 from mangum import Mangum
 from pydantic import BaseModel
+from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
 from db import PaymentRecordDb, init_db, close_db
-from datamodels import EnrollmentData, RoleEnum, UserData, UserResponse, StudentData, StudentResponse
+from datamodels import EnrollmentData, EnrollmentResponse, RoleEnum, UserData, UserResponse, StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
 from datamodels import EnrollmentData
@@ -736,6 +737,35 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
                             detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
 
 
+@api_router.delete("/camps/{camp_id}/students/{student_id}")
+async def remove_student_from_camp(request: Request, camp_id: int, student_id: int):
+    '''Disenroll a student from a camp.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update camps.")
+        camp = Camp(id=camp_id)
+        await camp.create(session)
+        if camp.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+        if not camp.is_published:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"Camp id={camp_id} is not yet published for enrollment.")
+        student = Student(id=student_id)
+        await student.create(session)
+        if student.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Student id={student_id} not found.")
+        await camp.remove_student(session=session, student=student)
+
+
+###############################################################################
+# ENROLLMENTS
+###############################################################################
+
+
 class Enrollment(BaseModel):
     student: Student
     camp: Camp
@@ -806,6 +836,7 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
                     square_order_id=square_payment['order_id'],
                     square_receipt_number=square_payment['receipt_number'],
                     camp_id=camp.id,
+                    user_id=user.id,
                     student_id=student.id
                 )
                 db_session.add(payment_record)
@@ -822,28 +853,35 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
         return response
 
 
-@api_router.delete("/camps/{camp_id}/students/{student_id}")
-async def remove_student_from_camp(request: Request, camp_id: int, student_id: int):
-    '''Disenroll a student from a camp.'''
-    async with app.db_sessionmaker() as session:
-        user = await get_authorized_user(request, session)
+@api_router.get("/enrollments", response_model=List[EnrollmentResponse])
+async def get_all_enrollments(request: Request):
+    '''Get all enrollments (admin only).'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
         if not user.has_role('ADMIN'):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                detail=f"User does not have permission to update camps.")
-        camp = Camp(id=camp_id)
-        await camp.create(session)
-        if camp.id is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        if not camp.is_published:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                detail=f"Camp id={camp_id} is not yet published for enrollment.")
-        student = Student(id=student_id)
-        await student.create(session)
-        if student.id is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Student id={student_id} not found.")
-        await camp.remove_student(session=session, student=student)
+                                detail=f"User does not have access to enrollments.")
+
+        enrollments: List[EnrollmentResponse] = []
+        stmt = select(PaymentRecordDb)
+        result = await db_session.execute(stmt)
+        for result_row in result.unique():
+            db_payment_record: PaymentRecordDb = result_row[0]
+            guardian = User(id=db_payment_record.user_id)
+            await guardian.create(db_session)
+            student = Student(id=db_payment_record.student_id)
+            await student.create(db_session)
+            camp = Camp(id=db_payment_record.camp_id)
+            await camp.create(db_session)
+            enrollment = EnrollmentResponse(
+                id=db_payment_record.id,
+                guardian=guardian,
+                student=student,
+                camp=camp,
+                square_receipt_number=db_payment_record.square_receipt_number
+            )
+            enrollments.append(enrollment)
+        return enrollments
 
 
 ###############################################################################

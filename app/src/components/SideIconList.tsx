@@ -12,6 +12,7 @@ import {
   MdSettings,
 } from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
+import { SlNotebook } from "react-icons/sl";
 import {
   Drawer,
   DrawerBody,
@@ -93,23 +94,30 @@ const SideIconList = () => {
       endpoint: "/members",
       label: "Members",
     },
-
     {
       id: 8,
+      role: "ADMIN",
+      icon: <SlNotebook size="2em" />,
+      endpoint: "/enrollments",
+      label: "Enrollments",
+    },
+
+    {
+      id: 9,
       role: "PUBLIC",
       icon: <FaRegQuestionCircle size="2em" />,
       endpoint: "/about",
       label: "About",
     },
     {
-      id: 9,
+      id: 10,
       role: "PUBLIC",
       icon: <FaPhoneAlt size="2em" />,
       endpoint: "/contact",
       label: "Contact",
     },
     {
-      id: 10,
+      id: 11,
       role: "GUARDIAN",
       icon: <MdSettings size="2em" />,
       endpoint: "/settings",

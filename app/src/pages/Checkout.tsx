@@ -4,7 +4,7 @@ import { CreditCard, PaymentForm } from "react-square-web-payments-sdk";
 import BodyContainer from "../components/BodyContainer";
 import CartItemCard from "../components/CartItemCard";
 import PageHeader from "../components/PageHeader";
-import { useEnrollment } from "../hooks/useEnrollment";
+import { useEnrollment } from "../hooks/useEnrollments";
 import { useState } from "react";
 import AlertMessage from "../components/AlertMessage";
 

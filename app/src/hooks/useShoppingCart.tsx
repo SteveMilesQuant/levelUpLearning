@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { mountStoreDevtool } from "simple-zustand-devtools";
 import { useEffect } from "react";
 import { CampQuery, useCamps } from "../camps";
-import { SingleEnrollment } from "./useEnrollment";
+import { SingleEnrollment } from "./useEnrollments";
 
 interface ShoppingCartStore {
   items: SingleEnrollment[];

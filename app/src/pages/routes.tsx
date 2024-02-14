@@ -16,6 +16,7 @@ import Contact from "./Contact";
 import Privacy from "./Privacy";
 import DataRequest from "./DataRequest";
 import Checkout from "./Checkout";
+import Enrollments from "./Enrollments";
 
 const router = createBrowserRouter([
   {
@@ -99,6 +100,7 @@ const router = createBrowserRouter([
               </CampsContext.Provider>
             ),
           },
+          { path: "enrollments", element: <Enrollments /> },
           { path: "members", element: <Members /> },
           { path: "settings", element: <Settings /> },
         ],
