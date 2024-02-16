@@ -875,6 +875,11 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
             await camp.add_student(session=db_session, student=student)
             await student.create(db_session)
             response.append(student)
+
+        # Tick up the use count
+        if coupon:
+            await coupon.tickup(db_session)
+
         return response
 
 

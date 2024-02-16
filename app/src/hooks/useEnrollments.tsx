@@ -5,6 +5,7 @@ import { CACHE_KEY_CAMPS, Camp } from "../camps";
 import APIHooks from "../services/api-hooks";
 import { User } from "../users";
 import ms from "ms";
+import { CACHE_KEY_COUPONS } from "../coupons";
 
 export interface SingleEnrollment {
   student_id: number;
@@ -51,6 +52,12 @@ export const useEnrollment = ({ onSuccess, onError }: EnrollmentArgs) => {
           queryKey: CACHE_KEY_ENROLLMENTS,
           exact: true,
         });
+        if (data.coupon_code) {
+          queryClient.invalidateQueries({
+            queryKey: CACHE_KEY_COUPONS,
+            exact: true,
+          });
+        }
         if (onSuccess) onSuccess();
       })
       .catch((error) => {

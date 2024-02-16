@@ -48,6 +48,10 @@ class Coupon(CouponResponse):
         await session.delete(self._db_obj)
         await session.commit()
 
+    async def tickup(self, session: Any):
+        self.used_count = self.used_count + 1
+        await self.update(session)
+
 
 async def all_coupons(session: Any) -> List[Coupon]:
     coupons: List[Coupon] = []

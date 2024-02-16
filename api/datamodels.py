@@ -140,6 +140,7 @@ class CouponData(BaseModel):
     discount_type: Optional[Literal['dollars', 'percent']]
     discount_amount: Optional[int]  # in pennies or whole percent
     expiration: Optional[FastApiDate]
+    used_count: Optional[int] = 0
 
 
 class CouponResponse(CouponData):

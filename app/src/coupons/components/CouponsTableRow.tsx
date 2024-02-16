@@ -1,4 +1,4 @@
-import { Tr, Td, FormControl, Input, Select } from "@chakra-ui/react";
+import { Tr, Td, FormControl, Input, Select, Text } from "@chakra-ui/react";
 import { Coupon } from "../Coupon";
 import { useState } from "react";
 import CrudButtonSet from "../../components/CrudButtonSet";
@@ -85,6 +85,9 @@ const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
             />
           )}
         />
+      </Td>
+      <Td>
+        <Text>{coupon?.used_count || 0}</Text>
       </Td>
       <Td>
         <CrudButtonSet

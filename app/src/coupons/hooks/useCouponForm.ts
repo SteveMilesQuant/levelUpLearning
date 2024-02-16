@@ -21,7 +21,6 @@ const useCouponForm = (coupon?: Coupon) => {
     handleSubmit: handleFormSubmit,
     formState: { errors, isValid },
     reset,
-    getValues,
   } = useForm<FormData>({
     resolver: yupResolver(couponSchema),
     defaultValues: useMemo(() => {
@@ -78,7 +77,6 @@ const useCouponForm = (coupon?: Coupon) => {
     handleClose,
     handleSubmit,
     isValid,
-    getValues,
   };
 };
 

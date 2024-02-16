@@ -1,7 +1,7 @@
 from datetime import date as dt_date, time
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy import Text, String, Date, Time, DateTime
+from sqlalchemy import Text, String, Date, Time
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
@@ -212,6 +212,7 @@ class CouponDb(Base):
     discount_type: Mapped[Text] = mapped_column(Text)
     discount_amount: Mapped[int] = mapped_column()
     expiration: Mapped[dt_date] = mapped_column(Date, nullable=True)
+    used_count: Mapped[int] = mapped_column(default=0)
 
 
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):
