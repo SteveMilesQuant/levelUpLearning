@@ -770,6 +770,7 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
 class Enrollment(BaseModel):
     student: Student
     camp: Camp
+    coupon: Coupon
 
 
 @api_router.post("/enroll", response_model=List[StudentResponse], status_code=status.HTTP_201_CREATED)
@@ -778,6 +779,18 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
     async with app.db_sessionmaker() as db_session:
         user = await get_authorized_user(request, db_session)
         students = await user.students(db_session)
+
+        # Get coupon
+        coupon = None
+        if enrollment_data.coupon_code:
+            coupon = Coupon(code=enrollment_data.coupon_code)
+            await coupon.create(db_session)
+            if coupon.id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Coupon code={enrollment_data.coupon_code} not found.")
+            if coupon.expiration and coupon.expiration < FastApiDate.today():
+                raise HTTPException(
+                    status_code=status.HTTP_410_GONE, detail=f"Coupon code={enrollment_data.coupon_code} expired on {coupon.expiration}.")
 
         # Verify each enrollment and get total cost
         total_cost = 0
@@ -801,22 +814,14 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} does not belong to this user.")
 
-            enrollment = Enrollment(student=student, camp=camp)
+            enrollment = Enrollment(student=student, camp=camp, coupon=coupon)
             enrollments.append(enrollment)
             total_cost = total_cost + (camp.cost or 0)
 
         # Apply coupon
         percent_discount = 0
         fixed_discount = 0
-        if enrollment_data.coupon_code:
-            coupon = Coupon(code=enrollment_data.coupon_code)
-            await coupon.create(db_session)
-            if coupon.id is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Coupon code={enrollment_data.coupon_code} not found.")
-            if coupon.expiration and coupon.expiration < FastApiDate.today():
-                raise HTTPException(
-                    status_code=status.HTTP_410_GONE, detail=f"Coupon code={enrollment_data.coupon_code} expired on {coupon.expiration}.")
+        if coupon:
             if coupon.discount_type == "dollars":
                 fixed_discount = coupon.discount_amount
             elif coupon.discount_type == "percent":
@@ -854,7 +859,7 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
                     square_payment_id=square_payment['id'],
                     square_order_id=square_payment['order_id'],
                     square_receipt_number=square_payment['receipt_number'],
-                    coupon_code=enrollment_data.coupon_code,
+                    coupon_id=coupon.id,
                     camp_id=camp.id,
                     user_id=user.id,
                     student_id=student.id
