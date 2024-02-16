@@ -770,7 +770,7 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
 class Enrollment(BaseModel):
     student: Student
     camp: Camp
-    coupon: Coupon
+    coupon: Optional[Coupon]
 
 
 @api_router.post("/enroll", response_model=List[StudentResponse], status_code=status.HTTP_201_CREATED)
