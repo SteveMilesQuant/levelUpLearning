@@ -17,6 +17,7 @@ import Privacy from "./Privacy";
 import DataRequest from "./DataRequest";
 import Checkout from "./Checkout";
 import Enrollments from "./Enrollments";
+import Coupons from "./Coupons";
 
 const router = createBrowserRouter([
   {
@@ -101,6 +102,7 @@ const router = createBrowserRouter([
             ),
           },
           { path: "enrollments", element: <Enrollments /> },
+          { path: "coupons", element: <Coupons /> },
           { path: "members", element: <Members /> },
           { path: "settings", element: <Settings /> },
         ],

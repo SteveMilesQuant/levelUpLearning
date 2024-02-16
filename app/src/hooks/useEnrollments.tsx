@@ -13,6 +13,7 @@ export interface SingleEnrollment {
 
 export interface EnrollmentData {
   payment_token?: string;
+  coupon_code?: string;
   enrollments: SingleEnrollment[];
 }
 
@@ -22,6 +23,7 @@ interface Enrollment {
   camp: Camp;
   student: Student;
   square_receipt_number: string;
+  coupon_code?: string;
 }
 
 const CACHE_KEY_ENROLLMENTS = ["enrollments"];

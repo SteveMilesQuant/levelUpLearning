@@ -27,7 +27,7 @@ import {
 } from "@chakra-ui/react";
 import LinkIcon from "./LinkIcon";
 import { Fragment, ReactElement } from "react";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoPricetagsOutline } from "react-icons/io5";
 import { useUser } from "../users";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -101,23 +101,29 @@ const SideIconList = () => {
       endpoint: "/enrollments",
       label: "Enrollments",
     },
-
     {
       id: 9,
+      role: "ADMIN",
+      icon: <IoPricetagsOutline size="2em" />,
+      endpoint: "/coupons",
+      label: "Coupons",
+    },
+    {
+      id: 10,
       role: "PUBLIC",
       icon: <FaRegQuestionCircle size="2em" />,
       endpoint: "/about",
       label: "About",
     },
     {
-      id: 10,
+      id: 11,
       role: "PUBLIC",
       icon: <FaPhoneAlt size="2em" />,
       endpoint: "/contact",
       label: "Contact",
     },
     {
-      id: 11,
+      id: 12,
       role: "GUARDIAN",
       icon: <MdSettings size="2em" />,
       endpoint: "/settings",

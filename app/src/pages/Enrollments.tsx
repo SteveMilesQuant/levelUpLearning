@@ -32,6 +32,7 @@ const Enrollments = () => {
                 <Th>Grade level</Th>
                 <Th>Camp</Th>
                 <Th>Receipt number</Th>
+                <Th>Coupon code</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -51,6 +52,7 @@ const Enrollments = () => {
                     </Link>
                   </Td>
                   <Td>{enrollment.square_receipt_number}</Td>
+                  <Td>{enrollment.coupon_code}</Td>
                 </Tr>
               ))}
             </Tbody>

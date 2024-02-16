@@ -10,7 +10,7 @@ from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
 from db import PaymentRecordDb, init_db, close_db
-from datamodels import EnrollmentData, EnrollmentResponse, RoleEnum, UserData, UserResponse, StudentData, StudentResponse
+from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse, FastApiDate, RoleEnum, UserData, UserResponse, StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
 from datamodels import EnrollmentData
@@ -20,6 +20,7 @@ from student import Student
 from program import Program, all_programs
 from program import Level
 from camp import Camp, all_camps
+from coupon import Coupon, all_coupons
 from square.client import Client as SquareClient
 from uuid import uuid4
 
@@ -804,8 +805,26 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
             enrollments.append(enrollment)
             total_cost = total_cost + (camp.cost or 0)
 
+        # Apply coupon
+        percent_discount = 0
+        fixed_discount = 0
+        if enrollment_data.coupon_code:
+            coupon = Coupon(code=enrollment_data.coupon_code)
+            await coupon.create(db_session)
+            if coupon.id is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Coupon code={enrollment_data.coupon_code} not found.")
+            if coupon.expiration and coupon.expiration < FastApiDate.today():
+                raise HTTPException(
+                    status_code=status.HTTP_410_GONE, detail=f"Coupon code={enrollment_data.coupon_code} expired on {coupon.expiration}.")
+            if coupon.discount_type == "dollars":
+                fixed_discount = coupon.discount_amount
+            elif coupon.discount_type == "percent":
+                percent_discount = coupon.discount_amount
+        penny_cost = total_cost * (100 - percent_discount) - fixed_discount
+
         # Check that the bill was paid in the correct amount
-        if total_cost > 0:
+        if penny_cost > 0:
             if enrollment_data.payment_token is None:
                 raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
                                     detail=f"Square payment token is required on non-free camps.")
@@ -814,7 +833,7 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
             create_payment_request.idempotency_key = str(uuid4())
             create_payment_request.amount_money = Object()
             create_payment_request.amount_money.currency = "USD"
-            create_payment_request.amount_money.amount = total_cost*100
+            create_payment_request.amount_money.amount = penny_cost
             square_response = app.square_client.payments.create_payment(
                 create_payment_request)
 
@@ -824,9 +843,9 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
 
             square_payment = square_response.body['payment']
             paid_amount = square_payment['amount_money']['amount']
-            if paid_amount < total_cost*100:
+            if paid_amount < penny_cost:
                 raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                                    detail=f"Paid amount, ${paid_amount/100}, was less than expected amount, ${total_cost}.")
+                                    detail=f"Paid amount, ${paid_amount/100}, was less than expected amount, ${penny_cost/100}.")
 
             for enrollment in enrollments:
                 camp = enrollment.camp
@@ -835,6 +854,7 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
                     square_payment_id=square_payment['id'],
                     square_order_id=square_payment['order_id'],
                     square_receipt_number=square_payment['receipt_number'],
+                    coupon_code=enrollment_data.coupon_code,
                     camp_id=camp.id,
                     user_id=user.id,
                     student_id=student.id
@@ -873,15 +893,102 @@ async def get_all_enrollments(request: Request):
             await student.create(db_session)
             camp = Camp(id=db_payment_record.camp_id)
             await camp.create(db_session)
+            if db_payment_record.coupon_id:
+                coupon = Coupon(id=db_payment_record.coupon_id)
+                await coupon.create(db_session)
+                coupon_code = coupon.code
+            else:
+                coupon_code = None
             enrollment = EnrollmentResponse(
                 id=db_payment_record.id,
                 guardian=guardian,
                 student=student,
                 camp=camp,
+                coupon_code=coupon_code,
                 square_receipt_number=db_payment_record.square_receipt_number
             )
             enrollments.append(enrollment)
         return enrollments
+
+
+###############################################################################
+# COUPONS
+###############################################################################
+
+
+@api_router.get("/coupons", response_model=List[CouponResponse])
+async def get_coupons(request: Request):
+    '''Get a list of coupons.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to access all coupons.")
+        return await all_coupons(session)
+
+
+# Public route
+@api_router.get("/coupons/{coupon_code}", response_model=CouponResponse)
+async def get_coupon(request: Request, coupon_code: str):
+    '''Get a single coupon, by code instead of ID.'''
+    async with app.db_sessionmaker() as session:
+        await get_authorized_user(request, session)
+        coupon = Coupon(code=coupon_code)
+        await coupon.create(session)
+        if coupon.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Coupon code={coupon_code} does not exist")
+        return coupon
+
+
+@api_router.put("/coupons/{coupon_id}", response_model=CouponResponse)
+async def put_update_coupon(request: Request, coupon_id: int, updated_coupon: CouponData):
+    '''Update a coupon.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update coupons.")
+        coupon = Coupon(id=coupon_id)
+        await coupon.create(session)
+        if coupon.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Coupon id={coupon_id} does not exist")
+        coupon = coupon.copy(update=updated_coupon.dict(exclude_unset=True))
+        await coupon.update(session)
+        return coupon
+
+
+@api_router.post("/coupons", response_model=CouponResponse, status_code=status.HTTP_201_CREATED)
+async def post_new_coupon(request: Request, new_coupon_data: CouponData):
+    '''Create a new coupon.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('INSTRUCTOR'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to access programs.")
+        new_coupon = Coupon(**new_coupon_data.dict())
+        await new_coupon.create(session)
+        if new_coupon.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new coupon failed")
+        return new_coupon
+
+
+@api_router.delete("/coupons/{coupon_id}")
+async def delete_coupon(request: Request, coupon_id: int):
+    '''Delete a coupon.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to delete coupons.")
+        coupon = Coupon(id=coupon_id)
+        await coupon.create(session)
+        if coupon.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Coupon id={coupon_id} does not exist")
+        await coupon.delete(session)
 
 
 ###############################################################################

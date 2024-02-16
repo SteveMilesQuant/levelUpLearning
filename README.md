@@ -67,7 +67,7 @@ If you want to develop this locally, you can have live runs from your localhost 
        - <code>npm install</code>
      - Run the server: <code>npm run dev</code>
    - Run api (back end; separate terminal)
-     - Change directory to the api direcotry
+     - Change directory to the api directory
      - Install dependencies
        - Install python3 and pip
      - (Optional, but recommended) create a virtual env for this project with the venv module

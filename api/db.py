@@ -1,7 +1,7 @@
 from datetime import date as dt_date, time
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy import Text, String, Date, Time
+from sqlalchemy import Text, String, Date, Time, DateTime
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
@@ -197,9 +197,21 @@ class PaymentRecordDb(Base):
     square_payment_id: Mapped[Text] = mapped_column(Text)
     square_order_id: Mapped[Text] = mapped_column(Text)
     square_receipt_number: Mapped[Text] = mapped_column(Text)
+    coupon_id: Mapped[int] = mapped_column(
+        ForeignKey('coupon.id'), nullable=True)
     camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
     student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+
+
+class CouponDb(Base):
+    __tablename__ = 'coupon'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[Text] = mapped_column(Text)
+    discount_type: Mapped[Text] = mapped_column(Text)
+    discount_amount: Mapped[int] = mapped_column()
+    expiration: Mapped[dt_date] = mapped_column(Date, nullable=True)
 
 
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):

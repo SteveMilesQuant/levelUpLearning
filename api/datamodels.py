@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Literal
 from datetime import date, datetime, time
 from enum import Enum
 
@@ -122,6 +122,7 @@ class SingleEnrollment(BaseModel):
 
 class EnrollmentData(BaseModel):
     payment_token: Optional[str] = None
+    coupon_code: Optional[str] = None
     enrollments: List[SingleEnrollment]
 
 
@@ -131,3 +132,15 @@ class EnrollmentResponse(BaseModel):
     student: Optional[StudentResponse]
     camp: Optional[CampResponse]
     square_receipt_number: Optional[str]
+    coupon_code: Optional[str] = None
+
+
+class CouponData(BaseModel):
+    code: Optional[str]
+    discount_type: Optional[Literal['dollars', 'percent']]
+    discount_amount: Optional[int]  # in pennies or whole percent
+    expiration: Optional[FastApiDate]
+
+
+class CouponResponse(CouponData):
+    id: Optional[int]
