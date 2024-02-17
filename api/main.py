@@ -823,7 +823,7 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
         fixed_discount = 0
         if coupon:
             if coupon.discount_type == "dollars":
-                fixed_discount = coupon.discount_amount
+                fixed_discount = coupon.discount_amount * 100
             elif coupon.discount_type == "percent":
                 percent_discount = coupon.discount_amount
         penny_cost = total_cost * (100 - percent_discount) - fixed_discount
