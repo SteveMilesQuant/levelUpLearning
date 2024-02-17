@@ -26,6 +26,8 @@ class Coupon(CouponResponse):
             result = results.first()
             if result:
                 self._db_obj = result[0]
+            if self._db_obj is None:
+                return
 
         if self._db_obj is None:
             # If none found, create new
