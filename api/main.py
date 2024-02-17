@@ -944,7 +944,7 @@ async def get_coupon(request: Request, coupon_code: str):
     async with app.db_sessionmaker() as session:
         await get_authorized_user(request, session)
         coupon = Coupon(code=coupon_code)
-        await coupon.create(session)
+        await coupon.create(session, read_only=True)
         if coupon.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Coupon code={coupon_code} does not exist")

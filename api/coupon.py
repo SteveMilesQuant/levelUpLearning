@@ -12,7 +12,7 @@ class Coupon(CouponResponse):
         super().__init__(**data)
         self._db_obj = db_obj
 
-    async def create(self, session: Optional[Any]):
+    async def create(self, session: Optional[Any], read_only: Optional[bool] = False):
         if self._db_obj is None and self.id is not None:
             # Get by ID
             self._db_obj = await session.get(CouponDb, [self.id])
@@ -26,7 +26,7 @@ class Coupon(CouponResponse):
             result = results.first()
             if result:
                 self._db_obj = result[0]
-            if self._db_obj is None:
+            if read_only and self._db_obj is None:
                 return
 
         if self._db_obj is None:
