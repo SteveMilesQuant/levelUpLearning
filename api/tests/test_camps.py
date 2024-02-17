@@ -4,10 +4,10 @@ import asyncio
 import os
 from fastapi import status
 from fastapi.testclient import TestClient
-from datamodels import EnrollmentData, SingleEnrollment, UserResponse
-from datamodels import ProgramResponse, LevelResponse
+from datamodels import EnrollmentData, SingleEnrollmentData, UserResponse
+from datamodels import ProgramResponse
 from datamodels import StudentData, FastApiDate
-from datamodels import CampData, FastApiDatetime
+from datamodels import CampData
 from user import User
 from program import Program, Level
 from main import app
@@ -154,7 +154,6 @@ def test_getting_camp_instructors():
     # Get all instructors at once
     camp_json = all_camps_json[0]
     camp_id = camp_json['id']
-    primary_instructor_id = camp_json['primary_instructor_id']
     admin_user_json = json.loads(json.dumps(app.test.users.admin.dict(
         include=UserResponse().dict()), indent=4, sort_keys=True, default=str))
     instructor_user_json = json.loads(json.dumps(app.test.users.instructor.dict(
@@ -223,7 +222,7 @@ def test_camp_student(camp_index: int, student: StudentData):
     student_json = response.json()
     student_id = student_json['id']
 
-    single_enrollment = SingleEnrollment(
+    single_enrollment = SingleEnrollmentData(
         camp_id=camp_id, student_id=student_id)
     enrollment_data = EnrollmentData(enrollments=[single_enrollment])
     enrollment_data_json = json.loads(json.dumps(
@@ -289,7 +288,8 @@ def test_remove_instructor(camp_index: int, instructor_id: int):
 
 # Test deleting a camp
 def test_delete_camp():
-    camp_json = all_camps_json[0]
+    # you won't be able to delete camps with payment records, so "delete" the unpublished camp at index 2
+    camp_json = all_camps_json[2]
     camp_id = camp_json['id']
     response = client.delete(
         f'/camps/{camp_id}', headers=app.test.users.admin_headers)

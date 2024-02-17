@@ -194,9 +194,9 @@ class PaymentRecordDb(Base):
     __tablename__ = 'payment_record'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    square_payment_id: Mapped[Text] = mapped_column(Text)
-    square_order_id: Mapped[Text] = mapped_column(Text)
-    square_receipt_number: Mapped[Text] = mapped_column(Text)
+    square_payment_id: Mapped[Text] = mapped_column(Text, nullable=True)
+    square_order_id: Mapped[Text] = mapped_column(Text, nullable=True)
+    square_receipt_number: Mapped[Text] = mapped_column(Text, nullable=True)
     coupon_id: Mapped[int] = mapped_column(
         ForeignKey('coupon.id'), nullable=True)
     camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))

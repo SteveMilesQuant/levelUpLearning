@@ -4,16 +4,18 @@ import json
 from fastapi import FastAPI, APIRouter, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from oauthlib.oauth2 import WebApplicationClient
+from square.client import Client as SquareClient
 from mangum import Mangum
-from pydantic import BaseModel
 from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
 from db import PaymentRecordDb, init_db, close_db
-from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse, FastApiDate, RoleEnum, UserData, UserResponse, StudentData, StudentResponse
+from datamodels import Object
+from datamodels import RoleEnum, UserData, UserResponse
+from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
+from datamodels import StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
-from datamodels import EnrollmentData
 from authentication import user_id_to_auth_token, auth_token_to_user_id
 from user import User, init_roles, all_users
 from student import Student
@@ -21,12 +23,7 @@ from program import Program, all_programs
 from program import Level
 from camp import Camp, all_camps
 from coupon import Coupon, all_coupons
-from square.client import Client as SquareClient
-from uuid import uuid4
-
-
-class Object(object):
-    pass
+from enrollment import Enrollment
 
 
 description = """
@@ -767,12 +764,6 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
 ###############################################################################
 
 
-class Enrollment(BaseModel):
-    student: Student
-    camp: Camp
-    coupon: Optional[Coupon]
-
-
 @api_router.post("/enroll", response_model=List[StudentResponse], status_code=status.HTTP_201_CREATED)
 async def enroll_students_in_camps(request: Request, enrollment_data: EnrollmentData):
     '''Enroll a student in a camp.'''
@@ -780,105 +771,44 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
         user = await get_authorized_user(request, db_session)
         students = await user.students(db_session)
 
-        # Get coupon
-        coupon = None
-        if enrollment_data.coupon_code:
-            coupon = Coupon(code=enrollment_data.coupon_code)
-            await coupon.create(db_session)
-            if coupon.id is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Coupon code={enrollment_data.coupon_code} not found.")
-            if coupon.expiration and coupon.expiration < FastApiDate.today():
-                raise HTTPException(
-                    status_code=status.HTTP_410_GONE, detail=f"Coupon code={enrollment_data.coupon_code} expired on {coupon.expiration}.")
-
-        # Verify each enrollment and get total cost
-        total_cost = 0
-        enrollments: List[Enrollment] = []
-        for e_in in enrollment_data.enrollments:
-            camp = Camp(id=e_in.camp_id)
-            await camp.create(db_session)
-            if camp.id is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={e_in.camp_id} not found.")
-            if not camp.is_published:
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                    detail=f"Camp id={e.camp_id} is not yet published for enrollment.")
-
-            student = Student(id=e_in.student_id)
-            await student.create(db_session)
-            if student.id is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={e_in.student_id} not found.")
-            if student._db_obj not in students:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} does not belong to this user.")
-
-            enrollment = Enrollment(student=student, camp=camp, coupon=coupon)
-            enrollments.append(enrollment)
-            total_cost = total_cost + (camp.cost or 0)
-
-        # Apply coupon
-        percent_discount = 0
-        fixed_discount = 0
-        if coupon:
-            if coupon.discount_type == "dollars":
-                fixed_discount = coupon.discount_amount * 100
-            elif coupon.discount_type == "percent":
-                percent_discount = coupon.discount_amount
-        penny_cost = total_cost * (100 - percent_discount) - fixed_discount
+        enrollments = Enrollment()
+        await enrollments.create(db_session, enrollment_data=enrollment_data, user_students=students)
 
         # Check that the bill was paid in the correct amount
-        if penny_cost > 0:
-            if enrollment_data.payment_token is None:
-                raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                                    detail=f"Square payment token is required on non-free camps.")
-            create_payment_request = Object()
-            create_payment_request.source_id = enrollment_data.payment_token
-            create_payment_request.idempotency_key = str(uuid4())
-            create_payment_request.amount_money = Object()
-            create_payment_request.amount_money.currency = "USD"
-            create_payment_request.amount_money.amount = penny_cost
-            square_response = app.square_client.payments.create_payment(
-                create_payment_request)
+        [square_payment_id, square_order_id,
+            square_receipt_number] = await enrollments.check_square_payment(app.square_client)
 
-            if square_response.is_error():
-                raise HTTPException(status_code=square_response.status_code,
-                                    detail=f"From square: {square_response.errors[0]['detail']}")
-
-            square_payment = square_response.body['payment']
-            paid_amount = square_payment['amount_money']['amount']
-            if paid_amount < penny_cost:
-                raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                                    detail=f"Paid amount, ${paid_amount/100}, was less than expected amount, ${penny_cost/100}.")
-
-            for enrollment in enrollments:
-                camp = enrollment.camp
-                student = enrollment.student
-                payment_record = PaymentRecordDb(
-                    square_payment_id=square_payment['id'],
-                    square_order_id=square_payment['order_id'],
-                    square_receipt_number=square_payment['receipt_number'],
-                    coupon_id=coupon.id,
-                    camp_id=camp.id,
-                    user_id=user.id,
-                    student_id=student.id
-                )
-                db_session.add(payment_record)
-            await db_session.commit()
+        # Create payment records
+        coupon_id = None
+        if enrollments.coupon:
+            coupon_id = enrollments.coupon.id
+        for single_enrollment in enrollments.enrollments:
+            camp = single_enrollment.camp
+            student = single_enrollment.student
+            payment_record = PaymentRecordDb(
+                square_payment_id=square_payment_id,
+                square_order_id=square_order_id,
+                square_receipt_number=square_receipt_number,
+                coupon_id=coupon_id,
+                camp_id=camp.id,
+                user_id=user.id,
+                student_id=student.id
+            )
+            db_session.add(payment_record)
+        await db_session.commit()
 
         # Finally, execute enrollments and return the updated students
         response: List[StudentResponse] = []
-        for enrollment in enrollments:
-            camp = enrollment.camp
-            student = enrollment.student
+        for single_enrollment in enrollments.enrollments:
+            camp = single_enrollment.camp
+            student = single_enrollment.student
             await camp.add_student(session=db_session, student=student)
             await student.create(db_session)
             response.append(student)
 
         # Tick up the use count
-        if coupon:
-            await coupon.tickup(db_session)
+        if enrollments.coupon:
+            await enrollments.coupon.tickup(db_session)
 
         return response
 

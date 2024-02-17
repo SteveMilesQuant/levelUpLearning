@@ -4,6 +4,10 @@ from datetime import date, datetime, time
 from enum import Enum
 
 
+class Object(object):
+    pass
+
+
 class FastApiDate(date):
     def __str__(self) -> str:
         return self.strftime('%Y-%m-%d')
@@ -115,7 +119,7 @@ class StudentResponse(StudentData):
         return ret
 
 
-class SingleEnrollment(BaseModel):
+class SingleEnrollmentData(BaseModel):
     student_id: int
     camp_id: int
 
@@ -123,7 +127,7 @@ class SingleEnrollment(BaseModel):
 class EnrollmentData(BaseModel):
     payment_token: Optional[str] = None
     coupon_code: Optional[str] = None
-    enrollments: List[SingleEnrollment]
+    enrollments: List[SingleEnrollmentData]
 
 
 class EnrollmentResponse(BaseModel):
