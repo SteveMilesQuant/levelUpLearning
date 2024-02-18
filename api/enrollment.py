@@ -15,10 +15,10 @@ from coupon import Coupon
 CONFIRMATION_SENDER_EMAIL_KEY = "enrollment_confirmation"
 
 
-CONFIRMATION_EMAIL_TEMPLATE = '''Hello,
+CONFIRMATION_EMAIL_TEMPLATE = '''Hello {user_name},
 
 
-Thank you for registering.{receipt_sentence}
+Thank you for registering!{receipt_sentence}
 
 {enrollment_summary}
 We are currently in the process of confirming our locations for each of our full week camps.  As a new small business we are renting spaces from local venues until we are able to attain a permanent establishment. As soon as we have the locations confirmed, we will let you know.
@@ -151,7 +151,7 @@ class Enrollment(BaseModel):
 
         return enrollment_summary
 
-    async def send_confirmation_email(self, email_server: EmailServer, user_email: str) -> None:
+    async def send_confirmation_email(self, email_server: EmailServer, user_name: str, user_email: str) -> None:
         sender_email = email_server.sender_emails.get(
             CONFIRMATION_SENDER_EMAIL_KEY)
         if sender_email is None:
@@ -160,6 +160,7 @@ class Enrollment(BaseModel):
         message.attach(
             MIMEText(
                 '<pre style="font-family: georgia,serif;">' + CONFIRMATION_EMAIL_TEMPLATE.format(
+                    user_name=user_name,
                     receipt_sentence=f' <a href="{self.square_receipt_url}">Here is a link to your receipt.</a>' or "",
                     enrollment_summary=self.enrollment_summary(),
                 ) + '</pre>', 'html'

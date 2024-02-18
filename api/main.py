@@ -815,7 +815,7 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
         # Send confirmation email
         if not app.config.for_pytest:
             await enrollments.send_confirmation_email(
-                app.email_server, user.email_address)
+                app.email_server, user.full_name, user.email_address)
 
         # Finally, execute enrollments and return the updated students
         response: List[StudentResponse] = []
@@ -889,6 +889,7 @@ async def get_coupon(request: Request, coupon_code: str):
     '''Get a single coupon, by code instead of ID.'''
     async with app.db_sessionmaker() as session:
         await get_authorized_user(request, session)
+        coupon_code = coupon_code.upper()
         coupon = Coupon(code=coupon_code)
         await coupon.create(session, read_only=True)
         if coupon.id is None:
@@ -910,6 +911,8 @@ async def put_update_coupon(request: Request, coupon_id: int, updated_coupon: Co
         if coupon.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Coupon id={coupon_id} does not exist")
+        if updated_coupon.code:
+            updated_coupon.code = updated_coupon.code.upper()
         coupon = coupon.copy(update=updated_coupon.dict(exclude_unset=True))
         await coupon.update(session)
         return coupon
@@ -924,6 +927,7 @@ async def post_new_coupon(request: Request, new_coupon_data: CouponData):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail=f"User does not have permission to access programs.")
         new_coupon = Coupon(**new_coupon_data.dict())
+        new_coupon.code = new_coupon.code.upper()
         await new_coupon.create(session)
         if new_coupon.id is None:
             raise HTTPException(
