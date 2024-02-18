@@ -80,14 +80,15 @@ async def startup():
         access_token=app.config.SQUARE_ACCESS_TOKEN,
         environment=app.config.SQUARE_ENVIRONMENT)
 
-    app.email_server = EmailServer(
-        host=os.environ.get("SMTP_HOST", None),
-        port=os.environ.get("SMTP_PORT", None),
-        user=os.environ.get("SMTP_USER", None),
-        password=os.environ.get("SMPT_PASSWORD", None),
-        sender_emails={CONFIRMATION_SENDER_EMAIL_KEY: os.environ.get(
-            "CONFIRMATION_EMAIL_SENDER", None)}
-    )
+    if not app.config.for_pytest:
+        app.email_server = EmailServer(
+            host=os.environ.get("SMTP_HOST", None),
+            port=os.environ.get("SMTP_PORT", None),
+            user=os.environ.get("SMTP_USER", None),
+            password=os.environ.get("SMPT_PASSWORD", None),
+            sender_emails={CONFIRMATION_SENDER_EMAIL_KEY: os.environ.get(
+                "CONFIRMATION_EMAIL_SENDER", None)}
+        )
 
     app.db_engine, app.db_sessionmaker = await init_db(
         user=os.environ.get('DB_USER'),
