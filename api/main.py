@@ -813,9 +813,9 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
             await enrollments.coupon.tickup(db_session)
 
         # Send confirmation email
-        if not app.config.for_pytest:
-            await enrollments.send_confirmation_email(
-                app.email_server, user.full_name, user.email_address)
+        # if not app.config.for_pytest:
+        #    await enrollments.send_confirmation_email(
+        #        app.email_server, user.full_name, user.email_address)
 
         # Finally, execute enrollments and return the updated students
         response: List[StudentResponse] = []
