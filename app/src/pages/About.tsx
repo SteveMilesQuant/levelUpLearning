@@ -21,7 +21,8 @@ const About = () => {
           desc: "Master's Degree in Elementary Education James Madison University",
         },
       ],
-      experience: "13 years teaching 6th grade language arts",
+      experience:
+        "13 years teaching 6th grade language arts at Davis Drive Middle School in Cary, NC",
       interests:
         "Mrs. Miller loves to spend time with family and friends, travel, exercise, and explore new trends in fashion and design.",
     },
@@ -36,7 +37,8 @@ const About = () => {
           desc: "Master's Degree in Middle School Teaching NC State University",
         },
       ],
-      experience: "8 years teaching 6th grade language arts ",
+      experience:
+        "8 years teaching 6th grade language arts at Davis Drive Middle School in Cary, NC",
       interests:
         "Mrs. Miles loves to travel, learn new hobbies, cook, crochet, and spend time with family and friends.",
     },
