@@ -32,15 +32,21 @@ const CACHE_KEY_ENROLLMENTS = ["enrollments"];
 const enrollmentClient = new APIClient<Student[], EnrollmentData>("/enroll");
 
 interface EnrollmentArgs {
+  onSubmit?: () => void;
   onSuccess?: () => void;
   onError?: (detail?: string) => void;
 }
 
 // useEnrollment is only for enrolling (purchasing)
-export const useEnrollment = ({ onSuccess, onError }: EnrollmentArgs) => {
+export const useEnrollment = ({
+  onSubmit,
+  onSuccess,
+  onError,
+}: EnrollmentArgs) => {
   const queryClient = useQueryClient();
 
   const enroll = (data: EnrollmentData) => {
+    if (onSubmit) onSubmit();
     enrollmentClient
       .post(data)
       .then(() => {

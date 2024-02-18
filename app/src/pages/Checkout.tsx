@@ -4,6 +4,7 @@ import {
   Divider,
   HStack,
   Input,
+  Spinner,
   Stack,
   Text,
 } from "@chakra-ui/react";
@@ -21,19 +22,23 @@ import { locale } from "../constants";
 
 const Checkout = () => {
   const { items, totalCost, removeItem, clearCart } = useShoppingCart();
+
   const [alertContext, setAlertContext] = useState<
     undefined | { status: "error" | "success"; message: string }
   >(undefined);
   const [couponCode, setCouponCode] = useState<undefined | string>(undefined);
   const [coupon, setCoupon] = useState<undefined | Coupon>(undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const enroll = useEnrollment({
+    onSubmit: () => setIsLoading(true),
     onSuccess: () => {
       clearCart();
       setAlertContext({
         status: "success",
         message: `Enrollment successful. You should be able to see the camps your students are enrolled in by viewing them in "My Students".`,
       });
+      setIsLoading(false);
     },
     onError: (errorMessage) => {
       clearCart();
@@ -43,8 +48,18 @@ const Checkout = () => {
           `There was a problem completing your enrollment. Please email us at support@leveluplearningnc.com. Error message: ` +
           errorMessage,
       });
+      setIsLoading(false);
     },
   });
+
+  if (isLoading)
+    return (
+      <BodyContainer>
+        <Box marginX="auto" width="fit-content">
+          <Spinner size="xl" />
+        </Box>
+      </BodyContainer>
+    );
 
   const percentDiscount =
     coupon && coupon.discount_type === "percent" ? coupon.discount_amount : 0;

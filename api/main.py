@@ -17,13 +17,14 @@ from datamodels import StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
+from emailserver import EmailServer
 from user import User, init_roles, all_users
 from student import Student
 from program import Program, all_programs
 from program import Level
 from camp import Camp, all_camps
 from coupon import Coupon, all_coupons
-from enrollment import Enrollment
+from enrollment import CONFIRMATION_SENDER_EMAIL_KEY, Enrollment
 
 
 description = """
@@ -67,6 +68,7 @@ async def startup():
     app.config.jwt_lifetime = timedelta(days=1)
     app.config.jwt_algorithm = "HS256"
     app.config.jwt_subject = "access"
+    app.config.for_pytest = (os.environ.get('PYTEST_RUN') == '1')
 
     app.google_client = WebApplicationClient(app.config.GOOGLE_CLIENT_ID)
 
@@ -78,13 +80,22 @@ async def startup():
         access_token=app.config.SQUARE_ACCESS_TOKEN,
         environment=app.config.SQUARE_ENVIRONMENT)
 
+    app.email_server = EmailServer(
+        host=os.environ.get("SMTP_HOST", None),
+        port=os.environ.get("SMTP_PORT", None),
+        user=os.environ.get("SMTP_USER", None),
+        password=os.environ.get("SMPT_PASSWORD", None),
+        sender_emails={CONFIRMATION_SENDER_EMAIL_KEY: os.environ.get(
+            "CONFIRMATION_EMAIL_SENDER", None)}
+    )
+
     app.db_engine, app.db_sessionmaker = await init_db(
         user=os.environ.get('DB_USER'),
         password=os.environ.get('DB_PASSWORD'),
         url=os.environ.get('DB_HOST'),
         port=os.environ.get('DB_PORT'),
         schema_name=os.environ.get('DB_SCHEMA_NAME'),
-        for_pytest=(os.environ.get('PYTEST_RUN') == '1')
+        for_pytest=app.config.for_pytest
     )
     async with app.db_sessionmaker() as session:
         await init_roles(session)
@@ -797,6 +808,15 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
             db_session.add(payment_record)
         await db_session.commit()
 
+        # Tick up the use count
+        if enrollments.coupon:
+            await enrollments.coupon.tickup(db_session)
+
+        # Send confirmation email
+        if not app.config.for_pytest:
+            await enrollments.send_confirmation_email(
+                app.email_server, user.email_address)
+
         # Finally, execute enrollments and return the updated students
         response: List[StudentResponse] = []
         for single_enrollment in enrollments.enrollments:
@@ -805,10 +825,6 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
             await camp.add_student(session=db_session, student=student)
             await student.create(db_session)
             response.append(student)
-
-        # Tick up the use count
-        if enrollments.coupon:
-            await enrollments.coupon.tickup(db_session)
 
         return response
 

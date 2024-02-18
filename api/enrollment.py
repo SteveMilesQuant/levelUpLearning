@@ -1,12 +1,18 @@
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Any, Optional, List
 from pydantic import BaseModel
 from uuid import uuid4
 from fastapi import HTTPException, status
 from datamodels import Object, FastApiDate, EnrollmentData
 from db import StudentDb
+from emailserver import EmailServer
 from student import Student
 from camp import Camp
 from coupon import Coupon
+
+
+CONFIRMATION_SENDER_EMAIL_KEY = "enrollment_confirmation"
 
 
 class SingleEnrollment(BaseModel):
@@ -103,3 +109,16 @@ class Enrollment(BaseModel):
             square_order_id = square_payment['order_id']
             square_receipt_number = square_payment['receipt_number']
         return [square_payment_id, square_order_id, square_receipt_number]
+
+    async def send_confirmation_email(self, email_server: EmailServer, user_email: str) -> None:
+        sender_email = email_server.sender_emails.get(
+            CONFIRMATION_SENDER_EMAIL_KEY)
+        if sender_email is None:
+            return
+        message = MIMEMultipart("alternative")
+        message.attach(MIMEText("Test confirmation email"))
+        message["Subject"] = "Test confirmation email"
+        message["From"] = sender_email
+        message["Bcc"] = sender_email
+        message["To"] = user_email
+        await email_server.send_email(message)
