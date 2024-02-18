@@ -15,6 +15,22 @@ from coupon import Coupon
 CONFIRMATION_SENDER_EMAIL_KEY = "enrollment_confirmation"
 
 
+CONFIRMATION_EMAIL_TEMPLATE = '''Hello,
+
+
+Thank you for registering.{receipt_sentence}
+
+{enrollment_summary}
+We are currently in the process of confirming our locations for each of our full week camps.  As a new small business we are renting spaces from local venues until we are able to attain a permanent establishment. As soon as we have the locations confirmed, we will let you know.
+
+Students get the most out of our camps when they are able to collaborate with peers so if you happen to know of anyone who might be interested in signing up, please consider sharing our information.  We will get back to you soon with more information.
+
+Thank you!
+
+Karen Miles and Megan Miller 
+Level Up Learning'''
+
+
 class SingleEnrollment(BaseModel):
     student: Student
     camp: Camp
@@ -26,6 +42,7 @@ class Enrollment(BaseModel):
     enrollments: Optional[List[SingleEnrollment]] = None
     total_cost: Optional[float] = 0
     penny_cost: Optional[int] = 0
+    square_receipt_url: Optional[str] = None
 
     async def create(self, db_session: Any, enrollment_data: EnrollmentData, user_students: List[StudentDb]):
         self.payment_token = enrollment_data.payment_token
@@ -82,6 +99,7 @@ class Enrollment(BaseModel):
         square_payment_id = None
         square_order_id = None
         square_receipt_number = None
+        self.square_receipt_url = None
         if self.penny_cost > 0:
             if self.payment_token is None:
                 raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
@@ -108,7 +126,30 @@ class Enrollment(BaseModel):
             square_payment_id = square_payment['id']
             square_order_id = square_payment['order_id']
             square_receipt_number = square_payment['receipt_number']
+            self.square_receipt_url = square_payment['receipt_url']
         return [square_payment_id, square_order_id, square_receipt_number]
+
+    def enrollment_summary(self) -> str:
+        enrollments_by_child = {}
+        for enrollment in self.enrollments:
+            enrollment_list = enrollments_by_child.get(enrollment.student.name)
+            if enrollment_list is None:
+                enrollment_list = []
+                enrollments_by_child[enrollment.student.name] = enrollment_list
+            enrollment_list.append(enrollment)
+
+        enrollment_summary = ""
+        for child_name, enrollment_list in enrollments_by_child.items():
+            enrollment_summary = enrollment_summary + \
+                f"We have reserved {child_name}'s spot in:\n"
+            for enrollment in enrollment_list:
+                camp = enrollment.camp
+                date_range = camp.date_range()
+                daily_time_range = camp.daily_time_range()
+                enrollment_summary = enrollment_summary + \
+                    f"\t{camp.program.title} ({date_range} from {daily_time_range})\n"
+
+        return enrollment_summary
 
     async def send_confirmation_email(self, email_server: EmailServer, user_email: str) -> None:
         sender_email = email_server.sender_emails.get(
@@ -116,9 +157,16 @@ class Enrollment(BaseModel):
         if sender_email is None:
             return
         message = MIMEMultipart("alternative")
-        message.attach(MIMEText("Test confirmation email"))
-        message["Subject"] = "Test confirmation email"
+        message.attach(
+            MIMEText(
+                '<pre style="font-family: georgia,serif;">' + CONFIRMATION_EMAIL_TEMPLATE.format(
+                    receipt_sentence=f' <a href="{self.square_receipt_url}">Here is a link to your receipt.</a>' or "",
+                    enrollment_summary=self.enrollment_summary(),
+                ) + '</pre>', 'html'
+            )
+        )
+        message["Subject"] = "Camp Registration Confirmation"
         message["From"] = sender_email
-        message["Bcc"] = sender_email
+        # message["Bcc"] = sender_email
         message["To"] = user_email
         await email_server.send_email(message)

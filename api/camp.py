@@ -1,5 +1,6 @@
 from pydantic import PrivateAttr
 from typing import Optional, Any, List
+from calendar import month_name
 from datamodels import CampData, CampResponse
 from datamodels import UserResponse, ProgramResponse
 from db import CampDb, CampDateDb, UserDb, StudentDb
@@ -25,10 +26,17 @@ class Camp(CampResponse):
         if self._db_obj is None:
             # If none found, create new
             camp_data = self.dict(include=CampData().dict())
+            del camp_data['dates']
             self._db_obj = CampDb(**camp_data)
             session.add(self._db_obj)
             await session.commit()
             self.id = self._db_obj.id
+
+            for date in self.dates:
+                if isinstance(date, str):
+                    date = datetime.strptime(date, '%Y-%m-%d').date()
+                dbDate = CampDateDb(camp_id=self.id, date=date)
+                session.add(dbDate)
 
             # not sure why I have to refresh program here
             await session.refresh(self._db_obj, ['program'])
@@ -121,6 +129,35 @@ class Camp(CampResponse):
         if user.has_role('ADMIN'):
             return True
         return (user._db_obj in await self.instructors(session))
+
+    def date_range(self) -> str:
+        if len(self.dates) == 1:
+            return self.dates[0]
+        prev_date = None
+        consecutive_dates = True
+        for date in self.dates:
+            if prev_date is not None:
+                delta = date-prev_date
+                if delta.days != 1:
+                    consecutive_dates = False
+                    break
+            prev_date = date
+        if not consecutive_dates:
+            return ', '.join([f'{month_name[date.month]} {date.day}' if i < len(self.dates)-1 else f'and {month_name[date.month]} {date.day}' for i, date in enumerate(self.dates)])
+        from_date = self.dates[0]
+        to_date = self.dates[len(self.dates)-1]
+        return f'{month_name[from_date.month]} {from_date.day}-{month_name[to_date.month]} {to_date.day}'
+
+    def daily_time_range(self) -> str:
+        start = self.daily_start_time
+        end = self.daily_end_time
+        start_hour = start.hour
+        if start_hour > 12:
+            start_hour = start_hour - 12
+        end_hour = end.hour
+        if end_hour > 12:
+            end_hour = end_hour - 12
+        return f"{start_hour}{start.strftime(':%M%p')}-{end_hour}{end.strftime(':%M%p')}"
 
 
 def camp_sort(camp: Camp) -> date:
