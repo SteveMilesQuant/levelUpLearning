@@ -1,24 +1,14 @@
-import {
-  Box,
-  Button,
-  Divider,
-  HStack,
-  Input,
-  Spinner,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Divider, Spinner, Stack } from "@chakra-ui/react";
 import useShoppingCart from "../hooks/useShoppingCart";
-import { CreditCard, PaymentForm } from "react-square-web-payments-sdk";
 import BodyContainer from "../components/BodyContainer";
 import CartItemCard from "../components/CartItemCard";
 import PageHeader from "../components/PageHeader";
-import { useEnrollment } from "../hooks/useEnrollments";
 import { useState } from "react";
 import AlertMessage from "../components/AlertMessage";
 import { Coupon } from "../coupons/Coupon";
-import { axiosInstance } from "../services/api-client";
-import { locale } from "../constants";
+import { CouponCode } from "../coupons";
+import CheckoutTotal from "../components/CheckoutTotal";
+import CheckoutPayment from "../components/CheckoutPayment";
 
 const Checkout = () => {
   const { items, totalCost, removeItem, clearCart } = useShoppingCart();
@@ -26,31 +16,9 @@ const Checkout = () => {
   const [alertContext, setAlertContext] = useState<
     undefined | { status: "error" | "success"; message: string }
   >(undefined);
-  const [couponCode, setCouponCode] = useState<undefined | string>(undefined);
+
   const [coupon, setCoupon] = useState<undefined | Coupon>(undefined);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const enroll = useEnrollment({
-    onSubmit: () => setIsLoading(true),
-    onSuccess: () => {
-      clearCart();
-      setAlertContext({
-        status: "success",
-        message: `Enrollment successful. You should be able to see the camps your students are enrolled in by viewing them in "My Students".`,
-      });
-      setIsLoading(false);
-    },
-    onError: (errorMessage) => {
-      clearCart();
-      setAlertContext({
-        status: "error",
-        message:
-          `There was a problem completing your enrollment. Please email us at support@leveluplearningnc.com. Error message: ` +
-          errorMessage,
-      });
-      setIsLoading(false);
-    },
-  });
 
   if (isLoading)
     return (
@@ -68,6 +36,26 @@ const Checkout = () => {
       ? coupon.discount_amount * 100
       : 0;
   const pennyCost = totalCost * (100 - percentDiscount) - fixedDiscount;
+
+  const handlePaymentSuccess = () => {
+    clearCart();
+    setAlertContext({
+      status: "success",
+      message: `Enrollment successful. You should be able to see the camps your students are enrolled in by viewing them in "My Students".`,
+    });
+    setIsLoading(false);
+  };
+
+  const handlePaymentError = (errorMessage?: string) => {
+    clearCart();
+    setAlertContext({
+      status: "error",
+      message:
+        `There was a problem completing your enrollment. Please email us at support@leveluplearningnc.com. Error message: ` +
+        errorMessage,
+    });
+    setIsLoading(false);
+  };
 
   return (
     <BodyContainer>
@@ -92,86 +80,23 @@ const Checkout = () => {
               />
             ))}
             <Divider orientation="horizontal" marginY={5} />
-            <HStack justifyContent="space-between" padding={2}>
-              <Text>
-                <strong>Coupon code:</strong>
-              </Text>
-              <Input onChange={(event) => setCouponCode(event.target.value)} />
-              <Button
-                onClick={() => {
-                  if (couponCode && couponCode.length > 0) {
-                    axiosInstance
-                      .get<Coupon>("/coupons/" + couponCode)
-                      .then((res) => {
-                        const newCoupon = res.data;
-                        const expiration = newCoupon.expiration
-                          ? new Date(newCoupon.expiration + "T00:00:00")
-                          : undefined;
-                        if (expiration && expiration < new Date()) {
-                          setAlertContext({
-                            status: "error",
-                            message:
-                              "The coupon code " +
-                              newCoupon.code +
-                              " expired on " +
-                              expiration.toLocaleDateString(locale, {
-                                dateStyle: "short",
-                              }),
-                          });
-                          setCoupon(undefined);
-                        } else {
-                          setCoupon(res.data);
-                        }
-                      })
-                      .catch(() => {
-                        setAlertContext({
-                          status: "error",
-                          message: "Invalid coupon code: " + couponCode,
-                        });
-                      });
-                  } else {
-                    setCoupon(undefined);
-                  }
-                }}
-              >
-                Apply
-              </Button>
-            </HStack>
-            <HStack justifyContent="space-between" padding={2}>
-              <Text fontSize={20}>
-                <strong>Total:</strong>
-              </Text>
-              <HStack justifyContent="right" spacing={2}>
-                {coupon && (
-                  <Text textColor="red" textDecoration="line-through">
-                    ${totalCost}
-                  </Text>
-                )}
-                <Text>${pennyCost / 100}</Text>
-              </HStack>
-            </HStack>
+            <CouponCode
+              setCoupon={setCoupon}
+              setAlertContext={setAlertContext}
+            />
+            <CheckoutTotal
+              subtotal={coupon ? totalCost : undefined}
+              total={pennyCost / 100}
+            />
             <Box paddingTop={7}>
-              <PaymentForm
-                applicationId={import.meta.env.VITE_SQUARE_APPLICATION_ID}
-                cardTokenizeResponseReceived={async (token, verifiedBuyer) => {
-                  enroll({
-                    payment_token: token.token,
-                    coupon_code: coupon?.code,
-                    enrollments: items,
-                  });
-                }}
-                locationId={import.meta.env.VITE_SQUARE_LOCATION_ID}
-                createPaymentRequest={() => ({
-                  countryCode: "US",
-                  currencyCode: "USD",
-                  total: {
-                    amount: pennyCost.toString(),
-                    label: "Total",
-                  },
-                })}
-              >
-                <CreditCard />
-              </PaymentForm>
+              <CheckoutPayment
+                couponCode={coupon?.code}
+                checkoutItems={items}
+                pennyCost={pennyCost}
+                onSubmit={() => setIsLoading(true)}
+                onSuccess={handlePaymentSuccess}
+                onError={handlePaymentError}
+              />
             </Box>
           </Stack>
         </>
