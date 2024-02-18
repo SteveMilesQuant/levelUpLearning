@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import APIClient from "../services/api-client";
-import { Student } from "../students";
+import { CACHE_KEY_STUDENTS, Student } from "../students";
 import { CACHE_KEY_CAMPS, Camp } from "../camps";
 import APIHooks from "../services/api-hooks";
 import { User } from "../users";
@@ -52,6 +52,10 @@ export const useEnrollment = ({
       .then(() => {
         queryClient.invalidateQueries({
           queryKey: CACHE_KEY_CAMPS,
+          exact: false,
+        });
+        queryClient.invalidateQueries({
+          queryKey: CACHE_KEY_STUDENTS,
           exact: false,
         });
         queryClient.invalidateQueries({
