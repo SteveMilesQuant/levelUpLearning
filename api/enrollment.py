@@ -168,7 +168,6 @@ class Enrollment(BaseModel):
         )
         message["Subject"] = "Camp Registration Confirmation"
         message["From"] = sender_email
-        # message["Bcc"] = sender_email
-        # message["To"] = user_email
-        message["To"] = sender_email
+        message["Bcc"] = sender_email
+        message["To"] = user_email
         await email_server.send_email(message)
