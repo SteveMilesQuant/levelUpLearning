@@ -71,6 +71,7 @@ const Events = () => {
               bgColor="brand.100"
               color="white"
               _hover={{ bgColor: "brand.400" }}
+              fontSize={{ base: undefined, lg: 20, xl: 22 }}
             >
               Submit Your Rebus Puzzle Creations Here!
             </Button>
