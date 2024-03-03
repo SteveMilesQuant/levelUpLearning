@@ -13,6 +13,15 @@ const Layout = ({ children }: Props) => {
 
   return (
     <>
+      <Box
+        bgColor="brand.400"
+        textAlign="center"
+        paddingY={2}
+        fontWeight="bold"
+        fontFamily="montserrat"
+      >
+        *EARLY REGISTRATION PRICING ENDS MARCH 15
+      </Box>
       <NavBar></NavBar>
       <HStack gap={0} alignItems="top">
         <Box>

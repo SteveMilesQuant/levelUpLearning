@@ -1,4 +1,4 @@
-import { Box, SimpleGrid } from "@chakra-ui/react";
+import { SimpleGrid } from "@chakra-ui/react";
 import BodyContainer from "../components/BodyContainer";
 import StaffProfile from "../components/StaffProfile";
 import megan from "../assets/meganmiller.jpeg";

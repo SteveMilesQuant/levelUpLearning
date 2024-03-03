@@ -18,6 +18,7 @@ import DataRequest from "./DataRequest";
 import Checkout from "./Checkout";
 import Enrollments from "./Enrollments";
 import Coupons from "./Coupons";
+import Events from "./Events";
 
 const router = createBrowserRouter([
   {
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
             <Camp />
           </CampsContext.Provider>
         ),
+      },
+      {
+        path: "events",
+        element: <Events />,
       },
       {
         element: <PrivateRoutes />,

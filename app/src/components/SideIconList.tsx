@@ -13,6 +13,7 @@ import {
 } from "react-icons/md";
 import { AiOutlineSchedule } from "react-icons/ai";
 import { SlNotebook } from "react-icons/sl";
+import { GiPartyPopper } from "react-icons/gi";
 import {
   Drawer,
   DrawerBody,
@@ -60,6 +61,13 @@ const SideIconList = () => {
     },
     {
       id: 3,
+      role: "PUBLIC",
+      icon: <GiPartyPopper size="2em" />,
+      endpoint: "/events",
+      label: "Community Events",
+    },
+    {
+      id: 4,
       role: "GUARDIAN",
       icon: <FaGraduationCap size="2em" />,
       endpoint: "/students",
@@ -67,63 +75,63 @@ const SideIconList = () => {
     },
 
     {
-      id: 4,
+      id: 5,
       role: "INSTRUCTOR",
       icon: <GiTeacher size="2em" />,
       endpoint: "/teach",
       label: "Teach",
     },
     {
-      id: 5,
+      id: 6,
       role: "INSTRUCTOR",
       icon: <MdOutlineDesignServices size="2em" />,
       endpoint: "/programs",
       label: "Design",
     },
     {
-      id: 6,
+      id: 7,
       role: "ADMIN",
       icon: <AiOutlineSchedule size="2em" />,
       endpoint: "/schedule",
       label: "Schedule",
     },
     {
-      id: 7,
+      id: 8,
       role: "ADMIN",
       icon: <MdManageAccounts size="2em" />,
       endpoint: "/members",
       label: "Members",
     },
     {
-      id: 8,
+      id: 9,
       role: "ADMIN",
       icon: <SlNotebook size="2em" />,
       endpoint: "/enrollments",
       label: "Enrollments",
     },
     {
-      id: 9,
+      id: 10,
       role: "ADMIN",
       icon: <IoPricetagsOutline size="2em" />,
       endpoint: "/coupons",
       label: "Coupons",
     },
     {
-      id: 10,
+      id: 11,
       role: "PUBLIC",
       icon: <FaRegQuestionCircle size="2em" />,
       endpoint: "/about",
       label: "About",
     },
     {
-      id: 11,
+      id: 12,
       role: "PUBLIC",
       icon: <FaPhoneAlt size="2em" />,
       endpoint: "/contact",
       label: "Contact",
     },
     {
-      id: 12,
+      id: 13,
       role: "GUARDIAN",
       icon: <MdSettings size="2em" />,
       endpoint: "/settings",
