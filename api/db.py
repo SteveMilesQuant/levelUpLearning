@@ -167,6 +167,7 @@ class CampDb(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     program_id: Mapped[int] = mapped_column(ForeignKey('program.id'))
     primary_instructor_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    location: Mapped[Text] = mapped_column(Text, nullable=True)
     is_published: Mapped[bool]
     daily_start_time: Mapped[time] = mapped_column(Time, nullable=True)
     daily_end_time: Mapped[time] = mapped_column(Time, nullable=True)

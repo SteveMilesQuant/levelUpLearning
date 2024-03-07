@@ -21,8 +21,6 @@ CONFIRMATION_EMAIL_TEMPLATE = '''Hello {user_name},
 Thank you for registering!{receipt_sentence}
 
 {enrollment_summary}
-We are currently in the process of confirming our locations for each of our full week camps.  As a new small business we are renting spaces from local venues until we are able to attain a permanent establishment. As soon as we have the locations confirmed, we will let you know.
-
 Students get the most out of our camps when they are able to collaborate with peers so if you happen to know of anyone who might be interested in signing up, please consider sharing our information.  We will get back to you soon with more information.
 
 Thank you!
@@ -146,8 +144,9 @@ class Enrollment(BaseModel):
                 camp = enrollment.camp
                 date_range = camp.date_range()
                 daily_time_range = camp.daily_time_range()
+                location = camp.location if camp.location and camp.location != "" else "TBD"
                 enrollment_summary = enrollment_summary + \
-                    f"\t{camp.program.title} ({date_range} from {daily_time_range})\n"
+                    f"\t{camp.program.title} ({date_range} from {daily_time_range})\n\t\tLocation: {location}\n"
 
         return enrollment_summary
 

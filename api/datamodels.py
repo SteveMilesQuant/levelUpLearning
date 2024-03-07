@@ -77,6 +77,7 @@ class LevelResponse(LevelData):
 class CampCore(BaseModel):
     program_id: Optional[int]
     primary_instructor_id: Optional[int]
+    location: Optional[str]
     is_published: Optional[bool] = False
     daily_start_time: Optional[FastApiTime]
     daily_end_time: Optional[FastApiTime]

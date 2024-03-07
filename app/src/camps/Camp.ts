@@ -5,6 +5,7 @@ export interface CampData {
   program_id: number;
   primary_instructor_id: number;
   is_published: boolean;
+  location?: string;
   daily_start_time?: string;
   daily_end_time?: string;
   cost?: number;

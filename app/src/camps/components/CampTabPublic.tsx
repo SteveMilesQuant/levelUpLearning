@@ -67,6 +67,10 @@ const CampTabPublic = ({ camp }: Props) => {
         <strong>Time: </strong>
         {timeStr}
       </Text>
+      <Text>
+        <strong>Location: </strong>
+        {camp.location || "TBD"}
+      </Text>
       {(camp.cost || camp.cost === 0.0) && (
         <Text>
           <strong>Cost: </strong>

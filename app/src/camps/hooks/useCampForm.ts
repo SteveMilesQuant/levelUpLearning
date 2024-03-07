@@ -32,6 +32,7 @@ export const campSchema = z.object({
       }
       throw ctx.error;
     }),
+  location: z.string().optional(),
   z_daily_start_time: z.date().optional(),
   z_daily_end_time: z.date().optional(),
   z_dates: z.date().optional().array(),

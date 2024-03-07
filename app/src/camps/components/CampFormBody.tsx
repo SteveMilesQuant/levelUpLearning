@@ -104,6 +104,19 @@ const CampFormBody = ({
         </FormControl>
       )}
       <FormControl>
+        <FormLabel>Location</FormLabel>
+        <InputError
+          label={errors.location?.message}
+          isOpen={errors.location ? true : false}
+        >
+          <Input
+            {...register("location")}
+            type="text"
+            isReadOnly={isReadOnly}
+          />
+        </InputError>
+      </FormControl>
+      <FormControl>
         <FormLabel>Dates</FormLabel>
         <Controller
           control={control}
