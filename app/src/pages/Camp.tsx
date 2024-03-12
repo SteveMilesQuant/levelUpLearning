@@ -8,7 +8,7 @@ import {
   CampsContext,
   CampsContextType,
 } from "../camps";
-import { EnrollStudentModal } from "../students";
+import { EnrollStudentModal, StudentFormModal } from "../students";
 import { useUpdateCamp } from "../camps";
 import { useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react";
@@ -37,6 +37,12 @@ const Camp = () => {
     },
   });
   const campsContextType = useContext(CampsContext);
+
+  const {
+    isOpen: addStudentIsOpen,
+    onOpen: addStudentOnOpen,
+    onClose: addStudentOnClose,
+  } = useDisclosure();
 
   if (isLoading) return null;
   if (error) throw error;
@@ -77,13 +83,21 @@ const Camp = () => {
         isPublicFacing={campsContextType === CampsContextType.camps}
       />
       {campsContextType === CampsContextType.camps && user && (
-        <EnrollStudentModal
-          title="Enroll Student"
-          camp={camp}
-          gradeRange={camp.program.grade_range}
-          isOpen={newIsOpen}
-          onClose={newOnClose}
-        />
+        <>
+          <EnrollStudentModal
+            title="Enroll Student"
+            camp={camp}
+            gradeRange={camp.program.grade_range}
+            isOpen={newIsOpen}
+            onClose={newOnClose}
+            onClickCreateStudent={addStudentOnOpen}
+          />
+          <StudentFormModal
+            title="Add Student"
+            isOpen={addStudentIsOpen}
+            onClose={addStudentOnClose}
+          />
+        </>
       )}
     </BodyContainer>
   );

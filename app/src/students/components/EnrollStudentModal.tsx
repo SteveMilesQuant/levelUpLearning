@@ -11,7 +11,6 @@ import {
   List,
   HStack,
   Text,
-  LinkBox,
   Button,
   ListItem,
   IconButton,
@@ -21,7 +20,6 @@ import ListButton from "../../components/ListButton";
 import { useState } from "react";
 import { Camp } from "../../camps";
 import { MdAddShoppingCart } from "react-icons/md";
-import { Link as RouterLink } from "react-router-dom";
 import useShoppingCart from "../../hooks/useShoppingCart";
 
 interface Props {
@@ -30,6 +28,7 @@ interface Props {
   gradeRange: number[];
   isOpen: boolean;
   onClose: () => void;
+  onClickCreateStudent?: () => void;
 }
 
 const EnrollStudentModal = ({
@@ -38,6 +37,7 @@ const EnrollStudentModal = ({
   gradeRange,
   isOpen,
   onClose,
+  onClickCreateStudent,
 }: Props) => {
   const { data: allStudents, isLoading, error } = useStudents();
   const [selectedStudentId, setSelectedStudentId] = useState<
@@ -52,6 +52,10 @@ const EnrollStudentModal = ({
     (student) =>
       !student.camps.find((s_camp) => s_camp.id === camp.id) &&
       !items.find((i) => i.camp_id === camp.id && i.student_id === student.id)
+  );
+
+  const enrolledStudents = allStudents.filter(
+    (student) => !unenrolledStudents.find((s) => s.id == student.id)
   );
 
   return (
@@ -76,38 +80,44 @@ const EnrollStudentModal = ({
         <ModalCloseButton />
         <ModalBody>
           <List spacing={3}>
-            {unenrolledStudents.length == 0 && (
-              <ListItem paddingX={3}>
-                <Text>(no unenrolled students)</Text>
-              </ListItem>
-            )}
+            <ListItem paddingX={3}>
+              <Heading fontSize="xl">Available for enrollment:</Heading>
+            </ListItem>
             {unenrolledStudents.map((s) => (
-              <ListButton
-                key={s.id}
-                isSelected={selectedStudentId === s.id}
-                onClick={() => setSelectedStudentId(s.id)}
-              >
-                <Text
-                  color={
-                    s.grade_level < gradeRange[0] ||
-                    s.grade_level > gradeRange[1]
-                      ? "red.400"
-                      : undefined
-                  }
-                >{`${s.name} (Grade ${s.grade_level})`}</Text>
-              </ListButton>
+              <ListItem paddingX={2} key={s.id}>
+                <ListButton
+                  isSelected={selectedStudentId === s.id}
+                  onClick={() => setSelectedStudentId(s.id)}
+                >
+                  <Text
+                    color={
+                      s.grade_level < gradeRange[0] ||
+                      s.grade_level > gradeRange[1]
+                        ? "red.400"
+                        : undefined
+                    }
+                  >{`${s.name} (Grade ${s.grade_level})`}</Text>
+                </ListButton>
+              </ListItem>
             ))}
             <ListItem paddingX={3}>
-              <LinkBox as={RouterLink} to="/students">
-                <Button
-                  variant="outline"
-                  bgColor="white"
-                  textColor="brand.100"
-                  size="md"
-                >
-                  Create student (go to "My Students")
-                </Button>
-              </LinkBox>
+              <Heading fontSize="xl">Already enrolled:</Heading>
+            </ListItem>
+            {enrolledStudents.map((s) => (
+              <ListItem paddingX={6} key={s.id}>
+                <Text>{s.name}</Text>
+              </ListItem>
+            ))}
+            <ListItem paddingX={3} paddingTop={4}>
+              <Button
+                variant="outline"
+                bgColor="white"
+                textColor="brand.100"
+                size="md"
+                onClick={onClickCreateStudent}
+              >
+                Create student
+              </Button>
             </ListItem>
           </List>
         </ModalBody>
