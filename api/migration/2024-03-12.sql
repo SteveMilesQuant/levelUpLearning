@@ -1,0 +1,1 @@
+ALTER TABLE coupon ADD COLUMN max_count int;

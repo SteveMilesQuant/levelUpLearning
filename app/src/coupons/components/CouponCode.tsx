@@ -42,6 +42,19 @@ const CouponCode = ({ setCoupon, setAlertContext }: Props) => {
                       }),
                   });
                   setCoupon(undefined);
+                } else if (
+                  newCoupon.max_count &&
+                  newCoupon.max_count > 0 &&
+                  newCoupon.used_count >= newCoupon.max_count
+                ) {
+                  setAlertContext({
+                    status: "error",
+                    message:
+                      "The coupon code " +
+                      newCoupon.code +
+                      " has been used the maximum number of times.",
+                  });
+                  setCoupon(undefined);
                 } else {
                   setCoupon(res.data);
                 }

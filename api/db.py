@@ -214,6 +214,7 @@ class CouponDb(Base):
     discount_amount: Mapped[int] = mapped_column()
     expiration: Mapped[dt_date] = mapped_column(Date, nullable=True)
     used_count: Mapped[int] = mapped_column(default=0)
+    max_count: Mapped[int] = mapped_column(nullable=True)
 
 
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):

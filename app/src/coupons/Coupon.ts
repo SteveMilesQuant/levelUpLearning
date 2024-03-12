@@ -4,6 +4,7 @@ export interface CouponData {
   discount_amount: number;
   expiration?: string;
   used_count: number;
+  max_count: number;
 }
 
 export interface Coupon extends CouponData {

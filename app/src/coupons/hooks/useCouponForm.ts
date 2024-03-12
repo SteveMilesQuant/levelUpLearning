@@ -9,6 +9,7 @@ export const couponSchema = object().shape({
   code: string().required(),
   discount_type: string().required().oneOf(["dollars", "percent"]),
   discount_amount: number().required().integer().positive(),
+  max_count: number().integer().nullable(),
   y_expiration: date().optional(),
 });
 
@@ -27,6 +28,7 @@ const useCouponForm = (coupon?: Coupon) => {
       return {
         ...coupon,
         discount_type: coupon?.discount_type || "percent",
+        max_count: coupon?.max_count || null,
         y_expiration: coupon?.expiration
           ? new Date(coupon.expiration + "T00:00:00")
           : undefined,

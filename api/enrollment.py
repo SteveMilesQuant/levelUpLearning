@@ -56,6 +56,9 @@ class Enrollment(BaseModel):
             if self.coupon.expiration and self.coupon.expiration < FastApiDate.today():
                 raise HTTPException(
                     status_code=status.HTTP_410_GONE, detail=f"Coupon code={enrollment_data.coupon_code} expired on {self.coupon.expiration}.")
+            if self.coupon.max_count and self.coupon.used_count >= self.coupon.max_count:
+                raise HTTPException(
+                    status_code=status.HTTP_410_GONE, detail=f"Coupon code={enrollment_data.coupon_code} has reached the maximum number of uses.")
 
         # Verify each enrollment and get total cost
         self.enrollments = []

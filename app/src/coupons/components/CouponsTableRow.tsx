@@ -90,6 +90,20 @@ const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
         <Text>{coupon?.used_count || 0}</Text>
       </Td>
       <Td>
+        <FormControl>
+          <InputError
+            label={errors.max_count?.message}
+            isOpen={errors.max_count ? true : false}
+          >
+            <Input
+              {...register("max_count")}
+              type="max_count"
+              isReadOnly={!isEditing}
+            />
+          </InputError>
+        </FormControl>
+      </Td>
+      <Td>
         <CrudButtonSet
           isEditing={isEditing}
           setIsEditing={setIsEditing}
