@@ -73,7 +73,8 @@ const EnrollStudentModal = ({
             {title}
           </Heading>
           <Text fontSize="md" marginY={3}>
-            Camp grade range: {`${gradeRange[0]} to ${gradeRange[1]}`}
+            Grades (2024-2025 school year):{" "}
+            {`${gradeRange[0]} to ${gradeRange[1]}`}
           </Text>
           <Divider orientation="horizontal" marginTop={1}></Divider>
         </ModalHeader>
@@ -105,7 +106,9 @@ const EnrollStudentModal = ({
             </ListItem>
             {enrolledStudents.map((s) => (
               <ListItem paddingX={6} key={s.id}>
-                <Text>{s.name}</Text>
+                <Text fontSize={18}>
+                  <strong>{s.name}</strong>
+                </Text>
               </ListItem>
             ))}
             <ListItem paddingX={3} paddingTop={4}>
