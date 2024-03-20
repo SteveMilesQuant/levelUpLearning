@@ -16,8 +16,11 @@ export const useUpdateUser = (updateArgs?: UpdateArgs<User>) =>
   userHooks.useUpdate({ ...updateArgs, endpointIgnoresId: true });
 
 const useUser = () => {
-  const { signedIn } = useAuth();
-  return userHooks.useData(undefined, !signedIn);
+  const { signedIn, expiration } = useAuth();
+  return userHooks.useData(
+    undefined,
+    !signedIn || !expiration || expiration <= new Date()
+  );
 };
 
 export default useUser;

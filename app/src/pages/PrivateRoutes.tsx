@@ -2,8 +2,10 @@ import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../users";
 
 const PrivateRoutes = () => {
-  const { signedIn, isChecking } = useAuth();
-  if (!signedIn && !isChecking) return <Navigate to="/" />;
+  const { signedIn, expiration, isChecking } = useAuth();
+  if (!isChecking && (!signedIn || (expiration && expiration <= new Date()))) {
+    return <Navigate to="/" />;
+  }
   return <Outlet />;
 };
 

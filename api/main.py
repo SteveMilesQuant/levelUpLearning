@@ -152,7 +152,7 @@ async def signin_post(request: Request, google_response_token: dict):
         await user.create(db_session)
 
         user_token, token_expiration = user_id_to_auth_token(app, user.id)
-        return user_token
+        return {"token": user_token, "expiration": token_expiration}
 
 
 @api_router.get("/user", response_model=Optional[UserResponse])

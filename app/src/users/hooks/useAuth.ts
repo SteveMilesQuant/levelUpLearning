@@ -12,21 +12,23 @@ import useShoppingCart from "../../hooks/useShoppingCart";
 
 interface UserStore {
   signedIn: boolean;
-  login: () => void;
+  expiration?: Date;
+  login: (expiration: Date) => void;
   logout: () => void;
 }
 
 const useUserStore = create<UserStore>((set) => ({
   signedIn: false,
-  login: () => set(() => ({ signedIn: true })),
-  logout: () => set(() => ({ signedIn: false })),
+  expiration: undefined,
+  login: (expiration: Date) => set(() => ({ signedIn: true, expiration })),
+  logout: () => set(() => ({ signedIn: false, expiration: undefined })),
 }));
 
 if (process.env.NODE_ENV === "development")
   mountStoreDevtool("User store", useUserStore);
 
 const useAuth = () => {
-  const { signedIn, login, logout } = useUserStore();
+  const { signedIn, expiration, login, logout } = useUserStore();
   const [isChecking, setIsChecking] = useState(true);
   const queryClient = useQueryClient();
   const { clearCart } = useShoppingCart();
@@ -34,9 +36,10 @@ const useAuth = () => {
   // Check to see if we're already signed in
   useEffect(() => {
     const authToken = localStorage.getItem("authToken");
+    const tokenExpiration = localStorage.getItem("authTokenExpiration");
     if (authToken) {
       axiosInstance.defaults.headers.common = { Authorization: authToken };
-      login();
+      login(new Date(tokenExpiration + "Z"));
     }
     setIsChecking(false);
   }, []);
@@ -47,10 +50,13 @@ const useAuth = () => {
       "error" | "error_description" | "error_uri"
     >
   ) => {
-    axiosInstance.post("/signin", codeResponse).then((token) => {
-      localStorage.setItem("authToken", token.data);
-      axiosInstance.defaults.headers.common = { Authorization: token.data };
-      login();
+    axiosInstance.post("/signin", codeResponse).then((response) => {
+      localStorage.setItem("authToken", response.data.token);
+      localStorage.setItem("authTokenExpiration", response.data.expiration);
+      axiosInstance.defaults.headers.common = {
+        Authorization: response.data.token,
+      };
+      login(new Date(response.data.expiration + "Z"));
     });
   };
 
@@ -64,13 +70,14 @@ const useAuth = () => {
   const onLogout = function () {
     googleLogout();
     localStorage.removeItem("authToken");
+    localStorage.removeItem("authTokenExpiration");
     axiosInstance.defaults.headers.common = {};
     queryClient.clear();
     clearCart();
     logout();
   };
 
-  return { signedIn, isChecking, onLogin: googleLogin, onLogout };
+  return { signedIn, expiration, isChecking, onLogin: googleLogin, onLogout };
 };
 
 export default useAuth;

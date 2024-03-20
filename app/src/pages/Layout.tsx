@@ -3,6 +3,7 @@ import { Box, HStack, Link } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import { ReactNode } from "react";
 import { BsDot } from "react-icons/bs";
+import AuthExpiredModal from "../components/AuthExpiredModal";
 
 interface Props {
   children?: ReactNode;
@@ -15,6 +16,7 @@ const Layout = ({ children }: Props) => {
     <>
       <NavBar></NavBar>
       <HStack gap={0} alignItems="top">
+        <AuthExpiredModal />
         <Box>
           <Outlet />
           {children}
