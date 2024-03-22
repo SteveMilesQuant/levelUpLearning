@@ -50,7 +50,7 @@ const CartItemCard = ({ camp_id, student_id, onDelete }: Props) => {
 
   return (
     <Card>
-      <CardBody textColor="brand.100">
+      <CardBody>
         <HStack justifyContent="space-between">
           <Text>
             Enrollment for {student.name} into {camp.program.title} on {dateStr}

@@ -1,4 +1,4 @@
-import { Button, useDisclosure } from "@chakra-ui/react";
+import { useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import {
   CampFormModal,
@@ -11,6 +11,7 @@ import {
 import { useContext } from "react";
 import { useUser } from "../users";
 import BodyContainer from "../components/BodyContainer";
+import TextButton from "../components/TextButton";
 
 const Camps = () => {
   const campsContextType = useContext(CampsContext);
@@ -47,11 +48,7 @@ const Camps = () => {
     <BodyContainer>
       <PageHeader
         rightButton={
-          !isReadOnly && (
-            <Button size="md" variant="outline" onClick={newOnOpen}>
-              Add Camp
-            </Button>
-          )
+          !isReadOnly && <TextButton onClick={newOnOpen}>Add Camp</TextButton>
         }
       >
         {pageTitle}

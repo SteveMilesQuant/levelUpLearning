@@ -1,7 +1,8 @@
-import { Table, TableContainer, Tbody, Th, Thead, Tr } from "@chakra-ui/react";
+import { Table, TableContainer, Tbody, Thead, Tr } from "@chakra-ui/react";
 import useAllRoles from "../hooks/useAllRoles";
 import useUsers from "../hooks/useUsers";
 import UserRow from "./UserRow";
+import ThText from "../../components/ThText";
 
 const UserTable = () => {
   const { data: roles } = useAllRoles();
@@ -15,9 +16,9 @@ const UserTable = () => {
       <Table>
         <Thead>
           <Tr>
-            <Th>Name</Th>
-            <Th>Email</Th>
-            <Th>Role</Th>
+            <ThText>Name</ThText>
+            <ThText>Email</ThText>
+            <ThText>Role</ThText>
           </Tr>
         </Thead>
         <Tbody>

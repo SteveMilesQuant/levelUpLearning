@@ -15,9 +15,17 @@ const CampTabs = ({ camp, isReadOnly, isPublicFacing }: Props) => {
   return (
     <Tabs variant="enclosed">
       <TabList>
-        <Tab>Camp</Tab>
-        <Tab>Instructors</Tab>
-        {!isPublicFacing && <Tab>Students</Tab>}
+        <Tab>
+          <strong>Camp</strong>
+        </Tab>
+        <Tab>
+          <strong>Instructors</strong>
+        </Tab>
+        {!isPublicFacing && (
+          <Tab>
+            <strong>Students</strong>
+          </Tab>
+        )}
       </TabList>
       <TabPanels>
         <TabPanel>

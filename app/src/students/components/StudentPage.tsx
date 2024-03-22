@@ -1,9 +1,10 @@
-import { Box, Stack, LinkBox, Button } from "@chakra-ui/react";
+import { Box, Stack, LinkBox } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { CampGrid } from "../../camps";
 import PageHeader from "../../components/PageHeader";
 import { Student } from "../Student";
 import StudentForm from "./StudentForm";
+import TextButton from "../../components/TextButton";
 
 interface Props {
   student: Student;
@@ -18,9 +19,7 @@ const StudentPage = ({ student }: Props) => {
         <CampGrid camps={student.camps} isReadOnly={true} />
         <Box marginY={5}>
           <LinkBox as={RouterLink} to="/camps">
-            <Button size="lg" variant="outline">
-              Find camps
-            </Button>
+            <TextButton>Find camps</TextButton>
           </LinkBox>
         </Box>
       </Box>

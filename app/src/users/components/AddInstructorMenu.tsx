@@ -10,6 +10,7 @@ import { BsChevronDown } from "react-icons/bs";
 import { User } from "../User";
 import { useAddCampInstructor } from "../hooks/useCampInstructors";
 import useUsers from "../hooks/useUsers";
+import TextButton from "../../components/TextButton";
 
 interface Props {
   campId: number;
@@ -36,13 +37,18 @@ const AddInstructorMenu = ({ campId, instructors }: Props) => {
     <Box>
       {/* Wrap menu in box to avoid warnings ("applying css to popover") */}
       <Menu>
-        <MenuButton as={Button} rightIcon={<BsChevronDown />}>
+        <MenuButton
+          as={Button}
+          bgColor="brand.buttonBg"
+          rightIcon={<BsChevronDown />}
+        >
           Add instructor
         </MenuButton>
-        <MenuList>
+        <MenuList bgColor="brand.buttonBg">
           {addableInstructors?.map((instructor) => (
             <MenuItem
               key={instructor.id}
+              bgColor="brand.buttonBg"
               onClick={() => addInstructor.mutate(instructor.id)}
             >
               {instructor.full_name + " (" + instructor.email_address + ")"}

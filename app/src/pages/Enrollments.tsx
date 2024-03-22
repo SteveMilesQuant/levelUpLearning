@@ -4,7 +4,6 @@ import {
   TableContainer,
   Tbody,
   Td,
-  Th,
   Thead,
   Tr,
 } from "@chakra-ui/react";
@@ -12,6 +11,7 @@ import BodyContainer from "../components/BodyContainer";
 import PageHeader from "../components/PageHeader";
 import useEnrollments from "../hooks/useEnrollments";
 import { Link as RouterLink } from "react-router-dom";
+import ThText from "../components/ThText";
 
 const Enrollments = () => {
   const { data: enrollments, isLoading, error } = useEnrollments();
@@ -26,13 +26,13 @@ const Enrollments = () => {
           <Table>
             <Thead>
               <Tr>
-                <Th>Guardian</Th>
-                <Th>Email</Th>
-                <Th>Student</Th>
-                <Th>Grade level</Th>
-                <Th>Camp</Th>
-                <Th>Receipt number</Th>
-                <Th>Coupon code</Th>
+                <ThText>Guardian</ThText>
+                <ThText>Email</ThText>
+                <ThText>Student</ThText>
+                <ThText>Grade level</ThText>
+                <ThText>Camp</ThText>
+                <ThText>Receipt number</ThText>
+                <ThText>Coupon code</ThText>
               </Tr>
             </Thead>
             <Tbody>

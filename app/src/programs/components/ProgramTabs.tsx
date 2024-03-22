@@ -11,8 +11,12 @@ const ProgramTabs = ({ program }: Props) => {
   return (
     <Tabs variant="enclosed">
       <TabList>
-        <Tab>Program</Tab>
-        <Tab>Levels</Tab>
+        <Tab>
+          <strong>Program</strong>
+        </Tab>
+        <Tab>
+          <strong>Levels</strong>
+        </Tab>
       </TabList>
       <TabPanels>
         <TabPanel>

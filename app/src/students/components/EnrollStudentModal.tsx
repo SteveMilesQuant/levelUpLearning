@@ -11,7 +11,6 @@ import {
   List,
   HStack,
   Text,
-  Button,
   ListItem,
   IconButton,
 } from "@chakra-ui/react";
@@ -21,6 +20,7 @@ import { useState } from "react";
 import { Camp } from "../../camps";
 import { MdAddShoppingCart } from "react-icons/md";
 import useShoppingCart from "../../hooks/useShoppingCart";
+import TextButton from "../../components/TextButton";
 
 interface Props {
   title: string;
@@ -112,15 +112,9 @@ const EnrollStudentModal = ({
               </ListItem>
             ))}
             <ListItem paddingX={3} paddingTop={4}>
-              <Button
-                variant="outline"
-                bgColor="white"
-                textColor="brand.100"
-                size="md"
-                onClick={onClickCreateStudent}
-              >
+              <TextButton onClick={onClickCreateStudent}>
                 Create student
-              </Button>
+              </TextButton>
             </ListItem>
           </List>
         </ModalBody>

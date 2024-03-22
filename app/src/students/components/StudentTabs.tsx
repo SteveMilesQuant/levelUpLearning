@@ -9,7 +9,9 @@ const StudentTabs = () => {
     <Tabs variant="enclosed">
       <TabList>
         {students?.map((student) => (
-          <Tab key={student.id}>{student.name}</Tab>
+          <Tab key={student.id}>
+            <strong>{student.name}</strong>
+          </Tab>
         ))}
       </TabList>
       <TabPanels>

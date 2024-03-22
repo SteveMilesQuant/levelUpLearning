@@ -1,23 +1,19 @@
 import { Button } from "@chakra-ui/react";
 import { FormEvent } from "react";
+import ButtonText from "./ButtonText";
+import TextButton from "./TextButton";
 
 interface Props {
   children: string;
-  onClick: (e: FormEvent) => void;
+  onClick: () => void;
   disabled?: boolean;
 }
 
 const SubmitButton = ({ children, onClick, disabled }: Props) => {
   return (
-    <Button
-      onClick={onClick}
-      disabled={disabled}
-      bgColor={disabled ? "gray.100" : "blue.300"}
-      color={disabled ? "gray.200" : undefined}
-      _hover={disabled ? { bgColor: "gray.100" } : undefined}
-    >
+    <TextButton onClick={onClick} isDisabled={disabled}>
       {children}
-    </Button>
+    </TextButton>
   );
 };
 

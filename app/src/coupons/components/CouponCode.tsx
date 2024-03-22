@@ -1,8 +1,9 @@
-import { HStack, Input, Button, Text } from "@chakra-ui/react";
+import { HStack, Input, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { locale } from "../../constants";
 import { axiosInstance } from "../../services/api-client";
 import { Coupon } from "../Coupon";
+import TextButton from "../../components/TextButton";
 
 interface Props {
   setCoupon: (coupon?: Coupon) => void;
@@ -20,7 +21,7 @@ const CouponCode = ({ setCoupon, setAlertContext }: Props) => {
         <strong>Coupon code:</strong>
       </Text>
       <Input onChange={(event) => setCouponCode(event.target.value)} />
-      <Button
+      <TextButton
         onClick={() => {
           if (couponCode && couponCode.length > 0) {
             axiosInstance
@@ -71,7 +72,7 @@ const CouponCode = ({ setCoupon, setAlertContext }: Props) => {
         }}
       >
         Apply
-      </Button>
+      </TextButton>
     </HStack>
   );
 };

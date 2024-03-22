@@ -156,7 +156,7 @@ const SideIconList = () => {
           <DrawerOverlay />
           <DrawerContent bg="rgba(0,0,0,0)" boxShadow="none">
             <DrawerBody
-              bg="brand.100"
+              bg="brand.primary"
               width="fit-content"
               boxShadow="var(--drawer-box-shadow)"
               padding={3}

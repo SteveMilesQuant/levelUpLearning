@@ -9,7 +9,7 @@ const NavBar = () => {
     <>
       <Box
         width="100%"
-        bgGradient="linear(to-b, brand.100, brand.300, brand.200)"
+        bgGradient="linear(to-b, brand.primary, brand.gradient2, brand.gradient3)"
       >
         <HStack
           position="absolute"
@@ -35,7 +35,7 @@ const NavBar = () => {
         />
       </Box>
       <Stack
-        bgColor="brand.100"
+        bgColor="brand.primary"
         width="100%"
         spacing={-1}
         paddingY={1}

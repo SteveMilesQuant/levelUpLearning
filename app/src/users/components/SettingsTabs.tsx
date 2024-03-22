@@ -14,8 +14,14 @@ const SettingsTabs = () => {
   return (
     <Tabs variant="enclosed">
       <TabList>
-        <Tab>Profile</Tab>
-        {isInstructor && <Tab>Instructor Details</Tab>}
+        <Tab>
+          <strong>Profile</strong>
+        </Tab>
+        {isInstructor && (
+          <Tab>
+            <strong>Instructor Details</strong>
+          </Tab>
+        )}
       </TabList>
       <TabPanels>
         <TabPanel>

@@ -1,6 +1,7 @@
-import { Table, TableContainer, Tbody, Th, Thead, Tr } from "@chakra-ui/react";
+import { Table, TableContainer, Tbody, Thead, Tr } from "@chakra-ui/react";
 import useCampStudents from "../hooks/useCampStudents";
 import StudentRow from "./StudentRow";
+import ThText from "../../components/ThText";
 
 interface Props {
   campId: number;
@@ -18,13 +19,13 @@ const StudentTable = ({ campId, isReadOnly }: Props) => {
       <Table>
         <Thead>
           <Tr>
-            <Th>Name</Th>
-            <Th>Grade</Th>
-            <Th>Guardians</Th>
+            <ThText>Name</ThText>
+            <ThText>Grade</ThText>
+            <ThText>Guardians</ThText>
             {!isReadOnly && (
-              <Th>
+              <ThText>
                 {/* Placeholder for delete button, which needs no header */}
-              </Th>
+              </ThText>
             )}
           </Tr>
         </Thead>

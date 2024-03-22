@@ -1,10 +1,11 @@
-import { Box, Button, Stack, useDisclosure } from "@chakra-ui/react";
+import { Box, Stack, useDisclosure } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Level } from "../Level";
 import useLevels from "../hooks/useLevels";
 import LevelForm from "./LevelForm";
 import LevelFormModal from "./LevelFormModal";
 import LevelList from "./LevelList";
+import TextButton from "../../components/TextButton";
 
 interface Props {
   programId: number;
@@ -32,7 +33,7 @@ const LevelsPage = ({ programId }: Props) => {
           selectedLevel={selectedLevel}
           setSelectedLevel={setSelectedLevel}
         >
-          <Button onClick={onOpen}>Add level</Button>
+          <TextButton onClick={onOpen}>Add level</TextButton>
         </LevelList>
         <Box width="100%">
           {levels

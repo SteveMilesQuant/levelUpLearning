@@ -1,6 +1,7 @@
-import { Box, Button, Text } from "@chakra-ui/react";
+import { Box, Button } from "@chakra-ui/react";
 import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "../users";
+import ButtonText from "./ButtonText";
 
 const AuthButton = () => {
   const { signedIn, onLogin, onLogout } = useAuth();
@@ -10,24 +11,16 @@ const AuthButton = () => {
       {!signedIn && (
         <Button
           leftIcon={<FcGoogle />}
-          variant="outline"
           bgColor="white"
-          textColor="brand.100"
           size="sm"
           onClick={() => onLogin()}
         >
-          Sign In
+          <ButtonText>Sign In</ButtonText>
         </Button>
       )}
       {signedIn && (
-        <Button
-          variant="outline"
-          bgColor="white"
-          textColor="brand.100"
-          size="sm"
-          onClick={() => onLogout()}
-        >
-          <Text>Sign Out</Text>
+        <Button bgColor="white" size="sm" onClick={() => onLogout()}>
+          <ButtonText>Sign Out</ButtonText>
         </Button>
       )}
     </Box>

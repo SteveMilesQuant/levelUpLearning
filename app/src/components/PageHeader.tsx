@@ -17,7 +17,9 @@ const PageHeader = ({
   return (
     <>
       <HStack justifyContent="space-between" marginBottom={5}>
-        <Heading fontSize={fontSize || "3xl"}>{children}</Heading>
+        <Heading fontSize={fontSize || "3xl"} textColor="brand.pageHeader">
+          {children}
+        </Heading>
         {rightButton}
       </HStack>
       {!hideUnderline && <Divider orientation="horizontal" marginY={5} />}

@@ -12,13 +12,13 @@ import {
   Button,
   Divider,
   Image,
-  Link,
   LinkBox,
   Stack,
   Text,
 } from "@chakra-ui/react";
 import { Carousel } from "react-responsive-carousel";
 import { Link as RouterLink } from "react-router-dom";
+import TextButton from "../components/TextButton";
 
 const Events = () => {
   return (
@@ -38,7 +38,7 @@ const Events = () => {
             spacing={5}
             paddingY={2}
             fontFamily="montserrat"
-            bgColor="brand.400"
+            bgColor="brand.secondary"
             textAlign="center"
             fontSize={{ base: 16, md: 18, lg: 20 }}
           >
@@ -67,19 +67,14 @@ const Events = () => {
             </Carousel>
           </Box>
           <LinkBox as={RouterLink} to="https://forms.gle/newtjtEMgMy8nUzD8">
-            <Button
-              bgColor="brand.100"
-              color="white"
-              _hover={{ bgColor: "brand.400" }}
-              fontSize={{ base: undefined, lg: 20, xl: 22 }}
-            >
+            <TextButton fontSize={{ base: undefined, lg: 20, xl: 22 }}>
               Submit Your Rebus Puzzle Creations Here!
-            </Button>
+            </TextButton>
           </LinkBox>
         </Stack>
         <Divider
           orientation="horizontal"
-          borderColor="brand.200"
+          borderColor="brand.secondary"
           borderWidth={7}
         />
         <Stack spacing={7} alignItems="center" width="100%">
@@ -96,7 +91,7 @@ const Events = () => {
             spacing={5}
             paddingY={2}
             fontFamily="montserrat"
-            bgColor="brand.400"
+            bgColor="brand.secondary"
             textAlign="center"
             fontSize={{ base: 16, md: 18, lg: 20 }}
           >

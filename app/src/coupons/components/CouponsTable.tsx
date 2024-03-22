@@ -1,16 +1,9 @@
-import {
-  TableContainer,
-  Table,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Td,
-  Button,
-} from "@chakra-ui/react";
+import { TableContainer, Table, Thead, Tr, Tbody, Td } from "@chakra-ui/react";
 import useCoupons from "../hooks/useCoupons";
 import CouponsTableRow from "./CouponsTableRow";
 import { useState } from "react";
+import ThText from "../../components/ThText";
+import TextButton from "../../components/TextButton";
 
 const CouponsTable = () => {
   const { data: coupons, isLoading, error } = useCoupons();
@@ -24,13 +17,13 @@ const CouponsTable = () => {
       <Table>
         <Thead>
           <Tr>
-            <Th>Code</Th>
-            <Th>Type</Th>
-            <Th>Value</Th>
-            <Th>Expiration</Th>
-            <Th>Used Count</Th>
-            <Th>Max Usages</Th>
-            <Th>{/* placeholder for crud buttons */}</Th>
+            <ThText>Code</ThText>
+            <ThText>Type</ThText>
+            <ThText>Value</ThText>
+            <ThText>Expiration</ThText>
+            <ThText>Used Count</ThText>
+            <ThText>Max Usages</ThText>
+            <ThText>{/* placeholder for crud buttons */}</ThText>
           </Tr>
         </Thead>
         <Tbody>
@@ -46,7 +39,7 @@ const CouponsTable = () => {
           {!isAdding && (
             <Tr>
               <Td>
-                <Button onClick={() => setIsAdding(true)}>Add</Button>
+                <TextButton onClick={() => setIsAdding(true)}>Add</TextButton>
               </Td>
             </Tr>
           )}

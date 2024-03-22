@@ -27,7 +27,7 @@ const Layout = ({ children }: Props) => {
         width="100%"
         justifyContent="center"
         marginY={5}
-        bgColor="brand.200"
+        bgColor="brand.secondary"
       >
         <Link href="/about">About</Link>
         <BsDot />

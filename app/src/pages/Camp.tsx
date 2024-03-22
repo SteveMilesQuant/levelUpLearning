@@ -14,6 +14,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react";
 import { useUser } from "../users";
 import BodyContainer from "../components/BodyContainer";
+import ButtonText from "../components/ButtonText";
+import TextButton from "../components/TextButton";
 
 const Camp = () => {
   const { id: idStr } = useParams();
@@ -49,9 +51,7 @@ const Camp = () => {
 
   const headerButton =
     campsContextType === CampsContextType.schedule ? (
-      <Button
-        size="md"
-        variant="outline"
+      <TextButton
         onClick={() => {
           updateCamp.mutate({
             ...camp,
@@ -60,16 +60,11 @@ const Camp = () => {
         }}
       >
         {camp.is_published ? "Unpublish" : "Publish"}
-      </Button>
+      </TextButton>
     ) : campsContextType === CampsContextType.camps ? (
-      <Button
-        size="md"
-        variant="outline"
-        onClick={newOnOpen}
-        isDisabled={!user}
-      >
+      <TextButton onClick={newOnOpen} isDisabled={!user}>
         {user ? "Enroll Student" : "Sign in to enroll"}
-      </Button>
+      </TextButton>
     ) : undefined;
 
   return (

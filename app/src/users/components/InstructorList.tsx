@@ -40,13 +40,18 @@ const InstructorList = ({ campId, isPublicFacing, isReadOnly }: Props) => {
       <Box>
         {/* Wrap menu in box to avoid warnings ("applying css to popover") */}
         <Menu autoSelect={true}>
-          <MenuButton as={Button} rightIcon={<FaChevronDown />}>
+          <MenuButton
+            as={Button}
+            bgColor="brand.buttonBg"
+            rightIcon={<FaChevronDown />}
+          >
             {selectedInstructor.full_name}
           </MenuButton>
-          <MenuList>
+          <MenuList bgColor="brand.buttonBg">
             {instructors?.map((instructor) => (
               <MenuItem
                 key={instructor.id}
+                bgColor="brand.buttonBg"
                 onClick={() => setSelectedInstructor(instructor)}
               >
                 {instructor.full_name}
