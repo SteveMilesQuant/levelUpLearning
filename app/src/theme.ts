@@ -31,7 +31,7 @@ const theme = extendTheme({
       secondary: "#ace7f9",
       gradient3: "rgb(192,254,252)",
       gradient2: "rgb(119,172,241)",
-      text: "rgb(62 133 213)",
+      text: "rgb(38, 72, 201)",
       pageHeader: "rgb(4,0,154)",
       buttonBg: "#ace7f9",
       thText: "rgb(4,0,154)",
