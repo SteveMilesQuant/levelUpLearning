@@ -16,6 +16,7 @@ import { useUser } from "../users";
 import BodyContainer from "../components/BodyContainer";
 import ButtonText from "../components/ButtonText";
 import TextButton from "../components/TextButton";
+import AuthButton from "../components/AuthButton";
 
 const Camp = () => {
   const { id: idStr } = useParams();
@@ -49,23 +50,31 @@ const Camp = () => {
   if (isLoading) return null;
   if (error) throw error;
 
+  const publishButton = (
+    <TextButton
+      onClick={() => {
+        updateCamp.mutate({
+          ...camp,
+          is_published: !camp.is_published,
+        });
+      }}
+    >
+      {camp.is_published ? "Unpublish" : "Publish"}
+    </TextButton>
+  );
+
+  const enrollButton = user ? (
+    <TextButton onClick={newOnOpen}>Enroll Student</TextButton>
+  ) : (
+    <AuthButton bgColor="brand.buttonBg">Sign in to enroll</AuthButton>
+  );
+
   const headerButton =
-    campsContextType === CampsContextType.schedule ? (
-      <TextButton
-        onClick={() => {
-          updateCamp.mutate({
-            ...camp,
-            is_published: !camp.is_published,
-          });
-        }}
-      >
-        {camp.is_published ? "Unpublish" : "Publish"}
-      </TextButton>
-    ) : campsContextType === CampsContextType.camps ? (
-      <TextButton onClick={newOnOpen} isDisabled={!user}>
-        {user ? "Enroll Student" : "Sign in to enroll"}
-      </TextButton>
-    ) : undefined;
+    campsContextType === CampsContextType.schedule
+      ? publishButton
+      : campsContextType === CampsContextType.camps
+      ? enrollButton
+      : undefined;
 
   return (
     <BodyContainer>

@@ -3,7 +3,12 @@ import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "../users";
 import ButtonText from "./ButtonText";
 
-const AuthButton = () => {
+interface Props {
+  children?: string;
+  bgColor?: string;
+}
+
+const AuthButton = ({ children, bgColor }: Props) => {
   const { signedIn, onLogin, onLogout } = useAuth();
 
   return (
@@ -11,15 +16,19 @@ const AuthButton = () => {
       {!signedIn && (
         <Button
           leftIcon={<FcGoogle />}
-          bgColor="white"
+          bgColor={bgColor || "white"}
           size="sm"
           onClick={() => onLogin()}
         >
-          <ButtonText>Sign In</ButtonText>
+          <ButtonText>{children || "Sign In"}</ButtonText>
         </Button>
       )}
       {signedIn && (
-        <Button bgColor="white" size="sm" onClick={() => onLogout()}>
+        <Button
+          bgColor={bgColor || "white"}
+          size="sm"
+          onClick={() => onLogout()}
+        >
           <ButtonText>Sign Out</ButtonText>
         </Button>
       )}

@@ -8,14 +8,14 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  List,
   HStack,
   Text,
   ListItem,
   IconButton,
+  Stack,
+  Box,
 } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
-import ListButton from "../../components/ListButton";
 import { useState } from "react";
 import { Camp } from "../../camps";
 import { MdAddShoppingCart } from "react-icons/md";
@@ -69,54 +69,52 @@ const EnrollStudentModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>
-          <Heading fontSize="2xl" marginY={3}>
-            {title}
-          </Heading>
-          <Text fontSize="md" marginY={3}>
-            Grades (2024-2025 school year):{" "}
-            {`${gradeRange[0]} to ${gradeRange[1]}`}
-          </Text>
-          <Divider orientation="horizontal" marginTop={1}></Divider>
+          <Stack spacing={3}>
+            <Heading fontSize="2xl">{title}</Heading>
+            <Text fontSize="md">
+              Grades (2024-2025 school year):{" "}
+              {`${gradeRange[0]} to ${gradeRange[1]}`}
+            </Text>
+            <Divider orientation="horizontal" marginTop={1}></Divider>
+          </Stack>
         </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <List spacing={3}>
-            <ListItem paddingX={3}>
-              <Heading fontSize="xl">Available for enrollment:</Heading>
-            </ListItem>
+          <Stack spacing={4}>
+            <Heading fontSize="xl">Select for enrollment:</Heading>
             {unenrolledStudents.map((s) => (
-              <ListItem paddingX={2} key={s.id}>
-                <ListButton
-                  isSelected={selectedStudentId === s.id}
-                  onClick={() => setSelectedStudentId(s.id)}
-                >
-                  <Text
-                    color={
-                      s.grade_level < gradeRange[0] ||
-                      s.grade_level > gradeRange[1]
-                        ? "red.400"
-                        : undefined
-                    }
-                  >{`${s.name} (Grade ${s.grade_level})`}</Text>
-                </ListButton>
-              </ListItem>
+              <Box
+                paddingX={3}
+                paddingY={1}
+                key={s.id}
+                onClick={() => setSelectedStudentId(s.id)}
+                bgColor={
+                  s.id === selectedStudentId ? "brand.secondary" : undefined
+                }
+                _hover={{
+                  cursor: "pointer",
+                }}
+                borderRadius={10}
+              >
+                <Text>{`${s.name} (Grade ${s.grade_level})`}</Text>
+              </Box>
             ))}
-            <ListItem paddingX={3}>
-              <Heading fontSize="xl">Already enrolled:</Heading>
-            </ListItem>
-            {enrolledStudents.map((s) => (
-              <ListItem paddingX={6} key={s.id}>
-                <Text fontSize={18}>
-                  <strong>{s.name}</strong>
-                </Text>
-              </ListItem>
-            ))}
-            <ListItem paddingX={3} paddingTop={4}>
+            {enrolledStudents.length > 0 && (
+              <>
+                <Heading fontSize="xl">Already enrolled (or in cart):</Heading>
+                {enrolledStudents.map((s) => (
+                  <Box paddingX={3} paddingY={1} key={s.id}>
+                    <Text>{s.name}</Text>
+                  </Box>
+                ))}
+              </>
+            )}
+            <Box>
               <TextButton onClick={onClickCreateStudent}>
                 Create student
               </TextButton>
-            </ListItem>
-          </List>
+            </Box>
+          </Stack>
         </ModalBody>
         <ModalFooter>
           <HStack justifyContent="right">
