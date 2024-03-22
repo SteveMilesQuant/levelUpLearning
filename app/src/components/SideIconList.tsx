@@ -25,6 +25,9 @@ import {
   Grid,
   GridItem,
   LinkBox,
+  Stack,
+  HStack,
+  Box,
 } from "@chakra-ui/react";
 import LinkIcon from "./LinkIcon";
 import { Fragment, ReactElement } from "react";
@@ -161,8 +164,8 @@ const SideIconList = () => {
               boxShadow="var(--drawer-box-shadow)"
               padding={3}
             >
-              <Grid templateColumns="repeat(3, 1fr)" gap={3}>
-                <GridItem onClick={onClose}>
+              <Stack spacing={3}>
+                <Box onClick={onClose}>
                   <IconButton
                     icon={<IoClose size="1.5em" />}
                     aria-label="Close navigation"
@@ -170,29 +173,34 @@ const SideIconList = () => {
                     color="white"
                     variant="ghost"
                   />
-                </GridItem>
-                <GridItem colSpan={2}></GridItem>
+                </Box>
+
                 {allIcons
                   .filter((x) =>
                     ["PUBLIC", ...(user?.roles || [])].find((r) => x.role == r)
                   )
                   .map((sideIcon) => (
-                    <Fragment key={sideIcon.id}>
-                      <GridItem onClick={onClose}>
+                    <HStack
+                      key={sideIcon.id}
+                      spacing={3}
+                      justify="left"
+                      align="center"
+                    >
+                      <Box onClick={onClose}>
                         <LinkIcon
                           icon={sideIcon.icon}
                           endpoint={sideIcon.endpoint}
                           label={sideIcon.label}
                         />
-                      </GridItem>
-                      <GridItem marginY="auto" colSpan={2} onClick={onClose}>
+                      </Box>
+                      <Box onClick={onClose}>
                         <LinkBox as={RouterLink} to={sideIcon.endpoint}>
                           <Text color="white">{sideIcon.label}</Text>
                         </LinkBox>
-                      </GridItem>
-                    </Fragment>
+                      </Box>
+                    </HStack>
                   ))}
-              </Grid>
+              </Stack>
             </DrawerBody>
           </DrawerContent>
         </Drawer>
