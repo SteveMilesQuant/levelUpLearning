@@ -10,7 +10,7 @@ from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
 from db import PaymentRecordDb, init_db, close_db
-from datamodels import Object
+from datamodels import FastApiDate, Object
 from datamodels import RoleEnum, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
 from datamodels import StudentData, StudentResponse
@@ -527,14 +527,19 @@ async def get_camps(request: Request, is_published: Optional[bool] = None, instr
             camps = [Camp(db_obj=db_camp) for db_camp in await instructor.camps(session)]
             for camp in camps:
                 await camp.create(session)
-            if is_published is None:
-                return camps
-            camps = list(
-                filter(lambda camp: camp.is_published == is_published, camps))
-            return camps
+            if is_published is not None:
+                camps = list(
+                    filter(lambda camp: camp.is_published == is_published, camps))
         else:
             # Public access
-            return await all_camps(session, is_published)
+            camps = await all_camps(session, is_published)
+
+            # For public access, we only care about camps in the future
+            if is_published:
+                camps = list(
+                    filter(lambda camp: len(camp.dates) == 0 or camp.dates[0] > FastApiDate.today(), camps))
+
+        return camps
 
 
 # Public route

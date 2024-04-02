@@ -1,4 +1,4 @@
-import { useDisclosure } from "@chakra-ui/react";
+import { HStack, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import {
   CampFormModal,
@@ -8,7 +8,7 @@ import {
   useCamps,
   CampQuery,
 } from "../camps";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useUser } from "../users";
 import BodyContainer from "../components/BodyContainer";
 import TextButton from "../components/TextButton";
@@ -21,6 +21,7 @@ const Camps = () => {
     onOpen: newOnOpen,
     onClose: newOnClose,
   } = useDisclosure();
+  const [showPastCamps, setShowPastCamps] = useState(false);
 
   const campQuery = {} as CampQuery;
   if (campsContextType !== CampsContextType.schedule)
@@ -44,16 +45,38 @@ const Camps = () => {
       : "Camps";
   const isReadOnly = campsContextType !== CampsContextType.schedule;
 
+  const campList = camps.filter(
+    (c) =>
+      !c.dates ||
+      c.dates.length === 0 ||
+      (showPastCamps && new Date(c.dates[0] + "T00:00:00") <= new Date()) ||
+      (!showPastCamps && new Date(c.dates[0] + "T00:00:00") > new Date())
+  );
+
   return (
     <BodyContainer>
       <PageHeader
         rightButton={
-          !isReadOnly && <TextButton onClick={newOnOpen}>Add Camp</TextButton>
+          !isReadOnly && (
+            <HStack justify="space-between" spacing={3}>
+              {showPastCamps && (
+                <TextButton onClick={() => setShowPastCamps(false)}>
+                  Show future camps
+                </TextButton>
+              )}
+              {!showPastCamps && (
+                <TextButton onClick={() => setShowPastCamps(true)}>
+                  Show past camps
+                </TextButton>
+              )}
+              <TextButton onClick={newOnOpen}>Add Camp</TextButton>
+            </HStack>
+          )
         }
       >
         {pageTitle}
       </PageHeader>
-      <CampGrid camps={camps} isReadOnly={isReadOnly} />
+      <CampGrid camps={campList} isReadOnly={isReadOnly} />
       {!isReadOnly && (
         <CampFormModal
           title="Add Camp"

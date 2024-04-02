@@ -16,7 +16,11 @@ const StudentTabs = () => {
       </TabList>
       <TabPanels>
         {students?.map((student) => (
-          <TabPanel key={student.id}>
+          <TabPanel
+            key={student.id}
+            borderLeftWidth={1}
+            borderLeftStyle="solid"
+          >
             <StudentPage student={student} />
           </TabPanel>
         ))}
