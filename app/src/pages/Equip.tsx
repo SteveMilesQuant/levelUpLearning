@@ -1,6 +1,7 @@
 import {
   IconButton,
   Spinner,
+  Stack,
   Tab,
   TabList,
   TabPanel,
@@ -13,6 +14,7 @@ import { ResourceGroupFormModal, useResourceGroups } from "../resources";
 import PageHeader from "../components/PageHeader";
 import TextButton from "../components/TextButton";
 import ResourceGroupForm from "../resources/components/ResourceGroupForm";
+import ResourcesTable from "../resources/components/ResourcesTable";
 
 const Equip = () => {
   const {
@@ -46,7 +48,10 @@ const Equip = () => {
         <TabPanels>
           {resourceGroups.map((rg) => (
             <TabPanel key={rg.id}>
-              <ResourceGroupForm resourceGroup={rg} />
+              <Stack spacing={3}>
+                <ResourceGroupForm resourceGroup={rg} />
+                <ResourcesTable resourceGroupId={rg.id} />
+              </Stack>
             </TabPanel>
           ))}
         </TabPanels>

@@ -15,7 +15,7 @@ import { CACHE_KEY_RESOURCE_GROUPS } from "..";
 const useResourceHooks = (resourceGroupId: number) => {
   return new APIHooks<Resource, ResourceData>(
     new APIClient<Resource, ResourceData>(
-      `/programs/${resourceGroupId}/levels`
+      `/resource_groups/${resourceGroupId}/resources`
     ),
     [
       ...CACHE_KEY_RESOURCE_GROUPS,
@@ -28,16 +28,16 @@ const useResourceHooks = (resourceGroupId: number) => {
 
 const useResources = (resourceGroupId?: number) => {
   if (!resourceGroupId) return {} as UseQueryResult<Resource[], Error>;
-  const levelHooks = useResourceHooks(resourceGroupId);
-  return levelHooks.useDataList();
+  const resourceHooks = useResourceHooks(resourceGroupId);
+  return resourceHooks.useDataList();
 };
 export default useResources;
 
 export const useResource = (resourceGroupId?: number, resourceId?: number) => {
   if (!resourceGroupId || !resourceId)
     return {} as UseQueryResult<Resource, Error>;
-  const levelHooks = useResourceHooks(resourceGroupId);
-  return levelHooks.useData(resourceId);
+  const resourceHooks = useResourceHooks(resourceGroupId);
+  return resourceHooks.useData(resourceId);
 };
 
 export const useAddResource = (
@@ -51,7 +51,7 @@ export const useAddResource = (
       ResourceData,
       AddDataContext<Resource>
     >;
-  const levelHooks = useResourceHooks(resourceGroupId);
+  const resourceHooks = useResourceHooks(resourceGroupId);
 
   // Apply custom mutation where we append to end, instead of beginning, and initialize list_index
   const queryMutation = (newData: ResourceData, dataList: Resource[]) => {
@@ -64,7 +64,7 @@ export const useAddResource = (
     return [...dataList, newResource];
   };
 
-  return levelHooks.useAdd({ queryMutation, ...addArgs });
+  return resourceHooks.useAdd({ queryMutation, ...addArgs });
 };
 
 export const useUpdateResource = (
@@ -78,27 +78,28 @@ export const useUpdateResource = (
       Resource,
       UpdateDataContext<Resource>
     >;
-  const levelHooks = useResourceHooks(resourceGroupId);
+  const resourceHooks = useResourceHooks(resourceGroupId);
 
-  // Apply custom mutation where we update list indices for other levels when target level moves
+  // Apply custom mutation where we update list indices for other resources when target resource moves
   const queryMutation = (newData: Resource, dataList: Resource[]) => {
-    const origData = dataList.find((level) => level.id === newData.id);
+    const origData = dataList.find((resource) => resource.id === newData.id);
     if (!origData || origData.list_index === newData.list_index)
       return dataList.map((data) => (data.id === newData.id ? newData : data));
     const minIdx = Math.min(origData.list_index, newData.list_index);
     const maxIdx = Math.max(origData.list_index, newData.list_index);
     const direction = origData.list_index < newData.list_index ? -1 : 1;
-    const newList = dataList.map((level) =>
-      level.id === newData.id
+    const newList = dataList.map((resource) =>
+      resource.id === newData.id
         ? newData
-        : level.list_index < minIdx || level.list_index > maxIdx
-        ? level
-        : { ...level, list_index: level.list_index + direction }
+        : resource.list_index < minIdx || resource.list_index > maxIdx
+        ? resource
+        : { ...resource, list_index: resource.list_index + direction }
     );
+
     return newList;
   };
 
-  return levelHooks.useUpdate({ queryMutation, ...updateArgs });
+  return resourceHooks.useUpdate({ queryMutation, ...updateArgs });
 };
 
 export const useDeleteResource = (
@@ -112,20 +113,20 @@ export const useDeleteResource = (
       number,
       DeleteDataContext<Resource>
     >;
-  const levelHooks = useResourceHooks(resourceGroupId);
+  const resourceHooks = useResourceHooks(resourceGroupId);
 
-  // Apply custom mutation where we update list_index for levels after deleted level
+  // Apply custom mutation where we update list_index for resources after deleted resource
   const queryMutation = (dataId: number, dataList: Resource[]) => {
-    const delData = dataList.find((level) => level.id === dataId);
+    const delData = dataList.find((resource) => resource.id === dataId);
     if (!delData) return dataList;
     return dataList
-      .filter((level) => level.id !== dataId)
-      .map((level) =>
-        level.list_index < delData.list_index
-          ? level
-          : { ...level, list_index: level.list_index - 1 }
+      .filter((resource) => resource.id !== dataId)
+      .map((resource) =>
+        resource.list_index < delData.list_index
+          ? resource
+          : { ...resource, list_index: resource.list_index - 1 }
       );
   };
 
-  return levelHooks.useDelete({ queryMutation, ...deleteArgs });
+  return resourceHooks.useDelete({ queryMutation, ...deleteArgs });
 };
