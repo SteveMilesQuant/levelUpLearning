@@ -151,3 +151,23 @@ class CouponData(BaseModel):
 
 class CouponResponse(CouponData):
     id: Optional[int]
+
+
+class ResourceData(BaseModel):
+    title: Optional[str]
+    url: Optional[str]
+    list_index: Optional[int]
+
+
+class ResourceResponse(ResourceData):
+    id: Optional[int]
+    group_id: Optional[int]
+
+
+class ResourceGroupData(BaseModel):
+    title: Optional[str]
+
+
+class ResourceGroupResponse(ResourceGroupData):
+    id: Optional[int]
+    resources: Optional[List[ResourceResponse]]

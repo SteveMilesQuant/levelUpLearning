@@ -217,6 +217,29 @@ class CouponDb(Base):
     max_count: Mapped[int] = mapped_column(nullable=True)
 
 
+class ResourceDb(Base):
+    __tablename__ = 'resource'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    group_id: Mapped[int] = mapped_column(ForeignKey('resource_group.id'))
+    list_index: Mapped[int] = mapped_column()
+    title: Mapped[Text] = mapped_column(Text)
+    url: Mapped[Text] = mapped_column(Text)
+
+    group: Mapped[List['ResourceGroupDb']] = relationship(
+        back_populates='resources', lazy='joined')
+
+
+class ResourceGroupDb(Base):
+    __tablename__ = 'resource_group'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[Text] = mapped_column(Text)
+
+    resources: Mapped[List['ResourceDb']] = relationship(
+        back_populates='group', lazy='joined', cascade='all, delete')
+
+
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):
     if for_pytest:
         # Workaround for pytest issues

@@ -29,7 +29,7 @@ class Level(LevelResponse):
             self.id = self._db_obj.id
         else:
             # Otherwise, update attributes from fetched object
-            for key, value in LevelResponse():
+            for key, _ in LevelResponse():
                 setattr(self, key, getattr(self._db_obj, key))
 
     async def update(self, session: Any):
@@ -42,7 +42,7 @@ class Level(LevelResponse):
                     db_level.list_index -= 1
                 elif self.list_index <= db_level.list_index < self._db_obj.list_index:
                     db_level.list_index += 1
-        for key, value in LevelResponse():
+        for key, _ in LevelResponse():
             setattr(self._db_obj, key, getattr(self, key))
         await session.commit()
 

@@ -16,6 +16,7 @@ from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentRes
 from datamodels import StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
+from datamodels import ResourceGroupData, ResourceGroupResponse, ResourceData, ResourceResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
 from emailserver import EmailServer
 from user import User, init_roles, all_users
@@ -25,6 +26,7 @@ from program import Level
 from camp import Camp, all_camps
 from coupon import Coupon, all_coupons
 from enrollment import CONFIRMATION_SENDER_EMAIL_KEY, Enrollment
+from resource import ResourceGroup, Resource, all_resource_groups
 
 
 description = """
@@ -958,6 +960,211 @@ async def delete_coupon(request: Request, coupon_id: int):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Coupon id={coupon_id} does not exist")
         await coupon.delete(session)
+
+
+###############################################################################
+# RESOURCE GROUPS
+###############################################################################
+
+
+# Public route
+@api_router.get("/resource_groups", response_model=List[ResourceGroupResponse])
+async def get_resource_groups():
+    '''Get a list of all resource groups'''
+    async with app.db_sessionmaker() as db_session:
+        resource_group_list = await all_resource_groups(db_session)
+        return resource_group_list
+
+
+# Public route
+@api_router.get("/resource_groups/{resource_group_id}", response_model=ResourceGroupResponse)
+async def get_resource_group(resource_group_id: int):
+    '''Get a single resource group.'''
+    async with app.db_sessionmaker() as session:
+        resource_group = ResourceGroup(id=resource_group_id)
+        await resource_group.create(session)
+        if resource_group.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Resource group id={resource_group_id} does not exist")
+        return resource_group
+
+
+@api_router.put("/resource_groups/{resource_group_id}", response_model=ResourceGroupResponse)
+async def put_update_resource_group(request: Request, resource_group_id: int, updated_resource_group: ResourceGroupData):
+    '''Update a resource group.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to access resource groups.")
+
+        resource_group = ResourceGroup(id=resource_group_id)
+        await resource_group.create(session)
+        if resource_group.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Resource group id={resource_group_id} does not exist")
+
+        resource_group = resource_group.copy(
+            update=updated_resource_group.dict(exclude_unset=True))
+        await resource_group.update(session)
+        return resource_group
+
+
+@api_router.post("/resource_groups", response_model=ResourceGroupResponse, status_code=status.HTTP_201_CREATED)
+async def post_new_resource_group(request: Request, new_resource_group_data: ResourceGroupData):
+    '''Create a new resource group.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to access resource groups.")
+        new_resource_group = ResourceGroup(**new_resource_group_data.dict())
+        await new_resource_group.create(session)
+        if new_resource_group.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new resource group failed")
+        return new_resource_group
+
+
+@api_router.delete("/resource_groups/{resource_group_id}")
+async def delete_resource_group(request: Request, resource_group_id: int):
+    '''Delete a resource group.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to access resource groups.")
+
+        resource_group = ResourceGroup(id=resource_group_id)
+        await resource_group.create(session)
+        if resource_group.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Resource group id={resource_group_id} does not exist")
+        await resource_group.delete(session)
+        return
+
+
+###############################################################################
+# RESOURCE GROUPS -> RESOURCES
+###############################################################################
+
+
+# Public route
+@api_router.get("/resource_groups/{resource_group_id}/resources", response_model=List[ResourceResponse])
+async def get_resources(resource_group_id: int):
+    '''Get a list of all resources'''
+    async with app.db_sessionmaker() as db_session:
+        resource_group = ResourceGroup(id=resource_group_id)
+        await resource_group.create(db_session)
+        if resource_group.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Resource group id={resource_group_id} does not exist")
+        return resource_group.resources
+
+
+# Public route
+@api_router.get("/resource_groups/{resource_group_id}/resources/{resource_id}", response_model=ResourceResponse)
+async def get_resource(resource_group_id: int, resource_id: int):
+    '''Get a single resource.'''
+    async with app.db_sessionmaker() as db_session:
+        resource_group = ResourceGroup(id=resource_group_id)
+        await resource_group.create(db_session)
+        if resource_group.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Resource group id={resource_group_id} does not exist")
+
+        for resource in resource_group.resources:
+            if resource.id == resource_id:
+                return resource
+
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Resource id={resource_id} does not exist within resource group id={resource_group_id}")
+
+
+@api_router.put("/resource_groups/{resource_group_id}/resources/{resource_id}", response_model=ResourceResponse)
+async def put_update_resource(request: Request, resource_group_id: int, resource_id: int, updated_resource: ResourceData):
+    '''Update a resource.'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to access resources.")
+
+        resource_group = ResourceGroup(id=resource_group_id)
+        await resource_group.create(db_session)
+        if resource_group.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Resource group id={resource_group_id} does not exist")
+
+        resource = None
+        for r in resource_group.resources:
+            if r.id == resource_id:
+                resource = r
+                break
+
+        if resource is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Resource id={resource_id} does not exist within resource group id={resource_group_id}")
+
+        resource = resource.copy(
+            update=updated_resource.dict(exclude_unset=True))
+        await resource.update(db_session)
+        return resource
+
+
+@api_router.post("/resource_groups/{resource_group_id}/resources", response_model=ResourceResponse, status_code=status.HTTP_201_CREATED)
+async def post_new_resource(request: Request, resource_group_id: int, new_resource_data: ResourceData):
+    '''Create a new resource.'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to access resources.")
+
+        resource_group = ResourceGroup(id=resource_group_id)
+        await resource_group.create(db_session)
+        if resource_group.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Resource group id={resource_group_id} does not exist")
+
+        list_index = max(
+            [r.list_index for r in resource_group.resources], default=0) + 1
+
+        new_resource = Resource(
+            **new_resource_data.dict(exclude={'group_id', 'list_index'}),
+            group_id=resource_group_id,
+            list_index=list_index
+        )
+        await new_resource.create(db_session)
+        if new_resource.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new resource failed")
+
+        return new_resource
+
+
+@api_router.delete("/resource_groups/{resource_group_id}/resources/{resource_id}")
+async def delete_resource_group(request: Request, resource_group_id: int, resource_id: int):
+    '''Delete a resource.'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to access resources.")
+
+        resource_group = ResourceGroup(id=resource_group_id)
+        await resource_group.create(db_session)
+        if resource_group.id is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Resource group id={resource_group_id} does not exist")
+
+        for resource in resource_group.resources:
+            if resource.id == resource_id:
+                await resource.delete(db_session)
+                return
+
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Resource id={resource_id} does not exist within resource group id={resource_group_id}")
 
 
 ###############################################################################
