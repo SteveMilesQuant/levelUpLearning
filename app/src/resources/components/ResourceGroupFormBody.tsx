@@ -9,11 +9,11 @@ interface Props {
   isReadOnly: boolean;
 }
 
-const ProgramFormBody = ({ register, errors, isReadOnly }: Props) => {
+const ResourceGroupFormBody = ({ register, errors, isReadOnly }: Props) => {
   return (
     <Stack spacing={5}>
       <FormControl>
-        <FormLabel>Title</FormLabel>
+        <FormLabel>Group Title</FormLabel>
         <InputError
           label={errors.title?.message}
           isOpen={errors.title ? true : false}
@@ -25,4 +25,4 @@ const ProgramFormBody = ({ register, errors, isReadOnly }: Props) => {
   );
 };
 
-export default ProgramFormBody;
+export default ResourceGroupFormBody;

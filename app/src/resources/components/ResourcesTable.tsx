@@ -20,7 +20,7 @@ const ResourcesTable = ({ resourceGroupId }: Props) => {
       <Table>
         <Thead>
           <Tr>
-            <ThText>Title</ThText>
+            <ThText>Resource Title</ThText>
             <ThText>URL</ThText>
             <ThText>{/* placeholder for up/down buttons */}</ThText>
             <ThText>{/* placeholder for crud buttons */}</ThText>
