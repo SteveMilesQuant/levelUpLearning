@@ -19,6 +19,7 @@ import Checkout from "./Checkout";
 import Enrollments from "./Enrollments";
 import Coupons from "./Coupons";
 import Events from "./Events";
+import Equip from "./Equip";
 
 const router = createBrowserRouter([
   {
@@ -109,6 +110,7 @@ const router = createBrowserRouter([
           { path: "enrollments", element: <Enrollments /> },
           { path: "coupons", element: <Coupons /> },
           { path: "members", element: <Members /> },
+          { path: "equip", element: <Equip /> },
           { path: "settings", element: <Settings /> },
         ],
       },

@@ -22,125 +22,132 @@ import {
   IconButton,
   useDisclosure,
   Text,
-  Grid,
-  GridItem,
   LinkBox,
   Stack,
   HStack,
   Box,
 } from "@chakra-ui/react";
 import LinkIcon from "./LinkIcon";
-import { Fragment, ReactElement } from "react";
-import { IoClose, IoPricetagsOutline } from "react-icons/io5";
+import { ReactElement } from "react";
+import {
+  IoBook,
+  IoBookOutline,
+  IoClose,
+  IoPricetagsOutline,
+} from "react-icons/io5";
 import { useUser } from "../users";
 import { Link as RouterLink } from "react-router-dom";
 
-interface SideIcon {
-  id: number;
+interface SideIconData {
   role: "PUBLIC" | "GUARDIAN" | "INSTRUCTOR" | "ADMIN";
   icon: ReactElement;
   endpoint: string;
   label: string;
 }
 
+interface SideIcon extends SideIconData {
+  id: number;
+}
+
 const SideIconList = () => {
   const { data: user } = useUser();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const allIcons: SideIcon[] = [
+  const allIconsNoId: SideIconData[] = [
     {
-      id: 1,
       role: "PUBLIC",
       icon: <FaHome size="2em" />,
       endpoint: "/",
       label: "Home",
     },
     {
-      id: 2,
       role: "PUBLIC",
       icon: <FaSearch size="2em" />,
       endpoint: "/camps",
       label: "Find Camps",
     },
     {
-      id: 3,
+      role: "GUARDIAN",
+      icon: <FaGraduationCap size="2em" />,
+      endpoint: "/students",
+      label: "My Students",
+    },
+    {
       role: "PUBLIC",
       icon: <GiPartyPopper size="2em" />,
       endpoint: "/events",
       label: "Community Events",
     },
     {
-      id: 4,
-      role: "GUARDIAN",
-      icon: <FaGraduationCap size="2em" />,
-      endpoint: "/students",
-      label: "My Students",
+      role: "PUBLIC",
+      icon: <IoBookOutline size="2em" />,
+      endpoint: "/resources",
+      label: "Resources",
     },
-
     {
-      id: 5,
       role: "INSTRUCTOR",
       icon: <GiTeacher size="2em" />,
       endpoint: "/teach",
       label: "Teach",
     },
     {
-      id: 6,
       role: "INSTRUCTOR",
       icon: <MdOutlineDesignServices size="2em" />,
       endpoint: "/programs",
       label: "Design",
     },
     {
-      id: 7,
       role: "ADMIN",
       icon: <AiOutlineSchedule size="2em" />,
       endpoint: "/schedule",
       label: "Schedule",
     },
     {
-      id: 8,
       role: "ADMIN",
       icon: <MdManageAccounts size="2em" />,
       endpoint: "/members",
       label: "Members",
     },
     {
-      id: 9,
       role: "ADMIN",
       icon: <SlNotebook size="2em" />,
       endpoint: "/enrollments",
       label: "Enrollments",
     },
     {
-      id: 10,
       role: "ADMIN",
       icon: <IoPricetagsOutline size="2em" />,
       endpoint: "/coupons",
       label: "Coupons",
     },
     {
-      id: 11,
+      role: "ADMIN",
+      icon: <IoBook size="2em" />,
+      endpoint: "/equip",
+      label: "Edit resources",
+    },
+    {
       role: "PUBLIC",
       icon: <FaRegQuestionCircle size="2em" />,
       endpoint: "/about",
       label: "About",
     },
     {
-      id: 12,
       role: "PUBLIC",
       icon: <FaPhoneAlt size="2em" />,
       endpoint: "/contact",
       label: "Contact",
     },
     {
-      id: 13,
       role: "GUARDIAN",
       icon: <MdSettings size="2em" />,
       endpoint: "/settings",
       label: "Settings",
     },
   ];
+  const allIcons: SideIcon[] = allIconsNoId.map((icon, index) => {
+    return { ...icon, id: index };
+  });
 
   return (
     <>

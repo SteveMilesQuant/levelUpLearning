@@ -1,0 +1,131 @@
+import ms from "ms";
+import APIClient from "../../services/api-client";
+import APIHooks, {
+  AddArgs,
+  AddDataContext,
+  DeleteArgs,
+  DeleteDataContext,
+  UpdateArgs,
+  UpdateDataContext,
+} from "../../services/api-hooks";
+import { CACHE_KEY_RESOURCES, Resource, ResourceData } from "../Resource";
+import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
+import { CACHE_KEY_RESOURCE_GROUPS } from "..";
+
+const useResourceHooks = (resourceGroupId: number) => {
+  return new APIHooks<Resource, ResourceData>(
+    new APIClient<Resource, ResourceData>(
+      `/programs/${resourceGroupId}/levels`
+    ),
+    [
+      ...CACHE_KEY_RESOURCE_GROUPS,
+      resourceGroupId.toString(),
+      ...CACHE_KEY_RESOURCES,
+    ],
+    ms("5m")
+  );
+};
+
+const useResources = (resourceGroupId?: number) => {
+  if (!resourceGroupId) return {} as UseQueryResult<Resource[], Error>;
+  const levelHooks = useResourceHooks(resourceGroupId);
+  return levelHooks.useDataList();
+};
+export default useResources;
+
+export const useResource = (resourceGroupId?: number, resourceId?: number) => {
+  if (!resourceGroupId || !resourceId)
+    return {} as UseQueryResult<Resource, Error>;
+  const levelHooks = useResourceHooks(resourceGroupId);
+  return levelHooks.useData(resourceId);
+};
+
+export const useAddResource = (
+  resourceGroupId?: number,
+  addArgs?: AddArgs<Resource, ResourceData>
+) => {
+  if (!resourceGroupId)
+    return {} as UseMutationResult<
+      Resource,
+      Error,
+      ResourceData,
+      AddDataContext<Resource>
+    >;
+  const levelHooks = useResourceHooks(resourceGroupId);
+
+  // Apply custom mutation where we append to end, instead of beginning, and initialize list_index
+  const queryMutation = (newData: ResourceData, dataList: Resource[]) => {
+    const newResource = {
+      id: 0, // always set id to zero on new objects
+      group_id: resourceGroupId,
+      ...newData,
+      list_index: dataList.length + 1,
+    };
+    return [...dataList, newResource];
+  };
+
+  return levelHooks.useAdd({ queryMutation, ...addArgs });
+};
+
+export const useUpdateResource = (
+  resourceGroupId?: number,
+  updateArgs?: UpdateArgs<Resource>
+) => {
+  if (!resourceGroupId)
+    return {} as UseMutationResult<
+      Resource,
+      Error,
+      Resource,
+      UpdateDataContext<Resource>
+    >;
+  const levelHooks = useResourceHooks(resourceGroupId);
+
+  // Apply custom mutation where we update list indices for other levels when target level moves
+  const queryMutation = (newData: Resource, dataList: Resource[]) => {
+    const origData = dataList.find((level) => level.id === newData.id);
+    if (!origData || origData.list_index === newData.list_index)
+      return dataList.map((data) => (data.id === newData.id ? newData : data));
+    const minIdx = Math.min(origData.list_index, newData.list_index);
+    const maxIdx = Math.max(origData.list_index, newData.list_index);
+    const direction = origData.list_index < newData.list_index ? -1 : 1;
+    const newList = dataList.map((level) =>
+      level.id === newData.id
+        ? newData
+        : level.list_index < minIdx || level.list_index > maxIdx
+        ? level
+        : { ...level, list_index: level.list_index + direction }
+    );
+    return newList;
+  };
+
+  return levelHooks.useUpdate({ queryMutation, ...updateArgs });
+};
+
+export const useDeleteResource = (
+  resourceGroupId?: number,
+  deleteArgs?: DeleteArgs<Resource>
+) => {
+  if (!resourceGroupId)
+    return {} as UseMutationResult<
+      any,
+      Error,
+      number,
+      DeleteDataContext<Resource>
+    >;
+  const levelHooks = useResourceHooks(resourceGroupId);
+
+  // Apply custom mutation where we update list_index for levels after deleted level
+  const queryMutation = (dataId: number, dataList: Resource[]) => {
+    const delData = dataList.find((level) => level.id === dataId);
+    if (!delData) return dataList;
+    return dataList
+      .filter((level) => level.id !== dataId)
+      .map((level) =>
+        level.list_index < delData.list_index
+          ? level
+          : { ...level, list_index: level.list_index - 1 }
+      );
+  };
+
+  return levelHooks.useDelete({ queryMutation, ...deleteArgs });
+};
