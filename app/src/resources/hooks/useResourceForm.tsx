@@ -8,16 +8,18 @@ import { useAddResource, useUpdateResource } from "./useResources";
 const resourceSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters." }),
   url: z.string().min(3, { message: "URL must be at least 3 characters." }),
+  list_index: z.number().optional(),
 });
 
 export type FormData = z.infer<typeof resourceSchema>;
 
-const useResourceGroupForm = (resourceGroupId: number, resource?: Resource) => {
+const useResourceForm = (resourceGroupId: number, resource?: Resource) => {
   const {
     register,
     handleSubmit: handleFormSubmit,
     formState: { errors, isValid },
     reset,
+    setValue,
   } = useForm<FormData>({
     resolver: zodResolver(resourceSchema),
     defaultValues: useMemo(() => {
@@ -66,7 +68,8 @@ const useResourceGroupForm = (resourceGroupId: number, resource?: Resource) => {
     isValid,
     handleClose,
     handleSubmit,
+    setValue,
   };
 };
 
-export default useResourceGroupForm;
+export default useResourceForm;

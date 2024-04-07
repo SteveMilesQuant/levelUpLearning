@@ -11,6 +11,8 @@ export interface Props {
 
 const ResourcesTable = ({ resourceGroupId }: Props) => {
   const [isAdding, setIsAdding] = useState(false);
+
+  /* It's tempting to pass in resources, but it's better for query updates to get it separately */
   const { data: resources } = useResources(resourceGroupId);
 
   return (
@@ -20,22 +22,27 @@ const ResourcesTable = ({ resourceGroupId }: Props) => {
           <Tr>
             <ThText>Title</ThText>
             <ThText>URL</ThText>
+            <ThText>{/* placeholder for up/down buttons */}</ThText>
             <ThText>{/* placeholder for crud buttons */}</ThText>
           </Tr>
         </Thead>
         <Tbody>
-          {resources?.map((resource) => (
-            <ResourcesTableRow
-              key={resource.id}
-              resourceGroupId={resourceGroupId}
-              resource={resource}
-            />
-          ))}
+          {resources
+            ?.sort((a, b) => a.list_index - b.list_index)
+            .map((resource) => (
+              <ResourcesTableRow
+                key={resource.id}
+                resourceGroupId={resourceGroupId}
+                resource={resource}
+                list_length={resources.length}
+              />
+            ))}
           {isAdding && (
             <ResourcesTableRow
               resourceGroupId={resourceGroupId}
               onCancel={() => setIsAdding(false)}
               onSuccess={() => setIsAdding(false)}
+              list_length={resources ? resources.length : 0}
             />
           )}
           {!isAdding && (
