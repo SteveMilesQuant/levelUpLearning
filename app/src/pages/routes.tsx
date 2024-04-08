@@ -20,6 +20,7 @@ import Enrollments from "./Enrollments";
 import Coupons from "./Coupons";
 import Events from "./Events";
 import Equip from "./Equip";
+import Resources from "./Resources";
 
 const router = createBrowserRouter([
   {
@@ -68,6 +69,7 @@ const router = createBrowserRouter([
         path: "events",
         element: <Events />,
       },
+      { path: "resources", element: <Resources /> },
       {
         element: <PrivateRoutes />,
         children: [

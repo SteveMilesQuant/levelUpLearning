@@ -78,12 +78,12 @@ const SideIconList = () => {
       endpoint: "/events",
       label: "Community Events",
     },
-    /*{
+    {
       role: "PUBLIC",
       icon: <IoBookOutline size="2em" />,
       endpoint: "/resources",
       label: "Resources",
-    },*/
+    },
     {
       role: "INSTRUCTOR",
       icon: <GiTeacher size="2em" />,

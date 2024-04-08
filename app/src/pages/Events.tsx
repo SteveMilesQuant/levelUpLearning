@@ -7,15 +7,7 @@ import apextitle from "../assets/apextitle.svg";
 import apex1 from "../assets/apex1.svg";
 import apex2 from "../assets/apex2.svg";
 import apex3 from "../assets/apex3.svg";
-import {
-  Box,
-  Button,
-  Divider,
-  Image,
-  LinkBox,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Divider, Image, LinkBox, Stack, Text } from "@chakra-ui/react";
 import { Carousel } from "react-responsive-carousel";
 import { Link as RouterLink } from "react-router-dom";
 import TextButton from "../components/TextButton";
