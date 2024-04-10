@@ -98,10 +98,10 @@ jobs:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
-          docker stop lul-app
-          docker stop lul-api
-          docker rm lul-app
-          docker rm lul-api
+          docker stop lul-app || true
+          docker stop lul-api || true
+          docker rm lul-app || true
+          docker rm lul-api || true
           docker run -d --name lul-app -p 8080:8080 $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
           docker run -d --env-file ~/lul.env --name lul-api -p 3000:3000 $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
           docker image prune -a -f
