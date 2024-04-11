@@ -27,5 +27,7 @@ class EmailServer(BaseModel):
             print(f'Sent email to {message["To"]}')
         except Exception as e:
             print(f"Email error occurrred: {e}")
+        except:
+            print("Email error occurred (no feedback).")
         finally:
             await server.quit()
