@@ -87,7 +87,7 @@ async def startup():
             host=os.environ.get("SMTP_HOST", None),
             port=os.environ.get("SMTP_PORT", None),
             user=os.environ.get("SMTP_USER", None),
-            password=os.environ.get("SMPT_PASSWORD", None),
+            password=os.environ.get("SMTP_PASSWORD", None),
             sender_emails={CONFIRMATION_SENDER_EMAIL_KEY: os.environ.get(
                 "CONFIRMATION_EMAIL_SENDER", None)}
         )

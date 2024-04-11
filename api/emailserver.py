@@ -20,11 +20,6 @@ class EmailServer(BaseModel):
 
     async def send_email(self, message: MIMEMultipart):
         server = SMTP(hostname=self._host, port=self._port, start_tls=True)
-        print(f'Email host: {self._host}')
-        print(f'Email port: {self._port}')
-        print(f'Email user: {self._user}')
-        print(f'Email password: {self._password}')
-        return
         try:
             await server.connect()
             await server.login(self._user, self._password)
