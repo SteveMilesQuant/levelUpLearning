@@ -19,10 +19,12 @@ class EmailServer(BaseModel):
         self._password = password
 
     async def send_email(self, message: MIMEMultipart):
-        server = SMTP(hostname=self._host, port=self._port)
+        server = SMTP(hostname=self._host, port=self._port, start_tls=True)
         try:
             await server.connect()
+            print(f'Email server connected.')
             await server.login(self._user, self._password)
+            print(f'Email login successful.')
             await server.send_message(message)
             print(f'Sent email to {message["To"]}')
         except Exception as e:
