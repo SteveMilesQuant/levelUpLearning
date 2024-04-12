@@ -16,7 +16,7 @@ const CampForm = ({ camp }: Props) => {
   const campForm = useCampForm(camp);
   const deleteCamp = useDeleteCamp({
     onDelete: () => {
-      navigate("/programs");
+      navigate("/camps");
     },
   });
 
