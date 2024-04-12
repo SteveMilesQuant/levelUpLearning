@@ -19,7 +19,7 @@ class EmailServer(BaseModel):
         self._password = password
 
     async def send_email(self, message: MIMEMultipart):
-        server = SMTP(hostname=self._host, port=self._port, start_tls=True)
+        server = SMTP(hostname=self._host, port=self._port)
         try:
             await server.connect()
             await server.login(self._user, self._password)
@@ -30,4 +30,7 @@ class EmailServer(BaseModel):
         except:
             print("Email error occurred (no feedback).")
         finally:
-            await server.quit()
+            try:
+                await server.quit()
+            except:
+                pass
