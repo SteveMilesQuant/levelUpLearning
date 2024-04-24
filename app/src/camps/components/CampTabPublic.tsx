@@ -1,6 +1,7 @@
 import { Stack, Text, Textarea } from "@chakra-ui/react";
 import { Camp } from "../Camp";
 import { locale } from "../../constants";
+import ResizeTextarea from "react-textarea-autosize";
 
 interface Props {
   camp?: Camp;
@@ -43,12 +44,12 @@ const CampTabPublic = ({ camp }: Props) => {
   const timeStr =
     startTime && endTime
       ? startTime.toLocaleString(locale, {
-          timeStyle: "short",
-        }) +
-        " to " +
-        endTime.toLocaleString(locale, {
-          timeStyle: "short",
-        })
+        timeStyle: "short",
+      }) +
+      " to " +
+      endTime.toLocaleString(locale, {
+        timeStyle: "short",
+      })
       : "TBD";
 
   return (
@@ -78,8 +79,12 @@ const CampTabPublic = ({ camp }: Props) => {
         </Text>
       )}
       <Textarea
-        size="xl"
-        height="15rem"
+        minH="unset"
+        overflow="hidden"
+        w="100%"
+        resize="none"
+        minRows={1}
+        as={ResizeTextarea}
         isReadOnly={true}
         value={camp.program.description}
         padding={3}
