@@ -58,7 +58,7 @@ const CampFormBody = ({
               type="text"
               isReadOnly={true}
               _hover={{
-                bgColor: "gray.200",
+                bgColor: "brand.hover",
                 transform: "scale(1.03)",
                 transition: "transform .2s ease-in",
               }}

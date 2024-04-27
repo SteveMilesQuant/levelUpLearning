@@ -13,11 +13,11 @@ const AuthExpiredModal = () => {
   return (
     <Modal
       isOpen={expiration ? expiration <= new Date() : false}
-      onClose={() => {}}
+      onClose={() => { }}
       size="sm"
     >
       <ModalOverlay />
-      <ModalContent bgColor="gray.100">
+      <ModalContent bgColor="brand.disabled">
         <Stack margin={5} align="center" spacing={5}>
           <Text>Your sign in has expired.</Text>
           <AuthButton />

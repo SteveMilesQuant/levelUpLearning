@@ -35,6 +35,9 @@ const theme = extendTheme({
       pageHeader: "rgb(4,0,154)",
       buttonBg: "#ace7f9",
       thText: "rgb(4,0,154)",
+      hover: "rgb(237, 242, 247)",
+      selected: "rgb(203, 213, 224)",
+      disabled: "rgb(237, 242, 247)"
     },
   },
 });

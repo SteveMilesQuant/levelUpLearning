@@ -19,7 +19,7 @@ const ActionButton = forwardRef(
         onClick={onClick}
         ref={ref}
         disabled={disabled}
-        color={disabled ? "gray.100" : "brand.primary"}
+        color={disabled ? "brand.disabled" : "brand.primary"}
         _hover={disabled ? { bgColor: "transparent" } : undefined}
       />
     );

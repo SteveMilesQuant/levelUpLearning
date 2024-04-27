@@ -44,6 +44,9 @@ const InstructorList = ({ campId, isPublicFacing, isReadOnly }: Props) => {
             as={Button}
             bgColor="brand.buttonBg"
             rightIcon={<FaChevronDown />}
+            _hover={{
+              bgColor: "brand.hover"
+            }}
           >
             {selectedInstructor.full_name}
           </MenuButton>
@@ -51,8 +54,11 @@ const InstructorList = ({ campId, isPublicFacing, isReadOnly }: Props) => {
             {instructors?.map((instructor) => (
               <MenuItem
                 key={instructor.id}
-                bgColor="brand.buttonBg"
                 onClick={() => setSelectedInstructor(instructor)}
+                bgColor="brand.buttonBg"
+                _hover={{
+                  bgColor: "brand.hover"
+                }}
               >
                 {instructor.full_name}
               </MenuItem>

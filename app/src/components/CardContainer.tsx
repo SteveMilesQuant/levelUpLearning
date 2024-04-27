@@ -10,7 +10,7 @@ const CardContainer = ({ children }: Props) => {
     <LinkBox
       as={Card}
       _hover={{
-        bgColor: "gray.200",
+        bgColor: "brand.hover",
         transform: "scale(1.03)",
         transition: "transform .2s ease-in",
       }}

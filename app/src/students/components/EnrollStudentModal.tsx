@@ -122,7 +122,7 @@ const EnrollStudentModal = ({
               icon={<MdAddShoppingCart size="2em" />}
               aria-label="Navigation"
               size="md"
-              color={selectedStudentId ? undefined : "gray.200"}
+              color={selectedStudentId ? undefined : "brand.disabled"}
               variant="ghost"
               onClick={() => {
                 if (selectedStudentId) {
