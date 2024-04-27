@@ -1,4 +1,5 @@
 import {
+  Flex,
   FormControl,
   FormLabel,
   Input,
@@ -6,11 +7,13 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { FormData } from "../hooks/useUserForm";
-import { FieldErrors, UseFormRegister } from "react-hook-form";
+import { FieldErrors, UseFormRegister, UseFormGetValues } from "react-hook-form";
 import InputError from "../../components/InputError";
+import FlexTextarea from "../../components/FlexTextarea";
 
 interface Props {
   register: UseFormRegister<FormData>;
+  getValues: UseFormGetValues<FormData>;
   errors: FieldErrors<FormData>;
   isPublicFacing?: boolean;
   isReadOnly?: boolean;
@@ -18,6 +21,7 @@ interface Props {
 
 const InstructorFormBody = ({
   register,
+  getValues,
   errors,
   isPublicFacing,
   isReadOnly,
@@ -46,18 +50,22 @@ const InstructorFormBody = ({
       </FormControl>
       <FormControl>
         <FormLabel>About</FormLabel>
-        <InputError
-          label={errors.instructor_description?.message}
-          isOpen={errors.instructor_description ? true : false}
-        >
-          <Input
-            as={Textarea}
-            size="xl"
-            height="15rem"
-            isReadOnly={isReadOnly}
-            {...register("instructor_description")}
-          />
-        </InputError>
+        {isReadOnly && <FlexTextarea value={getValues("instructor_description")} />}
+        {!isReadOnly &&
+          <InputError
+            label={errors.instructor_description?.message}
+            isOpen={errors.instructor_description ? true : false}
+          >
+            <Input
+              as={Textarea}
+              size="xl"
+              height="15rem"
+              isReadOnly={false}
+              {...register("instructor_description")}
+            />
+          </InputError>
+        }
+
       </FormControl>
     </Stack>
   );

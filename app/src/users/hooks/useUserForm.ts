@@ -24,6 +24,7 @@ const useUserForm = (user?: User) => {
   const queryClient = useQueryClient();
   const {
     register,
+    getValues,
     handleSubmit: handleFormSubmit,
     formState: { errors, isValid },
     reset,
@@ -73,6 +74,7 @@ const useUserForm = (user?: User) => {
 
   return {
     register,
+    getValues,
     errors,
     handleClose,
     handleSubmit,

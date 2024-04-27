@@ -1,7 +1,7 @@
-import { Stack, Text, Textarea } from "@chakra-ui/react";
+import { Stack, Text } from "@chakra-ui/react";
 import { Camp } from "../Camp";
 import { locale } from "../../constants";
-import ResizeTextarea from "react-textarea-autosize";
+import FlexTextarea from "../../components/FlexTextarea";
 
 interface Props {
   camp?: Camp;
@@ -78,17 +78,7 @@ const CampTabPublic = ({ camp }: Props) => {
           {camp.cost > 0.0 ? "$" + camp.cost : "Free"}
         </Text>
       )}
-      <Textarea
-        minH="unset"
-        overflow="hidden"
-        w="100%"
-        resize="none"
-        minRows={1}
-        as={ResizeTextarea}
-        isReadOnly={true}
-        value={camp.program.description}
-        padding={3}
-      />
+      <FlexTextarea value={camp.program.description} />
     </Stack>
   );
 };
