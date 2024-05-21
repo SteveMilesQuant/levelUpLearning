@@ -60,16 +60,16 @@ class Camp(CampResponse):
         self.program = ProgramResponse(**self._db_obj.program.dict())
 
     async def update(self, session: Any):
-        for key, value in CampData():
-            if key == 'dates':
-                for dbDate in self._db_obj.dates:
-                    await session.delete(dbDate)
-                for date in self.dates:
-                    if isinstance(date, str):
-                        date = datetime.strptime(date, '%Y-%m-%d').date()
-                    dbDate = CampDateDb(camp_id=self.id, date=date)
-                    session.add(dbDate)
-            else:
+        for dbDate in self._db_obj.dates:
+            await session.delete(dbDate)
+        await session.commit()
+        for date in self.dates:
+            if isinstance(date, str):
+                date = datetime.strptime(date, '%Y-%m-%d').date()
+            dbDate = CampDateDb(camp_id=self.id, date=date)
+            session.add(dbDate)
+        for key, _ in CampData():
+            if key != 'dates':
                 setattr(self._db_obj, key, getattr(self, key))
         await session.commit()
         if self.primary_instructor_id != self.primary_instructor.id:

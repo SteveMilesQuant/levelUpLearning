@@ -153,7 +153,8 @@ class CampDateDb(Base):
     __tablename__ = 'camp_x_dates'
 
     date: Mapped[dt_date] = mapped_column(Date, primary_key=True)
-    camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
+    camp_id: Mapped[int] = mapped_column(
+        ForeignKey('camp.id'), primary_key=True)
 
     def __str__(self) -> str:
         fastApiDate = FastApiDate(
