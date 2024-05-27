@@ -7,11 +7,9 @@ import {
 } from "react-icons/fa";
 import { GiHamburgerMenu, GiTeacher } from "react-icons/gi";
 import {
-  MdManageAccounts,
   MdOutlineDesignServices,
   MdSettings,
 } from "react-icons/md";
-import { AiOutlineSchedule } from "react-icons/ai";
 import { SlNotebook } from "react-icons/sl";
 import { GiPartyPopper } from "react-icons/gi";
 import {
@@ -30,18 +28,23 @@ import {
 import LinkIcon from "./LinkIcon";
 import { ReactElement } from "react";
 import {
-  IoBook,
   IoBookOutline,
   IoClose,
   IoPricetagsOutline,
 } from "react-icons/io5";
 import { useUser } from "../users";
 import { Link as RouterLink } from "react-router-dom";
+import { AiFillEdit } from "react-icons/ai";
+
+interface SideIconEndpoint {
+  role: "PUBLIC" | "GUARDIAN" | "INSTRUCTOR" | "ADMIN";
+  endpoint: string;
+}
 
 interface SideIconData {
-  role: "PUBLIC" | "GUARDIAN" | "INSTRUCTOR" | "ADMIN";
+  primary: SideIconEndpoint;
+  editable?: SideIconEndpoint;
   icon: ReactElement;
-  endpoint: string;
   label: string;
 }
 
@@ -55,93 +58,115 @@ const SideIconList = () => {
 
   const allIconsNoId: SideIconData[] = [
     {
-      role: "PUBLIC",
+      primary: {
+        role: "PUBLIC",
+        endpoint: "/",
+      },
       icon: <FaHome size="2em" />,
-      endpoint: "/",
       label: "Home",
     },
     {
-      role: "PUBLIC",
+      primary: {
+        role: "PUBLIC",
+        endpoint: "/camps",
+      },
+      editable: {
+        role: "ADMIN",
+        endpoint: "/schedule",
+      },
       icon: <FaSearch size="2em" />,
-      endpoint: "/camps",
       label: "Find Camps",
     },
     {
-      role: "GUARDIAN",
+      primary: {
+        role: "GUARDIAN",
+        endpoint: "/students",
+      },
       icon: <FaGraduationCap size="2em" />,
-      endpoint: "/students",
       label: "My Students",
     },
     {
-      role: "PUBLIC",
+      primary: {
+        role: "PUBLIC",
+        endpoint: "/events",
+      },
+      editable: {
+        role: "ADMIN",
+        endpoint: "/boast",
+      },
       icon: <GiPartyPopper size="2em" />,
-      endpoint: "/events",
       label: "Community Events",
     },
     {
-      role: "PUBLIC",
+      primary: {
+        role: "PUBLIC",
+        endpoint: "/resources",
+      },
+      editable: {
+        role: "ADMIN",
+        endpoint: "/equip",
+      },
       icon: <IoBookOutline size="2em" />,
-      endpoint: "/resources",
       label: "Resources",
     },
     {
-      role: "INSTRUCTOR",
+      primary: {
+        role: "INSTRUCTOR",
+        endpoint: "/teach",
+      },
       icon: <GiTeacher size="2em" />,
-      endpoint: "/teach",
       label: "Teach",
     },
     {
-      role: "INSTRUCTOR",
+      primary: {
+        role: "INSTRUCTOR",
+        endpoint: "/programs",
+      },
       icon: <MdOutlineDesignServices size="2em" />,
-      endpoint: "/programs",
       label: "Design",
     },
     {
-      role: "ADMIN",
-      icon: <AiOutlineSchedule size="2em" />,
-      endpoint: "/schedule",
-      label: "Schedule",
-    },
-    {
-      role: "ADMIN",
-      icon: <MdManageAccounts size="2em" />,
-      endpoint: "/members",
-      label: "Members",
-    },
-    {
-      role: "ADMIN",
+      primary: {
+        role: "ADMIN",
+        endpoint: "/enrollments",
+      },
       icon: <SlNotebook size="2em" />,
-      endpoint: "/enrollments",
       label: "Enrollments",
     },
     {
-      role: "ADMIN",
+      primary: {
+        role: "ADMIN",
+        endpoint: "/coupons",
+      },
       icon: <IoPricetagsOutline size="2em" />,
-      endpoint: "/coupons",
       label: "Coupons",
     },
     {
-      role: "ADMIN",
-      icon: <IoBook size="2em" />,
-      endpoint: "/equip",
-      label: "Edit resources",
-    },
-    {
-      role: "PUBLIC",
+      primary: {
+        role: "PUBLIC",
+        endpoint: "/about",
+      },
       icon: <FaRegQuestionCircle size="2em" />,
-      endpoint: "/about",
       label: "About",
     },
     {
-      role: "PUBLIC",
+      primary: {
+        role: "PUBLIC",
+        endpoint: "/contact",
+      },
       icon: <FaPhoneAlt size="2em" />,
-      endpoint: "/contact",
       label: "Contact",
     },
     {
-      role: "GUARDIAN",
+      primary: {
+        role: "GUARDIAN",
+        endpoint: "/settings",
+      },
+      editable: {
+        role: "ADMIN",
+        endpoint: "/members",
+      },
       icon: <MdSettings size="2em" />,
-      endpoint: "/settings",
       label: "Settings",
     },
   ];
@@ -184,33 +209,43 @@ const SideIconList = () => {
 
                 {allIcons
                   .filter((x) =>
-                    ["PUBLIC", ...(user?.roles || [])].find((r) => x.role == r)
+                    ["PUBLIC", ...(user?.roles || [])].find((r) => x.primary.role == r)
                   )
                   .map((sideIcon) => (
-                    <HStack
-                      key={sideIcon.id}
-                      spacing={3}
-                      justify="left"
-                      align="center"
-                    >
-                      <Box onClick={onClose}>
-                        <LinkIcon
-                          icon={sideIcon.icon}
-                          endpoint={sideIcon.endpoint}
-                          label={sideIcon.label}
-                        />
-                      </Box>
-                      <Box onClick={onClose}>
-                        <LinkBox as={RouterLink} to={sideIcon.endpoint}>
-                          <Text color="white">{sideIcon.label}</Text>
-                        </LinkBox>
-                      </Box>
+                    <HStack key={sideIcon.id} justify="space-between" spacing={3} align="center">
+                      <HStack
+                        spacing={3}
+                        justify="left"
+                        align="center"
+                      >
+                        <Box onClick={onClose}>
+                          <LinkIcon
+                            icon={sideIcon.icon}
+                            endpoint={sideIcon.primary.endpoint}
+                            label={sideIcon.label}
+                          />
+                        </Box>
+                        <Box onClick={onClose}>
+                          <LinkBox as={RouterLink} to={sideIcon.primary.endpoint}>
+                            <Text color="white">{sideIcon.label}</Text>
+                          </LinkBox>
+                        </Box>
+                      </HStack>
+                      {sideIcon.editable && user?.roles.includes(sideIcon.editable.role) &&
+                        <Box onClick={onClose}>
+                          <LinkIcon
+                            icon={<AiFillEdit size="2em" />}
+                            endpoint={sideIcon.editable.endpoint}
+                            label={sideIcon.label + " (edit)"}
+                          />
+                        </Box>
+                      }
                     </HStack>
                   ))}
               </Stack>
             </DrawerBody>
           </DrawerContent>
-        </Drawer>
+        </Drawer >
       )}
     </>
   );
