@@ -1,27 +1,15 @@
-import { Box, Image } from '@chakra-ui/react'
-import DeleteButton from '../../components/DeleteButton';
+import { ReactElement } from 'react';
+import EditableImage from '../../components/EditableImage';
 
 interface Props {
     src: string;
     alt: string;
-    onDelete?: () => void;
+    buttonSet?: ReactElement[];
 }
 
-const EventTitleImage = ({ src, alt, onDelete }: Props) => {
+const EventTitleImage = ({ src, alt, buttonSet }: Props) => {
     return (
-        <Box>
-            <Image
-                marginX="auto"
-                src={src}
-                alt={alt}
-                height={{ base: 9, lg: 20 }}
-            />
-            {onDelete &&
-                <Box position="absolute" zIndex={1} right={1} top={1}>
-                    <DeleteButton onConfirm={onDelete}>{alt}</DeleteButton>
-                </Box>
-            }
-        </Box>
+        <EditableImage src={src} alt={alt} buttonSet={buttonSet} marginX="auto" height={{ base: 9, lg: 20 }} />
     )
 }
 
