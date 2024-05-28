@@ -21,13 +21,13 @@ interface A {
 
 export interface AddArgs<S, Q = S> {
   onAdd?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (newData: S) => void;
   queryMutation?: (newData: Q, dataList: S[]) => S[];
 }
 
 export interface UpdateArgs<S> {
   onUpdate?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (newData: S) => void;
   queryMutation?: (newData: S, dataList: S[]) => S[];
   endpointIgnoresId?: boolean;
 }
@@ -93,13 +93,13 @@ export default class APIHooks<S extends A, Q = S> {
         if (onAdd) onAdd();
         return { prevData };
       },
-      onSuccess: (savedData, newData) => {
+      onSuccess: (newData, savedData) => {
         queryClient.setQueryData<S[]>(this.cacheKey, (dataList) =>
-          dataList?.map((data) => (data.id === 0 ? savedData : data))
+          dataList?.map((data) => (data.id === 0 ? newData : data))
         );
-        if (onSuccess) onSuccess();
+        if (onSuccess) onSuccess(newData);
       },
-      onError: (error, newData, context) => {
+      onError: (error, savedData, context) => {
         if (!context) return;
         queryClient.setQueryData<S[]>(this.cacheKey, () => context.prevData);
       },

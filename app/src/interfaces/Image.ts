@@ -2,5 +2,7 @@
 
 export interface Image {
     id: number;
-    image: Blob;
+    list_index?: number;
+    filename?: string;
+    image?: string;
 }

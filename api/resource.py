@@ -1,7 +1,7 @@
 from pydantic import PrivateAttr
 from typing import Optional, Any
 from sqlalchemy import select
-from datamodels import ResourceData, ResourceResponse, ResourceGroupData, ResourceGroupResponse
+from datamodels import ResourceResponse, ResourceGroupData, ResourceGroupResponse
 from db import ResourceDb, ResourceGroupDb
 
 

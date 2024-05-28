@@ -1,7 +1,7 @@
 import os
 import aiohttp
 import json
-from fastapi import FastAPI, APIRouter, Request, HTTPException, status
+from fastapi import FastAPI, APIRouter, Request, HTTPException, status, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from oauthlib.oauth2 import WebApplicationClient
 from square.client import Client as SquareClient
@@ -9,7 +9,7 @@ from mangum import Mangum
 from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
-from db import PaymentRecordDb, init_db, close_db
+from db import init_db, close_db, PaymentRecordDb, ImageDb
 from datamodels import FastApiDate, Object
 from datamodels import RoleEnum, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
@@ -17,6 +17,7 @@ from datamodels import StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
 from datamodels import ResourceGroupData, ResourceGroupResponse, ResourceData, ResourceResponse
+from datamodels import EventData, EventResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
 from emailserver import EmailServer
 from user import User, init_roles, all_users
@@ -27,6 +28,7 @@ from camp import Camp, all_camps
 from coupon import Coupon, all_coupons
 from enrollment import CONFIRMATION_SENDER_EMAIL_KEY, Enrollment
 from resource import ResourceGroup, Resource, all_resource_groups
+from event import Event, all_events
 
 
 description = """
@@ -1165,6 +1167,65 @@ async def delete_resource_group(request: Request, resource_group_id: int, resour
 
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Resource id={resource_id} does not exist within resource group id={resource_group_id}")
+
+
+###############################################################################
+# EVENTS
+###############################################################################
+
+# public route
+@api_router.get("/events", response_model=List[EventResponse])
+async def events_get_all():
+    '''Get all events.'''
+    async with app.db_sessionmaker() as db_session:
+        return await all_events(db_session)
+
+
+@api_router.post("/events", response_model=EventResponse)
+async def events_post(request: Request, new_event_data: EventData):
+    '''Post a new event.'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update events.")
+
+        event = Event(**new_event_data.dict())
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new event failed")
+        return event
+
+
+@api_router.post("/events/{event_id}/title_image", response_model=int)
+async def event_post_title_image(request: Request, event_id: int, file: UploadFile):
+    '''Post a new event.'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update events.")
+
+        event = Event(id=event_id)
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+
+        blob = await file.read()
+        db_image = ImageDb(
+            list_index=None, filename=file.filename, image=blob)
+        db_session.add(db_image)
+        await db_session.commit()
+        if db_image.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new image failed")
+
+        event._db_obj.title_image_id = db_image.id
+        await db_session.commit()
+
+        return db_image.id
 
 
 ###############################################################################

@@ -2,10 +2,11 @@ from datetime import date as dt_date, time
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
 from sqlalchemy import Text, String, Date, Time
+from sqlalchemy.types import LargeBinary
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
-from datamodels import FastApiDate, UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse
+from datamodels import FastApiDate, UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
 
 
 class Base(DeclarativeBase):
@@ -45,6 +46,13 @@ camp_x_students = Table(
     Base.metadata,
     Column('camp_id', ForeignKey('camp.id'), primary_key=True),
     Column('student_id', ForeignKey('student.id'), primary_key=True),
+)
+
+event_x_images = Table(
+    'event_x_images',
+    Base.metadata,
+    Column('event_id', ForeignKey('event.id'), primary_key=True),
+    Column('image_id', ForeignKey('image.id'), primary_key=True),
 )
 
 
@@ -99,7 +107,7 @@ class StudentDb(Base):
 
     def dict(self):
         returnVal = {}
-        for key, value in StudentResponse():
+        for key, _ in StudentResponse():
             if key not in ['camps', 'guardians']:
                 returnVal[key] = getattr(self, key)
         return returnVal
@@ -124,7 +132,7 @@ class ProgramDb(Base):
 
     def dict(self):
         returnVal = {'grade_range': (self.from_grade, self.to_grade)}
-        for key, value in ProgramResponse():
+        for key, _ in ProgramResponse():
             if key != 'grade_range':
                 returnVal[key] = getattr(self, key)
         return returnVal
@@ -144,7 +152,7 @@ class LevelDb(Base):
 
     def dict(self):
         returnVal = {}
-        for key, value in LevelResponse():
+        for key, _ in LevelResponse():
             returnVal[key] = getattr(self, key)
         return returnVal
 
@@ -239,6 +247,38 @@ class ResourceGroupDb(Base):
 
     resources: Mapped[List['ResourceDb']] = relationship(
         back_populates='group', lazy='joined', cascade='all, delete')
+
+
+class ImageDb(Base):
+    __tablename__ = 'image'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    list_index: Mapped[int] = mapped_column(nullable=True)
+    filename: Mapped[Text] = mapped_column(Text)
+    image: Mapped[LargeBinary] = mapped_column(LargeBinary(length=(2**32)-1))
+
+    def dict(self):
+        returnVal = {}
+        for key, _ in ImageData():
+            returnVal[key] = getattr(self, key)
+        return returnVal
+
+
+class EventDb(Base):
+    __tablename__ = 'event'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title_image_id: Mapped[int] = mapped_column(
+        ForeignKey('image.id'), nullable=True)
+    list_index: Mapped[int] = mapped_column()
+    title: Mapped[Text] = mapped_column(Text)
+    intro: Mapped[Text] = mapped_column(Text, nullable=True)
+    link_url: Mapped[Text] = mapped_column(Text, nullable=True)
+    link_text: Mapped[Text] = mapped_column(Text, nullable=True)
+
+    title_image: Mapped['ImageDb'] = relationship(lazy='joined')
+    carousel_images: Mapped[List['ImageDb']] = relationship(
+        secondary=event_x_images, lazy='raise')
 
 
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):

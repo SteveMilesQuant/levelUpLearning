@@ -1,4 +1,4 @@
-import { Stack, FormControl, FormLabel, Input, Textarea } from '@chakra-ui/react'
+import { Stack, FormControl, FormLabel, Input, Textarea, HStack, Text } from '@chakra-ui/react'
 import ImageDropzone from '../../components/ImageDropzone';
 import { FieldErrors, UseFormGetValues, UseFormRegister } from 'react-hook-form';
 import { FormData } from "../hooks/useEventForm";
@@ -11,15 +11,21 @@ import EditableImage from '../../components/EditableImage';
 import ActionButton from '../../components/ActionButton';
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
 
+interface ImageFile {
+    file: File;
+    url: string;
+}
+
 interface Props {
     register: UseFormRegister<FormData>;
     getValues: UseFormGetValues<FormData>;
     errors: FieldErrors<FormData>;
     isReadOnly?: boolean;
+    titleImage?: ImageFile;
+    setTitleImage: (imageFile?: ImageFile) => void;
 }
 
-const EventFormBody = ({ register, getValues, errors, isReadOnly }: Props) => {
-    const [titleImage, setTitleImage] = useState<{ file: File; url: string } | undefined>();
+const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, setTitleImage }: Props) => {
     const handleTitleImageDrop = (files: File[]) => {
         if (files.length === 0) return;
         setTitleImage({ file: files[0], url: URL.createObjectURL(files[0]) });
@@ -117,6 +123,37 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly }: Props) => {
                                 ]} />
                     )}
                     {!isReadOnly && <ImageDropzone onDrop={handleCarouselImageDrop} />}
+                </Stack>
+            </FormControl>
+            <FormControl>
+                <FormLabel>Link</FormLabel>
+                <Stack spacing={1}>
+                    <HStack>
+                        <Text>URL:</Text>
+                        <InputError
+                            label={errors.link?.url?.message}
+                            isOpen={errors.link?.url ? true : false}
+                        >
+                            <Input
+                                {...register("link.url")}
+                                type="text"
+                                isReadOnly={isReadOnly}
+                            />
+                        </InputError>
+                    </HStack>
+                    <HStack>
+                        <Text>Text:</Text>
+                        <InputError
+                            label={errors.link?.text?.message}
+                            isOpen={errors.link?.text ? true : false}
+                        >
+                            <Input
+                                {...register("link.text")}
+                                type="text"
+                                isReadOnly={isReadOnly}
+                            />
+                        </InputError>
+                    </HStack>
                 </Stack>
             </FormControl>
         </Stack>

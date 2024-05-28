@@ -171,3 +171,28 @@ class ResourceGroupData(BaseModel):
 class ResourceGroupResponse(ResourceGroupData):
     id: Optional[int]
     resources: Optional[List[ResourceResponse]]
+
+
+class LinkData(BaseModel):
+    url: Optional[str]
+    text: Optional[str]
+
+
+class ImageData(BaseModel):
+    id: Optional[int]
+    list_index: Optional[int]
+    filename: Optional[str]
+    image: Optional[bytes]
+
+
+class EventData(BaseModel):
+    title: Optional[str]
+    list_index: Optional[int]
+    intro: Optional[str]
+
+
+class EventResponse(EventData):
+    id: Optional[int]
+    link: Optional[LinkData]
+    title_image: Optional[ImageData]
+    carousel_images: Optional[List[ImageData]]
