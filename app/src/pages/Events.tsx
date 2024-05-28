@@ -11,6 +11,7 @@ import { Box, Divider, Image, LinkBox, Stack, Text } from "@chakra-ui/react";
 import { Carousel } from "react-responsive-carousel";
 import { Link as RouterLink } from "react-router-dom";
 import TextButton from "../components/TextButton";
+import { EventTitleImage } from "../events";
 
 const Events = () => {
   return (
@@ -18,12 +19,7 @@ const Events = () => {
       <Stack spacing={14} alignItems="center" width="100%">
         <Stack spacing={7} alignItems="center">
           <Box width="100%">
-            <Image
-              marginX="auto"
-              src={steamtitle}
-              alt={"Steam Event"}
-              height={{ base: 9, lg: 20 }}
-            />
+            <EventTitleImage src={steamtitle} alt="Steam Event" />
           </Box>
           <Stack
             width="100%"
@@ -71,12 +67,7 @@ const Events = () => {
         />
         <Stack spacing={7} alignItems="center" width="100%">
           <Box width="100%">
-            <Image
-              marginX="auto"
-              src={apextitle}
-              alt={"Apex Night Out"}
-              height={{ base: 7, lg: 16 }}
-            />
+            <EventTitleImage src={apextitle} alt="Apex Night Out" />
           </Box>
           <Stack
             width="100%"

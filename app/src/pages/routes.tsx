@@ -21,6 +21,7 @@ import Coupons from "./Coupons";
 import Events from "./Events";
 import Equip from "./Equip";
 import Resources from "./Resources";
+import Boast from "./Boast";
 
 const router = createBrowserRouter([
   {
@@ -114,6 +115,10 @@ const router = createBrowserRouter([
           { path: "members", element: <Members /> },
           { path: "equip", element: <Equip /> },
           { path: "settings", element: <Settings /> },
+          {
+            path: "boast",
+            element: <Boast />,
+          },
         ],
       },
     ],
