@@ -182,6 +182,7 @@ class ImageData(BaseModel):
     id: Optional[int]
     list_index: Optional[int]
     filename: Optional[str]
+    filetype: Optional[str]
     image: Optional[bytes]
 
 

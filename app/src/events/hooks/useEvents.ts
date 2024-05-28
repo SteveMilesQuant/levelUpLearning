@@ -3,7 +3,7 @@ import APIClient, { axiosInstance } from "../../services/api-client";
 import ms from "ms";
 import { Event, EventData } from "../Event";
 import { AxiosResponse } from "axios";
-import { QueryClient, useQueryClient } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 
 export const CACHE_KEY_EVENTS = ["events"];
 

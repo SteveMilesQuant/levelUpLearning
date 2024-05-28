@@ -23,6 +23,7 @@ const EventFormModal = ({ title, listIndex, isOpen, onClose }: Props) => {
         const formData = new FormData();
         formData.append("file", titleImage.file, titleImage.file.name);
         postTitleImage(queryClient, event.id, formData);
+        setTitleImage(undefined);
     }
     const eventForm = useEventForm({ list_index: listIndex } as Event, updateTitleImage);
 

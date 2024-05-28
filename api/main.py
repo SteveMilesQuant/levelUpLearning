@@ -1215,7 +1215,11 @@ async def event_post_title_image(request: Request, event_id: int, file: UploadFi
 
         blob = await file.read()
         db_image = ImageDb(
-            list_index=None, filename=file.filename, image=blob)
+            list_index=None,
+            filename=file.filename,
+            filetype=file.headers.get('content-type'),
+            image=blob
+        )
         db_session.add(db_image)
         await db_session.commit()
         if db_image.id is None:

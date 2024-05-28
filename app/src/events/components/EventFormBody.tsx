@@ -36,6 +36,7 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
 
     const [carouselImages, setCarouselImages] = useState<{ file: File; url: string; index: number }[]>([]);
     const handleCarouselImageDrop = (files: File[]) => {
+        if (files.length === 0) return;
         const newImage = { file: files[0], url: URL.createObjectURL(files[0]), index: carouselImages.length };
         setCarouselImages([...carouselImages, newImage]);
     }

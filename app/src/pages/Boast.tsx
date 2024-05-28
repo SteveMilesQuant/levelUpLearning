@@ -21,7 +21,7 @@ const Boast = () => {
             <PageHeader rightButton={<TextButton onClick={newOnOpen}>Add Event</TextButton>}>Edit community events</PageHeader>
             {events?.map(e => {
                 if (!e.title_image?.image) return;
-                const blob = new Blob([e.title_image.image], { type: "image/svg+xml" });
+                const blob = new Blob([e.title_image.image], { type: e.title_image?.filetype });
                 return <Stack key={e.id}>
                     <Text>{e.title}</Text>
                     {e.title_image && e.title_image.image && <Image src={URL.createObjectURL(blob)} alt={e.title_image.filename} />}
