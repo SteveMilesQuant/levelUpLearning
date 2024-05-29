@@ -1,12 +1,12 @@
 
-import { Link } from "../interfaces/Link"
 import { Image } from "../interfaces/Image"
 
 export interface EventData {
     title: string;
     list_index: number;
     intro?: string;
-    link?: Link;
+    link_url?: string;
+    link_text?: string;
 }
 
 export interface Event extends EventData {

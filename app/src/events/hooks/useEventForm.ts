@@ -8,7 +8,8 @@ import { useAddEvent, useUpdateEvent } from "./useEvents";
 export const eventSchema = z.object({
     title: z.string().min(3, { message: "Title must be at least 3 characters." }),
     intro: z.string().optional(),
-    link: z.object({ url: z.string(), text: z.string() }).optional(),
+    link_url: z.string().optional(),
+    link_text: z.string().optional()
 });
 
 export type FormData = z.infer<typeof eventSchema>;
@@ -40,7 +41,10 @@ const useEventForm = (event?: Event, onSuccess?: (event: Event) => void) => {
     const handleSubmitLocal = (data: FieldValues) => {
         if (!isValid) return;
 
-        const newEvent = { ...event, ...data } as Event;
+        const newEvent = {
+            ...event,
+            ...data,
+        } as Event;
 
         if (event && event.id) {
             // Update character

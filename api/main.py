@@ -1175,7 +1175,7 @@ async def delete_resource_group(request: Request, resource_group_id: int, resour
 
 # public route
 @api_router.get("/events", response_model=List[EventResponse])
-async def events_get_all():
+async def get_all_events():
     '''Get all events.'''
     async with app.db_sessionmaker() as db_session:
         return await all_events(db_session)
@@ -1183,7 +1183,7 @@ async def events_get_all():
 
 # public route
 @api_router.get("/events/{event_id}", response_model=EventResponse)
-async def events_get_one(event_id: int):
+async def get_one_event(event_id: int):
     '''Get a single event.'''
     async with app.db_sessionmaker() as db_session:
         event = Event(id=event_id)
@@ -1195,7 +1195,7 @@ async def events_get_one(event_id: int):
 
 
 @api_router.post("/events", response_model=EventResponse)
-async def events_post(request: Request, new_event_data: EventData):
+async def post_new_event(request: Request, new_event_data: EventData):
     '''Post a new event.'''
     async with app.db_sessionmaker() as db_session:
         user = await get_authorized_user(request, db_session)
@@ -1211,6 +1211,46 @@ async def events_post(request: Request, new_event_data: EventData):
         return event
 
 
+@api_router.put("/events/{event_id}", response_model=EventResponse)
+async def put_update_event(request: Request, event_id: int, updated_event: EventData):
+    '''Update a an event.'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update events.")
+
+        event = Event(id=event_id)
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+
+        event = event.copy(update=updated_event.dict(exclude_unset=True))
+        await event.update(db_session)
+        return event
+
+
+@api_router.delete("/events/{event_id}")
+async def delete_event(request: Request, event_id: int):
+    '''Delete an event.'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update events.")
+
+        event = Event(id=event_id)
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+
+        await event.delete(db_session)
+        return
+
+
+# title image management
 @api_router.post("/events/{event_id}/title_image", response_model=int)
 async def event_post_title_image(request: Request, event_id: int, file: UploadFile):
     '''Post a new event.'''
@@ -1243,25 +1283,6 @@ async def event_post_title_image(request: Request, event_id: int, file: UploadFi
         await db_session.commit()
 
         return db_image.id
-
-
-@api_router.delete("/events/{event_id}")
-async def delete_event(request: Request, event_id: int):
-    '''Delete a resource group.'''
-    async with app.db_sessionmaker() as db_session:
-        user = await get_authorized_user(request, db_session)
-        if not user.has_role('ADMIN'):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                detail=f"User does not have permission to update events.")
-
-        event = Event(id=event_id)
-        await event.create(db_session)
-        if event.id is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
-
-        await event.delete(db_session)
-        return
 
 ###############################################################################
 # USERS

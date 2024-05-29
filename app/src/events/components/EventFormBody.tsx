@@ -134,11 +134,11 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
                     <HStack>
                         <Text>URL:</Text>
                         <InputError
-                            label={errors.link?.url?.message}
-                            isOpen={errors.link?.url ? true : false}
+                            label={errors.link_url?.message}
+                            isOpen={errors.link_url ? true : false}
                         >
                             <Input
-                                {...register("link.url")}
+                                {...register("link_url")}
                                 type="text"
                                 isReadOnly={isReadOnly}
                             />
@@ -147,11 +147,11 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
                     <HStack>
                         <Text>Text:</Text>
                         <InputError
-                            label={errors.link?.text?.message}
-                            isOpen={errors.link?.text ? true : false}
+                            label={errors.link_text?.message}
+                            isOpen={errors.link_text ? true : false}
                         >
                             <Input
-                                {...register("link.text")}
+                                {...register("link_text")}
                                 type="text"
                                 isReadOnly={isReadOnly}
                             />

@@ -277,9 +277,10 @@ class EventDb(Base):
     link_url: Mapped[Text] = mapped_column(Text, nullable=True)
     link_text: Mapped[Text] = mapped_column(Text, nullable=True)
 
-    title_image: Mapped['ImageDb'] = relationship(lazy='joined')
+    title_image: Mapped['ImageDb'] = relationship(
+        lazy='joined', cascade="all, delete-orphan", single_parent=True)
     carousel_images: Mapped[List['ImageDb']] = relationship(
-        secondary=event_x_images, lazy='raise')
+        secondary=event_x_images, lazy='raise', cascade="all, delete-orphan", single_parent=True)
 
 
 async def init_db(user: str, password: str, url: str, port: str, schema_name: str, for_pytest: Optional[bool] = False):

@@ -24,18 +24,14 @@ class Event(EventResponse):
         if self._db_obj is None:
             # If none found, create new
             event_data = self.dict(include=EventData().dict())
-            self._db_obj = EventDb(
-                **event_data,
-                link_url=self.link.url if self.link else None,
-                link_text=self.link.text if self.link else None
-            )
+            self._db_obj = EventDb(**event_data)
             db_session.add(self._db_obj)
             await db_session.commit()
             self.id = self._db_obj.id
         else:
             # Otherwise, update attributes from fetched object
             for key, _ in EventResponse():
-                if key not in ['link', 'title_image', 'carousel_images']:
+                if key not in ['title_image', 'carousel_images']:
                     setattr(self, key, getattr(self._db_obj, key))
 
         await db_session.refresh(self._db_obj, ['title_image', 'carousel_images'])
@@ -43,17 +39,10 @@ class Event(EventResponse):
             self.title_image = ImageData(**self._db_obj.title_image.dict())
         self.carousel_images = [
             ImageData(**db_image.dict()) for db_image in self._db_obj.carousel_images]
-        if self._db_obj.link_url is not None:
-            self.link = LinkData(url=self._db_obj.link_url,
-                                 text=self._db_obj.link_text)
 
     async def update(self, db_session: Any):
         for key, _ in EventData():
-            if key != 'link':
-                setattr(self._db_obj, key, getattr(self, key))
-        if self.link is not None:
-            self._db_obj.link_url = self.link.url
-            self._db_obj.link_text = self.link.text
+            setattr(self._db_obj, key, getattr(self, key))
         await db_session.commit()
 
     async def delete(self, db_session: Any):
