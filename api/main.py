@@ -1181,6 +1181,19 @@ async def events_get_all():
         return await all_events(db_session)
 
 
+# public route
+@api_router.get("/events/{event_id}", response_model=EventResponse)
+async def events_get_one(event_id: int):
+    '''Get a single event.'''
+    async with app.db_sessionmaker() as db_session:
+        event = Event(id=event_id)
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+        return event
+
+
 @api_router.post("/events", response_model=EventResponse)
 async def events_post(request: Request, new_event_data: EventData):
     '''Post a new event.'''

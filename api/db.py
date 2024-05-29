@@ -255,8 +255,8 @@ class ImageDb(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     list_index: Mapped[int] = mapped_column(nullable=True)
     filename: Mapped[Text] = mapped_column(Text)
-    image: Mapped[LargeBinary] = mapped_column(LargeBinary(length=(2**32)-1))
     filetype: Mapped[Text] = mapped_column(Text)
+    image: Mapped[LargeBinary] = mapped_column(LargeBinary(length=(2**32)-1))
 
     def dict(self):
         returnVal = {}

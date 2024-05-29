@@ -22,6 +22,7 @@ import Events from "./Events";
 import Equip from "./Equip";
 import Resources from "./Resources";
 import Boast from "./Boast";
+import BoastOne from "./BoastOne";
 
 const router = createBrowserRouter([
   {
@@ -118,6 +119,10 @@ const router = createBrowserRouter([
           {
             path: "boast",
             element: <Boast />,
+          },
+          {
+            path: "boast/:id",
+            element: <BoastOne />,
           },
         ],
       },

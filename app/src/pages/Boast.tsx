@@ -1,9 +1,11 @@
-import { Stack, useDisclosure, Text, Image } from "@chakra-ui/react";
+import { useDisclosure, LinkOverlay, Heading, Stack } from "@chakra-ui/react";
 import BodyContainer from "../components/BodyContainer"
 import PageHeader from "../components/PageHeader"
 import TextButton from "../components/TextButton"
 import { EventFormModal } from "../events";
 import { useEvents } from "../events";
+import CardContainer from "../components/CardContainer";
+import { Link as RouterLink } from "react-router-dom";
 
 
 const Boast = () => {
@@ -19,15 +21,15 @@ const Boast = () => {
     return (
         <BodyContainer>
             <PageHeader rightButton={<TextButton onClick={newOnOpen}>Add Event</TextButton>}>Edit community events</PageHeader>
-            {events?.map(e => {
-                if (!e.title_image?.image) return;
-                const blob = new Blob([e.title_image.image], { type: e.title_image?.filetype });
-                return <Stack key={e.id}>
-                    <Text>{e.title}</Text>
-                    {e.title_image && e.title_image.image && <Image src={URL.createObjectURL(blob)} alt={e.title_image.filename} />}
-                </Stack>;
-            }
-            )}
+            <Stack spacing={3}>
+                {events?.map(e =>
+                    <CardContainer key={e.id}>
+                        <LinkOverlay as={RouterLink} to={"/boast/" + e.id}>
+                            <Heading fontSize="2xl">{e.title}</Heading>
+                        </LinkOverlay>
+                    </CardContainer>
+                )}
+            </Stack>
             <EventFormModal
                 title="Add Event"
                 isOpen={newIsOpen}

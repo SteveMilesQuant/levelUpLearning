@@ -106,7 +106,7 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
                 <Stack spacing={3} >
                     {carouselImages?.map(
                         (image, index) =>
-                            <EditableImage key={index} src={image.url} alt={"Carousel Image " + index}
+                            <EditableImage key={index} src={image.url} alt={"Carousel Image " + index} height={{ base: 500 }}
                                 buttonSet={[
                                     <ActionButton
                                         Component={FaArrowUp}
