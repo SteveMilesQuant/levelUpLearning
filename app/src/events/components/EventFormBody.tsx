@@ -78,7 +78,7 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
                     {titleImage &&
                         <EventTitleImage src={titleImage.url} alt="Title Image"
                             buttonSet={
-                                [<DeleteButton onConfirm={handleTitleImageDelete}>Title Image</DeleteButton>]
+                                isReadOnly ? [] : [<DeleteButton onConfirm={handleTitleImageDelete}>Title Image</DeleteButton>]
                             } />}
                     {!isReadOnly && !titleImage && <ImageDropzone onDrop={handleTitleImageDrop} />}
                 </Stack>
@@ -107,21 +107,23 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
                     {carouselImages?.map(
                         (image, index) =>
                             <EditableImage key={index} src={image.url} alt={"Carousel Image " + index} height={{ base: 500 }}
-                                buttonSet={[
-                                    <ActionButton
-                                        Component={FaArrowUp}
-                                        label="Move up"
-                                        onClick={() => handleMoveImageUp(index)}
-                                        disabled={index === 0}
-                                    />,
-                                    <ActionButton
-                                        Component={FaArrowDown}
-                                        label="Move down"
-                                        onClick={() => () => handleMoveImageDown(index)}
-                                        disabled={index === carouselImages.length - 1}
-                                    />,
-                                    <DeleteButton onConfirm={() => handleCarouselImageDelete(index)}>{"Carousel Image " + index}</DeleteButton>
-                                ]} />
+                                buttonSet={
+                                    isReadOnly ? [] :
+                                        [
+                                            <ActionButton
+                                                Component={FaArrowUp}
+                                                label="Move up"
+                                                onClick={() => handleMoveImageUp(index)}
+                                                disabled={index === 0}
+                                            />,
+                                            <ActionButton
+                                                Component={FaArrowDown}
+                                                label="Move down"
+                                                onClick={() => () => handleMoveImageDown(index)}
+                                                disabled={index === carouselImages.length - 1}
+                                            />,
+                                            <DeleteButton onConfirm={() => handleCarouselImageDelete(index)}>{"Carousel Image " + index}</DeleteButton>
+                                        ]} />
                     )}
                     {!isReadOnly && <ImageDropzone onDrop={handleCarouselImageDrop} />}
                 </Stack>

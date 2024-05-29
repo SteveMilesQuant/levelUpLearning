@@ -1245,6 +1245,24 @@ async def event_post_title_image(request: Request, event_id: int, file: UploadFi
         return db_image.id
 
 
+@api_router.delete("/events/{event_id}")
+async def delete_event(request: Request, event_id: int):
+    '''Delete a resource group.'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update events.")
+
+        event = Event(id=event_id)
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+
+        await event.delete(db_session)
+        return
+
 ###############################################################################
 # USERS
 ###############################################################################
