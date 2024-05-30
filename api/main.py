@@ -1279,8 +1279,7 @@ async def event_post_title_image(request: Request, event_id: int, file: UploadFi
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new image failed")
 
-        event._db_obj.title_image_id = db_image.id
-        await db_session.commit()
+        await event.replace_title_image(db_session, db_image.id)
 
         return db_image.id
 

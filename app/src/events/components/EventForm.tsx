@@ -7,6 +7,7 @@ import { Event } from '../Event'
 import CrudButtonSet from '../../components/CrudButtonSet';
 import { Stack } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
+import { ImageFile } from '../../interfaces/Image';
 
 interface Props {
     event: Event;
@@ -15,7 +16,7 @@ interface Props {
 const EventForm = ({ event }: Props) => {
     const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
-    const [titleImage, setTitleImage] = useState<{ file: File; url: string } | undefined>(undefined);
+    const [titleImage, setTitleImage] = useState<ImageFile | undefined>(undefined);
     const queryClient = useQueryClient();
     const deleteEvent = useDeleteEvent({
         onDelete: () => {
@@ -24,7 +25,7 @@ const EventForm = ({ event }: Props) => {
     });
 
     const updateTitleImage = () => {
-        if (!titleImage) return;
+        if (!titleImage || titleImage.id) return;
         const formData = new FormData();
         formData.append("file", titleImage.file, titleImage.file.name);
         postTitleImage(queryClient, event.id, formData);
@@ -37,7 +38,7 @@ const EventForm = ({ event }: Props) => {
         }
         else {
             const file = new File([event.title_image.image], event.title_image.filename, { type: event.title_image.filetype });
-            setTitleImage({ file, url: URL.createObjectURL(file) });
+            setTitleImage({ id: event.title_image.id, file, url: URL.createObjectURL(file) });
         }
     }
     useEffect(() => {

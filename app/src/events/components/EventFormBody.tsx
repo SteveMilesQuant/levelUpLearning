@@ -10,11 +10,9 @@ import DeleteButton from '../../components/DeleteButton';
 import EditableImage from '../../components/EditableImage';
 import ActionButton from '../../components/ActionButton';
 import { FaArrowDown, FaArrowUp } from 'react-icons/fa';
+import { ImageFile } from '../../interfaces/Image';
 
-interface ImageFile {
-    file: File;
-    url: string;
-}
+
 
 interface Props {
     register: UseFormRegister<FormData>;
@@ -28,7 +26,7 @@ interface Props {
 const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, setTitleImage }: Props) => {
     const handleTitleImageDrop = (files: File[]) => {
         if (files.length === 0) return;
-        setTitleImage({ file: files[0], url: URL.createObjectURL(files[0]) });
+        setTitleImage({ id: undefined, file: files[0], url: URL.createObjectURL(files[0]) });
     }
     const handleTitleImageDelete = () => {
         setTitleImage(undefined);

@@ -49,8 +49,15 @@ class Event(EventResponse):
         await db_session.delete(self._db_obj)
         await db_session.commit()
 
-    async def replace_title_image(self, db_session: Any):
-        pass
+    async def replace_title_image(self, db_session: Any, title_image_id: int):
+        await db_session.refresh(self._db_obj, ['title_image'])
+        if self._db_obj.title_image is not None:
+            await db_session.delete(self._db_obj.title_image)
+        self._db_obj.title_image_id = title_image_id
+        await db_session.commit()
+
+        await db_session.refresh(self._db_obj, ['title_image'])
+        self.title_image = ImageData(**self._db_obj.title_image.dict())
 
     async def add_image(self, db_session: Any):
         pass
