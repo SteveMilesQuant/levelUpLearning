@@ -2,7 +2,6 @@ import { Stack, FormControl, FormLabel, Input, Textarea, HStack, Text } from '@c
 import ImageDropzone from '../../components/ImageDropzone';
 import { FieldErrors, UseFormGetValues, UseFormRegister } from 'react-hook-form';
 import { FormData } from "../hooks/useEventForm";
-import { useState } from 'react';
 import EventTitleImage from './EventTitleImage';
 import FlexTextarea from '../../components/FlexTextarea';
 import InputError from '../../components/InputError';
@@ -21,18 +20,22 @@ interface Props {
     isReadOnly?: boolean;
     titleImage?: ImageFile;
     setTitleImage: (imageFile?: ImageFile) => void;
+    carouselImages: ImageFile[];
+    setCarouselImages: (imageList: ImageFile[]) => void;
+    imageDeleteList?: ImageFile[];
+    setImageDeleteList?: (imageList: ImageFile[]) => void;
 }
 
-const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, setTitleImage }: Props) => {
+const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, setTitleImage, carouselImages, setCarouselImages, imageDeleteList, setImageDeleteList }: Props) => {
     const handleTitleImageDrop = (files: File[]) => {
         if (files.length === 0) return;
-        setTitleImage({ id: undefined, file: files[0], url: URL.createObjectURL(files[0]) });
+        setTitleImage({ id: undefined, file: files[0], url: URL.createObjectURL(files[0]), index: 0 });
     }
     const handleTitleImageDelete = () => {
         setTitleImage(undefined);
     }
 
-    const [carouselImages, setCarouselImages] = useState<{ file: File; url: string; index: number }[]>([]);
+
     const handleCarouselImageDrop = (files: File[]) => {
         if (files.length === 0) return;
         const newImage = { file: files[0], url: URL.createObjectURL(files[0]), index: carouselImages.length };
@@ -40,6 +43,10 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
     }
     const handleCarouselImageDelete = (index: number) => {
         const newList = carouselImages.filter(i => i.index != index).map(i => i.index < index ? i : { ...i, index: i.index - 1 });
+        const deleteImage = carouselImages[index];
+        if (deleteImage.id && setImageDeleteList) {
+            setImageDeleteList([...(imageDeleteList || []), deleteImage]);
+        }
         setCarouselImages(newList);
     }
     const handleMoveImageUp = (index: number) => {
@@ -117,7 +124,7 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
                                             <ActionButton
                                                 Component={FaArrowDown}
                                                 label="Move down"
-                                                onClick={() => () => handleMoveImageDown(index)}
+                                                onClick={() => handleMoveImageDown(index)}
                                                 disabled={index === carouselImages.length - 1}
                                             />,
                                             <DeleteButton onConfirm={() => handleCarouselImageDelete(index)}>{"Carousel Image " + index}</DeleteButton>

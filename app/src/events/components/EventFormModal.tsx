@@ -5,8 +5,9 @@ import EventFormBody from "./EventFormBody";
 import useEventForm from "../hooks/useEventForm";
 import { Event } from "../Event";
 import { useState } from "react";
-import { postTitleImage } from "../hooks/useEvents";
+import { CACHE_KEY_EVENTS, addCarouselImage, postTitleImage } from "../hooks/useEvents";
 import { useQueryClient } from "@tanstack/react-query";
+import { ImageFile } from "../../interfaces/Image";
 
 interface Props {
     title: string;
@@ -16,16 +17,35 @@ interface Props {
 }
 
 const EventFormModal = ({ title, listIndex, isOpen, onClose }: Props) => {
-    const [titleImage, setTitleImage] = useState<{ file: File; url: string } | undefined>();
     const queryClient = useQueryClient();
+
+    const [titleImage, setTitleImage] = useState<ImageFile | undefined>();
+    const [carouselImages, setCarouselImages] = useState<ImageFile[]>([]);
+
+    const handleSuccessWithBluntForce = () => {
+        queryClient.invalidateQueries({
+            queryKey: CACHE_KEY_EVENTS,
+            exact: false,
+        });
+    }
+
     const updateTitleImage = (event: Event) => {
         if (!titleImage) return;
-        const formData = new FormData();
-        formData.append("file", titleImage.file, titleImage.file.name);
-        postTitleImage(queryClient, event.id, formData);
+        postTitleImage(event.id, titleImage, handleSuccessWithBluntForce);
         setTitleImage(undefined);
     }
-    const eventForm = useEventForm({ list_index: listIndex } as Event, updateTitleImage);
+    const updateCarouselImages = (event: Event) => {
+        for (var i = 0; i < carouselImages.length; i++) {
+            const image = carouselImages[i];
+            addCarouselImage(event.id, image, handleSuccessWithBluntForce);
+        }
+    }
+    const handleFormSuccess = (event: Event) => {
+        updateTitleImage(event);
+        updateCarouselImages(event);
+    }
+    const eventForm = useEventForm({ list_index: listIndex } as Event, handleFormSuccess);
+
 
     return (
         <Modal
@@ -44,7 +64,11 @@ const EventFormModal = ({ title, listIndex, isOpen, onClose }: Props) => {
                 </ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
-                    {<EventFormBody {...eventForm} titleImage={titleImage} setTitleImage={setTitleImage} />}
+                    {<EventFormBody {...eventForm}
+                        titleImage={titleImage}
+                        setTitleImage={setTitleImage}
+                        carouselImages={carouselImages}
+                        setCarouselImages={setCarouselImages} />}
                 </ModalBody>
                 <ModalFooter>
                     <HStack justifyContent="right" spacing={3}>

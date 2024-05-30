@@ -1,9 +1,10 @@
 
 from pydantic import PrivateAttr
-from typing import Optional, Any
-from sqlalchemy import select
-from datamodels import EventData, EventResponse, ImageData, LinkData
-from db import EventDb
+from typing import Optional, Any, List
+from sqlalchemy import select, delete
+from datamodels import EventData, EventResponse, ImageData
+from db import EventDb, ImageDb
+from operator import attrgetter
 
 
 class Event(EventResponse):
@@ -37,8 +38,8 @@ class Event(EventResponse):
         await db_session.refresh(self._db_obj, ['title_image', 'carousel_images'])
         if self._db_obj.title_image is not None:
             self.title_image = ImageData(**self._db_obj.title_image.dict())
-        self.carousel_images = [
-            ImageData(**db_image.dict()) for db_image in self._db_obj.carousel_images]
+        self.carousel_images = sorted([
+            ImageData(**db_image.dict()) for db_image in self._db_obj.carousel_images], key=attrgetter('list_index'))
 
     async def update(self, db_session: Any):
         for key, _ in EventData():
@@ -59,8 +60,14 @@ class Event(EventResponse):
         await db_session.refresh(self._db_obj, ['title_image'])
         self.title_image = ImageData(**self._db_obj.title_image.dict())
 
-    async def add_image(self, db_session: Any):
-        pass
+    async def add_carousel_image(self, db_session: Any, db_image: ImageDb):
+        await db_session.refresh(self._db_obj, ['carousel_images'])
+        self._db_obj.carousel_images.append(db_image)
+        await db_session.commit()
+
+        await db_session.refresh(self._db_obj, ['carousel_images'])
+        self.carousel_images = [
+            ImageData(**db_image.dict()) for db_image in self._db_obj.carousel_images]
 
 
 async def all_events(db_session: Any):

@@ -3,7 +3,7 @@ import APIClient, { axiosInstance } from "../../services/api-client";
 import ms from "ms";
 import { Event, EventData } from "../Event";
 import { AxiosResponse } from "axios";
-import { QueryClient } from "@tanstack/react-query";
+import { ImageFile } from "../../interfaces/Image";
 
 export const CACHE_KEY_EVENTS = ["events"];
 
@@ -21,15 +21,34 @@ export const useUpdateEvent = eventsHooks.useUpdate;
 export const useDeleteEvent = eventsHooks.useDelete;
 
 
-export const postTitleImage = (queryClient: QueryClient, event_id: number, formData: FormData) => {
-    const onSuccess = () => {
-        queryClient.invalidateQueries({
-            queryKey: CACHE_KEY_EVENTS,
-            exact: false,
-        });
-    }
+export const postTitleImage = (event_id: number, titleImage: ImageFile, onSuccess: () => void) => {
+    const formData = new FormData();
+    formData.append("file", titleImage.file, titleImage.file.name);
     axiosInstance
         .post<FormData, AxiosResponse<number>>('/events/' + event_id + '/title_image', formData)
         .then(() => onSuccess());
+}
+
+export const addCarouselImage = (event_id: number, image: ImageFile, onSuccess: () => void) => {
+    const formData = new FormData();
+    formData.append("file", image.file, image.file.name);
+    axiosInstance
+        .post<FormData, AxiosResponse<number>>('/events/' + event_id + '/carousel_images', formData, { params: { list_index: image.index } })
+        .then(() => onSuccess());
+}
+
+export const updateCarouselImage = (event_id: number, image: ImageFile, onSuccess: () => void) => {
+    const formData = new FormData();
+    formData.append("file", image.file, image.file.name);
+    axiosInstance
+        .put<FormData, AxiosResponse<Event>>('/events/' + event_id + '/carousel_images/' + image.id, undefined, { params: { list_index: image.index } })
+        .then(() => onSuccess());
+}
+
+export const deleteCarouselImage = (event_id: number, image_id?: number, onSuccess?: () => void) => {
+    if (!image_id) return;
+    axiosInstance
+        .delete('/events/' + event_id + '/carousel_images/' + image_id)
+        .then(() => { if (onSuccess) onSuccess(); });
 }
 

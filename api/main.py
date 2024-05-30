@@ -1253,7 +1253,7 @@ async def delete_event(request: Request, event_id: int):
 # title image management
 @api_router.post("/events/{event_id}/title_image", response_model=int)
 async def event_post_title_image(request: Request, event_id: int, file: UploadFile):
-    '''Post a new event.'''
+    '''Post a new title image.'''
     async with app.db_sessionmaker() as db_session:
         user = await get_authorized_user(request, db_session)
         if not user.has_role('ADMIN'):
@@ -1282,6 +1282,95 @@ async def event_post_title_image(request: Request, event_id: int, file: UploadFi
         await event.replace_title_image(db_session, db_image.id)
 
         return db_image.id
+
+
+# add carousel image
+@api_router.post("/events/{event_id}/carousel_images", response_model=int)
+async def event_post_new_carousel_image(request: Request, event_id: int, file: UploadFile, list_index: int = 0):
+    '''Post a new carousel image.'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update events.")
+
+        event = Event(id=event_id)
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+
+        blob = await file.read()
+        db_image = ImageDb(
+            list_index=list_index,
+            filename=file.filename,
+            filetype=file.headers.get('content-type'),
+            image=blob
+        )
+        db_session.add(db_image)
+        await db_session.commit()
+        if db_image.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new image failed")
+
+        await event.add_carousel_image(db_session, db_image)
+
+        return db_image.id
+
+
+# update carousel image list index
+@api_router.put("/events/{event_id}/carousel_images/{image_id}", response_model=None)
+async def event_put_update_carousel_image(request: Request, event_id: int, image_id: int, list_index: int = 0):
+    '''Update the carousel image order'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update events.")
+
+        event = Event(id=event_id)
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+
+        for db_image in event._db_obj.carousel_images:
+            if db_image.id == image_id:
+                db_image.list_index = list_index
+                await db_session.commit()
+                return
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Image with id={image_id} not found in event with id={event_id}")
+
+
+# delete carousel image
+@api_router.delete("/events/{event_id}/carousel_images/{image_id}", response_model=None)
+async def event_delete_carousel_image(request: Request, event_id: int, image_id: int):
+    '''Update the carousel image order'''
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to update events.")
+
+        event = Event(id=event_id)
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+
+        for db_image in event._db_obj.carousel_images:
+            if db_image.id == image_id:
+                event._db_obj.carousel_images.remove(db_image)
+                await db_session.commit()
+                await db_session.delete(db_image)
+                await db_session.commit()
+                return
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Image with id={image_id} not found in event with id={event_id}")
+
 
 ###############################################################################
 # USERS
