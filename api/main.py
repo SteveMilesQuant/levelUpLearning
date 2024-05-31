@@ -1225,9 +1225,23 @@ async def put_update_event(request: Request, event_id: int, updated_event: Event
         if event.id is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+        orig_index = event.list_index
+        new_index = updated_event.list_index
 
         event = event.copy(update=updated_event.dict(exclude_unset=True))
         await event.update(db_session)
+
+        if orig_index < new_index:
+            for event in await all_events(db_session):
+                if event.id != event_id and event.list_index > orig_index and event.list_index <= new_index:
+                    event.list_index = event.list_index - 1
+                    await event.update(db_session)
+        elif new_index < orig_index:
+            for event in await all_events(db_session):
+                if event.id != event_id and event.list_index < orig_index and event.list_index >= new_index:
+                    event.list_index = event.list_index + 1
+                    await event.update(db_session)
+
         return event
 
 

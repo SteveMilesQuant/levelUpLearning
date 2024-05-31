@@ -1,11 +1,8 @@
-import { useDisclosure, LinkOverlay, Heading, Stack } from "@chakra-ui/react";
+import { useDisclosure, Stack, Spinner } from "@chakra-ui/react";
 import BodyContainer from "../components/BodyContainer"
 import PageHeader from "../components/PageHeader"
 import TextButton from "../components/TextButton"
-import { EventFormModal } from "../events";
-import { useEvents } from "../events";
-import CardContainer from "../components/CardContainer";
-import { Link as RouterLink } from "react-router-dom";
+import { EventFormModal, EventCard, useEvents } from "../events";
 
 
 const Boast = () => {
@@ -14,20 +11,19 @@ const Boast = () => {
         onOpen: newOnOpen,
         onClose: newOnClose,
     } = useDisclosure();
-    const { data: events, error } = useEvents();
+    const { data: events, error, isLoading } = useEvents();
 
     if (error) throw error;
+    if (isLoading) return <Spinner />;
+
+
 
     return (
         <BodyContainer>
             <PageHeader rightButton={<TextButton onClick={newOnOpen}>Add Event</TextButton>}>Edit community events</PageHeader>
             <Stack spacing={3}>
-                {events?.map(e =>
-                    <CardContainer key={e.id}>
-                        <LinkOverlay as={RouterLink} to={"/boast/" + e.id}>
-                            <Heading fontSize="2xl">{e.title}</Heading>
-                        </LinkOverlay>
-                    </CardContainer>
+                {events?.map(event =>
+                    <EventCard event={event} eventsLength={events.length} />
                 )}
             </Stack>
             <EventFormModal
