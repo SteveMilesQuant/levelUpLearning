@@ -60,7 +60,7 @@ const EventPublic = ({ event }: Props) => {
                 textAlign="center"
                 fontSize={{ base: 16, md: 18, lg: 20 }}
             >
-                <Text whiteSpace="pre" lineHeight={1.3}>
+                <Text whiteSpace="pre-wrap" lineHeight={1.3}>
                     <strong>{event.intro}</strong>
                 </Text>
             </Box>}
