@@ -1246,7 +1246,14 @@ async def delete_event(request: Request, event_id: int):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
 
+        list_index = event.list_index
         await event.delete(db_session)
+
+        events = await all_events(db_session)
+        for event in events:
+            if event.list_index > list_index:
+                event.list_index = event.list_index - 1
+                await event.update(db_session)
         return
 
 

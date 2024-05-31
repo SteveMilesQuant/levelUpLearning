@@ -78,4 +78,4 @@ async def all_events(db_session: Any):
         event = Event(db_obj=result_row[0])
         await event.create(db_session)
         events.append(event)
-    return events
+    return sorted(events, key=attrgetter('list_index'))
