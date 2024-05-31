@@ -11,9 +11,8 @@ interface Props {
 
 const EditableImage = ({ src, alt, buttonSet, marginX, height }: Props) => {
     return (
-        <Box position="relative" width="fit-content">
+        <Box position="relative" width="fit-content" marginX={marginX}>
             <Image
-                marginX={marginX}
                 src={src}
                 alt={alt}
                 height={height}
