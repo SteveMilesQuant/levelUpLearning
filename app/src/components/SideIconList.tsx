@@ -35,6 +35,7 @@ import {
 import { useUser } from "../users";
 import { Link as RouterLink } from "react-router-dom";
 import { AiFillEdit } from "react-icons/ai";
+import { IoIosPeople } from "react-icons/io";
 
 interface SideIconEndpoint {
   role: "PUBLIC" | "GUARDIAN" | "INSTRUCTOR" | "ADMIN";
@@ -146,7 +147,7 @@ const SideIconList = () => {
         role: "PUBLIC",
         endpoint: "/about",
       },
-      icon: <FaRegQuestionCircle size="2em" />,
+      icon: <IoIosPeople size="2em" />,
       label: "About",
     },
     {
@@ -156,6 +157,14 @@ const SideIconList = () => {
       },
       icon: <FaPhoneAlt size="2em" />,
       label: "Contact",
+    },
+    {
+      primary: {
+        role: "PUBLIC",
+        endpoint: "/faq",
+      },
+      icon: <FaRegQuestionCircle size="2em" />,
+      label: "FAQ",
     },
     {
       primary: {

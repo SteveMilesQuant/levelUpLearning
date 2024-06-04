@@ -23,6 +23,7 @@ import Equip from "./Equip";
 import Resources from "./Resources";
 import Boast from "./Boast";
 import BoastOne from "./BoastOne";
+import FAQ from "./FAQ";
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
       {
         path: "contact",
         element: <Contact />,
+      },
+      {
+        path: "faq",
+        element: <FAQ />,
       },
       {
         path: "privacy",
@@ -124,6 +129,7 @@ const router = createBrowserRouter([
             path: "boast/:id",
             element: <BoastOne />,
           },
+
         ],
       },
     ],

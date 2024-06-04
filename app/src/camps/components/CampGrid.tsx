@@ -40,7 +40,7 @@ const CampGrid = ({ camps, isReadOnly }: Props) => {
           <Heading fontSize="2xl">{month.heading}</Heading>
           <Stack spacing={5}>
             {month.camps.map((camp) => (
-              <Box key={camp.id} width={{ lg: "50%" }}>
+              <Box key={camp.id} width={{ xl: "50%" }}>
                 <CampCard
                   camp={camp}
                   onDelete={

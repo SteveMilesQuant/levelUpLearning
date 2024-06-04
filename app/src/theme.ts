@@ -23,6 +23,7 @@ const theme = extendTheme({
       textarea: { textColor: "brand.text" },
       strong: { textColor: "brand.primary" },
       tbody: { textColor: "brand.text" },
+      li: { textColor: "brand.text" }
     },
   },
   colors: {
