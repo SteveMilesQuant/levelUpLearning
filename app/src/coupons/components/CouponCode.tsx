@@ -56,6 +56,16 @@ const CouponCode = ({ setCoupon, setAlertContext }: Props) => {
                       " has been used the maximum number of times.",
                   });
                   setCoupon(undefined);
+                }
+                else if (newCoupon.been_used) {
+                  setAlertContext({
+                    status: "error",
+                    message:
+                      "You have already used the coupon code " +
+                      newCoupon.code +
+                      ". Sorry, but each user can only use each coupon once.",
+                  });
+                  setCoupon(undefined);
                 } else {
                   setCoupon(res.data);
                 }

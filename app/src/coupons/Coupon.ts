@@ -9,4 +9,5 @@ export interface CouponData {
 
 export interface Coupon extends CouponData {
   id: number;
+  been_used: boolean;
 }

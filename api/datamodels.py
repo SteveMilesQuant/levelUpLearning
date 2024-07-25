@@ -151,6 +151,7 @@ class CouponData(BaseModel):
 
 class CouponResponse(CouponData):
     id: Optional[int]
+    been_used: Optional[bool]
 
 
 class ResourceData(BaseModel):

@@ -2,7 +2,7 @@ from pydantic import PrivateAttr
 from typing import List, Optional, Any
 from sqlalchemy import select
 from datamodels import RoleEnum, RoleResponse, UserData, UserResponse
-from db import UserDb, RoleDb, StudentDb, ProgramDb, CampDb
+from db import UserDb, RoleDb, StudentDb, ProgramDb, CampDb, PaymentRecordDb
 
 
 class Role(RoleResponse):
@@ -165,6 +165,15 @@ class User(UserResponse):
     async def camps(self, session: Any) -> List[CampDb]:
         await session.refresh(self._db_obj, ['camps'])
         return self._db_obj.camps
+
+    async def has_used_coupon(self, session: Any, coupon_id: str) -> bool:
+        stmt = select(PaymentRecordDb).where(
+            PaymentRecordDb.user_id == self.id and PaymentRecordDb.coupon_id == coupon_id)
+        results = await session.execute(stmt)
+        result = results.first()
+        if result:
+            return True
+        return False
 
 
 async def all_users(session: Any, by_role: Optional[str] = None):

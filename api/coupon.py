@@ -38,11 +38,12 @@ class Coupon(CouponResponse):
             self.id = self._db_obj.id
         else:
             # Otherwise, update attributes from fetched object
-            for key, value in CouponResponse():
+            for key, _ in CouponData():
                 setattr(self, key, getattr(self._db_obj, key))
+            self.id = self._db_obj.id
 
     async def update(self, session: Any):
-        for key, value in CouponData():
+        for key, _ in CouponData():
             setattr(self._db_obj, key, getattr(self, key))
         await session.commit()
 

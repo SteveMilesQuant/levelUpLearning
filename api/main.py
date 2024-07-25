@@ -799,10 +799,15 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
         [square_payment_id, square_order_id,
             square_receipt_number] = await enrollments.check_square_payment(app.square_client)
 
-        # Create payment records
+        # Last check for coupon
         coupon_id = None
         if enrollments.coupon:
             coupon_id = enrollments.coupon.id
+            if await user.has_used_coupon(db_session, coupon_id):
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                    detail=f"User has already used coupon with code {enrollments.coupon.code}.")
+
+        # Create payment records
         for single_enrollment in enrollments.enrollments:
             camp = single_enrollment.camp
             student = single_enrollment.student
@@ -900,14 +905,15 @@ async def get_coupons(request: Request):
 @api_router.get("/coupons/{coupon_code}", response_model=CouponResponse)
 async def get_coupon(request: Request, coupon_code: str):
     '''Get a single coupon, by code instead of ID.'''
-    async with app.db_sessionmaker() as session:
-        await get_authorized_user(request, session)
+    async with app.db_sessionmaker() as db_session:
+        user = await get_authorized_user(request, db_session)
         coupon_code = coupon_code.upper()
         coupon = Coupon(code=coupon_code)
-        await coupon.create(session, read_only=True)
+        await coupon.create(db_session, read_only=True)
         if coupon.id is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Coupon code={coupon_code} does not exist")
+        coupon.been_used = await user.has_used_coupon(db_session, coupon.id)
         return coupon
 
 
