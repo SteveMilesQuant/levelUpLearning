@@ -1,5 +1,8 @@
 import { Stack, Image, Box } from "@chakra-ui/react";
 import { Carousel } from "react-responsive-carousel";
+import homepage1 from "../assets/homepage1.svg";
+import homepage3 from "../assets/homepage3.svg";
+import homepage5 from "../assets/homepage5.svg";
 import carouselImage1 from "../assets/c1.svg";
 import carouselImage2 from "../assets/c2.svg";
 import carouselImage3 from "../assets/c3.svg";
@@ -20,7 +23,13 @@ const Home = () => {
   ];
 
   return (
-    <Stack width="100%" alignItems="center" marginY={5}>
+    <Stack width="100%" alignItems="center" spacing={10} marginY={5}>
+      <Box>
+        <Image src={homepage1} />
+      </Box>
+      <Box>
+        <Image src={homepage3} />
+      </Box>
       <Box width={{ base: "90%", md: "50%" }}>
         <Carousel
           autoPlay={true}
@@ -34,7 +43,10 @@ const Home = () => {
           ))}
         </Carousel>
       </Box>
-    </Stack>
+      <Box>
+        <Image src={homepage5} />
+      </Box>
+    </Stack >
   );
 };
 
