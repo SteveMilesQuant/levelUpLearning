@@ -30,6 +30,7 @@ const theme = extendTheme({
     brand: {
       primary: "rgb(4,0,154)",
       secondary: "#ace7f9",
+      tertiary: "rgb(62, 219, 240)",
       gradient3: "rgb(192,254,252)",
       gradient2: "rgb(119,172,241)",
       text: "rgb(38, 72, 201)",

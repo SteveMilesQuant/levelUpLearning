@@ -1,4 +1,4 @@
-import { Stack, Image, Box } from "@chakra-ui/react";
+import { Stack, Image, Box, Button, Text } from "@chakra-ui/react";
 import { Carousel } from "react-responsive-carousel";
 import homepage1 from "../assets/homepage1.svg";
 import homepage3 from "../assets/homepage3.svg";
@@ -10,8 +10,11 @@ import carouselImage3 from "../assets/c3.svg";
 import carouselImage5 from "../assets/c5.svg";
 import carouselImage6 from "../assets/c6.svg";
 import carouselImage7 from "../assets/c7.svg";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const navigate = useNavigate();
+
   const cards = [
     { id: 0, img: carouselImage1 },
     { id: 1, img: carouselImage2 },
@@ -24,8 +27,22 @@ const Home = () => {
 
   return (
     <Stack width="100%" alignItems="center" spacing={10} marginY={5}>
-      <Box>
+      <Box position="relative">
         <Image src={homepage1} />
+        <Stack width="100%" alignItems="center" position="absolute" bottom="18%">
+          <Button
+            onClick={() => navigate("/camps")}
+            fontSize={{ "base": 12, "md": 20, "lg": 40 }}
+            size="md"
+            bgColor="brand.tertiary"
+            height="fit-content"
+          >
+            <Text marginY={{ "base": 1.5, "md": 2, "lg": 3 }} marginX={{ "base": 2, "md": 4, "lg": 12 }} textColor="white">
+              ENROLL NOW
+            </Text>
+          </Button>
+
+        </Stack>
       </Box>
       <Box>
         <Image src={homepage3} />
