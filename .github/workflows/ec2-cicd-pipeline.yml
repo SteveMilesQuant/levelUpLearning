@@ -62,7 +62,7 @@ jobs:
         run: |
           printf "VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID\nVITE_API_URL=/api\nVITE_SQUARE_APPLICATION_ID=$SQUARE_APPLICATION_ID\nVITE_SQUARE_LOCATION_ID=$SQUARE_LOCATION_ID" > app/.env
           touch api/.env
-          docker-compose build
+          docker compose build
           docker tag leveluplearning_app $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
           docker tag leveluplearning_api $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
