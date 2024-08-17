@@ -39,7 +39,7 @@ const FAQ = () => {
                     <Text>We understand that circumstances may arise that require changes to camp enrollment. Our cancellation policy is as follows:</Text>
                     <List styleType="disc" stylePosition="inside" spacing={3}>
                         <ListItem>Cancellations made at least one week prior to the start of the camp will receive a full refund.</ListItem>
-                        <ListItem>Cancellations made less than one week prior to the start of the camp will receive a 50% refund or full credit for a future camp enrollment.</ListItem>
+                        <ListItem>Cancellations made less than one week prior to the start of the camp will receive full credit for a future camp enrollment.</ListItem>
                     </List>
                 </Stack>
             </Stack>
