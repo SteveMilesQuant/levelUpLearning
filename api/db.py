@@ -75,6 +75,8 @@ class UserDb(Base):
     phone_number: Mapped[str] = mapped_column(Text, nullable=True)
     instructor_subjects: Mapped[str] = mapped_column(Text, nullable=True)
     instructor_description: Mapped[str] = mapped_column(Text, nullable=True)
+    email_verified: Mapped[bool]
+    receive_marketing_emails: Mapped[bool]
 
     roles: Mapped[List[RoleDb]] = relationship(
         secondary=user_x_roles, back_populates='users', lazy='joined')

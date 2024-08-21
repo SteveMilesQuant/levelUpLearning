@@ -1,0 +1,2 @@
+ALTER TABLE user ADD COLUMN email_verified BOOLEAN DEFAULT FALSE;
+ALTER TABLE user ADD COLUMN receive_marketing_emails BOOLEAN DEFAULT TRUE;

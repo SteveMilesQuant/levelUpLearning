@@ -4,20 +4,21 @@ import NavBar from "../components/NavBar";
 import { ReactNode } from "react";
 import { BsDot } from "react-icons/bs";
 import AuthExpiredModal from "../components/AuthExpiredModal";
+import ContactVerificationModal from "../users/components/ContactVerificationModal";
 
 interface Props {
   children?: ReactNode;
 }
 
 const Layout = ({ children }: Props) => {
-  // Include both Outlet and children, to allow both contexts
-
   return (
     <>
       <NavBar></NavBar>
       <HStack gap={0} alignItems="top">
         <AuthExpiredModal />
+        <ContactVerificationModal />
         <Box>
+          {/* Include both Outlet and children, to allow both contexts */}
           <Outlet />
           {children}
         </Box>

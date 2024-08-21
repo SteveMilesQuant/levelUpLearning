@@ -16,6 +16,8 @@ const userSchema = z.object({
     .email({ message: "Please enter a valid email address." }),
   instructor_subjects: z.string(),
   instructor_description: z.string(),
+  email_verified: z.boolean(),
+  receive_marketing_emails: z.boolean(),
 });
 
 export type FormData = z.infer<typeof userSchema>;
@@ -25,6 +27,7 @@ const useUserForm = (user?: User) => {
   const {
     register,
     getValues,
+    setValue,
     handleSubmit: handleFormSubmit,
     formState: { errors, isValid },
     reset,
@@ -75,6 +78,7 @@ const useUserForm = (user?: User) => {
   return {
     register,
     getValues,
+    setValue,
     errors,
     handleClose,
     handleSubmit,

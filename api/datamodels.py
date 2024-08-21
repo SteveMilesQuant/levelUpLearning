@@ -45,6 +45,8 @@ class UserData(BaseModel):
     phone_number: Optional[str] = ''
     instructor_subjects: Optional[str] = ''
     instructor_description: Optional[str] = ''
+    email_verified: Optional[bool] = False
+    receive_marketing_emails: Optional[bool] = True
 
 
 class UserResponse(UserData):
