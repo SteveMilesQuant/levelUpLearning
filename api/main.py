@@ -11,7 +11,7 @@ from typing import Optional, List, Literal
 from datetime import timedelta
 from db import init_db, close_db, PaymentRecordDb, ImageDb
 from datamodels import FastApiDate, Object
-from datamodels import RoleEnum, UserData, UserResponse
+from datamodels import RoleEnum, UserPublicResponse, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
 from datamodels import StudentData, StudentResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
@@ -543,6 +543,11 @@ async def get_camps(request: Request, is_published: Optional[bool] = None, instr
                 camps = list(
                     filter(lambda camp: len(camp.dates) == 0 or camp.dates[0] > FastApiDate.today(), camps))
 
+            # Ensure that private information about instructors is not made public
+            for camp in camps:
+                camp.primary_instructor = UserPublicResponse(
+                    **camp.primary_instructor.dict())
+
         return camps
 
 
@@ -556,6 +561,8 @@ async def get_camp(request: Request, camp_id: int):
         if camp.id is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+        camp.primary_instructor = UserPublicResponse(
+            **camp.primary_instructor.dict())
         return camp
 
 
@@ -628,7 +635,7 @@ async def delete_camp(request: Request, camp_id: int):
 
 
 # Public route
-@api_router.get("/camps/{camp_id}/instructors", response_model=List[UserResponse])
+@api_router.get("/camps/{camp_id}/instructors", response_model=List[UserPublicResponse])
 async def get_camp_instructors(request: Request, camp_id: int):
     '''Get all instructors in a camp.'''
     async with app.db_sessionmaker() as session:
@@ -641,12 +648,13 @@ async def get_camp_instructors(request: Request, camp_id: int):
         for db_instructor in await camp.instructors(session):
             instructor = User(db_obj=db_instructor)
             await instructor.create(session)
-            instructors.append(instructor)
+            instructor_public = UserPublicResponse(**instructor.dict())
+            instructors.append(instructor_public)
         return instructors
 
 
 # Public route
-@api_router.get("/camps/{camp_id}/instructors/{instructor_id}", response_model=UserResponse)
+@api_router.get("/camps/{camp_id}/instructors/{instructor_id}", response_model=UserPublicResponse)
 async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int):
     '''Get a single instructor in a camp.'''
     async with app.db_sessionmaker() as session:
@@ -659,7 +667,7 @@ async def get_camp_instructor(request: Request, camp_id: int, instructor_id: int
             if db_instructor.id == instructor_id:
                 instructor = User(db_obj=db_instructor)
                 await instructor.create(session)
-                return instructor
+                return UserPublicResponse(**instructor.dict())
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Instructor id={instructor_id} does not exist for camp id={camp_id}")
 

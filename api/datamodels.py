@@ -39,12 +39,19 @@ class RoleResponse(BaseModel):
         return (RoleEnum[self.name].value < RoleEnum[other.name].value)
 
 
-class UserData(BaseModel):
+class UserPublicData(BaseModel):
     full_name: Optional[str] = ''
-    email_address: Optional[str] = ''
-    phone_number: Optional[str] = ''
     instructor_subjects: Optional[str] = ''
     instructor_description: Optional[str] = ''
+
+
+class UserPublicResponse(UserPublicData):
+    id: Optional[int] = None
+
+
+class UserData(UserPublicData):
+    email_address: Optional[str] = ''
+    phone_number: Optional[str] = ''
     email_verified: Optional[bool] = False
     receive_marketing_emails: Optional[bool] = True
 
@@ -97,7 +104,7 @@ class CampData(CampCore):
 
 class CampResponse(CampData):
     id: Optional[int]
-    primary_instructor: Optional[UserResponse] = None
+    primary_instructor: Optional[UserPublicResponse] = None
     program: Optional[ProgramResponse] = None
 
     def dict(self, *args, **kwargs):

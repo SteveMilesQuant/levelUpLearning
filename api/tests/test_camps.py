@@ -1,10 +1,9 @@
 import pytest
 import json
 import asyncio
-import os
 from fastapi import status
 from fastapi.testclient import TestClient
-from datamodels import EnrollmentData, SingleEnrollmentData, UserResponse
+from datamodels import EnrollmentData, SingleEnrollmentData, UserPublicResponse, UserResponse
 from datamodels import ProgramResponse
 from datamodels import StudentData, FastApiDate
 from datamodels import CampData
@@ -66,8 +65,7 @@ def test_post_camp(camp: CampData):
     new_camp_json = response.json()
     camp_json['id'] = new_camp_json['id']
     camp_json['primary_instructor'] = app.test.users.map[camp_json['primary_instructor_id']].dict(
-        include=UserResponse().dict())
-    camp_json['primary_instructor']['roles'] = []
+        include=UserPublicResponse().dict())
     camp_json['program'] = program_response
     assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match posted camp {camp_json}.'
     all_camps_json.append(new_camp_json)
@@ -164,7 +162,9 @@ def test_getting_camp_instructors():
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     got_instructors_json = response.json()
-    assert got_instructors_json == instructors_json
+    public_instructors_json = [UserPublicResponse(
+        **instructor_json).dict() for instructor_json in instructors_json]
+    assert got_instructors_json == public_instructors_json, 'Camp instructors list is wrong'
 
     # Get instructors individually
     for instructor_json in instructors_json:
@@ -174,7 +174,8 @@ def test_getting_camp_instructors():
         content_type = response.headers['content-type']
         assert 'application/json' in content_type
         got_instructor_json = response.json()
-        assert got_instructor_json == instructor_json
+        public_instructor_json = UserPublicResponse(**instructor_json).dict()
+        assert got_instructor_json == public_instructor_json, 'Camp instructor (individual) is wrong'
 
 
 # Test changing primary instructor
@@ -187,21 +188,20 @@ def test_change_primary_instructor(camp_index: int, instructor_id: int):
     camp_id = camp_json['id']
     camp_json['primary_instructor_id'] = instructor_id
     camp_json['primary_instructor'] = app.test.users.map[instructor_id].dict(
-        include=UserResponse().dict())
-    camp_json['primary_instructor']['roles'] = []
+        include=UserPublicResponse().dict())
     response = client.put(
         f'/camps/{camp_id}', json=camp_json, headers=app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     new_camp_json = response.json()
-    assert new_camp_json == camp_json
+    assert new_camp_json == camp_json, 'Change instructor response is wrong'
 
     response = client.get(f'/camps/{camp_id}',
                           headers=app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     got_camp_json = response.json()
-    assert got_camp_json == camp_json
+    assert got_camp_json == camp_json, 'Get after change instructor is wrong'
 
 
 # Test enrolling, getting, and disenrolling students
