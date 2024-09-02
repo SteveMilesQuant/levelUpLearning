@@ -543,11 +543,6 @@ async def get_camps(request: Request, is_published: Optional[bool] = None, instr
                 camps = list(
                     filter(lambda camp: len(camp.dates) == 0 or camp.dates[0] > FastApiDate.today(), camps))
 
-            # Ensure that private information about instructors is not made public
-            for camp in camps:
-                camp.primary_instructor = UserPublicResponse(
-                    **camp.primary_instructor.dict())
-
         return camps
 
 
@@ -561,8 +556,6 @@ async def get_camp(request: Request, camp_id: int):
         if camp.id is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        camp.primary_instructor = UserPublicResponse(
-            **camp.primary_instructor.dict())
         return camp
 
 
