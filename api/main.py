@@ -770,9 +770,6 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
         if camp.id is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        if not camp.is_published:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                detail=f"Camp id={camp_id} is not yet published for enrollment.")
         student = Student(id=student_id)
         await student.create(session)
         if student.id is None:
