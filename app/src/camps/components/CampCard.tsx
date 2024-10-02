@@ -1,4 +1,4 @@
-import { Divider, HStack, Heading, LinkOverlay, Text } from "@chakra-ui/react";
+import { Divider, HStack, Heading, LinkOverlay, Show, Stack, Text } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { Camp } from "../Camp";
 import DeleteButton from "../../components/DeleteButton";
@@ -40,8 +40,8 @@ const CampCard = ({ camp, onDelete }: Props) => {
     campsContextType === CampsContextType.schedule
       ? "/schedule/" + camp.id
       : campsContextType === CampsContextType.teach
-      ? "/teach/" + camp.id
-      : "/camps/" + camp.id;
+        ? "/teach/" + camp.id
+        : "/camps/" + camp.id;
 
   const datesList = camp.dates?.map(
     (date_str) => new Date(date_str + "T00:00:00")
@@ -77,17 +77,17 @@ const CampCard = ({ camp, onDelete }: Props) => {
   const timeStr =
     startTime && endTime
       ? startTime.toLocaleString(locale, {
-          timeStyle: "short",
-        }) +
-        " to " +
-        endTime.toLocaleString(locale, {
-          timeStyle: "short",
-        })
+        timeStyle: "short",
+      }) +
+      " to " +
+      endTime.toLocaleString(locale, {
+        timeStyle: "short",
+      })
       : "TBD";
 
   return (
     <CardContainer>
-      <HStack justifyContent="space-between">
+      <HStack justifyContent="space-between" marginTop={1}>
         <LinkOverlay as={RouterLink} to={linkTarget}>
           <HStack alignItems="end">
             <Heading fontSize="2xl">{camp.program.title}</Heading>
@@ -102,22 +102,34 @@ const CampCard = ({ camp, onDelete }: Props) => {
       </HStack>
 
       <Divider orientation="horizontal" marginTop={2} />
-      <HStack marginTop={2} justifyContent="space-between">
-        <Text>
-          <strong>Grades: </strong>
-          {camp.program.grade_range[0] + " to " + camp.program.grade_range[1]}
-        </Text>
-        <Text>
-          <strong>
-            {datesListStr && datesListStr.length === 1 ? "Date: " : "Dates: "}
-          </strong>
-          {dateStr}
-        </Text>
-        <Text>
-          <strong>Time: </strong>
-          {timeStr}
-        </Text>
-      </HStack>
+      <Stack spacing={1} marginTop={2}>
+        {camp.camp_type && camp.camp_type.length > 0 &&
+          <Show below="sm">
+            <Text size="xl" fontWeight="bold" fontFamily="verdana" textColor="brand.tertiary">{camp.camp_type}</Text>
+          </Show>
+        }
+        <HStack justifyContent="space-between">
+          {camp.camp_type && camp.camp_type.length > 0 &&
+            <Show above="sm">
+              <Text size="xl" fontWeight="bold" fontFamily="verdana" textColor="brand.tertiary">{camp.camp_type}</Text>
+            </Show>
+          }
+          <Text>
+            <strong>Grades: </strong>
+            {camp.program.grade_range[0] + " to " + camp.program.grade_range[1]}
+          </Text>
+          <Text>
+            <strong>
+              {datesListStr && datesListStr.length === 1 ? "Date: " : "Dates: "}
+            </strong>
+            {dateStr}
+          </Text>
+          <Text>
+            <strong>Time: </strong>
+            {timeStr}
+          </Text>
+        </HStack>
+      </Stack>
     </CardContainer>
   );
 };

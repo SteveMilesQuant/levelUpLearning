@@ -1,0 +1,1 @@
+ALTER TABLE camp ADD COLUMN camp_type TEXT;

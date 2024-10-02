@@ -9,6 +9,7 @@ export interface CampData {
   daily_start_time?: string;
   daily_end_time?: string;
   cost?: number;
+  camp_type?: string;
   dates?: string[];
 }
 

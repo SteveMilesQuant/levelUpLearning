@@ -94,6 +94,7 @@ class CampCore(BaseModel):
 
 
 class CampData(CampCore):
+    camp_type: Optional[str]
     dates: Optional[List[FastApiDate]] = []
 
     def dict(self, *args, **kwargs):

@@ -49,6 +49,7 @@ export const campSchema = z.object({
       }
       throw ctx.error;
     }),
+  camp_type: z.string().optional(),
 });
 
 export type FormData = z.infer<typeof campSchema>;
@@ -114,17 +115,17 @@ const useCampForm = (camp?: Camp) => {
       ...data,
       daily_start_time: start
         ? start.getHours() +
-          (start.getMinutes() < 10 ? ":0" : ":") +
-          +start.getMinutes() +
-          (start.getSeconds() < 10 ? ":0" : ":") +
-          start.getSeconds()
+        (start.getMinutes() < 10 ? ":0" : ":") +
+        +start.getMinutes() +
+        (start.getSeconds() < 10 ? ":0" : ":") +
+        start.getSeconds()
         : undefined,
       daily_end_time: end
         ? end.getHours() +
-          (start.getMinutes() < 10 ? ":0" : ":") +
-          end.getMinutes() +
-          (start.getSeconds() < 10 ? ":0" : ":") +
-          end.getSeconds()
+        (start.getMinutes() < 10 ? ":0" : ":") +
+        end.getMinutes() +
+        (start.getSeconds() < 10 ? ":0" : ":") +
+        end.getSeconds()
         : undefined,
       dates,
       program: { ...program },
