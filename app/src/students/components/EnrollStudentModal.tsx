@@ -72,7 +72,7 @@ const EnrollStudentModal = ({
           <Stack spacing={3}>
             <Heading fontSize="2xl">{title}</Heading>
             <Text fontSize="md">
-              Grades (2024-2025 school year):{" "}
+              Grades (2025-2026 school year):{" "}
               {`${gradeRange[0]} to ${gradeRange[1]}`}
             </Text>
             <Divider orientation="horizontal" marginTop={1}></Divider>
