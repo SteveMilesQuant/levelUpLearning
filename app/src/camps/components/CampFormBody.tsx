@@ -8,6 +8,7 @@ import {
   Grid,
   GridItem,
   Box,
+  Checkbox,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import {
@@ -239,6 +240,15 @@ const CampFormBody = ({
           isOpen={errors.cost ? true : false}
         >
           <Input {...register("cost")} type="number" isReadOnly={isReadOnly} />
+        </InputError>
+      </FormControl>
+      <FormControl>
+        <FormLabel>Disable enrollment</FormLabel>
+        <InputError
+          label={errors.enrollment_disabled?.message}
+          isOpen={errors.enrollment_disabled ? true : false}
+        >
+          <Checkbox disabled={isReadOnly} {...register("enrollment_disabled")}>Enrollment disabled</Checkbox>
         </InputError>
       </FormControl>
     </Stack>

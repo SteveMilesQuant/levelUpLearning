@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Button, useDisclosure } from "@chakra-ui/react";
+import { useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import {
   useCamp,
@@ -14,7 +14,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useContext } from "react";
 import { useUser } from "../users";
 import BodyContainer from "../components/BodyContainer";
-import ButtonText from "../components/ButtonText";
 import TextButton from "../components/TextButton";
 import AuthButton from "../components/AuthButton";
 
@@ -63,18 +62,21 @@ const Camp = () => {
     </TextButton>
   );
 
-  const enrollButton = user ? (
-    <TextButton onClick={newOnOpen}>Enroll Student</TextButton>
-  ) : (
-    <AuthButton bgColor="brand.buttonBg">Sign in to enroll</AuthButton>
-  );
+  const enrollButton = camp.enrollment_disabled ?
+    (undefined)
+    : user ?
+      (
+        <TextButton onClick={newOnOpen}>Enroll Student</TextButton>
+      ) : (
+        <AuthButton bgColor="brand.buttonBg">Sign in to enroll</AuthButton>
+      );
 
   const headerButton =
     campsContextType === CampsContextType.schedule
       ? publishButton
       : campsContextType === CampsContextType.camps
-      ? enrollButton
-      : undefined;
+        ? enrollButton
+        : undefined;
 
   return (
     <BodyContainer>

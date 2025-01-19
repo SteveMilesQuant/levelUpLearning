@@ -96,6 +96,7 @@ class CampCore(BaseModel):
 class CampData(CampCore):
     camp_type: Optional[str]
     dates: Optional[List[FastApiDate]] = []
+    enrollment_disabled: Optional[bool] = False
 
     def dict(self, *args, **kwargs):
         ret = super().dict(*args, **kwargs)

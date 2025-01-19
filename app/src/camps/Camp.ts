@@ -11,6 +11,7 @@ export interface CampData {
   cost?: number;
   camp_type?: string;
   dates?: string[];
+  enrollment_disabled?: boolean;
 }
 
 export interface Camp extends CampData {

@@ -72,7 +72,7 @@ const CampTabPublic = ({ camp }: Props) => {
         <strong>Location: </strong>
         {camp.location || "TBD"}
       </Text>
-      {(camp.cost || camp.cost === 0.0) && (
+      {(!camp.enrollment_disabled && (camp.cost || camp.cost === 0.0)) && (
         <Text>
           <strong>Cost: </strong>
           {camp.cost > 0.0 ? "$" + camp.cost : "Free"}
