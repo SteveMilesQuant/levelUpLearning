@@ -9,7 +9,7 @@ const FAQ = () => {
             <Stack spacing={5} width={{ base: "100%", lg: "75%", xl: "50%" }}>
                 <Stack spacing={3}>
                     <Heading fontSize="2xl">Who can attend the camps?</Heading>
-                    <Text>We are open to rising 3rd through rising 7th graders, catering to children aged 8 to 12 years old.</Text>
+                    <Text>We are open to rising 1st through rising 6th graders, catering to children aged 6 to 12 years old.</Text>
                 </Stack>
                 <Stack spacing={3}>
                     <Heading fontSize="2xl">What is the focus of the camps?</Heading>
@@ -28,9 +28,8 @@ const FAQ = () => {
                     <Heading fontSize="2xl">How are students grouped during the camp?</Heading>
                     <Text>Campers are grouped into the following categories based on their grade levels:</Text>
                     <List styleType="disc" stylePosition="inside" spacing={3}>
-                        <ListItem>3rd and 4th Grade Group</ListItem>
-                        <ListItem>5th and 6th Grade Group</ListItem>
-                        <ListItem>7th Grade Group</ListItem>
+                        <ListItem>1st, 2nd, and 3rd Grade Group</ListItem>
+                        <ListItem>4th, 5th, and 6th Grade Group</ListItem>
                     </List>
                     <Text>This grouping structure ensures that campers receive instruction and activities that align with their specific age and skill levels, fostering a supportive and enriching learning environment for all participants. However, we understand that proficiency levels can vary among individuals. Therefore, we allow for flexibility, enabling students to move up or down in grade groups based on their demonstrated proficiency and comfort level, ensuring that each child receives appropriate support and challenges.</Text>
                 </Stack>
