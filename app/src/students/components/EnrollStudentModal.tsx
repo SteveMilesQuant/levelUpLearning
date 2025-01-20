@@ -58,6 +58,11 @@ const EnrollStudentModal = ({
     (student) => !unenrolledStudents.find((s) => s.id == student.id)
   );
 
+  // If the camp starts before June, use the current school year
+  // Otherwise, use the coming school year
+  const campStartDate = camp?.dates ? new Date(camp.dates[0] + "T00:00:00") : new Date();
+  const schoolYear = campStartDate.getMonth() < 5 ? campStartDate.getFullYear() - 1 : campStartDate.getFullYear();
+
   return (
     <Modal
       isOpen={isOpen}
@@ -72,7 +77,7 @@ const EnrollStudentModal = ({
           <Stack spacing={3}>
             <Heading fontSize="2xl">{title}</Heading>
             <Text fontSize="md">
-              Grades (2025-2026 school year):{" "}
+              Grades ({schoolYear}-{schoolYear + 1} school year):{" "}
               {`${gradeRange[0]} to ${gradeRange[1]}`}
             </Text>
             <Divider orientation="horizontal" marginTop={1}></Divider>
