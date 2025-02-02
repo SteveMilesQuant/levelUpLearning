@@ -44,10 +44,10 @@ const NavBar = () => {
         fontSize={{ base: 11, lg: 16 }}
       >
         <Text textAlign="center" textColor="white">
-          LANGUAGE ARTS CLINICS & CAMPS
+          LITERACY CAMPS & CLINICS
         </Text>
         <Text textAlign="center" textColor="white">
-          BROUGHT TO YOU BY LOCAL MIDDLE SCHOOL TEACHERS
+          BROUGHT TO YOU BY LOCAL EDUCATORS
         </Text>
       </Stack>
     </>
