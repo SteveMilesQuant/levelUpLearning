@@ -251,6 +251,15 @@ const CampFormBody = ({
           <Checkbox disabled={isReadOnly} {...register("enrollment_disabled")}>Enrollment disabled</Checkbox>
         </InputError>
       </FormControl>
+      <FormControl>
+        <FormLabel>Student capacity</FormLabel>
+        <InputError
+          label={errors.capacity?.message}
+          isOpen={errors.capacity ? true : false}
+        >
+          <Input {...register("capacity")} type="number" isReadOnly={isReadOnly} />
+        </InputError>
+      </FormControl>
     </Stack>
   );
 };

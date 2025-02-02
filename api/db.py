@@ -185,6 +185,7 @@ class CampDb(Base):
     cost: Mapped[float] = mapped_column(nullable=True)
     camp_type: Mapped[str] = mapped_column(Text, nullable=True)
     enrollment_disabled: Mapped[bool] = mapped_column(nullable=True)
+    capacity: Mapped[int] = mapped_column(nullable=True)
 
     program: Mapped['ProgramDb'] = relationship(
         back_populates='camps', lazy='joined')
@@ -198,8 +199,8 @@ class CampDb(Base):
 
     def dict(self):
         returnVal = {}
-        for key, value in CampResponse():
-            if key not in ['program', 'primary_instructor', 'start_time']:
+        for key, _ in CampResponse():
+            if key not in ['program', 'primary_instructor', 'start_time', 'current_enrollment']:
                 returnVal[key] = getattr(self, key)
         return returnVal
 

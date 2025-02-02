@@ -91,12 +91,13 @@ class CampCore(BaseModel):
     daily_start_time: Optional[FastApiTime]
     daily_end_time: Optional[FastApiTime]
     cost: Optional[float]
+    camp_type: Optional[str]
+    enrollment_disabled: Optional[bool] = False
+    capacity: Optional[int]
 
 
 class CampData(CampCore):
-    camp_type: Optional[str]
     dates: Optional[List[FastApiDate]] = []
-    enrollment_disabled: Optional[bool] = False
 
     def dict(self, *args, **kwargs):
         ret = super().dict(*args, **kwargs)
@@ -108,6 +109,7 @@ class CampResponse(CampData):
     id: Optional[int]
     primary_instructor: Optional[UserPublicResponse] = None
     program: Optional[ProgramResponse] = None
+    current_enrollment: Optional[int] = None
 
     def dict(self, *args, **kwargs):
         ret = super().dict(*args, **kwargs)

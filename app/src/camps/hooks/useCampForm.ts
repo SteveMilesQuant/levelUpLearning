@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
-import { Camp } from "../Camp";
+import { Camp, CAMP_DATA_DEFAULTS } from "../Camp";
 import { useAddCamp, useUpdateCamp } from "./useCamps";
 import { usePrograms } from "../../programs";
 import { useUsers } from "../../users";
@@ -18,7 +18,7 @@ export const campSchema = z.object({
         const num = parseInt(ctx.input);
         if (!isNaN(num)) return num;
       }
-      throw ctx.error;
+      return -1;
     }),
   primary_instructor_id: z
     .number({ invalid_type_error: "Primary instructor is required." })
@@ -30,7 +30,7 @@ export const campSchema = z.object({
         const num = parseInt(ctx.input);
         if (!isNaN(num)) return num;
       }
-      throw ctx.error;
+      return -1;
     }),
   location: z.string().optional(),
   z_daily_start_time: z.date().optional(),
@@ -47,10 +47,23 @@ export const campSchema = z.object({
         const num = parseFloat(ctx.input);
         if (!isNaN(num) && num >= 0.0) return num;
       }
-      throw ctx.error;
+      return 0.0;
     }),
   camp_type: z.string().optional(),
-  enrollment_disabled: z.boolean()
+  enrollment_disabled: z.boolean(),
+  capacity: z
+    .number({ invalid_type_error: "Capacity is required." })
+    .nonnegative({ message: "Capacity must be non-negative." })
+    .catch((ctx) => {
+      // I'd prefer use transform (string to number), but that doesn't play well with defaultValues
+      // You end up getting numbers you have to catch from the default values, which must be numbers
+      // Zod should fix this, or allow valueAsNumber (which it ignores)
+      if (typeof ctx.input === "string") {
+        const num = parseInt(ctx.input);
+        if (!isNaN(num)) return num;
+      }
+      return CAMP_DATA_DEFAULTS.capacity || 20;
+    }),
 });
 
 export type FormData = z.infer<typeof campSchema>;
@@ -69,7 +82,8 @@ const useCampForm = (camp?: Camp) => {
     defaultValues: useMemo(() => {
       return {
         ...camp,
-        enrollment_disabled: camp?.enrollment_disabled || false,
+        enrollment_disabled: camp?.enrollment_disabled || CAMP_DATA_DEFAULTS.enrollment_disabled,
+        capacity: camp?.capacity || CAMP_DATA_DEFAULTS.capacity,
         z_daily_start_time:
           camp && camp.daily_start_time
             ? new Date("2023-01-01T" + camp.daily_start_time)

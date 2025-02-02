@@ -46,6 +46,9 @@ class Camp(CampResponse):
             await session.refresh(self._db_obj, ['instructors'])
             self._db_obj.instructors.append(self._db_obj.primary_instructor)
             await session.commit()
+
+            await session.refresh(self._db_obj, ['students'])
+            self.current_enrollment = len(self._db_obj.students or [])
         else:
             # Otherwise, update attributes from fetched object
             for key, value in self._db_obj.dict().items():

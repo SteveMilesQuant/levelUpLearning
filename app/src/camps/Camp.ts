@@ -12,12 +12,22 @@ export interface CampData {
   camp_type?: string;
   dates?: string[];
   enrollment_disabled?: boolean;
+  capacity?: number;
 }
 
 export interface Camp extends CampData {
   id: number;
   program: Program;
   primary_instructor: User;
+  current_enrollment?: number;
 }
 
 export const CACHE_KEY_CAMPS = ["camps"];
+
+export const CAMP_DATA_DEFAULTS = {
+  program_id: -1,
+  primary_instructor_id: -1,
+  is_published: false,
+  enrollment_disabled: false,
+  capacity: 20
+} as CampData;
