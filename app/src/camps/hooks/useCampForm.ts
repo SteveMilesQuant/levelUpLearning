@@ -62,7 +62,7 @@ export const campSchema = z.object({
         const num = parseInt(ctx.input);
         if (!isNaN(num)) return num;
       }
-      return CAMP_DATA_DEFAULTS.capacity || 20;
+      return CAMP_DATA_DEFAULTS.capacity || 19;
     }),
 });
 
@@ -82,8 +82,8 @@ const useCampForm = (camp?: Camp) => {
     defaultValues: useMemo(() => {
       return {
         ...camp,
-        enrollment_disabled: camp?.enrollment_disabled || CAMP_DATA_DEFAULTS.enrollment_disabled,
-        capacity: camp?.capacity || CAMP_DATA_DEFAULTS.capacity,
+        enrollment_disabled: camp?.enrollment_disabled === undefined ? CAMP_DATA_DEFAULTS.enrollment_disabled : camp.enrollment_disabled,
+        capacity: camp?.capacity === undefined ? CAMP_DATA_DEFAULTS.capacity : camp.capacity,
         z_daily_start_time:
           camp && camp.daily_start_time
             ? new Date("2023-01-01T" + camp.daily_start_time)

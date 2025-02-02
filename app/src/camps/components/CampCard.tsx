@@ -86,9 +86,13 @@ const CampCard = ({ camp, onDelete }: Props) => {
       : "TBD";
 
   const currentCapacity = (camp.capacity || 0) - (camp.current_enrollment || 0);
-  const capacityString = currentCapacity <= 0 ?
-    "All full!" : currentCapacity <= CAMP_CAPACITY_DISPLAY_THRESHOLD ?
-      currentCapacity + " spots left!" : undefined;
+  const capacityString = currentCapacity <= 0
+    ? "All full!"
+    : currentCapacity === 1
+      ? currentCapacity + " spot left!"
+      : currentCapacity <= CAMP_CAPACITY_DISPLAY_THRESHOLD
+        ? currentCapacity + " spots left!"
+        : undefined;
 
   return (
     <CardContainer>

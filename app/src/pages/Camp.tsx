@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useDisclosure } from "@chakra-ui/react";
+import { HStack, useDisclosure, Text } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import {
   useCamp,
@@ -16,6 +16,7 @@ import { useUser } from "../users";
 import BodyContainer from "../components/BodyContainer";
 import TextButton from "../components/TextButton";
 import AuthButton from "../components/AuthButton";
+import { CAMP_CAPACITY_DISPLAY_THRESHOLD } from "../camps/Camp";
 
 const Camp = () => {
   const { id: idStr } = useParams();
@@ -62,7 +63,15 @@ const Camp = () => {
     </TextButton>
   );
 
-  const campAtCapacity = (camp.current_enrollment || 0) >= (camp.capacity || 0);
+  const currentCapacity = (camp.capacity || 0) - (camp.current_enrollment || 0);
+  const campAtCapacity = currentCapacity <= 0;
+  const capacityString = campAtCapacity
+    ? undefined
+    : currentCapacity === 1
+      ? currentCapacity + " spot left!"
+      : currentCapacity <= CAMP_CAPACITY_DISPLAY_THRESHOLD
+        ? currentCapacity + " spots left!"
+        : undefined;
 
   const enrollButton = camp.enrollment_disabled ?
     (undefined)
@@ -77,7 +86,7 @@ const Camp = () => {
     campsContextType === CampsContextType.schedule
       ? publishButton
       : campsContextType === CampsContextType.camps
-        ? enrollButton
+        ? <HStack spacing={5}>{capacityString && <Text size="xl" fontWeight="bold" fontFamily="verdana" textColor="brand.tertiary">{capacityString}</Text>}{enrollButton}</HStack>
         : undefined;
 
   return (
@@ -90,23 +99,26 @@ const Camp = () => {
         isReadOnly={campsContextType !== CampsContextType.schedule}
         isPublicFacing={campsContextType === CampsContextType.camps}
       />
-      {campsContextType === CampsContextType.camps && user && (
-        <>
-          <EnrollStudentModal
-            title="Enroll Student"
-            camp={camp}
-            gradeRange={camp.program.grade_range}
-            isOpen={newIsOpen}
-            onClose={newOnClose}
-            onClickCreateStudent={addStudentOnOpen}
-          />
-          <StudentFormModal
-            title="Add Student"
-            isOpen={addStudentIsOpen}
-            onClose={addStudentOnClose}
-          />
-        </>
-      )}
+      <HStack>
+
+        {campsContextType === CampsContextType.camps && user && (
+          <>
+            <EnrollStudentModal
+              title="Enroll Student"
+              camp={camp}
+              gradeRange={camp.program.grade_range}
+              isOpen={newIsOpen}
+              onClose={newOnClose}
+              onClickCreateStudent={addStudentOnOpen}
+            />
+            <StudentFormModal
+              title="Add Student"
+              isOpen={addStudentIsOpen}
+              onClose={addStudentOnClose}
+            />
+          </>
+        )}
+      </HStack>
     </BodyContainer>
   );
 };
