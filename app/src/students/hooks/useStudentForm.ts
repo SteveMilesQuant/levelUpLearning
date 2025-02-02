@@ -19,7 +19,7 @@ const studentSchema = z.object({
         const num = parseInt(ctx.input);
         if (!isNaN(num)) return num;
       }
-      throw ctx.error;
+      return 6;
     }),
 });
 

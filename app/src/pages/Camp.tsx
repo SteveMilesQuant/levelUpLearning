@@ -62,11 +62,13 @@ const Camp = () => {
     </TextButton>
   );
 
+  const campAtCapacity = (camp.current_enrollment || 0) >= (camp.capacity || 0);
+
   const enrollButton = camp.enrollment_disabled ?
     (undefined)
     : user ?
       (
-        <TextButton onClick={newOnOpen}>Enroll Student</TextButton>
+        <TextButton onClick={newOnOpen} isDisabled={campAtCapacity}>{campAtCapacity ? "Camp full" : "Enroll Student"}</TextButton>
       ) : (
         <AuthButton bgColor="brand.buttonBg">Sign in to enroll</AuthButton>
       );

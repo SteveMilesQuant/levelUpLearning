@@ -31,3 +31,5 @@ export const CAMP_DATA_DEFAULTS = {
   enrollment_disabled: false,
   capacity: 20
 } as CampData;
+
+export const CAMP_CAPACITY_DISPLAY_THRESHOLD = 9;

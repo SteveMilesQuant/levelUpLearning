@@ -808,6 +808,9 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
         # Create payment records
         for single_enrollment in enrollments.enrollments:
             camp = single_enrollment.camp
+            if (camp.current_enrollment or 0) >= (camp.capacity or 0):
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                    detail=f"Camp with id {camp.id} is at full capacity.")
             student = single_enrollment.student
             payment_record = PaymentRecordDb(
                 square_payment_id=square_payment_id,

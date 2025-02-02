@@ -1,6 +1,6 @@
 import { Divider, HStack, Heading, LinkOverlay, Show, Stack, Text } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { Camp } from "../Camp";
+import { Camp, CAMP_CAPACITY_DISPLAY_THRESHOLD } from "../Camp";
 import DeleteButton from "../../components/DeleteButton";
 import { locale } from "../../constants";
 import { useContext } from "react";
@@ -85,6 +85,11 @@ const CampCard = ({ camp, onDelete }: Props) => {
       })
       : "TBD";
 
+  const currentCapacity = (camp.capacity || 0) - (camp.current_enrollment || 0);
+  const capacityString = currentCapacity <= 0 ?
+    "All full!" : currentCapacity <= CAMP_CAPACITY_DISPLAY_THRESHOLD ?
+      currentCapacity + " spots left!" : undefined;
+
   return (
     <CardContainer>
       <HStack justifyContent="space-between" marginTop={1}>
@@ -99,6 +104,9 @@ const CampCard = ({ camp, onDelete }: Props) => {
             {camp.program.title + " " + byLine}
           </DeleteButton>
         )}
+        {!onDelete && capacityString &&
+          <Text size="xl" fontWeight="bold" fontFamily="verdana" textColor="brand.tertiary">{capacityString}</Text>
+        }
       </HStack>
 
       <Divider orientation="horizontal" marginTop={2} />
