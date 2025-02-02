@@ -50,11 +50,11 @@ program_response['grade_range'] = [program.grade_range[0],
 # Test adding camps
 @pytest.mark.parametrize(('camp'), (
     (CampData(program_id=program.id,
-     primary_instructor_id=app.test.users.admin.id, is_published=True)),
+     primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10)),
     (CampData(program_id=program.id,
-     primary_instructor_id=app.test.users.instructor.id, is_published=True)),
+     primary_instructor_id=app.test.users.instructor.id, is_published=True, capacity=20)),
     (CampData(program_id=program.id,
-     primary_instructor_id=app.test.users.instructor.id, is_published=False)),
+     primary_instructor_id=app.test.users.instructor.id, is_published=False, capacity=30)),
 ))
 def test_post_camp(camp: CampData):
     camp_json = json.loads(json.dumps(
@@ -67,6 +67,7 @@ def test_post_camp(camp: CampData):
     camp_json['primary_instructor'] = app.test.users.map[camp_json['primary_instructor_id']].dict(
         include=UserPublicResponse().dict())
     camp_json['program'] = program_response
+    camp_json['current_enrollment'] = 0
     assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match posted camp {camp_json}.'
     all_camps_json.append(new_camp_json)
 
@@ -232,24 +233,25 @@ def test_camp_student(camp_index: int, student: StudentData):
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     new_student_json = response.json()[0]
+    camp_json['current_enrollment'] = camp_json['current_enrollment'] + 1
     student_json['camps'] = [camp_json]
     student_json['guardians'] = [
         app.test.users.admin.dict(include=UserResponse().dict())]
-    assert new_student_json == student_json
+    assert new_student_json == student_json, 'Enroll student failed'
 
     response = client.get(
         f'/camps/{camp_id}/students/{student_id}', headers=app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     get_student_json = response.json()
-    assert get_student_json == student_json
+    assert get_student_json == student_json, 'Get student failed'
 
     response = client.get(
         f'/camps/{camp_id}/students', headers=app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     student_list_json = response.json()
-    assert student_list_json[0] == student_json
+    assert student_list_json[0] == student_json, 'Get students failed'
 
     response = client.delete(
         f'/camps/{camp_id}/students/{student_id}', headers=app.test.users.admin_headers)
