@@ -138,9 +138,9 @@ const useCampForm = (camp?: Camp) => {
         : undefined,
       daily_end_time: end
         ? end.getHours() +
-        (start.getMinutes() < 10 ? ":0" : ":") +
+        (end.getMinutes() < 10 ? ":0" : ":") +
         end.getMinutes() +
-        (start.getSeconds() < 10 ? ":0" : ":") +
+        (end.getSeconds() < 10 ? ":0" : ":") +
         end.getSeconds()
         : undefined,
       dates,
