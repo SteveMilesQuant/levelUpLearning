@@ -5,6 +5,7 @@ import { ReactNode } from "react";
 import { BsDot } from "react-icons/bs";
 import AuthExpiredModal from "../components/AuthExpiredModal";
 import ContactVerificationModal from "../users/components/ContactVerificationModal";
+import HomePageBanner from "../components/HomePageBanner";
 
 interface Props {
   children?: ReactNode;
@@ -13,6 +14,7 @@ interface Props {
 const Layout = ({ children }: Props) => {
   return (
     <>
+      <HomePageBanner />
       <NavBar></NavBar>
       <HStack gap={0} alignItems="top">
         <AuthExpiredModal />
