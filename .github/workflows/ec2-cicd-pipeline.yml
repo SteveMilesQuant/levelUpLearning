@@ -15,7 +15,7 @@ jobs:
           python-version: "3.11"
 
       - name: Virtual ENV
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         id: cache-venv
         with:
           path: virt
