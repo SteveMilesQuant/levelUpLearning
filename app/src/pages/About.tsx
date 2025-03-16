@@ -1,59 +1,48 @@
-import { SimpleGrid } from "@chakra-ui/react";
-import BodyContainer from "../components/BodyContainer";
-import StaffProfile from "../components/StaffProfile";
-import megan from "../assets/meganmiller.jpeg";
-import karen from "../assets/karenmiles.jpeg";
-import { Fragment } from "react";
+import { HStack, TabList, TabPanel, TabPanels, Tabs, useBreakpointValue } from "@chakra-ui/react";
+import GoofyTab from "../components/GoofyTab";
+import MissionPanel from "../components/MissionPanel";
+import FAQPanel from "../components/FAQPanel";
+import SchedulePanel from "../components/SchedulePanel";
+import TeachersPanel from "../components/TeachersPanel";
 
 const About = () => {
-  const staffProfiles = [
-    {
-      id: 1,
-      name: "Megan Miller",
-      photo: megan,
-      education: [
-        {
-          id: 1,
-          desc: "Bachelor's Degree in Interdisciplinary Liberal Studies James Madison University",
-        },
-        {
-          id: 2,
-          desc: "Master's Degree in Elementary Education James Madison University",
-        },
-      ],
-      experience:
-        "13 years teaching 6th grade language arts at Davis Drive Middle School in Cary, NC",
-      interests:
-        "Mrs. Miller loves to spend time with family and friends, travel, exercise, and explore new trends in fashion and design.",
-    },
-    {
-      id: 2,
-      name: "Karen Miles",
-      photo: karen,
-      education: [
-        { id: 1, desc: "Bachelor's Degree in English University of Illinois " },
-        {
-          id: 2,
-          desc: "Master's Degree in Middle School Teaching NC State University",
-        },
-      ],
-      experience:
-        "8 years teaching 6th grade language arts at Davis Drive Middle School in Cary, NC",
-      interests:
-        "Mrs. Miles loves to travel, learn new hobbies, cook, crochet, and spend time with family and friends.",
-    },
-  ];
+  // const orientation: "vertical" | "horizontal" | undefined = useBreakpointValue({ base: "vertical", xl: "horizontal" });
+  const orientation = "horizontal";
+  const panelPaddingX = { base: 2, xl: 4 };
+  const panelPaddingY = { base: 4, xl: 4 };
 
   return (
-    <BodyContainer>
-      <SimpleGrid columns={{ sm: 1, md: 2, lg: 2, xl: 2 }} spacing={50}>
-        {staffProfiles.map((profile) => (
-          <Fragment key={profile.id}>
-            <StaffProfile {...profile} />
-          </Fragment>
-        ))}
-      </SimpleGrid>
-    </BodyContainer>
+    <HStack justifyContent="center" w="full">
+      <Tabs
+        variant="enclosed"
+        marginX={3}
+        marginY={{ base: 3, xl: 14 }}
+        orientation={orientation}
+      // display={{ base: "flex", xl: "block" }}
+      // flexDirection={{ base: "row-reverse", xl: undefined }}
+      >
+        <TabList gap={{ base: 0.5, xl: 2 }}>
+          <GoofyTab bgColor="#040098">Our Mission</GoofyTab>
+          <GoofyTab bgColor="#bffc71">Our Schedule</GoofyTab>
+          <GoofyTab bgColor="#3dd8ed">Our Teachers</GoofyTab>
+          <GoofyTab bgColor="#76aaee">Our FAQ</GoofyTab>
+        </TabList>
+        <TabPanels>
+          <TabPanel bgColor="#040098" textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY}>
+            <MissionPanel />
+          </TabPanel>
+          <TabPanel bgColor={{ base: "#ffee59", md: "#bffc71" }} textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY}>
+            <SchedulePanel />
+          </TabPanel>
+          <TabPanel bgColor="#3dd8ed" textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY} >
+            <TeachersPanel />
+          </TabPanel>
+          <TabPanel bgColor="#76aaee" textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY} >
+            <FAQPanel />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    </HStack>
   );
 };
 

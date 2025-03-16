@@ -6,6 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import './index.css';
 import theme from "./theme";
 import { router } from "./pages";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";

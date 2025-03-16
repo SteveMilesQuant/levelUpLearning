@@ -16,10 +16,10 @@ const Layout = ({ children }: Props) => {
     <>
       <HomePageBanner />
       <NavBar></NavBar>
-      <HStack gap={0} alignItems="top">
+      <HStack gap={0} alignItems="top" w="full">
         <AuthExpiredModal />
         <ContactVerificationModal />
-        <Box>
+        <Box w="full">
           {/* Include both Outlet and children, to allow both contexts */}
           <Outlet />
           {children}
