@@ -3,7 +3,7 @@ import { ResponsiveValue, Text, useBreakpointValue } from "@chakra-ui/react";
 import { Property } from "csstype";
 
 interface Props {
-    fontSize?: ResponsiveValue<number>;
+    fontSize?: ResponsiveValue<number | string>;
     transform?: ResponsiveValue<string>;
     textAlign?: ResponsiveValue<Property.TextAlign>;
     children?: ReactNode;

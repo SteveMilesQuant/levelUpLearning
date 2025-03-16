@@ -41,8 +41,8 @@ const Camps = () => {
     campsContextType === CampsContextType.schedule
       ? "Schedule Camps"
       : campsContextType === CampsContextType.teach
-      ? "Teach Camps"
-      : "Camps";
+        ? "Teach Camps"
+        : "Upcoming Camps";
   const isReadOnly = campsContextType !== CampsContextType.schedule;
 
   const campList = camps.filter(

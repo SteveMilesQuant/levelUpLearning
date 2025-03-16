@@ -1,8 +1,9 @@
-import { Box, Divider, Heading, Stack } from "@chakra-ui/react";
+import { Box, Divider, Stack } from "@chakra-ui/react";
 import { useDeleteCamp } from "../hooks/useCamps";
 import CampCard from "./CampCard";
 import { Camp } from "../Camp";
 import { locale } from "../../constants";
+import GoofyText from "../../components/GoofyText";
 
 interface Props {
   camps: Camp[];
@@ -37,7 +38,7 @@ const CampGrid = ({ camps, isReadOnly }: Props) => {
       {Object.values(campsByMonth).map((month, month_idx) => (
         <Stack spacing={5} key={month.id}>
           {month_idx > 0 && <Divider />}
-          <Heading fontSize="2xl">{month.heading}</Heading>
+          <GoofyText fontSize={{ base: 34, md: 40, lg: 54 }} textAlign="left">{month.heading}</GoofyText>
           <Stack spacing={5}>
             {month.camps.map((camp) => (
               <Box key={camp.id} width={{ xl: "50%" }}>

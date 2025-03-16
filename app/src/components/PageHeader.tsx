@@ -1,5 +1,6 @@
 import { Divider, HStack, Heading } from "@chakra-ui/react";
 import { ReactNode } from "react";
+import GoofyText from "./GoofyText";
 
 interface Props {
   rightButton?: ReactNode;
@@ -17,9 +18,9 @@ const PageHeader = ({
   return (
     <>
       <HStack justifyContent="space-between" marginBottom={5}>
-        <Heading fontSize={fontSize || "3xl"} textColor="brand.pageHeader">
+        <GoofyText fontSize={fontSize || { base: 40, md: 46, lg: 60 }} >
           {children}
-        </Heading>
+        </GoofyText>
         {rightButton}
       </HStack>
       {!hideUnderline && <Divider orientation="horizontal" marginY={5} />}
