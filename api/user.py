@@ -1,6 +1,6 @@
 from pydantic import PrivateAttr
 from typing import List, Optional, Any
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from datamodels import RoleEnum, RoleResponse, UserData, UserResponse
 from db import UserDb, RoleDb, StudentDb, ProgramDb, CampDb, PaymentRecordDb
 
@@ -166,9 +166,9 @@ class User(UserResponse):
         await session.refresh(self._db_obj, ['camps'])
         return self._db_obj.camps
 
-    async def has_used_coupon(self, session: Any, coupon_id: str) -> bool:
+    async def has_used_coupon(self, session: Any, coupon_id: int) -> bool:
         stmt = select(PaymentRecordDb).where(
-            PaymentRecordDb.user_id == self.id and PaymentRecordDb.coupon_id == coupon_id)
+            and_(PaymentRecordDb.user_id == self.id, PaymentRecordDb.coupon_id == coupon_id))
         results = await session.execute(stmt)
         result = results.first()
         if result:
