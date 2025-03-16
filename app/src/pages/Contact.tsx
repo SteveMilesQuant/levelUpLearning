@@ -14,8 +14,8 @@ const Contact = () => {
         <Text>
           Location: As a new small business, we are currently working toward
           attaining a permanent establishment in the Apex area. For now, we are
-          renting out spaces from local venues including the Apex Campus at Hope
-          Community Church and Apex Baptist Church.
+          renting out spaces from local venues including the Apex Campus at Cornerstone
+          Presbyterian Church and Apex United Methodist Church.
         </Text>
       </Stack>
     </BodyContainer>

@@ -14,7 +14,7 @@ interface Props {
 const Layout = ({ children }: Props) => {
   return (
     <>
-      <HomePageBanner />
+      {/* <HomePageBanner /> */}
       <NavBar></NavBar>
       <HStack gap={0} alignItems="top" w="full">
         <AuthExpiredModal />
