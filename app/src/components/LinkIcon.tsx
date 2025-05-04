@@ -6,16 +6,17 @@ interface Props {
   icon: ReactElement;
   endpoint: string;
   label: string;
+  color?: string;
 }
 
-const LinkIcon = ({ icon, endpoint, label }: Props) => {
+const LinkIcon = ({ icon, endpoint, label, color }: Props) => {
   return (
     <LinkBox as={RouterLink} to={endpoint}>
       <IconButton
         icon={icon}
         aria-label={label}
         size="1.5em"
-        color="white"
+        color={color || "white"}
         variant="ghost"
       />
     </LinkBox>

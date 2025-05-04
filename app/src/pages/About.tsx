@@ -12,7 +12,7 @@ const About = () => {
   const panelPaddingY = { base: 4, xl: 4 };
 
   return (
-    <HStack justifyContent="center" w="full">
+    <HStack justifyContent="center" width="full">
       <Tabs
         variant="enclosed"
         marginX={3}

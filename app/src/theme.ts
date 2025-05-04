@@ -40,7 +40,8 @@ const theme = extendTheme({
       hover: "rgb(237, 242, 247)",
       selected: "rgb(203, 213, 224)",
       disabled: "rgb(237, 242, 247)",
-      lightGray: "#fafafa"
+      lightGray: "#fafafa",
+      green: "rgb(183, 255, 114)"
     },
   },
 });

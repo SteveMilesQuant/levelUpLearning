@@ -19,12 +19,12 @@ const ShoppingCart = () => {
     >
       <Icon
         boxSize="2em"
-        color="white"
+        color="brand.primary"
         as={MdOutlineShoppingCart}
         aria-label="Checkout"
       />
       <Box position="absolute" zIndex={1} left={-0.5} bottom={1}>
-        <FaCircle color="white" size="1em" />
+        <FaCircle color="rgb(62, 219, 240)" size="1em" />
       </Box>
       <Box
         position="absolute"
@@ -34,7 +34,7 @@ const ShoppingCart = () => {
         left={-0.5}
         bottom={2}
       >
-        <Text fontSize={14} margin="auto" textAlign="center">
+        <Text fontSize={14} margin="auto" textAlign="center" textColor="brand.primary">
           {items.length}
         </Text>
       </Box>

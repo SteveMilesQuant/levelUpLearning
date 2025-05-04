@@ -17,6 +17,8 @@ const AuthButton = ({ children, bgColor }: Props) => {
         <Button
           leftIcon={<FcGoogle />}
           bgColor={bgColor || "white"}
+          borderColor="brand.primary"
+          borderWidth={2}
           size="sm"
           onClick={() => onLogin()}
         >
@@ -26,6 +28,8 @@ const AuthButton = ({ children, bgColor }: Props) => {
       {signedIn && (
         <Button
           bgColor={bgColor || "white"}
+          borderColor="brand.primary"
+          borderWidth={2}
           size="sm"
           onClick={() => onLogout()}
         >

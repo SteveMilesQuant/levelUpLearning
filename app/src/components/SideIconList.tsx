@@ -1,9 +1,5 @@
 import {
   FaGraduationCap,
-  FaHome,
-  FaPhoneAlt,
-  FaRegQuestionCircle,
-  FaSearch,
 } from "react-icons/fa";
 import { GiHamburgerMenu, GiTeacher } from "react-icons/gi";
 import {
@@ -24,18 +20,21 @@ import {
   Stack,
   HStack,
   Box,
+  Image
 } from "@chakra-ui/react";
 import LinkIcon from "./LinkIcon";
 import { ReactElement } from "react";
 import {
-  IoBookOutline,
   IoClose,
   IoPricetagsOutline,
 } from "react-icons/io5";
 import { useUser } from "../users";
 import { Link as RouterLink } from "react-router-dom";
 import { AiFillEdit } from "react-icons/ai";
-import { IoIosPeople } from "react-icons/io";
+import lightbulb from "../assets/LightBulb.svg";
+import star from "../assets/Star.svg";
+import magnifyingGlass from "../assets/MagnifyingGlass.svg";
+import levelupbook from "../assets/LevelUpBook.svg";
 
 interface SideIconEndpoint {
   role: "PUBLIC" | "GUARDIAN" | "INSTRUCTOR" | "ADMIN";
@@ -63,8 +62,16 @@ const SideIconList = () => {
         role: "PUBLIC",
         endpoint: "/",
       },
-      icon: <FaHome size="2em" />,
+      icon: <Image height="2em" src={levelupbook} alt="Book icon" />,
       label: "Home",
+    },
+    {
+      primary: {
+        role: "PUBLIC",
+        endpoint: "/about",
+      },
+      icon: <Image height="2em" src={star} alt="Star" />,
+      label: "About Us",
     },
     {
       primary: {
@@ -75,16 +82,20 @@ const SideIconList = () => {
         role: "ADMIN",
         endpoint: "/schedule",
       },
-      icon: <FaSearch size="2em" />,
+      icon: <Image height="2em" src={magnifyingGlass} alt="Magnifying glass" />,
       label: "Find Camps",
     },
     {
       primary: {
-        role: "GUARDIAN",
-        endpoint: "/students",
+        role: "PUBLIC",
+        endpoint: "/resources",
       },
-      icon: <FaGraduationCap size="2em" />,
-      label: "My Students",
+      editable: {
+        role: "ADMIN",
+        endpoint: "/equip",
+      },
+      icon: <Image height="2em" src={lightbulb} alt="Light bulb" />,
+      label: "Resources",
     },
     {
       primary: {
@@ -100,15 +111,23 @@ const SideIconList = () => {
     },
     {
       primary: {
-        role: "PUBLIC",
-        endpoint: "/resources",
+        role: "GUARDIAN",
+        endpoint: "/students",
+      },
+      icon: <FaGraduationCap size="2em" />,
+      label: "My Students",
+    },
+    {
+      primary: {
+        role: "GUARDIAN",
+        endpoint: "/settings",
       },
       editable: {
         role: "ADMIN",
-        endpoint: "/equip",
+        endpoint: "/members",
       },
-      icon: <IoBookOutline size="2em" />,
-      label: "Resources",
+      icon: <MdSettings size="2em" />,
+      label: "Settings",
     },
     {
       primary: {
@@ -142,42 +161,7 @@ const SideIconList = () => {
       icon: <IoPricetagsOutline size="2em" />,
       label: "Coupons",
     },
-    {
-      primary: {
-        role: "PUBLIC",
-        endpoint: "/about",
-      },
-      icon: <IoIosPeople size="2em" />,
-      label: "About",
-    },
-    {
-      primary: {
-        role: "PUBLIC",
-        endpoint: "/contact",
-      },
-      icon: <FaPhoneAlt size="2em" />,
-      label: "Contact",
-    },
-    {
-      primary: {
-        role: "PUBLIC",
-        endpoint: "/faq",
-      },
-      icon: <FaRegQuestionCircle size="2em" />,
-      label: "FAQ",
-    },
-    {
-      primary: {
-        role: "GUARDIAN",
-        endpoint: "/settings",
-      },
-      editable: {
-        role: "ADMIN",
-        endpoint: "/members",
-      },
-      icon: <MdSettings size="2em" />,
-      label: "Settings",
-    },
+
   ];
   const allIcons: SideIcon[] = allIconsNoId.map((icon, index) => {
     return { ...icon, id: index };
@@ -190,7 +174,7 @@ const SideIconList = () => {
           icon={<GiHamburgerMenu size="1.5em" />}
           aria-label="Navigation"
           size="md"
-          color="white"
+          color="brand.primary"
           variant="ghost"
           onClick={onOpen}
         />

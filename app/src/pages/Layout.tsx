@@ -1,11 +1,10 @@
 import { Outlet } from "react-router-dom";
-import { Box, HStack, Link } from "@chakra-ui/react";
+import { Box, HStack } from "@chakra-ui/react";
 import NavBar from "../components/NavBar";
 import { ReactNode } from "react";
-import { BsDot } from "react-icons/bs";
 import AuthExpiredModal from "../components/AuthExpiredModal";
 import ContactVerificationModal from "../users/components/ContactVerificationModal";
-import HomePageBanner from "../components/HomePageBanner";
+import Footer from "../components/Footer";
 
 interface Props {
   children?: ReactNode;
@@ -14,7 +13,6 @@ interface Props {
 const Layout = ({ children }: Props) => {
   return (
     <>
-      {/* <HomePageBanner /> */}
       <NavBar></NavBar>
       <HStack gap={0} alignItems="top" w="full">
         <AuthExpiredModal />
@@ -25,19 +23,7 @@ const Layout = ({ children }: Props) => {
           {children}
         </Box>
       </HStack>
-      <HStack
-        spacing={1}
-        width="100%"
-        justifyContent="center"
-        marginY={5}
-        bgColor="brand.secondary"
-      >
-        <Link href="/about">About</Link>
-        <BsDot />
-        <Link href="/privacy">Privacy</Link>
-        <BsDot />
-        <Link href="/data-request">Data requests</Link>
-      </HStack>
+      <Footer />
     </>
   );
 };
