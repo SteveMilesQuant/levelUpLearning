@@ -4,7 +4,7 @@ import NavBarDesktop from "./NavBarDesktop";
 
 const NavBar = () => {
   const navbar = useBreakpointValue({ base: <NavBarMobile />, xl: <NavBarDesktop /> });
-  return navbar;
+  return navbar || null;
 };
 
 export default NavBar;

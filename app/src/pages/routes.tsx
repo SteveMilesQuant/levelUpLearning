@@ -12,7 +12,6 @@ import Members from "./Members";
 import { CampsContext, CampsContextType } from "../camps";
 import Settings from "./Settings";
 import About from "./About";
-import Contact from "./Contact";
 import Privacy from "./Privacy";
 import DataRequest from "./DataRequest";
 import Checkout from "./Checkout";
@@ -23,7 +22,6 @@ import Equip from "./Equip";
 import Resources from "./Resources";
 import Boast from "./Boast";
 import BoastOne from "./BoastOne";
-import FAQ from "./FAQ";
 
 const router = createBrowserRouter([
   {
