@@ -9,7 +9,7 @@ interface Props {
 
 const LearnMoreItem = ({ title, desc }: Props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const boxHeight = { base: 110, md: 130, lg: 200, xl: 300 };
+    const boxHeight = { base: 130, md: 130, lg: 200, xl: 300 };
 
     const fontSizes = [
         { base: 18, md: 24, lg: 36, xl: 48 }, // title of teaser box
