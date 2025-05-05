@@ -10,6 +10,8 @@ const ShoppingCart = () => {
 
   if (items.length === 0) return null;
 
+  const buttonSize = { base: "2em", xl: "2.5em" };
+
   return (
     <Box
       position="relative"
@@ -18,7 +20,7 @@ const ShoppingCart = () => {
       }}
     >
       <Icon
-        boxSize="2em"
+        boxSize={buttonSize}
         color="brand.primary"
         as={MdOutlineShoppingCart}
         aria-label="Checkout"

@@ -13,9 +13,9 @@ const NavBarDesktop = () => {
     const { isOpen, onToggle } = useDisclosure();
 
     const fontFamily = "roboto";
-    const fontSize = { base: 36 };
-    const iconHeight = { base: 36 };
-    const navSpacing = { base: 28 };
+    const fontSize = { base: 32 };
+    const iconHeight = { base: 32 };
+    const navSpacing = { base: 24 };
 
     const isGuardian = user?.roles.includes("GUARDIAN");
     const isInstructor = user?.roles.includes("INSTRUCTOR");
@@ -59,7 +59,7 @@ const NavBarDesktop = () => {
                                 </HStack>
                                 {isOpen &&
                                     <Stack position="absolute"
-                                        top={16} left={0}
+                                        top={12} left={-5}
                                         width={400}
                                         padding={5}
                                         bgColor="white"
@@ -129,7 +129,7 @@ const NavBarDesktop = () => {
                     </Stack>
                 </HStack >
 
-                <HStack spacing={5} position="absolute" top={5} right={5}>
+                <HStack spacing={4} position="absolute" top={5} right={5}>
                     <ShoppingCart />
                     <AuthButton />
                 </HStack>

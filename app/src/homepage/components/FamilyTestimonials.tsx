@@ -10,7 +10,7 @@ const FamilyTestimonials = () => {
     const [currentIdx, setCurrentIdx] = useState(0);
 
     const spacing = { base: 2, lg: 5, xl: 8 };
-    const fontSize = { base: 18, md: 24, lg: 30, xl: 42 };
+    const fontSize = { base: 18, md: 24, lg: 30, xl: 34 };
     const width = { base: "80%", lg: "70%", xl: "60%" };
     const height = { base: 450, md: 450, lg: 550, xl: 650 };
 

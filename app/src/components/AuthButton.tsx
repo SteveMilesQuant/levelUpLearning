@@ -11,6 +11,8 @@ interface Props {
 const AuthButton = ({ children, bgColor }: Props) => {
   const { signedIn, onLogin, onLogout } = useAuth();
 
+  const buttonSize = { base: "sm", xl: "md" };
+
   return (
     <Box>
       {!signedIn && (
@@ -19,7 +21,7 @@ const AuthButton = ({ children, bgColor }: Props) => {
           bgColor={bgColor || "white"}
           borderColor="brand.primary"
           borderWidth={2}
-          size="sm"
+          size={buttonSize}
           onClick={() => onLogin()}
         >
           <ButtonText>{children || "Sign In"}</ButtonText>
@@ -30,7 +32,7 @@ const AuthButton = ({ children, bgColor }: Props) => {
           bgColor={bgColor || "white"}
           borderColor="brand.primary"
           borderWidth={2}
-          size="sm"
+          size={buttonSize}
           onClick={() => onLogout()}
         >
           <ButtonText>Sign Out</ButtonText>
