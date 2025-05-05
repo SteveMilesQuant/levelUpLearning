@@ -11,7 +11,7 @@ import SectionTitle from "./SectionTitle";
 const CamperTestimonials = () => {
     const width = { base: "75%", lg: "75%", xl: "40%" };
     const spacing = { base: 2, lg: 5, xl: 8 };
-    const showArrows = useBreakpointValue({ sm: false, lg: true, xl: true });
+    const showArrows = useBreakpointValue({ base: false, lg: true, xl: true });
     const imageList = [
         { src: c1, alt: 'Pictured: girls testing a science craft they made. "If school was like this...' },
         { src: c2, alt: '... I would want to go every day!" Pictured: students engaging in written exercises.' },
