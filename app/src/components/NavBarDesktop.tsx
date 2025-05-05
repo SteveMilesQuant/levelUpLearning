@@ -27,6 +27,7 @@ const NavBarDesktop = () => {
                 width="full"
                 bgColor="white"
                 position="relative"
+                overflow="hidden"
             >
                 <HStack justify="start" spacing={1} width="full" marginX={10}>
                     <LinkBox as={RouterLink} to="/">
