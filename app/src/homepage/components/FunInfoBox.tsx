@@ -14,8 +14,8 @@ const FunInfoBox = ({ children, onOpen, height }: Props) => {
     const textPadding = { base: 2, lg: 3.5, xl: 5 };
 
     return (
-        <Box bgColor="brand.tertiary" paddingX={paddingX} borderRadius={borderRadius} height={height} alignContent="center" alignItems="center" >
-            <Stack bgColor="white" borderRadius={borderRadius} padding={textPadding} height="85%" justifyContent="space-around" onClick={onOpen}>
+        <Box bgColor="brand.tertiary" paddingX={paddingX} borderRadius={borderRadius} height={height} alignContent="center" alignItems="center" position="relative" paddingY={!height && 5 || undefined}>
+            <Stack bgColor="white" borderRadius={borderRadius} padding={textPadding} height={height && "85%"} justifyContent="space-around" onClick={onOpen}>
                 {children}
             </Stack>
         </Box>
