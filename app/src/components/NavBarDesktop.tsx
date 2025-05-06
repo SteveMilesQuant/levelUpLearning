@@ -27,9 +27,8 @@ const NavBarDesktop = () => {
                 width="full"
                 bgColor="white"
                 position="relative"
-                overflow="hidden"
             >
-                <HStack justify="start" spacing={1} width="full" marginX={10}>
+                <HStack justify="start" spacing={1} width="full" paddingX={5}>
                     <LinkBox as={RouterLink} to="/">
                         <Image height={iconHeight} src={desktopLogo} alt="Level Up Learning Logo" />
                     </LinkBox>
