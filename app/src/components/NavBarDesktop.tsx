@@ -12,7 +12,7 @@ const NavBarDesktop = () => {
     const { data: user } = useUser();
     const { isOpen, onToggle } = useDisclosure();
 
-    const fontFamily = "roboto";
+    const fontFamily = "'roboto_c', Roboto, Georgia";
     const fontSize = { base: 32 };
     const iconHeight = { base: 32 };
     const navSpacing = { base: 24 };

@@ -47,7 +47,7 @@ const LearnMoreItem = ({ title, desc }: Props) => {
                     <ModalBody bgColor="brand.tertiary" borderRadius={20}>
                         <Stack bgColor="white" borderRadius={20} padding={8} justifyContent="space-around">
                             <Text fontFamily="kent" textColor="brand.primary" textAlign="center" fontSize={fontSizes[2]} lineHeight={1.2}>{title}</Text>
-                            <Text fontFamily="roboto" textColor="brand.gradient2" textAlign="center" fontSize={fontSizes[3]} lineHeight={1.2}>{desc}</Text>
+                            <Text fontFamily="'roboto_c', Roboto, Georgia" textColor="brand.gradient2" textAlign="center" fontSize={fontSizes[3]} lineHeight={1.2}>{desc}</Text>
                         </Stack>
                     </ModalBody>
                 </ModalContent>

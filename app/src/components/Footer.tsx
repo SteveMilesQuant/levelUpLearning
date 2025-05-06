@@ -19,8 +19,8 @@ const Footer = () => {
             <HStack justifyContent="space-between" bgColor="white" paddingX={paddingX} paddingY={paddingY}>
                 <Stack spacing={0}>
                     <GoofyText fontSize={goofyFontSize} textAlign="left">Contact us</GoofyText>
-                    <Text fontFamily="roboto" textColor="brand.primary" fontSize={fontSize} lineHeight={1.2}>(919) 439-0924</Text>
-                    <Text fontFamily="roboto" textColor="brand.primary" fontSize={fontSize} lineHeight={1.2}> info@leveluplearningnc.com</Text>
+                    <Text fontFamily="'roboto_c', Roboto, Georgia" textColor="brand.primary" fontSize={fontSize} lineHeight={1.2}>(919) 439-0924</Text>
+                    <Text fontFamily="'roboto_c', Roboto, Georgia" textColor="brand.primary" fontSize={fontSize} lineHeight={1.2}> info@leveluplearningnc.com</Text>
                 </Stack>
                 <Stack spacing={1}>
                     <GoofyText fontSize={goofyFontSize} textAlign="right">Follow us</GoofyText>

@@ -60,7 +60,7 @@ const FamilyTestimonials = () => {
                 {quoteList.map((quote, index) =>
                     <Stack height={height} marginX={2} justify="start">
                         <FunInfoBox key={index}>
-                            <Text fontFamily="roboto" textColor="brand.primary" textAlign="center" fontSize={fontSize} lineHeight={1.2}>
+                            <Text fontFamily="'roboto_c', Roboto, Georgia" textColor="brand.primary" textAlign="center" fontSize={fontSize} lineHeight={1.2}>
                                 {quote}
                             </Text>
                         </FunInfoBox>
