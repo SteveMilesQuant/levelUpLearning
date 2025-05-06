@@ -46,39 +46,9 @@ const FamilyTestimonials = () => {
     return (
         <Stack fontFamily="kent" width={width} spacing={spacing} paddingY={spacing}>
             <SectionTitle textLines={["OUR FAMILIES SAY:"]} />
-            {showButtons && <>
-                <Carousel
-                    selectedItem={selectedIndex}
-                    onChange={(index) => setSelectedIndex(index)}
-                    autoPlay={false}
-                    infiniteLoop={false}
-                    // interval={3000}
-                    showStatus={false}
-                    showThumbs={false}
-                    showArrows={false}
-                    showIndicators={false}
-                >
-                    {quoteList.map((quote, index) =>
-                        <Stack height={height} marginX={2} justify="start">
-                            <FunInfoBox key={index}>
-                                <Text fontFamily="roboto" textColor="brand.primary" textAlign="center" fontSize={fontSize} lineHeight={1.2}>
-                                    {quote}
-                                </Text>
-                            </FunInfoBox>
-                        </Stack>
-                    )}
-                </Carousel>
-
-                <HStack width="full" justify="space-around">
-                    <Button variant="outline" isDisabled={selectedIndex === 0} onClick={handlePrev}>
-                        <Text textColor="brand.gradient2" textAlign="center" fontSize={fontSize}>Prev</Text>
-                    </Button>
-                    <Button variant="outline" isDisabled={selectedIndex === quoteList.length - 1} onClick={handleNext}>
-                        <Text textColor="brand.gradient2" textAlign="center" fontSize={fontSize}>Next</Text>
-                    </Button>
-                </HStack></>
-            }
-            {!showButtons && <Carousel
+            <Carousel
+                selectedItem={showButtons && selectedIndex || undefined}
+                onChange={showButtons ? (index) => setSelectedIndex(index) : undefined}
                 autoPlay={false}
                 infiniteLoop={false}
                 // interval={3000}
@@ -96,7 +66,18 @@ const FamilyTestimonials = () => {
                         </FunInfoBox>
                     </Stack>
                 )}
-            </Carousel>}
+            </Carousel>
+
+            {showButtons &&
+                <HStack width="full" justify="space-around">
+                    <Button variant="outline" isDisabled={selectedIndex === 0} onClick={handlePrev}>
+                        <Text textColor="brand.gradient2" textAlign="center" fontSize={fontSize}>Prev</Text>
+                    </Button>
+                    <Button variant="outline" isDisabled={selectedIndex === quoteList.length - 1} onClick={handleNext}>
+                        <Text textColor="brand.gradient2" textAlign="center" fontSize={fontSize}>Next</Text>
+                    </Button>
+                </HStack>
+            }
         </Stack >
     )
 }

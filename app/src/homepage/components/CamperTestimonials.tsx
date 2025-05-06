@@ -37,33 +37,20 @@ const CamperTestimonials = () => {
     return (
         <Stack fontFamily="kent" width={width} spacing={spacing} paddingY={spacing}>
             <SectionTitle textLines={["OUR CAMPERS SAY:"]} />
-            {!showButtons &&
-                <Carousel
-                    autoPlay={false}
-                    infiniteLoop={false}
-                    // interval={3000}
-                    showStatus={false}
-                    showThumbs={false}
-                    showArrows={false}
-                    showIndicators={false}
-                >
-                    {imageList.map((image, index) => <Image key={index} src={image.src} alt={image.alt} />)}
-                </Carousel>
-            }
-            {showButtons && <>
-                <Carousel
-                    selectedItem={selectedIndex}
-                    onChange={(index) => setSelectedIndex(index)}
-                    autoPlay={false}
-                    infiniteLoop={false}
-                    // interval={3000}
-                    showStatus={false}
-                    showThumbs={false}
-                    showArrows={false}
-                    showIndicators={false}
-                >
-                    {imageList.map((image, index) => <Image key={index} src={image.src} alt={image.alt} />)}
-                </Carousel>
+            <Carousel
+                selectedItem={showButtons && selectedIndex || undefined}
+                onChange={showButtons ? (index) => setSelectedIndex(index) : undefined}
+                autoPlay={false}
+                infiniteLoop={false}
+                // interval={3000}
+                showStatus={false}
+                showThumbs={false}
+                showArrows={false}
+                showIndicators={false}
+            >
+                {imageList.map((image, index) => <Image key={index} src={image.src} alt={image.alt} />)}
+            </Carousel>
+            {showButtons &&
                 <HStack width="full" justify="space-around">
                     <Button variant="outline" isDisabled={selectedIndex === 0} onClick={handlePrev}>
                         <Text textColor="brand.gradient2" textAlign="center" fontSize={fontSize}>Prev</Text>
@@ -72,7 +59,7 @@ const CamperTestimonials = () => {
                         <Text textColor="brand.gradient2" textAlign="center" fontSize={fontSize}>Next</Text>
                     </Button>
                 </HStack>
-            </>}
+            }
         </Stack>
     )
 }
