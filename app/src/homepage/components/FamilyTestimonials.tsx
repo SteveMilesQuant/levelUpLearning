@@ -11,7 +11,7 @@ const FamilyTestimonials = () => {
     const spacing = { base: 2, lg: 5, xl: 8 };
     const fontSize = { base: 18, md: 24, lg: 30, xl: 34 };
     const width = { base: "80%", lg: "70%", xl: "60%" };
-    const height = { base: 450, md: 450, lg: 550, xl: 650 };
+    const height = { base: 500, md: 500, lg: 550, xl: 650 };
 
     const quoteList = [
         '“My daughter attended a Level up Learning camp and I can’t say enough great things! The facility where they held the camp was impressive and my daughter had so much fun with the experience. The teachers who led the camp made everything exciting with mysteries and clues and rewards, and my daughter told me she can’t wait to sign up for the next session! I would definitely recommend this to any parent!”',
