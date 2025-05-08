@@ -12,7 +12,7 @@ const LearnMoreItem = ({ title, desc }: Props) => {
     const boxHeight = { base: 130, md: 130, lg: 200, xl: 300 };
 
     const fontSizes = [
-        { base: 18, md: 24, lg: 36, xl: 36 }, // title of teaser box
+        { base: 18, md: 24, lg: 34, xl: 34 }, // title of teaser box
         { base: 16, md: 22, lg: 26, xl: 26 }, // learn more "button"
         { base: 28, lg: 40, xl: 50 }, // title of pop up
         { base: 24, lg: 36, xl: 42 }, // body of pop up
