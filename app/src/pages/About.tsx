@@ -23,7 +23,8 @@ const About = () => {
       >
         <TabList gap={{ base: 0.5, xl: 2 }}>
           <GoofyTab bgColor="#040098">Our Mission</GoofyTab>
-          <GoofyTab bgColor="#bffc71">Our Schedule</GoofyTab>
+          <GoofyTab bgColor="#bffc71">Literary Focus</GoofyTab>
+          <GoofyTab bgColor="#ffee59">Our Schedule</GoofyTab>
           <GoofyTab bgColor="#3dd8ed">Our Teachers</GoofyTab>
           <GoofyTab bgColor="#76aaee">Our FAQ</GoofyTab>
         </TabList>
@@ -31,7 +32,9 @@ const About = () => {
           <TabPanel bgColor="#040098" textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY}>
             <MissionPanel />
           </TabPanel>
-          <TabPanel bgColor={{ base: "#ffee59", md: "#bffc71" }} textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY}>
+          <TabPanel bgColor="#bffc71" textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY}>
+          </TabPanel>
+          <TabPanel bgColor="#ffee59" textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY}>
             <SchedulePanel />
           </TabPanel>
           <TabPanel bgColor="#3dd8ed" textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY} >

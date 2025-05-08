@@ -1,13 +1,14 @@
-import { Image, Stack, useBreakpointValue } from "@chakra-ui/react"
-import schedule from "../assets/schedule.webp";
-import schedule_mobile from "../assets/schedule_mobile.webp";
+import { Image, Stack } from "@chakra-ui/react"
+import amschedule from "../assets/AMSchedule.webp";
+import pmschedule from "../assets/PMSchedule.webp";
+import schedulenote from "../assets/ScheduleNote.webp";
 
 const SchedulePanel = () => {
-    const image = useBreakpointValue({ base: schedule_mobile, md: schedule });
-
     return (
-        <Stack marginX={{ base: 2, xl: 20 }} align="center">
-            <Image src={image} alt="Sample camp schedule" width={{ base: "90vw", md: "80vw", xl: "70vw" }} />
+        <Stack spacing={5} marginY={5} align="center">
+            <Image src={amschedule} alt="Sample camp schedule - morning" />
+            <Image src={pmschedule} alt="Sample camp schedule - afternoon" />
+            <Image src={schedulenote} alt="Note: these sample schedules are not exact" />
         </Stack>
 
     )
