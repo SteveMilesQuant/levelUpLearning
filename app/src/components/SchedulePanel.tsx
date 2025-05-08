@@ -10,7 +10,6 @@ const SchedulePanel = () => {
             <Image src={pmschedule} alt="Sample camp schedule - afternoon" />
             <Image src={schedulenote} alt="Note: these sample schedules are not exact" />
         </Stack>
-
     )
 }
 

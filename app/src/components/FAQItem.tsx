@@ -13,7 +13,7 @@ const FAQItem = ({ question, answer }: Props) => {
     return (
         <>
             <Box><Box borderColor="brand.tertiary" borderWidth={{ base: 0.5, xl: 2 }} marginX={{ base: 2, xl: 5 }} /></Box>
-            <Stack fontFamily="Playpen Sans" textColor="brand.primary" spacing={{ base: 2, xl: 4 }}>
+            <Stack fontFamily="roboto_c, Playpen Sans" textColor="brand.primary" spacing={{ base: 2, xl: 4 }}>
                 <HStack marginX={{ base: 6, xl: 10 }} justifyContent="space-between">
                     <Box />
                     <Text fontSize={{ base: 18, lg: 30, xl: 38 }} textAlign="center" width="90%">{question}</Text>

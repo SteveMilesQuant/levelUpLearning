@@ -12,11 +12,9 @@ const About = () => {
   const panelPaddingY = { base: 4, xl: 4 };
 
   return (
-    <HStack justifyContent="center" width="full">
+    <HStack justifyContent="center" width="full" paddingX={3} marginY={{ base: 3, xl: 14 }}>
       <Tabs
         variant="enclosed"
-        marginX={3}
-        marginY={{ base: 3, xl: 14 }}
         orientation={orientation}
       // display={{ base: "flex", xl: "block" }}
       // flexDirection={{ base: "row-reverse", xl: undefined }}

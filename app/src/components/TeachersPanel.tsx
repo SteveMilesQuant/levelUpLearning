@@ -1,25 +1,33 @@
-import { useBreakpointValue } from "@chakra-ui/react"
-import karen from "../assets/karen.webp";
-import karen_carousel from "../assets/karen_carousel.webp";
-import megan from "../assets/megan.webp";
-import TeachersPanelImages from "./TeachersPanelImages";
-import { TeachersPanelCarousel } from "./TeachersPanelCarousel";
+import miller from "../assets/MillerBio.webp";
+import miles from "../assets/MilesBio.webp";
+import alex from "../assets/AlexBio.webp";
+import { Stack, Image } from "@chakra-ui/react";
+import { Carousel } from "react-responsive-carousel";
+import swiperight from "../assets/swipe_right.webp";
 
 const TeachersPanel = () => {
-    const karenImage = useBreakpointValue({
-        base: karen_carousel,
-        xl: karen
-    }) || karen;
     const teacherImageList = [
-        { src: megan, alt: "Megan Miller" },
-        { src: karenImage, alt: "Karen Miles" },
+        { src: miller, alt: "Megan Miller" },
+        { src: miles, alt: "Karen Miles" },
+        { src: alex, alt: "Karen Miles" },
     ];
-    const Component = useBreakpointValue({
-        base: () => <TeachersPanelCarousel imageList={teacherImageList} />,
-        xl: () => <TeachersPanelImages imageList={teacherImageList} />
-    });
 
-    return Component ? <Component /> : null;
+    return (
+        <Stack align="center" width="full" spacing={0}>
+            <Carousel
+                autoPlay={false}
+                infiniteLoop={false}
+                // interval={3000}
+                showStatus={false}
+                showThumbs={false}
+                showArrows={false}
+                showIndicators={false}
+            >
+                {teacherImageList.map((image, index) => <Image key={index} src={image.src} alt={image.alt} />)}
+            </Carousel>
+            <Image src={swiperight} alt="Swipe right to meet everyone" />
+        </Stack >
+    );
 }
 
 export default TeachersPanel
