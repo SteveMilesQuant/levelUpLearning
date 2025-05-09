@@ -4,7 +4,7 @@ import LearnMoreItem from "../homepage/components/LearnMoreItem"
 
 const LiteraryFocusPanel = () => {
     const spacing = { base: 2, md: 5, lg: 10 };
-    const margin = { base: "10%", md: "10%", lg: "10%", xl: "20%" };
+    const margin = { base: "5%", md: "10%", lg: "10%", xl: "20%" };
 
     return (
         <Stack fontFamily="kent" bgColor="white" width="full" spacing={spacing} paddingY={spacing}>

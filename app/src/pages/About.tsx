@@ -22,7 +22,7 @@ const About = () => {
       >
         <TabList gap={{ base: 0.5, xl: 2 }}>
           <GoofyTab bgColor="#040098">Our Mission</GoofyTab>
-          <GoofyTab bgColor="#bffc71">Literary Focus</GoofyTab>
+          <GoofyTab bgColor="#bffc71">Literacy Focus</GoofyTab>
           <GoofyTab bgColor="#ffee59">Our Schedule</GoofyTab>
           <GoofyTab bgColor="#3dd8ed">Our Teachers</GoofyTab>
           <GoofyTab bgColor="#76aaee">Our FAQ</GoofyTab>
