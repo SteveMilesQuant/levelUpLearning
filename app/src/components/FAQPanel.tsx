@@ -1,22 +1,21 @@
-import { Stack, Image, Box } from "@chakra-ui/react";
-import spiral from "../assets/spiral.webp";
+import { Stack, Image } from "@chakra-ui/react";
+import spiral from "../assets/SpiralNotebook.webp";
 import GoofyText from "./GoofyText";
 import FAQItem from "./FAQItem";
 
 const FAQPanel = () => {
     return (
-        <Box paddingX={{ base: "5%", md: "10%", xl: "10%" }}
-            width="full">
+        <Stack paddingX={{ base: "5%", md: "10%", xl: "10%" }} width="full" spacing={0}>
+            <Image src={spiral} width="full" />
             <Stack bgColor="white"
                 marginX={{ base: 2, xl: 20 }}
                 paddingBottom={{ base: 3, xl: 10 }}
                 marginY={{ base: 2, xl: 8 }}
                 spacing={{ base: 2, xl: 5 }}
                 justifyContent="center"
-                borderRadius={{ base: 10, xl: 30 }}
-
+                borderBottomRadius={{ base: 10, xl: 30 }}
             >
-                <Image src={spiral} width="full" />
+
                 <GoofyText fontSize={{ base: 22, lg: 36, xl: 54 }}>Frequently Asked Questions</GoofyText>
                 <FAQItem
                     question="Where are you located?"
@@ -56,7 +55,7 @@ Cancellations made less than one week prior to the start of the camp will receiv
                     answer="For full day campers: pack a lunch, two snacks, and a water bottle for your to stay energized throughout the day. Half day campers only need one snack and on AM campers need a lunch. 
 At certain points in the day we use devices for activities so if your child has a chromebook/iPad/other device, please have them bring it. No problem, if not." />
             </Stack>
-        </Box>
+        </Stack>
     )
 }
 
