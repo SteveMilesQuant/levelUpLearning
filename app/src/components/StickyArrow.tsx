@@ -8,7 +8,7 @@ const StickyArrow = () => {
         <Image position="absolute"
             src={stickyarrow}
             height={imageHeight}
-            top={{ base: 6, xl: 12 }}
+            top={{ base: 1, xl: 12 }}
             right={{ base: -8, xl: -10 }}
             transform={transformImage}
         />

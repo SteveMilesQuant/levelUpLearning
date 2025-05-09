@@ -8,8 +8,8 @@ const MissionPanel = () => {
     const borderSize = useBreakpointValue({ base: 5, xl: 14 });
 
     return (
-        <Box position="relative" marginX={{ base: 1, xl: 20 }} width={{ base: "90vw", md: "80vw", xl: "70vw" }}>
-            <Stack bgColor="white" marginY={{ base: 2, xl: 8 }} paddingX={{ base: 4, xl: 10 }} paddingY={{ base: 5, xl: 8 }} spacing={{ base: 5, xl: 8 }} >
+        <Box width="full" paddingX={{ base: 0, md: 20, lg: "25%", xl: "10%" }}>
+            <Stack bgColor="white" position="relative" marginY={{ base: 2, xl: 8 }} paddingX={{ base: 4, xl: 10 }} paddingY={{ base: 5, xl: 8 }} spacing={{ base: 5, xl: 8 }} >
                 <HStack justifyContent="space-between">
                     <Box borderTop={borderSize} borderBottom={borderSize} borderStyle="dotted" borderColor="brand.primary">
                         <GoofyText fontSize={{ base: 26, xl: 54 }}>Every day we strive to:</GoofyText>
@@ -29,9 +29,9 @@ const MissionPanel = () => {
                         firstLine="ensure each camper leaves empowered and enthusiastic "
                         secondLine="about their learning journey." />
                 </Stack>
-
+                <StickyArrow />
             </Stack >
-            <StickyArrow />
+
         </Box>
     )
 }

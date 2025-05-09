@@ -13,7 +13,7 @@ const TeachersPanel = () => {
     ];
 
     return (
-        <Stack align="center" width="full" spacing={0}>
+        <Stack align="center" width="full" spacing={0} paddingX={{ base: "10%", md: "20%", lg: "25%", xl: "30%" }}>
             <Carousel
                 autoPlay={false}
                 infiniteLoop={false}

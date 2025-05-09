@@ -4,6 +4,7 @@ import MissionPanel from "../components/MissionPanel";
 import FAQPanel from "../components/FAQPanel";
 import SchedulePanel from "../components/SchedulePanel";
 import TeachersPanel from "../components/TeachersPanel";
+import LiteraryFocusPanel from "../components/LiteraryFocusPanel";
 
 const About = () => {
   // const orientation: "vertical" | "horizontal" | undefined = useBreakpointValue({ base: "vertical", xl: "horizontal" });
@@ -31,6 +32,7 @@ const About = () => {
             <MissionPanel />
           </TabPanel>
           <TabPanel bgColor="#bffc71" textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY}>
+            <LiteraryFocusPanel />
           </TabPanel>
           <TabPanel bgColor="#ffee59" textColor="white" paddingX={panelPaddingX} paddingY={panelPaddingY}>
             <SchedulePanel />

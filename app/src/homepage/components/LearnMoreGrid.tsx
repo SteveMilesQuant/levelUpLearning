@@ -5,6 +5,7 @@ import SectionTitle from './SectionTitle';
 const LearnMoreGrid = () => {
     const gridColumns = { base: 2, lg: 2, xl: 4 };
     const spacing = { base: 2, lg: 5, xl: 8 };
+    const paddingX = { base: 5, xl: 20 };
     const sectionTitle = useBreakpointValue({
         base: ["SUMMER & TRACK OUT CAMPS", "CLINICS - PRIVATE EVENTS"],
         xl: ["SUMMER & TRACK OUT CAMPS - CLINICS - PRIVATE EVENTS"]
@@ -13,7 +14,7 @@ const LearnMoreGrid = () => {
     return (
         <Stack fontFamily="kent" width="full" spacing={spacing} paddingY={spacing}>
             <SectionTitle textLines={sectionTitle} />
-            <SimpleGrid columns={gridColumns} paddingX={5} spacing={spacing}>
+            <SimpleGrid columns={gridColumns} paddingX={paddingX} spacing={spacing}>
                 <LearnMoreItem title="EXPERT K-6 EDUCATORS" desc="Our camps are run by certified, experienced K-6 teachers who bring professional expertise, a passion for learning, and a deep understanding of how to support and inspire young readers and writers." />
                 <LearnMoreItem title="LITERACY FOCUS" desc="Through grade-based instructional groups, campers receive targeted support aligned to their reading and writing levels, with activities intentionally designed to meet literacy goals in a fun, engaging, and memorable way." />
                 <LearnMoreItem title="HANDS-ON LEARNING" desc="Campers don’t just learn — they build, write, create, experiment, and explore." />
