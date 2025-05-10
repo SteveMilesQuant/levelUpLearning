@@ -1,33 +1,34 @@
-import { Box, HStack, IconButton, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Stack, Text, useDisclosure } from "@chakra-ui/react";
+import { HStack, IconButton, Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, ResponsiveValue, Stack, Text, useBreakpointValue, useDisclosure } from "@chakra-ui/react";
 import { FaPlus } from "react-icons/fa";
 import FunInfoBox from "./FunInfoBox";
 
 interface Props {
     title: string;
     desc: string;
+    teaserBoxTitleFontSize: ResponsiveValue<string | number>;
+    teaserBoxLearnMoreFontSize: ResponsiveValue<string | number>;
+    teaserBoxHeight: ResponsiveValue<string | number>;
 }
 
-const LearnMoreItem = ({ title, desc }: Props) => {
+const LearnMoreItem = ({ title, desc, teaserBoxTitleFontSize, teaserBoxLearnMoreFontSize, teaserBoxHeight }: Props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    const boxHeight = { base: 100, md: 125, lg: 150, xl: 150 };
+    const iconSize = useBreakpointValue({ base: "0.9em", md: "1.2em" });
 
     const fontSizes = [
-        { base: 10, md: 24, lg: 28, xl: 28 }, // title of teaser box
-        { base: 8, md: 22, lg: 24, xl: 24 }, // learn more "button"
         { base: 28, lg: 40, xl: 50 }, // title of pop up
         { base: 24, lg: 36, xl: 42 }, // body of pop up
     ];
 
     return (
         <>
-            <FunInfoBox height={boxHeight} onOpen={onOpen}>
-                <Text textColor="brand.primary" textAlign="center" fontSize={fontSizes[0]} lineHeight={1.2}>{title}</Text>
+            <FunInfoBox height={teaserBoxHeight} onOpen={onOpen}>
+                <Text textColor="brand.primary" textAlign="center" fontSize={teaserBoxTitleFontSize} lineHeight={1.2}>{title}</Text>
                 <HStack justifyContent="center">
-                    <Text textAlign="center" textColor="brand.gradient2" fontSize={fontSizes[1]}>LEARN MORE</Text>
+                    <Text textAlign="center" textColor="brand.gradient2" fontSize={teaserBoxLearnMoreFontSize}>LEARN MORE</Text>
                     <IconButton
-                        icon={<FaPlus size="1.2em" />}
+                        icon={<FaPlus size={iconSize} />}
                         aria-label="Learn more"
-                        size="1.2em"
+                        size={iconSize}
                         color="brand.green"
                         variant="ghost"
                     />
@@ -46,8 +47,8 @@ const LearnMoreItem = ({ title, desc }: Props) => {
                     <ModalCloseButton right={8} top={6} />
                     <ModalBody bgColor="brand.tertiary" borderRadius={20}>
                         <Stack bgColor="white" borderRadius={20} padding={8} justifyContent="space-around">
-                            <Text fontFamily="kent" textColor="brand.primary" textAlign="center" fontSize={fontSizes[2]} lineHeight={1.2}>{title}</Text>
-                            <Text fontFamily="'roboto_c', Roboto, Georgia" textColor="brand.gradient2" textAlign="center" fontSize={fontSizes[3]} lineHeight={1.2}>{desc}</Text>
+                            <Text fontFamily="kent" textColor="brand.primary" textAlign="center" fontSize={fontSizes[0]} lineHeight={1.2}>{title}</Text>
+                            <Text fontFamily="'roboto_c', Roboto, Georgia" textColor="brand.gradient2" textAlign="center" fontSize={fontSizes[1]} lineHeight={1.2}>{desc}</Text>
                         </Stack>
                     </ModalBody>
                 </ModalContent>
