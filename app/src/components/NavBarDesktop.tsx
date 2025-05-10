@@ -1,4 +1,4 @@
-import { Box, HStack, LinkBox, Image, Link, Text, Stack, useDisclosure } from '@chakra-ui/react';
+import { Box, HStack, LinkBox, Image, Text, Stack, useDisclosure, useOutsideClick } from '@chakra-ui/react';
 import { Link as RouterLink } from "react-router-dom";
 import AuthButton from './AuthButton';
 import ShoppingCart from './ShoppingCart';
@@ -7,10 +7,18 @@ import { BsChevronDown } from 'react-icons/bs';
 import { useUser } from '../users';
 import { AiFillEdit } from 'react-icons/ai';
 import LinkIcon from './LinkIcon';
+import { useRef } from 'react';
 
 const NavBarDesktop = () => {
     const { data: user } = useUser();
-    const { isOpen, onToggle } = useDisclosure();
+    const { isOpen, onClose, onToggle } = useDisclosure();
+    const ref = useRef<HTMLDivElement>(null);
+    useOutsideClick({
+        ref: ref,
+        handler: () => {
+            if (isOpen) onClose();
+        },
+    });
 
     const fontFamily = "'roboto_c', Roboto, Georgia";
     const fontSize = { base: 32 };
@@ -59,12 +67,15 @@ const NavBarDesktop = () => {
                                 </HStack>
                                 {isOpen &&
                                     <Stack position="absolute"
+                                        ref={ref}
+                                        onClick={onClose}
                                         top={12} left={-5}
                                         width={400}
                                         padding={5}
                                         bgColor="white"
                                         borderRadius={20} borderColor="brand.primary" borderWidth={2}
                                         zIndex={1}
+
                                     >
                                         <HStack width="full" justify="space-between">
                                             <LinkBox as={RouterLink} to="/resources">
