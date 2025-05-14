@@ -1,7 +1,10 @@
 import miller from "../assets/MillerBio.webp";
 import miles from "../assets/MilesBio.webp";
 import alex from "../assets/AlexBio.webp";
-import { Stack, Image, useBreakpointValue, Button, HStack, Text } from "@chakra-ui/react";
+import millerLg from "../assets/MillerBioLg.webp";
+import milesLg from "../assets/MilesBioLg.webp";
+import alexLg from "../assets/AlexBioLg.webp";
+import { Stack, Image, useBreakpointValue, Button, HStack, Text, Box } from "@chakra-ui/react";
 import { Carousel } from "react-responsive-carousel";
 import swiperight from "../assets/swipe_right.webp";
 import { useState } from "react";
@@ -10,13 +13,13 @@ const TeachersPanel = () => {
     const showButtons = useBreakpointValue({ base: false, md: true });
     const [selectedIndex, setSelectedIndex] = useState(0);
 
-    const fontSize = { base: 18, md: 24, lg: 30, xl: 30 };
-    const buttonPadding = { base: 6, lg: 8, xl: 8 };
+    const fontSize = { base: 18 };
+    const buttonPadding = { base: 6 };
 
     const teacherImageList = [
-        { src: miller, alt: "Megan Miller" },
-        { src: miles, alt: "Karen Miles" },
-        { src: alex, alt: "Karen Miles" },
+        { src: showButtons ? millerLg : miller, alt: "Megan Miller" },
+        { src: showButtons ? milesLg : miles, alt: "Karen Miles" },
+        { src: showButtons ? alexLg : alex, alt: "Karen Miles" },
     ];
 
     const handlePrev = () => {
@@ -28,7 +31,7 @@ const TeachersPanel = () => {
     };
 
     return (
-        <Stack align="center" width="full" spacing={0} paddingX={{ base: "10%", md: "20%", lg: "25%", xl: "30%" }} paddingBottom={5}>
+        <Stack align="center" width="full" spacing={1} paddingX={{ base: 10, md: 6, lg: "10%", xl: "20%" }} paddingBottom={5}>
             <Carousel
                 autoPlay={false}
                 infiniteLoop={false}
@@ -44,13 +47,15 @@ const TeachersPanel = () => {
             </Carousel>
             {!showButtons && <Image src={swiperight} alt="Swipe right to meet everyone" />}
             {showButtons &&
-                <HStack width="full" justify="space-around">
-                    <Button variant="solid" color="white" padding={buttonPadding} isDisabled={selectedIndex === 0} onClick={handlePrev}>
-                        <Text textColor="brand.primary" textAlign="center" fontSize={fontSize}>Prev</Text>
-                    </Button>
-                    <Button variant="solid" color="white" padding={buttonPadding} isDisabled={selectedIndex === teacherImageList.length - 1} onClick={handleNext}>
-                        <Text textColor="brand.primary" textAlign="center" fontSize={fontSize}>Next</Text>
-                    </Button>
+                <HStack width="full" justify="center">
+                    <HStack spacing={{ base: 10, lg: 20 }}>
+                        <Button variant="solid" color="white" padding={buttonPadding} isDisabled={selectedIndex === 0} onClick={handlePrev}>
+                            <Text textColor="brand.primary" textAlign="center" fontSize={fontSize}>Prev</Text>
+                        </Button>
+                        <Button variant="solid" color="white" padding={buttonPadding} isDisabled={selectedIndex === teacherImageList.length - 1} onClick={handleNext}>
+                            <Text textColor="brand.primary" textAlign="center" fontSize={fontSize}>Next</Text>
+                        </Button>
+                    </HStack>
                 </HStack>
             }
         </Stack >
