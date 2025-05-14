@@ -19,6 +19,7 @@ const GoofyText = ({ fontSize, transform, textAlign, children }: Props) => {
             transform={transform}
             textAlign={textAlign ? textAlign : "center"}
             css={cssString}
+            lineHeight={1.25}
         >
             {children}
         </ Text>
