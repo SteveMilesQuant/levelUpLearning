@@ -1,4 +1,5 @@
-import { Tr, Td, FormControl, Input, Select, Text } from "@chakra-ui/react";
+import { Tr, Td, FormControl, Input, Text, Select } from "@chakra-ui/react";
+import { Select as ChakraReactSelect } from "chakra-react-select"; // or use react-select
 import { Coupon } from "../Coupon";
 import { useState } from "react";
 import CrudButtonSet from "../../components/CrudButtonSet";
@@ -7,6 +8,8 @@ import useCouponForm from "../hooks/useCouponForm";
 import InputError from "../../components/InputError";
 import DatePicker from "react-datepicker";
 import { Controller } from "react-hook-form";
+import { CampQuery, useCamps } from "../../camps";
+import { CSSObjectWithLabel } from "react-select";
 
 interface Props {
   coupon?: Coupon;
@@ -16,9 +19,14 @@ interface Props {
 
 const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
   const [isEditing, setIsEditing] = useState(!coupon);
+
   const { register, errors, handleClose, handleSubmit, isValid, control } =
     useCouponForm(coupon);
   const deleteCoupon = useDeleteCoupon();
+
+  const campQuery = {} as CampQuery;
+  campQuery["is_published"] = true
+  const { data: camps } = useCamps(campQuery, false);
 
   const handleDelete = () => {
     if (coupon) deleteCoupon.mutate(coupon.id);
@@ -104,6 +112,45 @@ const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
         </FormControl>
       </Td>
       <Td>
+        <Controller
+          control={control}
+          name="camp_ids"
+          render={({ field }) => (
+            <InputError
+              label={errors.camp_ids?.message}
+              isOpen={!!errors.camp_ids}
+            >
+              <ChakraReactSelect
+                isMulti
+                isDisabled={!isEditing}
+                placeholder="Select camp(s)"
+                options={camps
+                  ?.filter(c => c.dates && new Date(c.dates[0] + "T00:00:00") > new Date())
+                  .map(camp => ({
+                    label: `#${camp.id}: ${camp.program.title}`,
+                    value: camp.id,
+                  }))}
+                value={
+                  field.value && camps
+                    ? camps
+                      .filter(c => (field.value ?? []).includes(c.id))
+                      .map(camp => ({
+                        label: `#${camp.id}: ${camp.program.title}`,
+                        value: camp.id,
+                      }))
+                    : []
+                }
+                onChange={(selected: { label: string; value: number }[]) => field.onChange(selected.map(opt => opt.value))}
+                menuPortalTarget={document.body}
+                styles={{
+                  menuPortal: (base: CSSObjectWithLabel) => ({ ...base, zIndex: 9999 }),
+                }}
+              />
+            </InputError>
+          )}
+        />
+      </Td>
+      <Td>
         <CrudButtonSet
           isEditing={isEditing}
           setIsEditing={setIsEditing}
@@ -114,7 +161,7 @@ const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
           isSubmitValid={isValid}
         />
       </Td>
-    </Tr>
+    </Tr >
   );
 };
 

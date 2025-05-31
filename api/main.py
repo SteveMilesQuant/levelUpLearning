@@ -10,7 +10,7 @@ from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
 from db import init_db, close_db, PaymentRecordDb, ImageDb
-from datamodels import FastApiDate, Object
+from datamodels import CheckoutTotal, FastApiDate, Object
 from datamodels import RoleEnum, UserPublicResponse, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
 from datamodels import StudentData, StudentResponse
@@ -783,71 +783,67 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
 ###############################################################################
 
 
-@api_router.post("/enroll", response_model=List[StudentResponse], status_code=status.HTTP_201_CREATED)
+# If execute_transaction is True, performs a series of enrollments
+# If execute_transaction is False, will pre-check the coupons and return the total
+@api_router.post("/enroll", response_model=CheckoutTotal, status_code=status.HTTP_201_CREATED)
 async def enroll_students_in_camps(request: Request, enrollment_data: EnrollmentData):
-    '''Enroll a student in a camp.'''
+    '''Enroll one or more students in one or more camps.'''
     async with app.db_sessionmaker() as db_session:
         user = await get_authorized_user(request, db_session)
         students = await user.students(db_session)
 
         enrollments = Enrollment()
-        await enrollments.create(db_session, enrollment_data=enrollment_data, user_students=students)
+        await enrollments.create(db_session, user=user, enrollment_data=enrollment_data, user_students=students)
 
-        # Check that the bill was paid in the correct amount
-        [square_payment_id, square_order_id,
-            square_receipt_number] = await enrollments.check_square_payment(app.square_client)
+        # If execute_transaction is true, execute the purchase and enrollment
+        # If execute_transaction is false, then this endpoint was just checking coupons and returning a total
+        if enrollment_data.execute_transaction:
+            # Check that the bill was paid in the correct amount
+            [square_payment_id, square_order_id,
+                square_receipt_number] = await enrollments.check_square_payment(app.square_client)
 
-        # Last check for coupon
-        coupon_id = None
-        if enrollments.coupon:
-            coupon_id = enrollments.coupon.id
-            if await user.has_used_coupon(db_session, coupon_id):
-                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                                    detail=f"User has already used coupon with code {enrollments.coupon.code}.")
+            # Create payment records
+            for single_enrollment in enrollments.enrollments:
+                camp = single_enrollment.camp
+                if (camp.current_enrollment or 0) >= (camp.capacity or 0):
+                    raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                                        detail=f"Camp with id {camp.id} is at full capacity.")
+                student = single_enrollment.student
+                payment_record = PaymentRecordDb(
+                    square_payment_id=square_payment_id,
+                    square_order_id=square_order_id,
+                    square_receipt_number=square_receipt_number,
+                    coupon_id=single_enrollment.coupon.id if single_enrollment.coupon else None,
+                    camp_id=camp.id,
+                    user_id=user.id,
+                    student_id=student.id
+                )
+                db_session.add(payment_record)
+            await db_session.commit()
 
-        # Create payment records
-        for single_enrollment in enrollments.enrollments:
-            camp = single_enrollment.camp
-            if (camp.current_enrollment or 0) >= (camp.capacity or 0):
-                raise HTTPException(status_code=status.HTTP_409_CONFLICT,
-                                    detail=f"Camp with id {camp.id} is at full capacity.")
-            student = single_enrollment.student
-            payment_record = PaymentRecordDb(
-                square_payment_id=square_payment_id,
-                square_order_id=square_order_id,
-                square_receipt_number=square_receipt_number,
-                coupon_id=coupon_id,
-                camp_id=camp.id,
-                user_id=user.id,
-                student_id=student.id
-            )
-            db_session.add(payment_record)
-        await db_session.commit()
+            # Tick up the use count for each coupon
+            for coupon in enrollments.coupons:
+                await coupon.tickup(db_session)
 
-        # Tick up the use count
-        if enrollments.coupon:
-            await enrollments.coupon.tickup(db_session)
+            # Send confirmation email
+            if not app.config.for_pytest:
+                await enrollments.send_confirmation_email(
+                    app.email_server,
+                    user.full_name,
+                    user.email_address
+                )
 
-        # Send confirmation email
-        if not app.config.for_pytest:
-            await enrollments.send_confirmation_email(
-                app.email_server,
-                user.full_name,
-                user.email_address
-            )
+            # Finally, execute enrollments
+            for single_enrollment in enrollments.enrollments:
+                camp = single_enrollment.camp
+                student = single_enrollment.student
+                await camp.add_student(session=db_session, student=student)
+                await student.create(db_session)
 
-        # Finally, execute enrollments and return the updated students
-        response: List[StudentResponse] = []
-        for single_enrollment in enrollments.enrollments:
-            camp = single_enrollment.camp
-            student = single_enrollment.student
-            await camp.add_student(session=db_session, student=student)
-            await student.create(db_session)
-            response.append(student)
-
-        return response
+        return CheckoutTotal(total_cost=enrollments.total_cost, disc_cost=enrollments.disc_cost, coupons=enrollments.coupons)
 
 
+# Get a list of all enrollments (for administrators)
 @api_router.get("/enrollments", response_model=List[EnrollmentResponse])
 async def get_all_enrollments(request: Request):
     '''Get all enrollments (admin only).'''
@@ -900,22 +896,6 @@ async def get_coupons(request: Request):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail=f"User does not have permission to access all coupons.")
         return await all_coupons(session)
-
-
-# Public route
-@api_router.get("/coupons/{coupon_code}", response_model=CouponResponse)
-async def get_coupon(request: Request, coupon_code: str):
-    '''Get a single coupon, by code instead of ID.'''
-    async with app.db_sessionmaker() as db_session:
-        user = await get_authorized_user(request, db_session)
-        coupon_code = coupon_code.upper()
-        coupon = Coupon(code=coupon_code)
-        await coupon.create(db_session, read_only=True)
-        if coupon.id is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                                detail=f"Coupon code={coupon_code} does not exist")
-        coupon.been_used = await user.has_used_coupon(db_session, coupon.id)
-        return coupon
 
 
 @api_router.put("/coupons/{coupon_id}", response_model=CouponResponse)

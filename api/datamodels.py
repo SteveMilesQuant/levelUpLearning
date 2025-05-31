@@ -139,9 +139,26 @@ class SingleEnrollmentData(BaseModel):
 
 
 class EnrollmentData(BaseModel):
+    execute_transaction: bool  # if false, we're just checking the coupons and enrollments
     payment_token: Optional[str] = None
-    coupon_code: Optional[str] = None
+    coupons: List[str]
     enrollments: List[SingleEnrollmentData]
+
+
+class CouponData(BaseModel):
+    code: Optional[str]
+    discount_type: Optional[Literal['dollars', 'percent']]
+    discount_amount: Optional[int]  # in pennies or whole percent
+    expiration: Optional[FastApiDate]
+    used_count: Optional[int] = 0
+    max_count: Optional[int] = None
+    camp_ids: Optional[List[int]] = []
+
+
+class CheckoutTotal(BaseModel):
+    total_cost: int  # in cents
+    disc_cost: int  # in cents
+    coupons: List[CouponData]
 
 
 class EnrollmentResponse(BaseModel):
@@ -153,18 +170,8 @@ class EnrollmentResponse(BaseModel):
     coupon_code: Optional[str] = None
 
 
-class CouponData(BaseModel):
-    code: Optional[str]
-    discount_type: Optional[Literal['dollars', 'percent']]
-    discount_amount: Optional[int]  # in pennies or whole percent
-    expiration: Optional[FastApiDate]
-    used_count: Optional[int] = 0
-    max_count: Optional[int] = None
-
-
 class CouponResponse(CouponData):
     id: Optional[int]
-    been_used: Optional[bool]
 
 
 class ResourceData(BaseModel):

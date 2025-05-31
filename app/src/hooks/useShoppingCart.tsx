@@ -1,31 +1,31 @@
 import { create } from "zustand";
 import { mountStoreDevtool } from "simple-zustand-devtools";
 import { useEffect } from "react";
-import { CampQuery, useCamps } from "../camps";
 import { SingleEnrollment } from "./useEnrollments";
 
 interface ShoppingCartStore {
   items: SingleEnrollment[];
-  totalCost: number;
   setCart: (items: SingleEnrollment[]) => void;
-  setTotalCost: (totalCost: number) => void;
+  coupons: string[];
+  setCoupons: (coupons: string[]) => void;
 }
 
 const useShoppingCartStore = create<ShoppingCartStore>((set) => ({
   items: [],
-  totalCost: 0,
   setCart: (items: SingleEnrollment[]) => {
     set(() => ({ items: [...items] }));
   },
-  setTotalCost: (totalCost: number) => set(() => ({ totalCost })),
+  coupons: [],
+  setCoupons: (coupons: string[]) => {
+    set(() => ({ coupons: [...coupons] }));
+  },
 }));
 
 if (process.env.NODE_ENV === "development")
   mountStoreDevtool("Shopping cart store", useShoppingCartStore);
 
 const useShoppingCart = () => {
-  const { items, setCart, totalCost, setTotalCost } = useShoppingCartStore();
-  const { data: camps } = useCamps({ is_published: true } as CampQuery, false);
+  const { items, setCart, coupons, setCoupons: setStoreCoupons } = useShoppingCartStore();
 
   useEffect(() => {
     const storedCart = localStorage.getItem("shoppingCart");
@@ -34,19 +34,14 @@ const useShoppingCart = () => {
     } else {
       localStorage.setItem("shoppingCart", JSON.stringify([]));
     }
-  }, []);
 
-  useEffect(() => {
-    let tally = 0;
-    if (camps) {
-      items.forEach((item) => {
-        const camp = camps.find((c) => c.id === item.camp_id);
-        if (!camp) return;
-        tally = tally + (camp.cost || 0);
-      });
+    const storedCoupons = localStorage.getItem("coupons");
+    if (storedCoupons) {
+      setStoreCoupons(JSON.parse(storedCoupons));
+    } else {
+      localStorage.setItem("coupons", JSON.stringify([]));
     }
-    setTotalCost(tally);
-  }, [items, camps]);
+  }, []);
 
   const addItem = (item: SingleEnrollment) => {
     const storedItemsStr = localStorage.getItem("shoppingCart") || "[]";
@@ -75,7 +70,13 @@ const useShoppingCart = () => {
     setCart([]);
   };
 
-  return { items, totalCost, addItem, removeItem, clearCart };
+  const setCoupons = (coupons: string[]) => {
+    localStorage.setItem("coupons", JSON.stringify(coupons));
+    setStoreCoupons(coupons);
+  };
+
+
+  return { items, addItem, removeItem, clearCart, coupons, setCoupons };
 };
 
 export default useShoppingCart;

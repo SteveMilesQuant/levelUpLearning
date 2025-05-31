@@ -4,20 +4,24 @@ import {
   CardBody,
   HStack,
   IconButton,
+  SimpleGrid,
+  Stack,
   Text,
 } from "@chakra-ui/react";
 import { useCamp } from "../camps";
 import { useStudent } from "../students";
 import { locale } from "../constants";
 import { IoClose } from "react-icons/io5";
+import { CouponData } from "../coupons/Coupon";
 
 interface Props {
   camp_id: number;
   student_id: number;
+  coupon?: CouponData;
   onDelete: () => void;
 }
 
-const CartItemCard = ({ camp_id, student_id, onDelete }: Props) => {
+const CartItemCard = ({ camp_id, student_id, coupon, onDelete }: Props) => {
   const { data: camp } = useCamp(camp_id);
   const { data: student } = useStudent(student_id);
 
@@ -48,30 +52,51 @@ const CartItemCard = ({ camp_id, student_id, onDelete }: Props) => {
         : datesListStr.join(", ")
       : "TBD";
 
+  const total_cost = (camp.cost || 0) * 100;
+  const disc_cost = coupon?.discount_type === "percent" ? total_cost * (100 - coupon.discount_amount) / 100 : total_cost - (coupon?.discount_amount || 0) * 100;
+
+  const total_dollars = total_cost * 0.01;
+  const total_string = Number.isInteger(total_dollars) ? total_dollars.toString() : total_dollars.toFixed(2);
+
+  const disc_dollars = disc_cost * 0.01;
+  const disc_string = Number.isInteger(disc_dollars) ? disc_dollars.toString() : disc_dollars.toFixed(2);
+
   return (
     <Card>
       <CardBody>
-        <HStack justifyContent="space-between">
-          <Text>
-            Enrollment for {student.name} into {camp.program.title} on {dateStr}
-          </Text>
-          <Box padding={5}></Box>
-        </HStack>
-        <Text position="absolute" bottom={3} right={3}>
-          ${camp.cost}
-        </Text>
-        <IconButton
-          position="absolute"
-          icon={<IoClose size="1.5em" />}
-          aria-label="Delete cart item"
-          size="1.5em"
-          variant="ghost"
-          top={1}
-          right={1}
-          onClick={onDelete}
-        />
+        <Stack>
+          <HStack align="start" justify="space-between">
+            <Text>
+              Enrollment for {student.name} into {camp.program.title} on {dateStr}
+            </Text>
+            <Box>
+              <IconButton
+                icon={<IoClose size="1.5em" />}
+                aria-label="Delete cart item"
+                size="1.5em"
+                variant="ghost"
+                onClick={onDelete}
+              />
+            </Box>
+          </HStack>
+          <HStack justify="space-between">
+            <Box>
+              {coupon && <Text><strong>Coupon:</strong> {coupon.code}</Text>}
+            </Box>
+            <HStack>
+              {total_cost > disc_cost && (
+                <Text textColor="red" textDecoration="line-through">
+                  ${total_string}
+                </Text>
+              )}
+              <Text >
+                ${disc_string}
+              </Text>
+            </HStack>
+          </HStack>
+        </Stack>
       </CardBody>
-    </Card>
+    </Card >
   );
 };
 

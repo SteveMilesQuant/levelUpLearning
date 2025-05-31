@@ -1,6 +1,7 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from typing import Any, Optional, List
+from user import User
 from pydantic import BaseModel
 from uuid import uuid4
 from fastapi import HTTPException, status
@@ -25,44 +26,93 @@ Students get the most out of our camps when they are able to collaborate with pe
 
 Thank you!
 
-Karen Miles and Megan Miller 
+Karen Miles and Megan Miller
 Level Up Learning'''
 
 
 class SingleEnrollment(BaseModel):
     student: Student
     camp: Camp
+    coupon: Optional[Coupon]
 
 
 class Enrollment(BaseModel):
     payment_token: Optional[str] = None
-    coupon: Optional[Coupon] = None
+    coupons: List[Coupon] = None
     enrollments: Optional[List[SingleEnrollment]] = None
-    total_cost: Optional[float] = 0
-    penny_cost: Optional[int] = 0
+    total_cost: Optional[int] = 0
+    disc_cost: Optional[int] = 0
     square_receipt_url: Optional[str] = None
 
-    async def create(self, db_session: Any, enrollment_data: EnrollmentData, user_students: List[StudentDb]):
+    async def create(self, db_session: Any, user: User, enrollment_data: Optional[EnrollmentData], user_students: List[StudentDb]):
         self.payment_token = enrollment_data.payment_token
 
-        # Create coupon
-        self.coupon = None
-        if enrollment_data.coupon_code:
-            self.coupon = Coupon(code=enrollment_data.coupon_code)
-            await self.coupon.create(db_session)
-            if self.coupon.id is None:
+        # Create coupons
+        self.coupons = []
+        has_camp_coupons = False
+        has_total_coupons = False
+        for coupon_code in enrollment_data.coupons:
+            coupon = Coupon(code=coupon_code)
+            await coupon.create(db_session, read_only=True)
+            if coupon.id is None:
                 raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Coupon code={enrollment_data.coupon_code} not found.")
-            if self.coupon.expiration and self.coupon.expiration < FastApiDate.today():
+                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Coupon code={coupon_code} not found.")
+            if coupon.expiration and coupon.expiration < FastApiDate.today():
                 raise HTTPException(
-                    status_code=status.HTTP_410_GONE, detail=f"Coupon code={enrollment_data.coupon_code} expired on {self.coupon.expiration}.")
-            if self.coupon.max_count and self.coupon.used_count >= self.coupon.max_count:
+                    status_code=status.HTTP_410_GONE, detail=f"Coupon code={coupon_code} expired on {coupon.expiration}.")
+            if await user.has_used_coupon(db_session, coupon.id):
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                    detail=f"User has already used coupon code {coupon.code}.")
+            if coupon.max_count and coupon.used_count >= coupon.max_count:
                 raise HTTPException(
-                    status_code=status.HTTP_410_GONE, detail=f"Coupon code={enrollment_data.coupon_code} has reached the maximum number of uses.")
+                    status_code=status.HTTP_410_GONE, detail=f"Coupon code={coupon_code} has reached the maximum number of uses.")
+            if coupon.camp_ids is None or len(coupon.camp_ids) == 0:
+                if has_camp_coupons:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN, detail=f"Sorry, but we don't allow mixing coupons for individual camps and coupons for the total check out.")
+                if has_total_coupons:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN, detail=f"Sorry, but we don't allow applying more than one coupon that applies to the total check out.")
+                has_total_coupons = True
+            else:
+                if has_total_coupons:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN, detail=f"Sorry, but we don't allow mixing coupons for individual camps and coupons for the total check out.")
+                has_camp_coupons = True
+
+                any_camp_in_basket = False
+                for camp_id in coupon.camp_ids:
+                    # Get the camp
+                    camp = Camp(id=camp_id)
+                    await camp.create(db_session)
+                    if camp.id is None:
+                        raise HTTPException(
+                            status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+                    if not camp.is_published:
+                        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                            detail=f"Camp id = {camp.id} ({camp.program.title} on {camp.dates[0]}) is not yet published for enrollment.")
+
+                    # Check that the associated camp is in the basket
+                    if any(camp_id == e_in.camp_id for e_in in enrollment_data.enrollments):
+                        any_camp_in_basket = True
+
+                    # Check that two coupons don't apply to the same camp
+                    other_coupon = next(
+                        (c for c in self.coupons if camp_id in c.camp_ids), None)
+                    if other_coupon:
+                        raise HTTPException(
+                            status_code=status.HTTP_403_FORBIDDEN, detail=f"Sorry, but we only allow one coupon per camp. The coupon codes {coupon_code} and {other_coupon.code} are both intended for the camp id = {camp.id} ({camp.program.title} on {camp.dates[0]}).")
+
+                if not any_camp_in_basket:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN, detail=f"The coupon code={coupon_code} is intended for one or more specific camps, but none of those camps are in your basket.")
+
+            self.coupons.append(coupon)
 
         # Verify each enrollment and get total cost
         self.enrollments = []
         self.total_cost = 0
+        self.disc_cost = 0
         for e_in in enrollment_data.enrollments:
             camp = Camp(id=e_in.camp_id)
             await camp.create(db_session)
@@ -81,27 +131,53 @@ class Enrollment(BaseModel):
             if student._db_obj not in user_students:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} does not belong to this user.")
+            if camp._db_obj in student._db_obj.camps:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} is already enrolled in camp id={camp.id}.")
 
-            enrollment = SingleEnrollment(student=student, camp=camp)
+            # Find an applicable coupon (should only be one)
+            if has_total_coupons:
+                coupon = self.coupons[0]
+            elif has_camp_coupons:
+                coupon = next(
+                    (c for c in self.coupons if camp.id in c.camp_ids), None)
+            else:
+                coupon = None
+
+            # Create single enrollment record
+            enrollment = SingleEnrollment(
+                student=student, camp=camp, coupon=coupon)
             self.enrollments.append(enrollment)
-            self.total_cost = self.total_cost + (camp.cost or 0)
+            single_camp_total_cost = (camp.cost or 0)
 
-        percent_discount = 0
-        fixed_discount = 0
-        if self.coupon:
-            if self.coupon.discount_type == "dollars":
-                fixed_discount = self.coupon.discount_amount * 100
-            elif self.coupon.discount_type == "percent":
-                percent_discount = self.coupon.discount_amount
-        self.penny_cost = self.total_cost * \
-            (100 - percent_discount) - fixed_discount
+            # Account for coupon
+            percent_discount = 0
+            fixed_discount = 0
+            if coupon:
+                # fixed total coupon handled at end, so as to not count double
+                if coupon.discount_type == "dollars" and has_camp_coupons:
+                    fixed_discount = coupon.discount_amount * 100
+                elif coupon.discount_type == "percent":
+                    percent_discount = coupon.discount_amount
+            single_camp_disc_cost = single_camp_total_cost * \
+                (100 - percent_discount) - fixed_discount
+
+            # Update total cost (without coupons) and discounted cost (with coupons)
+            self.total_cost = self.total_cost + single_camp_total_cost * 100
+            self.disc_cost = self.disc_cost + single_camp_disc_cost
+
+        # Final adjustment
+        if has_total_coupons and self.coupons[0] and self.coupons[0].discount_type == "dollars":
+            self.disc_cost = self.disc_cost - \
+                self.coupons[0].discount_amount * 100
+        self.disc_cost = max(self.disc_cost, 0)
 
     async def check_square_payment(self, square_client):
         square_payment_id = None
         square_order_id = None
         square_receipt_number = None
         self.square_receipt_url = None
-        if self.penny_cost > 0:
+        if self.disc_cost > 0:
             if self.payment_token is None:
                 raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
                                     detail=f"Square payment token is required on non-free camps.")
@@ -110,7 +186,7 @@ class Enrollment(BaseModel):
             create_payment_request.idempotency_key = str(uuid4())
             create_payment_request.amount_money = Object()
             create_payment_request.amount_money.currency = "USD"
-            create_payment_request.amount_money.amount = self.penny_cost
+            create_payment_request.amount_money.amount = self.disc_cost
             square_response = square_client.payments.create_payment(
                 create_payment_request)
 
@@ -120,9 +196,9 @@ class Enrollment(BaseModel):
 
             square_payment = square_response.body['payment']
             paid_amount = square_payment['amount_money']['amount']
-            if paid_amount < self.penny_cost:
+            if paid_amount < self.disc_cost:
                 raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                                    detail=f"Paid amount, ${paid_amount/100}, was less than expected amount, ${self.penny_cost/100}.")
+                                    detail=f"Paid amount, ${paid_amount/100}, was less than expected amount, ${self.disc_cost/100}.")
 
             square_payment_id = square_payment['id']
             square_order_id = square_payment['order_id']

@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
-import { object, string, number, date, InferType } from "yup";
+import { object, string, number, date, InferType, array } from "yup";
 import { Coupon } from "../Coupon";
 import { useAddCoupon, useUpdateCoupon } from "./useCoupons";
 
@@ -11,6 +11,7 @@ export const couponSchema = object().shape({
   discount_amount: number().required().integer().positive(),
   max_count: number().integer().nullable(),
   y_expiration: date().optional(),
+  camp_ids: array().of(number().integer()),
 });
 
 export type FormData = InferType<typeof couponSchema>;
@@ -52,10 +53,10 @@ const useCouponForm = (coupon?: Coupon) => {
       ...data,
       expiration: data.y_expiration
         ? data.y_expiration.getFullYear() +
-          (data.y_expiration.getMonth() < 9 ? "-0" : "-") +
-          (data.y_expiration.getMonth() + 1) +
-          (data.y_expiration.getDate() < 9 ? "-0" : "-") +
-          data.y_expiration.getDate()
+        (data.y_expiration.getMonth() < 9 ? "-0" : "-") +
+        (data.y_expiration.getMonth() + 1) +
+        (data.y_expiration.getDate() < 9 ? "-0" : "-") +
+        data.y_expiration.getDate()
         : undefined,
     } as Coupon;
 

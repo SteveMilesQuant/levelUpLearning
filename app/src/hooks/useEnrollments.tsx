@@ -6,18 +6,28 @@ import APIHooks from "../services/api-hooks";
 import { User } from "../users";
 import ms from "ms";
 import { CACHE_KEY_COUPONS } from "../coupons";
+import { CouponData } from "../coupons/Coupon";
 
 export interface SingleEnrollment {
   student_id: number;
   camp_id: number;
 }
 
+// Enrollment data is for users trying to enroll their students in camps
 export interface EnrollmentData {
+  execute_transaction: boolean;
   payment_token?: string;
-  coupon_code?: string;
+  coupons: string[];
   enrollments: SingleEnrollment[];
 }
 
+export interface CheckoutTotal {
+  total_cost: number; // integer total in cents
+  disc_cost: number; // integer total in cents
+  coupons: CouponData[];
+}
+
+// Enrollment is for admins querying current enrollments
 interface Enrollment {
   id: number;
   guardian: User;
@@ -29,11 +39,11 @@ interface Enrollment {
 
 const CACHE_KEY_ENROLLMENTS = ["enrollments"];
 
-const enrollmentClient = new APIClient<Student[], EnrollmentData>("/enroll");
+const enrollmentClient = new APIClient<CheckoutTotal, EnrollmentData>("/enroll");
 
 interface EnrollmentArgs {
   onSubmit?: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (data?: CheckoutTotal) => void;
   onError?: (detail?: string) => void;
 }
 
@@ -49,7 +59,7 @@ export const useEnrollment = ({
     if (onSubmit) onSubmit();
     enrollmentClient
       .post(data)
-      .then(() => {
+      .then((data) => {
         queryClient.invalidateQueries({
           queryKey: CACHE_KEY_CAMPS,
           exact: false,
@@ -62,16 +72,17 @@ export const useEnrollment = ({
           queryKey: CACHE_KEY_ENROLLMENTS,
           exact: true,
         });
-        if (data.coupon_code) {
-          queryClient.invalidateQueries({
-            queryKey: CACHE_KEY_COUPONS,
-            exact: true,
-          });
-        }
-        if (onSuccess) onSuccess();
+        queryClient.invalidateQueries({
+          queryKey: CACHE_KEY_COUPONS,
+          exact: true,
+        });
+        if (onSuccess) onSuccess(data);
       })
       .catch((error) => {
-        if (onError) onError(error.response.data.detail);
+        if (onError) {
+          if (error.response) onError(error.response.data?.detail);
+          else if (error.message) onError(error.message);
+        }
       });
   };
 

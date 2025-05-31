@@ -23,6 +23,7 @@ const CouponsTable = () => {
             <ThText>Expiration</ThText>
             <ThText>Used Count</ThText>
             <ThText>Max Usages</ThText>
+            <ThText>Valid Camp(s)</ThText>
             <ThText>{/* placeholder for crud buttons */}</ThText>
           </Tr>
         </Thead>

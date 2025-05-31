@@ -3,7 +3,7 @@ import { SingleEnrollment, useEnrollment } from "../hooks/useEnrollments";
 import SubmitButton from "./SubmitButton";
 
 interface Props {
-  couponCode?: string;
+  coupons: string[];
   checkoutItems: SingleEnrollment[];
   pennyCost: number;
   onSubmit: () => void;
@@ -12,7 +12,7 @@ interface Props {
 }
 
 const CheckoutPayment = ({
-  couponCode,
+  coupons,
   checkoutItems,
   pennyCost,
   onSubmit,
@@ -32,8 +32,9 @@ const CheckoutPayment = ({
           applicationId={import.meta.env.VITE_SQUARE_APPLICATION_ID}
           cardTokenizeResponseReceived={async (token, verifiedBuyer) => {
             enroll({
+              execute_transaction: true,
               payment_token: token.token,
-              coupon_code: couponCode,
+              coupons: coupons,
               enrollments: checkoutItems,
             });
           }}
@@ -54,7 +55,8 @@ const CheckoutPayment = ({
         <SubmitButton
           onClick={() => {
             enroll({
-              coupon_code: couponCode,
+              execute_transaction: true,
+              coupons: coupons,
               enrollments: checkoutItems,
             });
           }}

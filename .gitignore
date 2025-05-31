@@ -24,3 +24,4 @@ cert-manager.yaml
 v2_4_7_full.yaml
 iam_policy.json
 util
+.vscode

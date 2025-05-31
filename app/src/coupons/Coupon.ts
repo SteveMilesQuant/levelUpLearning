@@ -5,9 +5,9 @@ export interface CouponData {
   expiration?: string;
   used_count: number;
   max_count: number;
+  camp_ids?: number[];
 }
 
 export interface Coupon extends CouponData {
   id: number;
-  been_used: boolean;
 }

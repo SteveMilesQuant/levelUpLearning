@@ -121,7 +121,7 @@ def test_get_camps():
 
     # Get only only camps for a particular instructor that have been published
     response = client.get('/camps', headers=app.test.users.admin_headers, params={
-                          'instructor_id': app.test.users.instructor.id, 'is_published': True})
+        'instructor_id': app.test.users.instructor.id, 'is_published': True})
     content_type = response.headers['content-type']
     assert response.status_code == status.HTTP_200_OK
     assert 'application/json' in content_type
@@ -225,19 +225,20 @@ def test_camp_student(camp_index: int, student: StudentData):
 
     single_enrollment = SingleEnrollmentData(
         camp_id=camp_id, student_id=student_id)
-    enrollment_data = EnrollmentData(enrollments=[single_enrollment])
+    enrollment_data = EnrollmentData(
+        enrollments=[single_enrollment], coupons=[], execute_transaction=True)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
     response = client.post(f'/enroll', json=enrollment_data_json,
                            headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_201_CREATED, f'Error enrolling'
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
-    new_student_json = response.json()[0]
+
     camp_json['current_enrollment'] = camp_json['current_enrollment'] + 1
     student_json['camps'] = [camp_json]
     student_json['guardians'] = [
         app.test.users.admin.dict(include=UserResponse().dict())]
-    assert new_student_json == student_json, 'Enroll student failed'
 
     response = client.get(
         f'/camps/{camp_id}/students/{student_id}', headers=app.test.users.admin_headers)

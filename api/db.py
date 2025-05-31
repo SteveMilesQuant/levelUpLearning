@@ -55,6 +55,13 @@ event_x_images = Table(
     Column('image_id', ForeignKey('image.id'), primary_key=True),
 )
 
+coupon_x_camps = Table(
+    'coupon_x_camps',
+    Base.metadata,
+    Column('coupon_id', ForeignKey('coupon.id'), primary_key=True),
+    Column('camp_id', ForeignKey('camp.id'), primary_key=True),
+)
+
 
 class RoleDb(Base):
     __tablename__ = 'role'
@@ -229,6 +236,8 @@ class CouponDb(Base):
     expiration: Mapped[dt_date] = mapped_column(Date, nullable=True)
     used_count: Mapped[int] = mapped_column(default=0)
     max_count: Mapped[int] = mapped_column(nullable=True)
+    camps: Mapped[List['CampDb']] = relationship(
+        secondary=coupon_x_camps, lazy='raise')
 
 
 class ResourceDb(Base):
