@@ -5,12 +5,25 @@ import { useState } from "react";
 import ThText from "../../components/ThText";
 import TextButton from "../../components/TextButton";
 
-const CouponsTable = () => {
+interface Props {
+  showExpiredCoupons: boolean;
+}
+
+const CouponsTable = ({ showExpiredCoupons }: Props) => {
   const { data: coupons, isLoading, error } = useCoupons();
   const [isAdding, setIsAdding] = useState(false);
 
+
   if (error) throw error;
   if (isLoading || !coupons) return null;
+
+  console.log(coupons);
+
+  const couponList = coupons.filter(
+    (c) =>
+      (showExpiredCoupons && c.expiration && new Date(c.expiration + "T00:00:00") <= new Date()) ||
+      (!showExpiredCoupons && (!c.expiration || new Date(c.expiration + "T00:00:00") > new Date()))
+  );
 
   return (
     <TableContainer>
@@ -29,7 +42,7 @@ const CouponsTable = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {coupons.map((coupon) => (
+          {couponList.map((coupon) => (
             <CouponsTableRow key={coupon.id} coupon={coupon} />
           ))}
           {isAdding && (
