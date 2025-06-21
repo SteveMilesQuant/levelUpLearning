@@ -5,12 +5,15 @@ import { ReactNode } from "react";
 import AuthExpiredModal from "../components/AuthExpiredModal";
 import ContactVerificationModal from "../users/components/ContactVerificationModal";
 import Footer from "../components/Footer";
+import usePageView from "../hooks/usePageView";
 
 interface Props {
   children?: ReactNode;
 }
 
 const Layout = ({ children }: Props) => {
+  usePageView(); // for Google Analytics
+
   return (
     <>
       <NavBar></NavBar>
