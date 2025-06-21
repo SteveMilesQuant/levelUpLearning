@@ -44,7 +44,7 @@ const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
 
   return (
     <Tr>
-      <Td>
+      <Td minW={200}>
         <FormControl>
           <InputError
             label={errors.code?.message}
@@ -54,7 +54,7 @@ const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
           </InputError>
         </FormControl>
       </Td>
-      <Td>
+      <Td minW={28}>
         <FormControl>
           <InputError
             label={errors.discount_type?.message}
@@ -67,7 +67,7 @@ const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
           </InputError>
         </FormControl>
       </Td>
-      <Td>
+      <Td minW={28}>
         <FormControl>
           <InputError
             label={errors.discount_amount?.message}
@@ -81,7 +81,7 @@ const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
           </InputError>
         </FormControl>
       </Td>
-      <Td>
+      <Td maxW={100}>
         <Controller
           control={control}
           name="y_expiration"

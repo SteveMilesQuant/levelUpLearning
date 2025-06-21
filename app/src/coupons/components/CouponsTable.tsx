@@ -14,7 +14,8 @@ const CouponsTable = () => {
 
   return (
     <TableContainer>
-      <Table>
+      <Table variant="simple"
+        sx={{ tableLayout: "auto" }}>
         <Thead>
           <Tr>
             <ThText>Code</ThText>
