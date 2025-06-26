@@ -22,6 +22,7 @@ import Equip from "./Equip";
 import Resources from "./Resources";
 import Boast from "./Boast";
 import BoastOne from "./BoastOne";
+import { ProtectedRoute } from "./ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -75,49 +76,101 @@ const router = createBrowserRouter([
           {
             path: "teach",
             element: (
-              <CampsContext.Provider value={CampsContextType.teach}>
-                <Camps />
-              </CampsContext.Provider>
+              <ProtectedRoute allowedRole="INSTRUCTOR">
+                <CampsContext.Provider value={CampsContextType.teach}>
+                  <Camps />
+                </CampsContext.Provider>
+              </ProtectedRoute>
             ),
           },
           {
             path: "teach/:id",
             element: (
-              <CampsContext.Provider value={CampsContextType.teach}>
-                <Camp />
-              </CampsContext.Provider>
+              <ProtectedRoute allowedRole="INSTRUCTOR">
+                <CampsContext.Provider value={CampsContextType.teach}>
+                  <Camp />
+                </CampsContext.Provider>
+              </ProtectedRoute>
             ),
           },
-          { path: "programs", element: <Programs /> },
-          { path: "programs/:id", element: <Program /> },
+          {
+            path: "programs", element: (
+              <ProtectedRoute allowedRole="INSTRUCTOR">
+                <Programs />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "programs/:id", element: (
+              <ProtectedRoute allowedRole="INSTRUCTOR">
+                <Program />
+              </ProtectedRoute>
+            ),
+          },
           {
             path: "schedule",
             element: (
-              <CampsContext.Provider value={CampsContextType.schedule}>
-                <Camps />
-              </CampsContext.Provider>
+              <ProtectedRoute allowedRole="ADMIN">
+                <CampsContext.Provider value={CampsContextType.schedule}>
+                  <Camps />
+                </CampsContext.Provider>
+              </ProtectedRoute>
             ),
           },
           {
             path: "schedule/:id",
             element: (
-              <CampsContext.Provider value={CampsContextType.schedule}>
-                <Camp />
-              </CampsContext.Provider>
+              <ProtectedRoute allowedRole="ADMIN">
+                <CampsContext.Provider value={CampsContextType.schedule}>
+                  <Camp />
+                </CampsContext.Provider>
+              </ProtectedRoute>
             ),
           },
-          { path: "enrollments", element: <Enrollments /> },
-          { path: "coupons", element: <Coupons /> },
-          { path: "members", element: <Members /> },
-          { path: "equip", element: <Equip /> },
+          {
+            path: "enrollments", element: (
+              <ProtectedRoute allowedRole="ADMIN">
+                <Enrollments />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "coupons", element: (
+              <ProtectedRoute allowedRole="ADMIN">
+                <Coupons />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: "members", element: (
+              <ProtectedRoute allowedRole="ADMIN">
+                <Members />
+              </ProtectedRoute>
+            )
+          },
+          {
+            path: "equip", element: (
+              <ProtectedRoute allowedRole="ADMIN">
+                <Equip />
+              </ProtectedRoute>
+            )
+          },
           { path: "settings", element: <Settings /> },
           {
             path: "boast",
-            element: <Boast />,
+            element: (
+              <ProtectedRoute allowedRole="ADMIN">
+                <Boast />
+              </ProtectedRoute>
+            ),
           },
           {
             path: "boast/:id",
-            element: <BoastOne />,
+            element: (
+              <ProtectedRoute allowedRole="ADMIN">
+                <BoastOne />
+              </ProtectedRoute>
+            ),
           },
 
         ],
