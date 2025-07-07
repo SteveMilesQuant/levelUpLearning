@@ -214,9 +214,9 @@ const Privacy = () => {
         <Text>
           Level Up Learning NC, LLC 310 Nantucket Dr. Cary, North Carolina 27513
         </Text>
-        <Text>Email Address: support@leveluplearningnc.com </Text>
-        <Text> Phone Number: 2177810016</Text>
-        <Text> Effective as of January 29, 2024 </Text>
+        <Text>Email Address: info@leveluplearningnc.com </Text>
+        <Text>Phone Number: (919) 439-0924</Text>
+        <Text>Effective as of January 29, 2024 </Text>
       </Stack>
     </BodyContainer>
   );
