@@ -1,8 +1,11 @@
-import { Td, Tr } from "@chakra-ui/react";
+import { HStack, Td, Tr, useDisclosure } from "@chakra-ui/react";
 import { CACHE_KEY_STUDENTS, Student } from "../Student";
 import DeleteButton from "../../components/DeleteButton";
 import { useDisenrollStudent } from "../hooks/useCampStudents";
 import { useQueryClient } from "@tanstack/react-query";
+import MoveStudentModal from "./MoveStudentModal";
+import ActionButton from "../../components/ActionButton";
+import { IoMoveOutline } from "react-icons/io5";
 
 interface Props {
   campId: number;
@@ -21,6 +24,13 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
     },
   });
 
+  const {
+    isOpen: moveStudentIsOpen,
+    onOpen: moveStudentOnOpen,
+    onClose: moveStudentOnClose,
+  } = useDisclosure();
+
+
   return (
     <Tr>
       <Td>{student.name}</Td>
@@ -31,17 +41,28 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
           .join(", ")}
       </Td>
       {!isReadOnly && (
-        <Td>
-          <DeleteButton
-            onConfirm={() => {
-              disenrollStudent.mutate(student.id);
-            }}
-          >
-            {student.name}
-          </DeleteButton>
-        </Td>
-      )}
-    </Tr>
+        <>
+          <Td>
+            <HStack spacing={3}>
+              <DeleteButton
+                onConfirm={() => {
+                  disenrollStudent.mutate(student.id);
+                }}
+              >
+                {student.name}
+              </DeleteButton>
+              <ActionButton
+                Component={IoMoveOutline}
+                label="Move student"
+                onClick={moveStudentOnOpen}
+              />
+            </HStack>
+            <MoveStudentModal student={student} campId={campId} isOpen={moveStudentIsOpen} onClose={moveStudentOnClose} />
+          </Td>
+        </>
+      )
+      }
+    </Tr >
   );
 };
 

@@ -133,6 +133,11 @@ class StudentResponse(StudentData):
         return ret
 
 
+class StudentMoveData(BaseModel):
+    from_camp_id: int
+    to_camp_id: int
+
+
 class SingleEnrollmentData(BaseModel):
     student_id: int
     camp_id: int

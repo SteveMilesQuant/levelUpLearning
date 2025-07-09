@@ -13,7 +13,7 @@ from db import init_db, close_db, PaymentRecordDb, ImageDb
 from datamodels import CheckoutTotal, FastApiDate, Object
 from datamodels import RoleEnum, UserPublicResponse, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
-from datamodels import StudentData, StudentResponse
+from datamodels import StudentData, StudentResponse, StudentMoveData
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
 from datamodels import ResourceGroupData, ResourceGroupResponse, ResourceData, ResourceResponse
@@ -244,6 +244,42 @@ async def delete_student(request: Request, student_id: int):
                 return
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail=f"User does not have permission for student id={student_id}")
+
+
+@api_router.post("/students/{student_id}/move")
+async def post_move_student(request: Request, student_id: int, student_move_data: StudentMoveData):
+    '''Create a new student.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User does not have permission to move students between camps.")
+        student = Student(id=student_id)
+        await student.create(session)
+        if student.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} not found.")
+        tgt_camp = next((camp for camp in student.camps if camp.id ==
+                         student_move_data.to_camp_id), None)
+        if tgt_camp is not None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Student id={student_id} already enrolled in target camp id={student_move_data.to_camp_id}")
+        tgt_camp = Camp(id=student_move_data.to_camp_id)
+        await tgt_camp.create(session)
+        if tgt_camp.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Target camp id={student_move_data.to_camp_id} not found.")
+
+        src_camp = next((camp for camp in student.camps if camp.id ==
+                         student_move_data.from_camp_id), None)
+        if src_camp is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Student id={student_id} not enrolled in source camp id={student_move_data.from_camp_id}")
+        src_camp = Camp(id=src_camp.id)
+        await src_camp.create(session)
+
+        await tgt_camp.add_student(session=session, student=student)
+        await src_camp.remove_student(session=session, student=student)
 
 
 ###############################################################################

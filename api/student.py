@@ -30,7 +30,7 @@ class Student(StudentResponse):
             self.id = self._db_obj.id
         else:
             # Otherwise, update attributes from fetched object
-            for key, value in StudentResponse():
+            for key, _ in StudentResponse():
                 if key not in ['camps', 'guardians']:
                     setattr(self, key, getattr(self._db_obj, key))
 
@@ -47,7 +47,7 @@ class Student(StudentResponse):
             self.guardians.append(UserResponse(**guardian.dict()))
 
     async def update(self, session: Any):
-        for key, value in StudentData():
+        for key, _ in StudentData():
             setattr(self._db_obj, key, getattr(self, key))
         await session.commit()
 

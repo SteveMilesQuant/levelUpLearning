@@ -10,3 +10,4 @@ export { default as CampTabs } from "./components/CampTabs";
 export { CACHE_KEY_CAMPS, type Camp } from "./Camp";
 export { default as CampsContext, CampsContextType } from "./campsContext";
 export { type CampQuery } from "./hooks/useCamps";
+export { formatCamp } from "./utils/formatCamp";

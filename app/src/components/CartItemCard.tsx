@@ -8,7 +8,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { useCamp } from "../camps";
+import { formatCamp, useCamp } from "../camps";
 import { useStudent } from "../students";
 import { locale } from "../constants";
 import { IoClose } from "react-icons/io5";
@@ -27,31 +27,6 @@ const CartItemCard = ({ camp_id, student_id, coupon, onDelete }: Props) => {
 
   if (!camp || !student) return null;
 
-  const datesList = camp.dates?.map(
-    (date_str) => new Date(date_str + "T00:00:00")
-  );
-  let useDateRange = camp.dates !== undefined && camp.dates.length > 1;
-  let lastDate: Date | undefined = undefined;
-  datesList?.forEach((date: Date) => {
-    const diff = lastDate
-      ? Math.abs(date.getTime() - lastDate.getTime())
-      : undefined;
-    const diffDays = diff ? Math.ceil(diff / (1000 * 3600 * 24)) : 1;
-    if (diffDays !== 1) useDateRange = false;
-    lastDate = date;
-  });
-  const datesListStr = datesList?.map((date) =>
-    date.toLocaleDateString(locale, {
-      dateStyle: "short",
-    })
-  );
-  const dateStr =
-    datesListStr && datesListStr.length > 0
-      ? useDateRange
-        ? datesListStr[0] + " to " + datesListStr[datesListStr.length - 1]
-        : datesListStr.join(", ")
-      : "TBD";
-
   const total_cost = (camp.cost || 0) * 100;
   const disc_cost = coupon?.discount_type === "percent" ? total_cost * (100 - coupon.discount_amount) / 100 : total_cost - (coupon?.discount_amount || 0) * 100;
 
@@ -61,13 +36,15 @@ const CartItemCard = ({ camp_id, student_id, coupon, onDelete }: Props) => {
   const disc_dollars = disc_cost * 0.01;
   const disc_string = Number.isInteger(disc_dollars) ? disc_dollars.toString() : disc_dollars.toFixed(2);
 
+  const camp_title = formatCamp(camp);
+
   return (
     <Card>
       <CardBody>
         <Stack>
           <HStack align="start" justify="space-between">
             <Text>
-              Enrollment for {student.name} into {camp.program.title} on {dateStr}
+              Enrollment for {student.name} into {camp_title}
             </Text>
             <Box>
               <IconButton

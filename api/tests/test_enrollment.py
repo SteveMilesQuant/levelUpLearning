@@ -3,7 +3,7 @@ import json
 import asyncio
 from fastapi import status
 from fastapi.testclient import TestClient
-from datamodels import StudentData, CampData, CouponData, FastApiDate, SingleEnrollmentData, EnrollmentData
+from datamodels import StudentData, CampData, CouponData, FastApiDate, SingleEnrollmentData, EnrollmentData, StudentMoveData
 from program import Program
 from main import app
 
@@ -297,3 +297,66 @@ def test_totals():
     disc_cost = total_cost - 200 * \
         enroll_coupons_json['BOTHCAMPS_FIXED']['discount_amount']
     assert response_json['disc_cost'] == disc_cost
+
+
+def test_move_student():
+    # At this point, we know enroll_free_camp went through, but nothing else should have
+    camp_id = enroll_free_camp.camp_id
+    student_id = enroll_free_camp.student_id
+    tgt_camp_id = enroll_camp_1.camp_id
+
+    # Student doesn't exist
+    bad_student_id = student_id + 1
+    move_data = StudentMoveData(from_camp_id=camp_id, to_camp_id=tgt_camp_id)
+    move_data_json = json.loads(json.dumps(
+        move_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post(f'/students/{bad_student_id}/move', json=move_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    # Camp doesn't exist
+    bad_camp_id = max(c['id'] for c in enroll_camps_json) + 1
+    move_data = StudentMoveData(
+        from_camp_id=camp_id, to_camp_id=bad_camp_id)
+    move_data_json = json.loads(json.dumps(
+        move_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post(f'/students/{student_id}/move', json=move_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    # Already enrolled in target
+    move_data = StudentMoveData(from_camp_id=camp_id, to_camp_id=camp_id)
+    move_data_json = json.loads(json.dumps(
+        move_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post(f'/students/{student_id}/move', json=move_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    # Not enrolled in source
+    move_data = StudentMoveData(
+        from_camp_id=tgt_camp_id, to_camp_id=tgt_camp_id)
+    move_data_json = json.loads(json.dumps(
+        move_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post(f'/students/{student_id}/move', json=move_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    # Successful
+    move_data = StudentMoveData(from_camp_id=camp_id, to_camp_id=tgt_camp_id)
+    move_data_json = json.loads(json.dumps(
+        move_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post(f'/students/{student_id}/move', json=move_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_200_OK
+
+    # Check the student
+    response = client.get(
+        f'/students/{student_id}', headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_200_OK
+    response_json = response.json()
+    src_camp = next(
+        (camp for camp in response_json['camps'] if camp['id'] == camp_id), None)
+    tgt_camp = next(
+        (camp for camp in response_json['camps'] if camp['id'] == tgt_camp_id), None)
+    assert src_camp is None
+    assert tgt_camp is not None
