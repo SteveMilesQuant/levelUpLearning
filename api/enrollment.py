@@ -34,6 +34,8 @@ class SingleEnrollment(BaseModel):
     student: Student
     camp: Camp
     coupon: Optional[Coupon]
+    total_cost: Optional[int] = 0
+    disc_cost: Optional[int] = 0
 
 
 class Enrollment(BaseModel):
@@ -144,15 +146,10 @@ class Enrollment(BaseModel):
             else:
                 coupon = None
 
-            # Create single enrollment record
-            enrollment = SingleEnrollment(
-                student=student, camp=camp, coupon=coupon)
-            self.enrollments.append(enrollment)
-            single_camp_total_cost = (camp.cost or 0)
-
             # Account for coupon
             percent_discount = 0
             fixed_discount = 0
+            single_camp_total_cost = (camp.cost or 0)
             if coupon:
                 # fixed total coupon handled at end, so as to not count double
                 if coupon.discount_type == "dollars" and has_camp_coupons:
@@ -161,6 +158,16 @@ class Enrollment(BaseModel):
                     percent_discount = coupon.discount_amount
             single_camp_disc_cost = single_camp_total_cost * \
                 (100 - percent_discount) - fixed_discount
+
+            # Create single enrollment record
+            enrollment = SingleEnrollment(
+                student=student,
+                camp=camp,
+                coupon=coupon,
+                total_cost=single_camp_total_cost * 100,
+                disc_cost=single_camp_disc_cost
+            )
+            self.enrollments.append(enrollment)
 
             # Update total cost (without coupons) and discounted cost (with coupons)
             self.total_cost = self.total_cost + single_camp_total_cost * 100

@@ -224,6 +224,8 @@ class PaymentRecordDb(Base):
     camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
     student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    total_cost: Mapped[int] = mapped_column(nullable=True)
+    disc_cost: Mapped[int] = mapped_column(nullable=True)
 
 
 class CouponDb(Base):

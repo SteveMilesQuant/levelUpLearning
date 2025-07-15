@@ -852,7 +852,9 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
                     coupon_id=single_enrollment.coupon.id if single_enrollment.coupon else None,
                     camp_id=camp.id,
                     user_id=user.id,
-                    student_id=student.id
+                    student_id=student.id,
+                    total_cost=single_enrollment.total_cost,
+                    disc_cost=single_enrollment.disc_cost
                 )
                 db_session.add(payment_record)
             await db_session.commit()
