@@ -15,7 +15,6 @@ import About from "./About";
 import Privacy from "./Privacy";
 import DataRequest from "./DataRequest";
 import Checkout from "./Checkout";
-import Enrollments from "./Enrollments";
 import Coupons from "./Coupons";
 import Events from "./Events";
 import Equip from "./Equip";
@@ -23,6 +22,7 @@ import Resources from "./Resources";
 import Boast from "./Boast";
 import BoastOne from "./BoastOne";
 import { ProtectedRoute } from "./ProtectedRoute";
+import AdminData from "./AdminData";
 
 const router = createBrowserRouter([
   {
@@ -128,9 +128,9 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: "enrollments", element: (
+            path: "admindata", element: (
               <ProtectedRoute allowedRole="ADMIN">
-                <Enrollments />
+                <AdminData />
               </ProtectedRoute>
             ),
           },

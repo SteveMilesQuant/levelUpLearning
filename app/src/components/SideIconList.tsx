@@ -1,4 +1,5 @@
 import {
+  FaDatabase,
   FaGraduationCap,
 } from "react-icons/fa";
 import { GiHamburgerMenu, GiTeacher } from "react-icons/gi";
@@ -6,7 +7,6 @@ import {
   MdOutlineDesignServices,
   MdSettings,
 } from "react-icons/md";
-import { SlNotebook } from "react-icons/sl";
 import { GiPartyPopper } from "react-icons/gi";
 import {
   Drawer,
@@ -148,10 +148,10 @@ const SideIconList = () => {
     {
       primary: {
         role: "ADMIN",
-        endpoint: "/enrollments",
+        endpoint: "/admindata",
       },
-      icon: <SlNotebook size="2em" />,
-      label: "Enrollments",
+      icon: <FaDatabase size="2em" />,
+      label: "Data",
     },
     {
       primary: {

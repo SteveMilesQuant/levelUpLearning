@@ -125,8 +125,8 @@ const NavBarDesktop = () => {
                                             </LinkBox>
                                         </>}
                                         {isAdmin && <>
-                                            <LinkBox as={RouterLink} to="/enrollments">
-                                                <Text fontFamily={fontFamily} fontSize={fontSize}>Enrollments</Text>
+                                            <LinkBox as={RouterLink} to="/admindata">
+                                                <Text fontFamily={fontFamily} fontSize={fontSize}>Data</Text>
                                             </LinkBox>
                                             <LinkBox as={RouterLink} to="/coupons">
                                                 <Text fontFamily={fontFamily} fontSize={fontSize}>Coupons</Text>
