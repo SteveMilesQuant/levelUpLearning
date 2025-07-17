@@ -23,7 +23,7 @@ const NavBarDesktop = () => {
     const fontFamily = "'roboto_c', Roboto, Georgia";
     const fontSize = { base: 32 };
     const iconHeight = { base: 32 };
-    const navSpacing = { base: 24 };
+    const navSpacing = { base: "76px" };
 
     const isGuardian = user?.roles.includes("GUARDIAN");
     const isInstructor = user?.roles.includes("INSTRUCTOR");
@@ -60,14 +60,13 @@ const NavBarDesktop = () => {
                                     color="brand.primary"
                                 />}
                             </HStack>
-                            <Box position="relative">
+                            <Box position="relative" ref={ref}>
                                 <HStack spacing={3} onClick={onToggle}>
                                     <Text fontFamily={fontFamily} fontSize={fontSize}>More</Text>
                                     <BsChevronDown size={36} />
                                 </HStack>
                                 {isOpen &&
                                     <Stack position="absolute"
-                                        ref={ref}
                                         onClick={onClose}
                                         top={12} left={-5}
                                         width={400}
