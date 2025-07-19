@@ -23,6 +23,7 @@ import Boast from "./Boast";
 import BoastOne from "./BoastOne";
 import { ProtectedRoute } from "./ProtectedRoute";
 import AdminData from "./AdminData";
+import EnrollmentForms from "./EnrollmentForms";
 
 const router = createBrowserRouter([
   {
@@ -73,6 +74,7 @@ const router = createBrowserRouter([
         children: [
           { path: "checkout", element: <Checkout /> },
           { path: "students", element: <Students /> },
+          { path: "forms", element: <EnrollmentForms /> },
           {
             path: "teach",
             element: (

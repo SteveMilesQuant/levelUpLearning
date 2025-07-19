@@ -6,6 +6,9 @@ import AuthExpiredModal from "../components/AuthExpiredModal";
 import ContactVerificationModal from "../users/components/ContactVerificationModal";
 import Footer from "../components/Footer";
 import usePageView from "../hooks/usePageView";
+import AlertMessage from "../components/AlertMessage";
+import useAlert from "../hooks/useAlerts";
+import BodyContainer from "../components/BodyContainer";
 
 interface Props {
   children?: ReactNode;
@@ -13,10 +16,20 @@ interface Props {
 
 const Layout = ({ children }: Props) => {
   usePageView(); // for Google Analytics
+  const { alert, setAlert } = useAlert();
 
   return (
     <>
       <NavBar></NavBar>
+      {alert &&
+        <BodyContainer>
+          <AlertMessage
+            status={alert.status}
+            onClose={() => setAlert(undefined)}
+          >
+            {alert.message}
+          </AlertMessage>
+        </BodyContainer>}
       <HStack gap={0} alignItems="top" w="full">
         <AuthExpiredModal />
         <ContactVerificationModal />

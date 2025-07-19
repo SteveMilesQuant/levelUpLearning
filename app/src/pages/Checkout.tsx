@@ -4,19 +4,18 @@ import BodyContainer from "../components/BodyContainer";
 import CartItemCard from "../components/CartItemCard";
 import PageHeader from "../components/PageHeader";
 import { useState } from "react";
-import AlertMessage from "../components/AlertMessage";
 import { CouponCode } from "../coupons";
 import CheckoutTotalDisplay from "../components/CheckoutTotalDisplay";
 import CheckoutPayment from "../components/CheckoutPayment";
 import { CheckoutTotal } from "../hooks/useEnrollments";
+import useAlert from "../hooks/useAlerts";
+import { useNavigate } from "react-router-dom";
 
 const Checkout = () => {
   const { items, removeItem, clearCart, coupons, setCoupons } = useShoppingCart();
   const [totals, setTotals] = useState<CheckoutTotal>({ total_cost: 0.0, disc_cost: 0.0, coupons: [] });
-
-  const [alertContext, setAlertContext] = useState<
-    undefined | { status: "error" | "success"; message: string }
-  >(undefined);
+  const { setAlert } = useAlert();
+  const navigate = useNavigate();
 
   const [isLoadingTotals, setIsLoadingTotals] = useState<boolean>(false);
   const [isLoadingPayment, setIsLoadingPayment] = useState<boolean>(false);
@@ -43,7 +42,7 @@ const Checkout = () => {
 
   const handleTotalingError = (errorMessage?: string) => {
     if (errorMessage) {
-      setAlertContext({
+      setAlert({
         status: "error",
         message: errorMessage,
       });
@@ -55,15 +54,16 @@ const Checkout = () => {
   const handlePaymentSuccess = () => {
     clearCart();
     setCoupons([]);
-    setAlertContext({
+    setAlert({
       status: "success",
       message: `Enrollment successful. You should be able to see the camps your students are enrolled in by viewing them in "My Students".`,
     });
     setIsLoadingPayment(false);
+    // navigate("/forms");
   };
 
   const handlePaymentError = (errorMessage?: string) => {
-    setAlertContext({
+    setAlert({
       status: "error",
       message:
         `There was a problem completing your enrollment. Please email us at support@leveluplearningnc.com. Error message: ` +
@@ -74,14 +74,6 @@ const Checkout = () => {
 
   return (
     <BodyContainer>
-      {alertContext && (
-        <AlertMessage
-          status={alertContext.status}
-          onClose={() => setAlertContext(undefined)}
-        >
-          {alertContext.message}
-        </AlertMessage>
-      )}
       {items.length > 0 && (
         <>
           <PageHeader>Checkout</PageHeader>

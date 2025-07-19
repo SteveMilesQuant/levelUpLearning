@@ -73,6 +73,8 @@ async def startup():
     app.config.jwt_algorithm = "HS256"
     app.config.jwt_subject = "access"
     app.config.for_pytest = (os.environ.get('PYTEST_RUN') == '1')
+    app.config.skip_email = (
+        app.config.for_pytest or os.environ.get('SKIP_EMAIL') == '1')
 
     app.google_client = WebApplicationClient(app.config.GOOGLE_CLIENT_ID)
 
@@ -864,7 +866,7 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
                 await coupon.tickup(db_session)
 
             # Send confirmation email
-            if not app.config.for_pytest:
+            if not app.config.skip_email:
                 await enrollments.send_confirmation_email(
                     app.email_server,
                     user.full_name,
