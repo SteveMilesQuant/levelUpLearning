@@ -103,6 +103,6 @@ jobs:
           docker stop lul-api || true
           docker rm lul-app || true
           docker rm lul-api || true
-          docker run -d --name lul-app -p 8080:8080 $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
-          docker run -d --env-file ~/lul.env --name lul-api -p 3000:3000 $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
+          docker run -d --restart unless-stopped --name lul-app -p 8080:8080 $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
+          docker run -d --restart unless-stopped --env-file ~/lul.env --name lul-api -p 3000:3000 $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
           docker image prune -a -f
