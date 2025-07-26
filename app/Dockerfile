@@ -16,8 +16,12 @@ RUN if [ "$NODE_ENV" = "production" ]; then npm run build; fi
 
 # Stage 2: Production (nginx)
 FROM nginx:1.25-alpine AS production
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
+RUN  touch /var/run/nginx.pid && \
+     chown -R nginx:nginx /var/cache/nginx /var/run/nginx.pid
+USER nginx
+COPY ./nginx.conf /etc/nginx/nginx.conf
+COPY --from=builder /lul-app/dist ./
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
 
 
