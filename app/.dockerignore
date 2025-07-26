@@ -1,6 +1,8 @@
-*
-!/*.json
-!/index.html
-!/src
-!/nginx.conf
-!/.env
+**
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.node.json
+!index.html
+!nginx.conf
+!src/**
