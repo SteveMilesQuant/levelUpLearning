@@ -20,7 +20,7 @@ RUN  touch /var/run/nginx.pid && \
      chown -R nginx:nginx /var/cache/nginx /var/run/nginx.pid
 USER nginx
 COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY --from=builder /lul-app/dist ./
+COPY --from=builder /app/dist ./
 EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
 
