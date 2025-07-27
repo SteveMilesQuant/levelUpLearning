@@ -27,3 +27,4 @@ util
 .vscode
 docker-compose.override.yml
 api/lul.env
+app/.env.dev
