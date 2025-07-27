@@ -26,3 +26,4 @@ iam_policy.json
 util
 .vscode
 docker-compose.override.yml
+api/lul.env
