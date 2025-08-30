@@ -1,0 +1,5 @@
+FROM lul-python:latest
+
+WORKDIR /lul-api
+USER app
+CMD ["python3", "autoemails.py"]

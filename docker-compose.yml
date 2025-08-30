@@ -6,14 +6,31 @@ services:
       context: ./app
       dockerfile: Dockerfile
       target: production
+    image: lul-app:latest
     ports:
       - "8080:8080"
     restart: "always"
 
+  python-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.base
+    image: lul-python:latest
+
   api:
-    build: ./api
+    build:
+      context: ./api
+      dockerfile: Dockerfile.api
+    image: lul-api:latest
     ports:
       - "3000:3000"
     restart: "always"
     env_file:
       - ./api/.env
+
+  email:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.email
+    image: lul-email:latest
+    command: ["/bin/true"]

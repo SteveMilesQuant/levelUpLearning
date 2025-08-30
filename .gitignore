@@ -11,7 +11,7 @@ mkcert*
 serverless.y*
 .serverless*
 api.zip
-.env
+.env*
 /app/node_modules/*
 /app/dist/*
 *.timestamp-*
@@ -27,4 +27,3 @@ util
 .vscode
 docker-compose.override.yml
 api/lul.env
-app/.env.dev

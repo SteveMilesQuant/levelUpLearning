@@ -64,10 +64,10 @@ jobs:
           printf "VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID\nVITE_API_URL=/api\nVITE_SQUARE_APPLICATION_ID=$SQUARE_APPLICATION_ID\nVITE_SQUARE_LOCATION_ID=$SQUARE_LOCATION_ID" > app/.env
           touch api/.env
           docker compose build
-          docker tag leveluplearning-app $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
-          docker tag leveluplearning-api $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
+          docker tag lul-app $ECR_REGISTRY/$ECR_REPOSITORY:lul-app
+          docker tag lul-api $ECR_REGISTRY/$ECR_REPOSITORY:lul-api
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:lul-app
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:lul-api
 
   CD:
     runs-on: [self-hosted]
@@ -91,8 +91,8 @@ jobs:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         run: |
-          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
-          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:lul-app
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:lul-api
 
       - name: Restart docker container from new image
         env:
@@ -105,4 +105,11 @@ jobs:
           docker rm lul-api || true
           docker run -d --restart unless-stopped --name lul-app -p 8080:8080 $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_app
           docker run -d --restart unless-stopped --env-file ~/lul.env --name lul-api -p 3000:3000 $ECR_REGISTRY/$ECR_REPOSITORY:leveluplearning_api
+
+      - name: Prune and pull down email container
+        env:
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+        run: |
           docker image prune -a -f
+          docker pull $ECR_REGISTRY/$ECR_REPOSITORY:lul-email
