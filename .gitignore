@@ -11,7 +11,7 @@ mkcert*
 serverless.y*
 .serverless*
 api.zip
-.env
+.env*
 /app/node_modules/*
 /app/dist/*
 *.timestamp-*
@@ -24,7 +24,7 @@ cert-manager.yaml
 v2_4_7_full.yaml
 iam_policy.json
 util
-.vscode
+.vscode/*
+!.vscode/tasks.json
 docker-compose.override.yml
 api/lul.env
-app/.env.dev

@@ -96,7 +96,7 @@ class UserDb(Base):
 
     def dict(self):
         returnVal = {}
-        for key, value in UserResponse():
+        for key, _ in UserResponse():
             if key != 'roles':
                 returnVal[key] = getattr(self, key)
         return returnVal

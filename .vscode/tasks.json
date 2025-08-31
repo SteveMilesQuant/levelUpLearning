@@ -1,0 +1,84 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build and run website",
+            "type": "shell",
+            "command": "docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "docker compose -f docker-compose.yml -f docker-compose.dev.yml build",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            }
+        },
+        {
+            // Prerequesite: cd api && python3 -m venv virt && source virt/bin/activate && python3 -m pip install -r requirements.txt
+            "label": "Pytest",
+            "type": "shell",
+            "command": "export PYTHONPATH=. && export $(grep -v '^#' .env.dev | xargs) && source virt/bin/activate && pytest",
+            "options": {
+                "cwd": "${workspaceFolder}/api"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Cert check (test)",
+            "type": "shell",
+            "command": "docker run --rm --user $(id -u):$(id -g) --env-file ./api/.env -v \"$(pwd)/api:/lul-api\" -v \"$HOME/.ssh:/etc/letsencrypt:ro\" lul-cert-check",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Email reminders (test)",
+            "type": "shell",
+            "command": "docker run --rm --env-file ./api/.env -v \"$(pwd)/api:/lul-api\" lul-email",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Prune docker",
+            "type": "shell",
+            "command": "docker container prune -f && docker image prune -af",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "none",
+                "isDefault": false
+            }
+        },
+    ]
+}

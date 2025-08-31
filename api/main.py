@@ -86,7 +86,7 @@ async def startup():
         access_token=app.config.SQUARE_ACCESS_TOKEN,
         environment=app.config.SQUARE_ENVIRONMENT)
 
-    if not app.config.for_pytest:
+    if not app.config.skip_email:
         app.email_server = EmailServer(
             host=os.environ.get("SMTP_HOST", None),
             port=os.environ.get("SMTP_PORT", None),

@@ -2,7 +2,11 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-COPY package*.json ./
+COPY package-lock.json ./
+COPY package.json ./
+COPY tsconfig.json ./
+COPY tsconfig.node.json ./
+COPY vite.config.ts ./
 RUN npm install
 
 COPY . .
