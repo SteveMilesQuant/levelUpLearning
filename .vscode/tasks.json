@@ -72,10 +72,13 @@
             "type": "shell",
             "options": {
                 "env": {
-                    "SEC_GROUP_ID": "${config:awsSecurityGroupId}"
+                    "SEC_GROUP_ID": "${config:awsSecurityGroupId}",
+                    "GITHUB_OWNER": "${config:gitHubOwner}",
+                    "GITHUB_REPO": "${config:gitHubRepo}",
+                    "GITHUB_PAT": "${config:gitHubPat}",
                 }
             },
-            "command": "AMI_ID=$(aws ssm get-parameters --names \"/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2\" --region us-east-2 --query \"Parameters[0].Value\" --output text) && INSTANCE_ID=$(aws ec2 run-instances --image-id \"$AMI_ID\" --count 1 --instance-type t2.micro --key-name lul --security-group-ids \"$SEC_GROUP_ID\" --region us-east-2 --query \"Instances[0].InstanceId\" --output text) && echo \"Launched instance ID: $INSTANCE_ID\"",
+            "command": "",
             "problemMatcher": []
         },
         {

@@ -19,6 +19,8 @@ class EmailServer(BaseModel):
         self._password = password
 
     async def send_email(self, message: MIMEMultipart):
+        print(
+            f"host: {self._host}, port: {self._port}, user: {self._user}, password: {self._password}")
         server = SMTP(hostname=self._host, port=self._port, start_tls=True)
         try:
             await server.connect()
