@@ -78,7 +78,7 @@
                     "GITHUB_PAT": "${config:gitHubPat}",
                 }
             },
-            "command": "",
+            "command": "${workspaceFolder}/bin/launchec2.sh",
             "problemMatcher": []
         },
         {
@@ -86,10 +86,14 @@
             "type": "shell",
             "options": {
                 "env": {
+                    "GITHUB_OWNER": "${config:gitHubOwner}",
+                    "GITHUB_REPO": "${config:gitHubRepo}",
+                    "GITHUB_PAT": "${config:gitHubPat}",
+                    "IP_ADDRESS": "${config:awsEc2InstanceIPAddress}",
                     "INSTANCE_ID": "${config:awsEc2InstanceId}"
                 }
             },
-            "command": "aws ec2 terminate-instances --instance-ids \"$INSTANCE_ID\" --region us-east-2 --query 'TerminatingInstances[0].InstanceId' --output text && echo \"Terminated instance $INSTANCE_ID\"",
+            "command": "${workspaceFolder}/bin/deleteec2.sh",
             "problemMatcher": []
         },
         {

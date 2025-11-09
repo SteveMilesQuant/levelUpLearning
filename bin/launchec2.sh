@@ -7,7 +7,8 @@ REG_TOKEN=$(curl -s -X POST \
   https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/actions/runners/registration-token \
   | jq -r .token)
 
-ssh -i ~/.ssh/lul.pem ec2-user@$IP_ADDRESS "REG_TOKEN=$REG_TOKEN bash -s" <<'EOF'
+scp -o StrictHostKeyChecking=no -i ~/.ssh/lul.pem -r ./scripts ec2-user@$IP_ADDRESS:/home/ec2-user/lul-scripts
+ssh -o StrictHostKeyChecking=no -i ~/.ssh/lul.pem ec2-user@$IP_ADDRESS "REG_TOKEN=$REG_TOKEN bash -s" <<'EOF'
 # Create runner directory
 mkdir -p actions-runner && cd actions-runner
 
@@ -16,12 +17,18 @@ curl -o actions-runner-linux-x64-2.328.0.tar.gz -L https://github.com/actions/ru
 tar xzf ./actions-runner-linux-x64-2.328.0.tar.gz
 
 # Configure runner with tags
-./config.sh --url https://github.com/SteveMilesQuant/levelUpLearning --token $REG_TOKEN --name my-ec2-runner --labels new-runner,self-hosted --unattended
+./config.sh --url https://github.com/SteveMilesQuant/levelUpLearning --token $REG_TOKEN --labels new-runner,self-hosted --unattended
 
 # Install as service and start
-sudo ./svc.sh install
-sudo ./svc.sh start
+sudo cp /home/ec2-user/lul-scripts/github-runner.service /etc/systemd/system/github-runner.service
+sudo systemctl daemon-reload
+sudo systemctl enable github-runner.service
+sudo systemctl start github-runner.service
 EOF
 
+jq --arg id "$INSTANCE_ID" '.awsEc2InstanceId = $id' .vscode/settings.json > .vscode/settings.tmp && mv .vscode/settings.tmp .vscode/settings.json
+jq --arg id "$IP_ADDRESS" '.awsEc2InstanceIPAddress = $id' .vscode/settings.json > .vscode/settings.tmp && mv .vscode/settings.tmp .vscode/settings.json
 
-echo "Launched instance ID: $INSTANCE_ID\nIP: $IP_ADDRESS"
+echo "Launched instance ID: $INSTANCE_ID"
+echo "IP: $IP_ADDRESS"
+
