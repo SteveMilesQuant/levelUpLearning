@@ -68,6 +68,35 @@
             }
         },
         {
+            "label": "Launch EC2",
+            "type": "shell",
+            "options": {
+                "env": {
+                    "SEC_GROUP_ID": "${config:awsSecurityGroupId}",
+                    "GITHUB_OWNER": "${config:gitHubOwner}",
+                    "GITHUB_REPO": "${config:gitHubRepo}",
+                    "GITHUB_PAT": "${config:gitHubPat}",
+                }
+            },
+            "command": "${workspaceFolder}/bin/launchec2.sh",
+            "problemMatcher": []
+        },
+        {
+            "label": "Delete EC2",
+            "type": "shell",
+            "options": {
+                "env": {
+                    "GITHUB_OWNER": "${config:gitHubOwner}",
+                    "GITHUB_REPO": "${config:gitHubRepo}",
+                    "GITHUB_PAT": "${config:gitHubPat}",
+                    "IP_ADDRESS": "${config:awsEc2OldInstanceIPAddress}",
+                    "INSTANCE_ID": "${config:awsEc2OldInstanceId}"
+                }
+            },
+            "command": "${workspaceFolder}/bin/deleteec2.sh",
+            "problemMatcher": []
+        },
+        {
             "label": "Prune docker",
             "type": "shell",
             "command": "docker container prune -f && docker image prune -af",

@@ -1,0 +1,27 @@
+name: New Server Setup
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Set up docker:
+    runs-on: [new-runner]
+    steps:
+      - name: Set up docker
+        run: |
+          sudo yum install docker
+          sudo service docker start
+
+  Set up nginx:
+    runs-on: [new-runner]
+    steps:
+      - name: Set up nginx
+        run: |
+          sudo yum install nginx
+          sudo mv /home/ec2-user/lul-scripts/nginx.conf /etc/nginx/nginx.conf
+          sudo mv /home/ec2-user/lul-scripts/lul_nginx_ec2.conf /etc/nginx/conf.d/lul_nginx_ec2.conf
+
+  Deploy application:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      runner: new-runner
