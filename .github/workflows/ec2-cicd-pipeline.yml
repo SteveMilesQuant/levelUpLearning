@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'app/**'
+      - 'api/**'
+      - 'docker-compose.yml'
 
 jobs:
   CI:
