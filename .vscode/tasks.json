@@ -89,8 +89,8 @@
                     "GITHUB_OWNER": "${config:gitHubOwner}",
                     "GITHUB_REPO": "${config:gitHubRepo}",
                     "GITHUB_PAT": "${config:gitHubPat}",
-                    "IP_ADDRESS": "${config:awsEc2InstanceIPAddress}",
-                    "INSTANCE_ID": "${config:awsEc2InstanceId}"
+                    "IP_ADDRESS": "${config:awsEc2OldInstanceIPAddress}",
+                    "INSTANCE_ID": "${config:awsEc2OldInstanceId}"
                 }
             },
             "command": "${workspaceFolder}/bin/deleteec2.sh",

@@ -13,7 +13,7 @@ EOF
 # Terminate in AWS
 aws ec2 terminate-instances --instance-ids "$INSTANCE_ID" --region us-east-2 --query 'TerminatingInstances[0].InstanceId' --output text
 
-jq --arg id "" '.awsEc2InstanceId = $id' .vscode/settings.json > .vscode/settings.tmp && mv .vscode/settings.tmp .vscode/settings.json
-jq --arg id "" '.awsEc2InstanceIPAddress = $id' .vscode/settings.json > .vscode/settings.tmp && mv .vscode/settings.tmp .vscode/settings.json
+jq --arg id "" '.awsEc2OldInstanceId = $id' .vscode/settings.json > .vscode/settings.tmp && mv .vscode/settings.tmp .vscode/settings.json
+jq --arg id "" '.awsEc2OldInstanceIPAddress = $id' .vscode/settings.json > .vscode/settings.tmp && mv .vscode/settings.tmp .vscode/settings.json
 
 echo "Terminated instance $INSTANCE_ID"
