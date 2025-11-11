@@ -11,6 +11,7 @@ jobs:
         run: |
           sudo service nginx stop
           DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+          echo "DIR=$DIR"
           LETSENCRYPT_VOLUME_DIR=$DIR/letsencrypt
           DOMAIN="leveluplearningnc.com"
           EMAIL="steven.miles.quant@gmail.com"
