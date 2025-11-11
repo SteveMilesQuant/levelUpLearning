@@ -14,7 +14,7 @@ jobs:
           LETSENCRYPT_VOLUME_DIR=$DIR/letsencrypt
           DOMAIN="leveluplearningnc.com"
           EMAIL="steven.miles.quant@gmail.com"
-          docker run \
+          sudo docker run \
             --rm \
             --name certbot \
             -p 80:80 \
