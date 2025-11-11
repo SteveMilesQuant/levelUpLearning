@@ -1,0 +1,33 @@
+name: Post-routing steps
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Post:
+    runs-on: [new-runner]
+    steps:
+      - name: Get certification and start nginx
+        run: |
+          sudo service nginx stop
+          DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+          LETSENCRYPT_VOLUME_DIR=$DIR/letsencrypt
+          DOMAIN="leveluplearningnc.com"
+          EMAIL="steven.miles.quant@gmail.com"
+          docker run \
+            --rm \
+            --name certbot \
+            -p 80:80 \
+            -p 443:443 \
+            -v "$LETSENCRYPT_VOLUME_DIR:/etc/letsencrypt" \
+            certbot/certbot \
+            certonly \
+            -d $DOMAIN \
+            --standalone \
+            --email=$EMAIL \
+            --agree-tos \
+            --no-eff-email
+          sudo cp --recursive --dereference $DIR/letsencrypt/live/$DOMAIN /usr/local/nginx/conf
+          sudo chown $USER:$USER --recursive /usr/local/nginx/conf/$DOMAIN
+          sudo service nginx start
+
