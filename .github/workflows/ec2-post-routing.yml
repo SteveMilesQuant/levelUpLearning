@@ -27,6 +27,7 @@ jobs:
             --email=$EMAIL \
             --agree-tos \
             --no-eff-email
+          sudo mkdir /usr/local/nginx && sudo mkdir /usr/local/nginx/conf
           sudo cp --recursive --dereference $DIR/letsencrypt/live/$DOMAIN /usr/local/nginx/conf
           sudo chown $USER:$USER --recursive /usr/local/nginx/conf/$DOMAIN
           sudo service nginx start
