@@ -7,10 +7,20 @@ jobs:
   Core:
     runs-on: [new-runner]
     steps:
-      - name: Set up docker
+      - name: Update apt and apt-get
         run: |
           sudo apt update
           sudo apt-get update
+
+  AWS:
+    needs: [Core]
+    runs-on: [new-runner]
+    steps:
+      - name: Set up AWS command line
+        run: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
 
   Docker:
     needs: [Core]
