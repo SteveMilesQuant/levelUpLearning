@@ -19,9 +19,9 @@ jobs:
     steps:
       - name: Set up AWS command line
         run: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
 
   Docker:
     needs: [Core]
@@ -45,7 +45,7 @@ jobs:
           sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
           sudo service docker start
           sudo groupadd docker || true
-          sudo usermod -aG docker $USER || true
+          sudo usermod -aG docker $USER
 
   Nginx:
     needs: [Core]
@@ -58,7 +58,7 @@ jobs:
           sudo cp /home/ubuntu/lul-scripts/lul_nginx_ec2.conf /etc/nginx/conf.d/lul_nginx_ec2.conf
 
   Deploy:
-    needs: [Docker]
+    needs: [Docker, AWS]
     uses: ./.github/workflows/deploy.yml
     with:
       runner: new-runner
