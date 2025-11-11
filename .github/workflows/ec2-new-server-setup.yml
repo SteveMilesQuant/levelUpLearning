@@ -13,7 +13,7 @@ jobs:
           sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
 
   Docker:
-    needs: [Yum]
+    needs: [Core]
     runs-on: [new-runner]
     steps:
       - name: Set up docker
@@ -27,7 +27,7 @@ jobs:
           sudo usermod -aG docker $USER
 
   Nginx:
-    needs: [Yum]
+    needs: [Core]
     runs-on: [new-runner]
     steps:
       - name: Set up nginx
