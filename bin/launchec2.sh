@@ -38,7 +38,7 @@ while true; do
   fi
 done
 
-scp -o StrictHostKeyChecking=no -i ~/.ssh/lul.pem -r ./api/.env ubuntu@$IP_ADDRESS:/home/ubuntu/lul.env
+scp -o StrictHostKeyChecking=no -i ~/.ssh/lul.pem -r ./api/.env.prod ubuntu@$IP_ADDRESS:/home/ubuntu/lul.env
 ssh -i ~/.ssh/lul.pem ubuntu@$IP_ADDRESS "rm -rf /home/ubuntu/lul-scripts"
 scp -o StrictHostKeyChecking=no -i ~/.ssh/lul.pem -r ./scripts ubuntu@$IP_ADDRESS:/home/ubuntu/lul-scripts
 ssh -o StrictHostKeyChecking=no -i ~/.ssh/lul.pem ubuntu@$IP_ADDRESS "REG_TOKEN=$REG_TOKEN bash -s" <<'EOF'
