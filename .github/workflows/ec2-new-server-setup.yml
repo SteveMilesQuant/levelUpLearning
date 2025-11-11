@@ -43,8 +43,8 @@ jobs:
       - name: Set up nginx
         run: |
           sudo amazon-linux-extras install -y nginx1
-          sudo mv /home/ec2-user/lul-scripts/nginx.conf /etc/nginx/nginx.conf
-          sudo mv /home/ec2-user/lul-scripts/lul_nginx_ec2.conf /etc/nginx/conf.d/lul_nginx_ec2.conf
+          sudo cp /home/ec2-user/lul-scripts/nginx.conf /etc/nginx/nginx.conf
+          sudo cp /home/ec2-user/lul-scripts/lul_nginx_ec2.conf /etc/nginx/conf.d/lul_nginx_ec2.conf
 
   Deploy:
     needs: [Docker]
