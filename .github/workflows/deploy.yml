@@ -61,3 +61,5 @@ jobs:
           sudo docker image prune -a -f
           sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:lul-email
           sudo docker pull $ECR_REGISTRY/$ECR_REPOSITORY:lul-cert
+          sudo docker tag $ECR_REGISTRY/$ECR_REPOSITORY:lul-email lul-email:latest
+          sudo docker tag $ECR_REGISTRY/$ECR_REPOSITORY:lul-cert lul-cert:latest
