@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Set up docker
         run: |
-          sudo yum install docker
+          sudo yum install -y docker
           sudo service docker start
 
   Nginx:
@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Set up nginx
         run: |
-          sudo yum install nginx
+          sudo yum install -y nginx
           sudo mv /home/ec2-user/lul-scripts/nginx.conf /etc/nginx/nginx.conf
           sudo mv /home/ec2-user/lul-scripts/lul_nginx_ec2.conf /etc/nginx/conf.d/lul_nginx_ec2.conf
 
