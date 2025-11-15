@@ -32,6 +32,6 @@ CMD ["nginx", "-g", "daemon off;"]
 # Stage 4: Development (node)
 FROM node:18-alpine AS development
 WORKDIR /app
-COPY --from=builder /app /app
+COPY --from=build /app /app
 EXPOSE 5173
 CMD ["npm", "run", "dev"]
