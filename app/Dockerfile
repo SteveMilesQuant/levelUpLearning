@@ -24,7 +24,7 @@ RUN  touch /var/run/nginx.pid && \
 USER nginx
 COPY ./nginx.conf /etc/nginx/nginx.conf
 WORKDIR /app
-COPY --from=builder /app/dist ./
+COPY --from=build /app/dist ./
 EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
 
@@ -32,6 +32,6 @@ CMD ["nginx", "-g", "daemon off;"]
 # Stage 4: Development (node)
 FROM node:18-alpine AS development
 WORKDIR /app
-COPY --from=build /app /app
+COPY --from=builder /app /app
 EXPOSE 5173
 CMD ["npm", "run", "dev"]
