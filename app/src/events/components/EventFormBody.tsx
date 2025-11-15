@@ -29,37 +29,55 @@ interface Props {
 const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, setTitleImage, carouselImages, setCarouselImages, imageDeleteList, setImageDeleteList }: Props) => {
     const handleTitleImageDrop = (files: File[]) => {
         if (files.length === 0) return;
-        setTitleImage({ id: undefined, file: files[0], url: URL.createObjectURL(files[0]), index: 0 });
+        setTitleImage({ image: { id: undefined, url: URL.createObjectURL(files[0]), list_index: 0 }, file: files[0] });
     }
     const handleTitleImageDelete = () => {
+        if (titleImage && titleImage.image.id && setImageDeleteList) {
+            setImageDeleteList([...(imageDeleteList || []), titleImage]);
+        }
         setTitleImage(undefined);
     }
 
 
     const handleCarouselImageDrop = (files: File[]) => {
         if (files.length === 0) return;
-        const newImage = { file: files[0], url: URL.createObjectURL(files[0]), index: carouselImages.length };
+        const newImage = { image: { url: URL.createObjectURL(files[0]), list_index: carouselImages.length }, file: files[0] };
         setCarouselImages([...carouselImages, newImage]);
     }
     const handleCarouselImageDelete = (index: number) => {
-        const newList = carouselImages.filter(i => i.index != index).map(i => i.index < index ? i : { ...i, index: i.index - 1 });
+        const newList: ImageFile[] = carouselImages
+            .filter(i => i.image.list_index != index)
+            .map(i => i.image.list_index < index ? i : { image: { ...i.image, list_index: i.image.list_index - 1 }, file: i.file });
         const deleteImage = carouselImages[index];
-        if (deleteImage.id && setImageDeleteList) {
+        if (deleteImage.image.id && setImageDeleteList) {
             setImageDeleteList([...(imageDeleteList || []), deleteImage]);
         }
         setCarouselImages(newList);
     }
     const handleMoveImageUp = (index: number) => {
         if (index === 0) return;
-        const listPartOne = carouselImages.filter(i => i.index < index - 1);
-        const listPartTwo = carouselImages.filter(i => i.index > index);
-        setCarouselImages([...listPartOne, { ...carouselImages[index], index: index - 1 }, { ...carouselImages[index - 1], index: index }, ...listPartTwo]);
+        const listPartOne = carouselImages.filter(i => i.image.list_index < index - 1);
+        const listPartTwo = carouselImages.filter(i => i.image.list_index > index);
+        const newImageOne = {
+            image: { ...carouselImages[index].image, list_index: index - 1 }, file: carouselImages[index].file
+        };
+        const newImageTwo = {
+            image: { ...carouselImages[index - 1].image, list_index: index }, file: carouselImages[index - 1].file
+        };
+        const newList = [...listPartOne, newImageOne, newImageTwo, ...listPartTwo];
+        setCarouselImages(newList);
     }
     const handleMoveImageDown = (index: number) => {
         if (index === carouselImages.length - 1) return;
-        const listPartOne = carouselImages.filter(i => i.index < index);
-        const listPartTwo = carouselImages.filter(i => i.index > index + 1);
-        setCarouselImages([...listPartOne, { ...carouselImages[index + 1], index: index }, { ...carouselImages[index], index: index + 1 }, ...listPartTwo]);
+        const listPartOne = carouselImages.filter(i => i.image.list_index < index);
+        const listPartTwo = carouselImages.filter(i => i.image.list_index > index + 1);
+        const newImageOne = {
+            image: { ...carouselImages[index].image, list_index: index + 1 }, file: carouselImages[index + 1].file
+        };
+        const newImageTwo = {
+            image: { ...carouselImages[index].image, list_index: index }, file: carouselImages[index].file
+        };
+        setCarouselImages([...listPartOne, newImageOne, newImageTwo, ...listPartTwo]);
     }
 
     return (
@@ -81,7 +99,7 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
                 <FormLabel>Title image</FormLabel>
                 <Stack spacing={3}>
                     {titleImage &&
-                        <EventTitleImage src={titleImage.url} alt="Title Image"
+                        <EventTitleImage src={titleImage.image.url} alt="Title Image"
                             buttonSet={
                                 isReadOnly ? [] : [<DeleteButton onConfirm={handleTitleImageDelete}>Title Image</DeleteButton>]
                             } />}
@@ -111,7 +129,7 @@ const EventFormBody = ({ register, getValues, errors, isReadOnly, titleImage, se
                 <Stack spacing={3} >
                     {carouselImages?.map(
                         (image, index) =>
-                            <EditableImage key={index} src={image.url} alt={"Carousel Image " + index} height={{ base: 500 }}
+                            <EditableImage key={index} src={image.image.url} alt={"Carousel Image " + index} height={{ base: 500 }}
                                 buttonSet={
                                     isReadOnly ? [] :
                                         [

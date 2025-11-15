@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import EventFormBody from './EventFormBody'
 import { useQueryClient } from '@tanstack/react-query';
-import { CACHE_KEY_EVENTS, addCarouselImage, deleteCarouselImage, postTitleImage, updateCarouselImage, useDeleteEvent } from '../hooks/useEvents';
+import { CACHE_KEY_EVENTS, addCarouselImage, deleteImage, postTitleImage, updateCarouselImageOrder, useDeleteEvent } from '../hooks/useEvents';
 import useEventForm from '../hooks/useEventForm';
 import { Event } from '../Event'
 import CrudButtonSet from '../../components/CrudButtonSet';
@@ -35,59 +35,59 @@ const EventForm = ({ event }: Props) => {
     };
 
     const updateTitleImage = () => {
-        if (!titleImage || titleImage.id) return;
-        postTitleImage(event.id, titleImage, handleSuccessWithBluntForce);
+        if (!titleImage || titleImage.image.id || !titleImage.file) return;
+        postTitleImage(event.id, titleImage.file, handleSuccessWithBluntForce);
     }
     const updateCarouselImages = () => {
-        for (var i = 0; i < imageDeleteList.length; i++) {
-            const image = imageDeleteList[i];
-            deleteCarouselImage(event.id, image.id, handleSuccessWithBluntForce);
-        }
         for (var i = 0; i < carouselImages.length; i++) {
             const image = carouselImages[i];
-            if (image.id) {
-                updateCarouselImage(event.id, image, handleSuccessWithBluntForce);
+            if (image.image.id) {
+                updateCarouselImageOrder(event.id, image.image, handleSuccessWithBluntForce);
             }
-            else {
-                addCarouselImage(event.id, image, handleSuccessWithBluntForce);
+            else if (image.file) {
+                addCarouselImage(event.id, image.image, image.file, handleSuccessWithBluntForce);
             }
         }
     }
+    const updateDeleteImages = () => {
+        for (var i = 0; i < imageDeleteList.length; i++) {
+            const image = imageDeleteList[i];
+            deleteImage(event.id, image.image.id, handleSuccessWithBluntForce);
+        }
+        setImageDeleteList([]);
+    }
     const handleFormSuccess = () => {
+        updateDeleteImages();
         updateTitleImage();
         updateCarouselImages();
     }
     const eventForm = useEventForm(event, handleFormSuccess);
 
     const resetTitleImage = () => {
-        if (!event.title_image || !event.title_image.image || !event.title_image.filename) {
+        if (!event.title_image || !event.title_image.url || !event.title_image.filename) {
             setTitleImage(undefined);
         }
         else {
-            const file = new File([event.title_image.image], event.title_image.filename, { type: event.title_image.filetype });
-            setTitleImage({ id: event.title_image.id, file, url: URL.createObjectURL(file), index: 0 });
+            setTitleImage({ image: { ...event.title_image, list_index: 0 }, file: undefined });
         }
     }
     useEffect(() => {
         resetTitleImage();
-    }, [!!event.title_image]);
+    }, [event.title_image]);
 
     const resetCarouselImages = () => {
-        var newImageList = [];
+        var newImageList: ImageFile[] = [];
         if (event.carousel_images) {
             for (var i = 0; i < event.carousel_images.length; i++) {
                 const image = event.carousel_images[i];
-                if (image.image && image.filename && image.filetype) {
-                    const file = new File([image.image], image.filename, { type: image.filetype });
-                    newImageList.push({ id: image.id, file, url: URL.createObjectURL(file), index: image.list_index } as ImageFile);
-                }
+                newImageList.push({ image: { ...image }, file: undefined });
             }
         }
         setCarouselImages(newImageList);
     }
     useEffect(() => {
         resetCarouselImages();
-    }, [!!event.carousel_images]);
+    }, [event.carousel_images]);
 
     const handleCancel = () => {
         eventForm.handleClose();

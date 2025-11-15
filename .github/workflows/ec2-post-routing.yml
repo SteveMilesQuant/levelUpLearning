@@ -5,7 +5,7 @@ on:
 
 jobs:
   Post:
-    runs-on: [new-runner]
+    runs-on: [active-deployment]
     steps:
       - name: Get certification and start nginx
         run: |

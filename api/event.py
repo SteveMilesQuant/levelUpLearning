@@ -1,7 +1,7 @@
 
 from pydantic import PrivateAttr
 from typing import Optional, Any, List
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from datamodels import EventData, EventResponse, ImageData
 from db import EventDb, ImageDb
 from operator import attrgetter
@@ -69,8 +69,14 @@ class Event(EventResponse):
         self.carousel_images = [
             ImageData(**db_image.dict()) for db_image in self._db_obj.carousel_images]
 
+    def find_image(self, image_id: int) -> Optional[ImageDb]:
+        if self._db_obj.title_image is not None and self._db_obj.title_image.id == image_id:
+            return self._db_obj.title_image
+        else:
+            return next((i for i in self._db_obj.carousel_images if image_id == i.id), None)
 
-async def all_events(db_session: Any):
+
+async def all_events(db_session: Any) -> List[Event]:
     stmt = select(EventDb)
     result = await db_session.execute(stmt)
     events = []

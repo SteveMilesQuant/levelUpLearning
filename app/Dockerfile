@@ -11,14 +11,13 @@ RUN npm install
 
 COPY . .
 
-# Build only if in production mode
-ARG NODE_ENV=production
-ENV NODE_ENV=$NODE_ENV
+# Stage 2: Production build (ONLY runs when target=production)
+FROM builder AS build
+ENV NODE_ENV=production
+RUN npm run build
 
-RUN if [ "$NODE_ENV" = "production" ]; then npm run build; fi
 
-
-# Stage 2: Production (nginx)
+# Stage 3: Production (nginx)
 FROM nginx:1.25-alpine AS production
 RUN  touch /var/run/nginx.pid && \
      chown -R nginx:nginx /var/cache/nginx /var/run/nginx.pid
@@ -30,7 +29,7 @@ EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
 
 
-# Stage 3: Development (node)
+# Stage 4: Development (node)
 FROM node:18-alpine AS development
 WORKDIR /app
 COPY --from=builder /app /app

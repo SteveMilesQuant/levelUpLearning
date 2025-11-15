@@ -2,6 +2,7 @@ import os
 import aiohttp
 import json
 from fastapi import FastAPI, APIRouter, Request, HTTPException, status, UploadFile
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from oauthlib.oauth2 import WebApplicationClient
 from square.client import Client as SquareClient
@@ -1173,7 +1174,7 @@ async def post_new_resource(request: Request, resource_group_id: int, new_resour
 
 
 @api_router.delete("/resource_groups/{resource_group_id}/resources/{resource_id}")
-async def delete_resource_group(request: Request, resource_group_id: int, resource_id: int):
+async def delete_resource_group_resource(request: Request, resource_group_id: int, resource_id: int):
     '''Delete a resource.'''
     async with app.db_sessionmaker() as db_session:
         user = await get_authorized_user(request, db_session)
@@ -1202,15 +1203,48 @@ async def delete_resource_group(request: Request, resource_group_id: int, resour
 
 # public route
 @api_router.get("/events", response_model=List[EventResponse])
-async def get_all_events():
+async def get_all_events(request: Request):
     '''Get all events.'''
     async with app.db_sessionmaker() as db_session:
-        return await all_events(db_session)
+        events = await all_events(db_session)
+        for event in events:
+            if event.title_image:
+                event.title_image.url = str(
+                    request.url_for("get_event_image", event_id=event.id,
+                                    image_id=event.title_image.id)
+                )
+            for image in event.carousel_images:
+                image.url = str(
+                    request.url_for("get_event_image", event_id=event.id,
+                                    image_id=image.id)
+                )
+        return events
+
+
+# public route
+@api_router.get("/events/{event_id}/images/{image_id}", name="get_event_image")
+async def get_event_image(event_id: int, image_id: int):
+    async with app.db_sessionmaker() as db_session:
+        event = Event(id=event_id)
+        await event.create(db_session)
+        if event.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+
+        image = event.find_image(image_id)
+        if image is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Image with id={image_id} not found within event with id={event_id}")
+
+        return Response(
+            content=image.image,              # the PNG/JPEG bytes from the DB
+            media_type=image.filetype or "image/png"
+        )
 
 
 # public route
 @api_router.get("/events/{event_id}", response_model=EventResponse)
-async def get_one_event(event_id: int):
+async def get_one_event(event_id: int, request: Request):
     '''Get a single event.'''
     async with app.db_sessionmaker() as db_session:
         event = Event(id=event_id)
@@ -1218,6 +1252,18 @@ async def get_one_event(event_id: int):
         if event.id is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
+
+        if event.title_image:
+            event.title_image.url = str(
+                request.url_for("get_event_image", event_id=event_id,
+                                image_id=event.title_image.id)
+            )
+        for image in event.carousel_images:
+            image.url = str(
+                request.url_for("get_event_image", event_id=event_id,
+                                image_id=image.id)
+            )
+
         return event
 
 
@@ -1393,8 +1439,8 @@ async def event_put_update_carousel_image(request: Request, event_id: int, image
 
 
 # delete carousel image
-@api_router.delete("/events/{event_id}/carousel_images/{image_id}", response_model=None)
-async def event_delete_carousel_image(request: Request, event_id: int, image_id: int):
+@api_router.delete("/events/{event_id}/images/{image_id}", response_model=None)
+async def event_delete_image(request: Request, event_id: int, image_id: int):
     '''Update the carousel image order'''
     async with app.db_sessionmaker() as db_session:
         user = await get_authorized_user(request, db_session)
@@ -1408,11 +1454,16 @@ async def event_delete_carousel_image(request: Request, event_id: int, image_id:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Event with id={event_id} not found")
 
+        db_image = event._db_obj.title_image
+        if db_image and db_image.id == image_id:
+            event._db_obj.title_image_id = None
+            event._db_obj.title_image = None
+            await db_session.commit()
+            return
+
         for db_image in event._db_obj.carousel_images:
             if db_image.id == image_id:
                 event._db_obj.carousel_images.remove(db_image)
-                await db_session.commit()
-                await db_session.delete(db_image)
                 await db_session.commit()
                 return
 

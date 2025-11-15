@@ -30,14 +30,16 @@ const EventFormModal = ({ title, listIndex, isOpen, onClose }: Props) => {
     }
 
     const updateTitleImage = (event: Event) => {
-        if (!titleImage) return;
-        postTitleImage(event.id, titleImage, handleSuccessWithBluntForce);
+        if (!titleImage || !titleImage.file) return;
+        postTitleImage(event.id, titleImage.file, handleSuccessWithBluntForce);
         setTitleImage(undefined);
     }
     const updateCarouselImages = (event: Event) => {
         for (var i = 0; i < carouselImages.length; i++) {
             const image = carouselImages[i];
-            addCarouselImage(event.id, image, handleSuccessWithBluntForce);
+            if (image.file) {
+                addCarouselImage(event.id, image.image, image.file, handleSuccessWithBluntForce);
+            }
         }
     }
     const handleFormSuccess = (event: Event) => {

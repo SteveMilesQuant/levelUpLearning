@@ -17,8 +17,6 @@ const CouponsTable = ({ showExpiredCoupons }: Props) => {
   if (error) throw error;
   if (isLoading || !coupons) return null;
 
-  console.log(coupons);
-
   const couponList = coupons.filter(
     (c) =>
       (showExpiredCoupons && c.expiration && new Date(c.expiration + "T00:00:00") <= new Date()) ||

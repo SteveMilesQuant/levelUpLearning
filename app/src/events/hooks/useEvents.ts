@@ -3,7 +3,7 @@ import APIClient, { axiosInstance } from "../../services/api-client";
 import ms from "ms";
 import { Event, EventData } from "../Event";
 import { AxiosResponse } from "axios";
-import { ImageFile } from "../../interfaces/Image";
+import { Image } from "../../interfaces/Image";
 
 export const CACHE_KEY_EVENTS = ["events"];
 
@@ -21,34 +21,32 @@ export const useUpdateEvent = eventsHooks.useUpdate;
 export const useDeleteEvent = eventsHooks.useDelete;
 
 
-export const postTitleImage = (event_id: number, titleImage: ImageFile, onSuccess: () => void) => {
+export const postTitleImage = (event_id: number, file: File, onSuccess: () => void) => {
     const formData = new FormData();
-    formData.append("file", titleImage.file, titleImage.file.name);
+    formData.append("file", file, file.name);
     axiosInstance
         .post<FormData, AxiosResponse<number>>('/events/' + event_id + '/title_image', formData)
         .then(() => onSuccess());
 }
 
-export const addCarouselImage = (event_id: number, image: ImageFile, onSuccess: () => void) => {
+export const addCarouselImage = (event_id: number, image: Image, file: File, onSuccess: () => void) => {
     const formData = new FormData();
-    formData.append("file", image.file, image.file.name);
+    formData.append("file", file, file.name);
     axiosInstance
-        .post<FormData, AxiosResponse<number>>('/events/' + event_id + '/carousel_images', formData, { params: { list_index: image.index } })
+        .post<FormData, AxiosResponse<number>>('/events/' + event_id + '/carousel_images', formData, { params: { list_index: image.list_index } })
         .then(() => onSuccess());
 }
 
-export const updateCarouselImage = (event_id: number, image: ImageFile, onSuccess: () => void) => {
-    const formData = new FormData();
-    formData.append("file", image.file, image.file.name);
+export const updateCarouselImageOrder = (event_id: number, image: Image, onSuccess: () => void) => {
     axiosInstance
-        .put<FormData, AxiosResponse<Event>>('/events/' + event_id + '/carousel_images/' + image.id, undefined, { params: { list_index: image.index } })
+        .put<FormData, AxiosResponse<Event>>('/events/' + event_id + '/carousel_images/' + image.id, undefined, { params: { list_index: image.list_index } })
         .then(() => onSuccess());
 }
 
-export const deleteCarouselImage = (event_id: number, image_id?: number, onSuccess?: () => void) => {
+export const deleteImage = (event_id: number, image_id?: number, onSuccess?: () => void) => {
     if (!image_id) return;
     axiosInstance
-        .delete('/events/' + event_id + '/carousel_images/' + image_id)
+        .delete('/events/' + event_id + '/images/' + image_id)
         .then(() => { if (onSuccess) onSuccess(); });
 }
 

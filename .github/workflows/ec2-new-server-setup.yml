@@ -19,6 +19,7 @@ jobs:
     steps:
       - name: Add cronjobs for scheduled tasks (emails)
         run: |
+          chmod +x /home/ubuntu/lul-scripts/certcheck.sh
           (crontab -l 2>/dev/null; echo "0 19 * * 0 /home/ubuntu/lul-scripts/certcheck.sh") | crontab -
 
   AWS:

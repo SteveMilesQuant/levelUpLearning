@@ -277,7 +277,8 @@ class ImageDb(Base):
     def dict(self):
         returnVal = {}
         for key, _ in ImageData():
-            returnVal[key] = getattr(self, key)
+            if key not in ['url']:
+                returnVal[key] = getattr(self, key)
         return returnVal
 
 
