@@ -20,6 +20,7 @@ def next_saturday(d):
 async def email_reminders():
     await app.router.on_startup[0]()
     async with app.db_sessionmaker() as db_session:
+        # Select events within the next week
         start_saturday = next_saturday(date.today())
         end_friday = start_saturday + timedelta(days=6)
         eligible_camp_ids = (
@@ -31,34 +32,32 @@ async def email_reminders():
             )
         ).subquery()
 
+        # Get a row for each camp, guardian pair that has at least one student in the camp
         stmt = (
-            select(UserDb, CampDb, StudentDb)
+            select(CampDb, UserDb)
             .join(UserDb.students)
             .join(StudentDb.camps)
             .where(CampDb.id.in_(select(eligible_camp_ids)))
             .distinct()
         )
         result = await db_session.execute(stmt)
-        last_user = None
-        last_camp = None
-        for db_user, db_camp, db_student in result.unique():
-            if last_user != db_user:
-                if last_user is not None:
-                    print(user_list)
-                else:
-                    user_list = ""
-            if last_camp != db_camp:
-                camp = Camp(db_obj=db_camp)
-                await camp.create(db_session)
-                date_range = camp.date_range()
-                daily_time_range = camp.daily_time_range()
-                location = camp.location if camp.location and camp.location != "" else "TBD"
-                user_list = user_list + \
-                    f"\t{camp.program.title} ({date_range} from {daily_time_range}) at location: {location}\n"
-            user_list = user_list + f"\t\t{db_student.name}\n"
-            last_user = db_user
-            last_camp = db_camp
-        print(user_list)
+
+        # Use a dictionary to group the camps
+        camp_users = {}
+        for db_camp, user in result.unique():
+            camp_users.setdefault(db_camp.id, {
+                "camp": db_camp,
+                "users": set()
+            })["users"].add(user.email_address)
+
+        # For each camp, draft an email
+        for _, camp_dict in camp_users.items():
+            db_camp = camp_dict["camp"]
+            email_list = camp_dict["users"]
+            camp = Camp(db_obj=db_camp)
+            await camp.create(db_session)
+            # TODO: send email
+
     await app.router.on_shutdown[0]()
 
 if __name__ == "__main__":
@@ -72,5 +71,3 @@ if __name__ == "__main__":
     )
 
     asyncio.run(email_reminders())
-
-    sys.exit(1)  # check with $?

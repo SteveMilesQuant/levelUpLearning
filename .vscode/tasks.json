@@ -44,7 +44,7 @@
         {
             "label": "Cert check (test)",
             "type": "shell",
-            "command": "docker run --rm --user $(id -u):$(id -g) --env-file ./api/.env -v \"$(pwd)/api:/lul-api\" -v \"$HOME/.ssh:/etc/letsencrypt:ro\" lul-cert-check",
+            "command": "docker run --rm --user $(id -u):$(id -g) --env-file ./api/.env.dev -v \"$(pwd)/api:/lul-api\" -v \"$HOME/.ssh:/etc/letsencrypt:ro\" lul-cert-check",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
@@ -57,7 +57,7 @@
         {
             "label": "Email reminders (test)",
             "type": "shell",
-            "command": "docker run --rm --env-file ./api/.env -v \"$(pwd)/api:/lul-api\" lul-email",
+            "command": "docker run --rm --env-file ./api/.env.dev -v \"$(pwd)/api:/lul-api\" lul-email",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
