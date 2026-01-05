@@ -49,8 +49,8 @@ const Resources = () => {
           </Tabs>
         )}
         <Box>
-          <a href="https://bestsummercamps.co/camps/apex/" rel="noopener noreferrer" target="_blank">
-            <TextButton>Featured on Best Summer Camps – Apex Summer Camps Guide</TextButton>
+          <a href="https://raleighparent.com/camps/" rel="noopener noreferrer" target="_blank">
+            <TextButton>Proud to be featured in the Raleigh Parent Camp Guide</TextButton>
           </a>
         </Box>
       </Stack>
