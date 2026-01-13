@@ -10,8 +10,8 @@ const ScrollBanner = () => {
     const fontSize = { base: 22, lg: 40, xl: 60 };
 
     return (
-        <Box bgGradient="linear(to-r, brand.tertiary, brand.gradient3)" width="full" overflow="hidden" height={10}>
-            {/*<Text animation={animation} textAlign="center" textColor="white" paddingY={1} fontFamily="kent" fontSize={fontSize}>SUMMER CAMPS ENROLLING NOW!</Text>*/}
+        <Box bgGradient="linear(to-r, brand.tertiary, brand.gradient3)" width="full" overflow="hidden"> {/* height=10 when not using this */}
+            <Text animation={animation} textAlign="center" textColor="white" paddingY={1} fontFamily="kent" fontSize={fontSize}>Summer Camps Enrolling Soon!!</Text>
         </Box>
     )
 }
