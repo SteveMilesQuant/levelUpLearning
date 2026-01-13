@@ -11,7 +11,7 @@ const ScrollBanner = () => {
 
     return (
         <Box bgGradient="linear(to-r, brand.tertiary, brand.gradient3)" width="full" overflow="hidden"> {/* height=10 when not using this */}
-            <Text animation={animation} textAlign="center" textColor="white" paddingY={1} fontFamily="kent" fontSize={fontSize}>Summer Camps Enrolling Soon!!</Text>
+            <Text animation={animation} textAlign="center" textColor="white" paddingY={1} fontFamily="kent" fontSize={fontSize}>Summer Camps Enrolling Now! Cary Location Coming Soon!</Text>
         </Box>
     )
 }
