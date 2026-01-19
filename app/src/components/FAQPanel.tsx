@@ -35,10 +35,7 @@ Leveled Reading Materials: This allows each camper to engage with texts appropri
 Varied Question Types and Vocabulary: This allows us to accommodate differing abilities and challenge campers at their individual levels." />
                 <FAQItem
                     question="How are students grouped during the camp?"
-                    answer="Campers are grouped into two categories:
-1st, 2nd, and 3rd Grade Group
-4th, 5th, and 6th Grade Group
-This ensures that campers receive instruction and activities that align with their specific age and skill levels. However, we understand that proficiency levels can vary among individuals. Therefore, we allow for flexibility between the groups based on their demonstrated proficiency and comfort level.." />
+                    answer="Campers are grouped into two categories: a 1st, 2nd, and 3rd grade group and a 4th, 5th, and 6th grade group. This ensures that campers receive instruction and activities that align with their specific age and skill levels. However, we understand that proficiency levels can vary among individuals. Therefore, we allow for flexibility between the groups based on their demonstrated proficiency and comfort level." />
                 <FAQItem
                     question="What kind of private events do you offer?"
                     answer="Looking for a unique, engaging event for your club, Girl Scout troop, or birthday celebration? We offer exciting 2-hour private events that blend fun, teamwork, and critical thinking. Participants will work together to solve a captivating mystery through hands-on activities that keep them engaged from start to finish.
@@ -50,8 +47,7 @@ Whether you're celebrating a birthday, earning a badge, or just looking for a me
 
                 <FAQItem
                     question="What does my child need to bring with them to camp?"
-                    answer="For full day campers: pack a lunch, two snacks, and a water bottle for your to stay energized throughout the day. Half day campers only need one snack and on AM campers need a lunch. 
-At certain points in the day we use devices for activities so if your child has a chromebook/iPad/other device, please have them bring it. No problem, if not." />
+                    answer="For fully day campers: pack a lunch, two snacks, and a water bottle for your child to stay energized throughout the day. Half day campers only need one snack and a water bottle." />
             </Stack>
         </Stack>
     )
