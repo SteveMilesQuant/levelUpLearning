@@ -75,12 +75,15 @@ const Camp = () => {
 
   const enrollButton = camp.enrollment_disabled ?
     (undefined)
-    : user ?
-      (
-        <TextButton onClick={newOnOpen} isDisabled={campAtCapacity}>{campAtCapacity ? "Camp full" : "Enroll Student"}</TextButton>
-      ) : (
-        <AuthButton bgColor="brand.buttonBg">Sign in to enroll</AuthButton>
-      );
+    : campAtCapacity ?
+      (<TextButton isDisabled={true}>Camp full</TextButton>)
+      :
+      user ?
+        (
+          <TextButton onClick={newOnOpen} isDisabled={campAtCapacity}>Register</TextButton>
+        ) : (
+          <AuthButton bgColor="brand.buttonBg" onSuccess={newOnOpen}>Register</AuthButton>
+        );
 
   const headerButton =
     campsContextType === CampsContextType.schedule

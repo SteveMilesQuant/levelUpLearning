@@ -6,10 +6,11 @@ import ButtonText from "./ButtonText";
 interface Props {
   children?: string;
   bgColor?: string;
+  onSuccess?: () => void;
 }
 
-const AuthButton = ({ children, bgColor }: Props) => {
-  const { signedIn, onLogin, onLogout } = useAuth();
+const AuthButton = ({ children, bgColor, onSuccess }: Props) => {
+  const { signedIn, onLogin, onLogout } = useAuth(onSuccess);
 
   const buttonSize = { base: "sm", xl: "md" };
 

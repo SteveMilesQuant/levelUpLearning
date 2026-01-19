@@ -27,7 +27,7 @@ const useUserStore = create<UserStore>((set) => ({
 if (process.env.NODE_ENV === "development")
   mountStoreDevtool("User store", useUserStore);
 
-const useAuth = () => {
+const useAuth = (onSuccess?: () => void) => {
   const { signedIn, expiration, login, logout } = useUserStore();
   const [isChecking, setIsChecking] = useState(true);
   const queryClient = useQueryClient();
@@ -61,7 +61,7 @@ const useAuth = () => {
   };
 
   const googleLogin = useGoogleLogin({
-    onSuccess: (codeResponse) => apiSignIn(codeResponse),
+    onSuccess: (codeResponse) => { apiSignIn(codeResponse); if (onSuccess) { onSuccess() } },
     onError: (error) => {
       throw error;
     },
