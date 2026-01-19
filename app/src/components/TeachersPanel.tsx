@@ -4,7 +4,7 @@ import alex from "../assets/AlexBio.webp";
 import millerLg from "../assets/MillerBioLg.webp";
 import milesLg from "../assets/MilesBioLg.webp";
 import alexLg from "../assets/AlexBioLg.webp";
-import { Stack, Image, useBreakpointValue, Button, HStack, Text, Box } from "@chakra-ui/react";
+import { Stack, Image, useBreakpointValue, Button, HStack, Text } from "@chakra-ui/react";
 import { Carousel } from "react-responsive-carousel";
 import swiperight from "../assets/swipe_right.webp";
 import { useState } from "react";
