@@ -46,9 +46,7 @@ Our events are designed to encourage collaboration and creativity, making them p
 Whether you're celebrating a birthday, earning a badge, or just looking for a memorable group experience, we provide an event that’s both educational and unforgettable!" />
                 <FAQItem
                     question="What is the cancellation policy?"
-                    answer="We understand that circumstances may arise that require changes to camp enrollment. 
-Cancellations made at least one week prior to the start of the camp will receive a full refund.
-Cancellations made less than one week prior to the start of the camp will receive full credit for a future camp enrollment" />
+                    answer="We understand that circumstances may arise that require changes to camp enrollment. Summer camps must be cancelled by May 1 in order to receive a refund. Camps cancelled before 30 days of start date will receive camp credit. Camps cancelled less than 30 days of start date will receive no refund or credit. Two hour events cannot be refunded." />
 
                 <FAQItem
                     question="What does my child need to bring with them to camp?"
