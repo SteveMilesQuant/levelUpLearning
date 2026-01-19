@@ -35,19 +35,20 @@ const InstructorFormBody = ({
           <Input type="text" isReadOnly={true} {...register("full_name")} />
         </FormControl>
       )}
-      <FormControl>
-        <FormLabel>Subjects</FormLabel>
-        <InputError
-          label={errors.instructor_subjects?.message}
-          isOpen={errors.instructor_subjects ? true : false}
-        >
-          <Input
-            type="text"
-            isReadOnly={isReadOnly}
-            {...register("instructor_subjects")}
-          />
-        </InputError>
-      </FormControl>
+      {!isPublicFacing &&
+        <FormControl>
+          <FormLabel>Subjects</FormLabel>
+          <InputError
+            label={errors.instructor_subjects?.message}
+            isOpen={errors.instructor_subjects ? true : false}
+          >
+            <Input
+              type="text"
+              isReadOnly={isReadOnly}
+              {...register("instructor_subjects")}
+            />
+          </InputError>
+        </FormControl>}
       <FormControl>
         <FormLabel>About</FormLabel>
         {isReadOnly && <FlexTextarea value={getValues("instructor_description")} />}
