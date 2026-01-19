@@ -19,7 +19,7 @@ const FAQPanel = () => {
                 <GoofyText fontSize={{ base: 22, lg: 36, xl: 54 }}>Frequently Asked Questions</GoofyText>
                 <FAQItem
                     question="Where are you located?"
-                    answer="As a new small business, we are currently working toward attaining a permanent establishment in the Apex area. For now, we are renting out spaces from local venues including Salem Baptist Church,  and Apex Baptist Church." />
+                    answer="As a new small business, we are currently working toward attaining a permanent establishment. For now, we are renting out spaces from local venues including Apex United Methodist Church." />
                 <FAQItem
                     question="Who can attend the camps?"
                     answer="During summer camps, we are open to rising 1st through rising 6th graders, catering to children aged 6 to 12 years old.
