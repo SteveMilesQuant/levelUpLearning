@@ -25,17 +25,17 @@ const MissionPanel = () => {
                     </HStack>
                     <Stack paddingX={{ base: 1, xl: 5 }} spacing={{ base: 3, xl: 5 }}>
                         <MissionItem
-                            firstLine="inspire creativity, encourage self-expression and nurture a passion for reading and writing"
+                            firstLine="inspire creativity and nurture a passion for reading and writing"
                             secondLine="through immersive activities and supportive instruction" />
                         <MissionItem
                             firstLine="build confidence in every student "
                             secondLine="by meeting them at their individual level and guiding them toward personal growth" />
                         <MissionItem
-                            firstLine="foster a lifelong love of learning "
+                            firstLine="foster a lifelong love of learning"
                             secondLine="in a fun, engaging, and creative environment" />
                         <MissionItem
-                            firstLine="ensure each camper leaves empowered and enthusiastic "
-                            secondLine="about their learning journey." />
+                            firstLine="ensure each camper leaves feeling positive and motivated"
+                            secondLine="about their learning journey" />
                     </Stack>
                 </Stack >
             </SimpleGrid>
