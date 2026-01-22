@@ -6,6 +6,8 @@ export interface CouponData {
   used_count: number;
   max_count: number;
   camp_ids?: number[];
+  applies_to_all: boolean;
+  user_can_reuse: boolean;
 }
 
 export interface Coupon extends CouponData {

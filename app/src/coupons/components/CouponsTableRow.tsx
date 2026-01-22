@@ -1,4 +1,4 @@
-import { Tr, Td, FormControl, Input, Text, Select } from "@chakra-ui/react";
+import { Tr, Td, FormControl, Input, Text, Select, Checkbox } from "@chakra-ui/react";
 import { Select as ChakraReactSelect } from "chakra-react-select"; // or use react-select
 import { Coupon } from "../Coupon";
 import { useState } from "react";
@@ -149,6 +149,26 @@ const CouponsTableRow = ({ coupon, onCancel, onSuccess }: Props) => {
             </InputError>
           )}
         />
+      </Td>
+      <Td>
+        <FormControl>
+          <InputError
+            label={errors.applies_to_all?.message}
+            isOpen={errors.applies_to_all ? true : false}
+          >
+            <Checkbox disabled={!isEditing} {...register("applies_to_all")}></Checkbox>
+          </InputError>
+        </FormControl>
+      </Td>
+      <Td>
+        <FormControl>
+          <InputError
+            label={errors.user_can_reuse?.message}
+            isOpen={errors.user_can_reuse ? true : false}
+          >
+            <Checkbox disabled={!isEditing} {...register("user_can_reuse")}></Checkbox>
+          </InputError>
+        </FormControl>
       </Td>
       <Td>
         <CrudButtonSet

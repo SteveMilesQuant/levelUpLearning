@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMemo } from "react";
 import { FieldValues, useForm } from "react-hook-form";
-import { object, string, number, date, InferType, array } from "yup";
+import { object, string, number, date, InferType, array, boolean } from "yup";
 import { Coupon } from "../Coupon";
 import { useAddCoupon, useUpdateCoupon } from "./useCoupons";
 
@@ -12,6 +12,8 @@ export const couponSchema = object().shape({
   max_count: number().integer().nullable(),
   y_expiration: date().optional(),
   camp_ids: array().of(number().integer()),
+  applies_to_all: boolean(),
+  user_can_reuse: boolean(),
 });
 
 export type FormData = InferType<typeof couponSchema>;

@@ -240,6 +240,8 @@ class CouponDb(Base):
     max_count: Mapped[int] = mapped_column(nullable=True)
     camps: Mapped[List['CampDb']] = relationship(
         secondary=coupon_x_camps, lazy='raise')
+    applies_to_all: Mapped[bool]
+    user_can_reuse: Mapped[bool]
 
 
 class ResourceDb(Base):

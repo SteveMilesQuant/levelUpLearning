@@ -36,6 +36,8 @@ const CouponsTable = ({ showExpiredCoupons }: Props) => {
             <ThText>Used Count</ThText>
             <ThText>Max Usages</ThText>
             <ThText>Valid Camp(s)</ThText>
+            <ThText>Applies to all</ThText>
+            <ThText>Reusable</ThText>
             <ThText>{/* placeholder for crud buttons */}</ThText>
           </Tr>
         </Thead>

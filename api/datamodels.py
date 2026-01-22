@@ -158,6 +158,8 @@ class CouponData(BaseModel):
     used_count: Optional[int] = 0
     max_count: Optional[int] = None
     camp_ids: Optional[List[int]] = []
+    applies_to_all: Optional[bool] = False
+    user_can_reuse: Optional[bool] = False
 
 
 class CheckoutTotal(BaseModel):
