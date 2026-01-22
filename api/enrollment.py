@@ -62,7 +62,7 @@ class Enrollment(BaseModel):
             if coupon.expiration and coupon.expiration < FastApiDate.today():
                 raise HTTPException(
                     status_code=status.HTTP_410_GONE, detail=f"Coupon code={coupon_code} expired on {coupon.expiration}.")
-            if await user.has_used_coupon(db_session, coupon.id):
+            if not coupon.user_can_reuse and await user.has_used_coupon(db_session, coupon.id):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                     detail=f"User has already used coupon code {coupon.code}.")
             if coupon.max_count and coupon.used_count >= coupon.max_count:
