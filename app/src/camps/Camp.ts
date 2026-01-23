@@ -13,6 +13,7 @@ export interface CampData {
   dates?: string[];
   enrollment_disabled?: boolean;
   capacity?: number;
+  coupons_allowed?: boolean;
 }
 
 export interface Camp extends CampData {
@@ -29,7 +30,8 @@ export const CAMP_DATA_DEFAULTS = {
   primary_instructor_id: -1,
   is_published: false,
   enrollment_disabled: false,
-  capacity: 20
+  capacity: 20,
+  coupons_allowed: true,
 } as CampData;
 
 export const CAMP_CAPACITY_DISPLAY_THRESHOLD = 9;

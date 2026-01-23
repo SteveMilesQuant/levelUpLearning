@@ -4,13 +4,11 @@ import {
   CardBody,
   HStack,
   IconButton,
-  SimpleGrid,
   Stack,
   Text,
 } from "@chakra-ui/react";
 import { formatCamp, useCamp } from "../camps";
 import { useStudent } from "../students";
-import { locale } from "../constants";
 import { IoClose } from "react-icons/io5";
 import { CouponData } from "../coupons/Coupon";
 
@@ -28,7 +26,9 @@ const CartItemCard = ({ camp_id, student_id, coupon, onDelete }: Props) => {
   if (!camp || !student) return null;
 
   const total_cost = (camp.cost || 0) * 100;
-  const disc_cost = coupon?.discount_type === "percent" ? total_cost * (100 - coupon.discount_amount) / 100 : total_cost - (coupon?.discount_amount || 0) * 100;
+  const disc_cost = camp.coupons_allowed ?
+    coupon?.discount_type === "percent" ? total_cost * (100 - coupon.discount_amount) / 100 : total_cost - (coupon?.discount_amount || 0) * 100
+    : total_cost;
 
   const total_dollars = total_cost * 0.01;
   const total_string = Number.isInteger(total_dollars) ? total_dollars.toString() : total_dollars.toFixed(2);
@@ -58,7 +58,8 @@ const CartItemCard = ({ camp_id, student_id, coupon, onDelete }: Props) => {
           </HStack>
           <HStack justify="space-between">
             <Box>
-              {coupon && <Text><strong>Coupon:</strong> {coupon.code}</Text>}
+              {coupon && camp.coupons_allowed && <Text><strong>Coupon:</strong> {coupon.code}</Text>}
+              {coupon && !camp.coupons_allowed && <Text><strong>Coupons not permitted for this camp.</strong></Text>}
             </Box>
             <HStack>
               {total_cost > disc_cost && (

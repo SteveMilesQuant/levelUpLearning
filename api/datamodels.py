@@ -94,6 +94,7 @@ class CampCore(BaseModel):
     camp_type: Optional[str]
     enrollment_disabled: Optional[bool] = False
     capacity: Optional[int]
+    coupons_allowed: Optional[bool] = True
 
 
 class CampData(CampCore):

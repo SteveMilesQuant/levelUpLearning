@@ -260,6 +260,15 @@ const CampFormBody = ({
           <Input {...register("capacity")} type="number" isReadOnly={isReadOnly} />
         </InputError>
       </FormControl>
+      <FormControl>
+        <FormLabel>Coupons allowed</FormLabel>
+        <InputError
+          label={errors.coupons_allowed?.message}
+          isOpen={errors.coupons_allowed ? true : false}
+        >
+          <Checkbox disabled={isReadOnly} {...register("coupons_allowed")}>Coupons allowed</Checkbox>
+        </InputError>
+      </FormControl>
     </Stack>
   );
 };

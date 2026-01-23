@@ -193,6 +193,7 @@ class CampDb(Base):
     camp_type: Mapped[str] = mapped_column(Text, nullable=True)
     enrollment_disabled: Mapped[bool] = mapped_column(nullable=True)
     capacity: Mapped[int] = mapped_column(nullable=True)
+    coupons_allowed: Mapped[bool] = mapped_column(nullable=True)
 
     program: Mapped['ProgramDb'] = relationship(
         back_populates='camps', lazy='joined')

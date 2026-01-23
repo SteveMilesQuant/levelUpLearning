@@ -64,6 +64,7 @@ export const campSchema = z.object({
       }
       return CAMP_DATA_DEFAULTS.capacity || 19;
     }),
+  coupons_allowed: z.boolean(),
 });
 
 export type FormData = z.infer<typeof campSchema>;
@@ -84,6 +85,7 @@ const useCampForm = (camp?: Camp) => {
         ...camp,
         enrollment_disabled: camp?.enrollment_disabled === undefined ? CAMP_DATA_DEFAULTS.enrollment_disabled : camp.enrollment_disabled,
         capacity: camp?.capacity === undefined ? CAMP_DATA_DEFAULTS.capacity : camp.capacity,
+        coupons_allowed: camp?.coupons_allowed === undefined ? CAMP_DATA_DEFAULTS.coupons_allowed : camp.coupons_allowed,
         z_daily_start_time:
           camp && camp.daily_start_time
             ? new Date("2023-01-01T" + camp.daily_start_time)

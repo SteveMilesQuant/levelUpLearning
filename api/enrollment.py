@@ -150,7 +150,7 @@ class Enrollment(BaseModel):
             percent_discount = 0
             fixed_discount = 0
             single_camp_total_cost = (camp.cost or 0)
-            if coupon:
+            if coupon and camp.coupons_allowed:
                 # fixed total coupon handled at end, so as to not count double
                 if coupon.discount_type == "dollars" and (has_camp_coupons or coupon.applies_to_all):
                     fixed_discount = coupon.discount_amount * 100
