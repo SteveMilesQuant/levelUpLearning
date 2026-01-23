@@ -152,7 +152,7 @@ class Enrollment(BaseModel):
             single_camp_total_cost = (camp.cost or 0)
             if coupon:
                 # fixed total coupon handled at end, so as to not count double
-                if coupon.discount_type == "dollars" and has_camp_coupons:
+                if coupon.discount_type == "dollars" and (has_camp_coupons or coupon.applies_to_all):
                     fixed_discount = coupon.discount_amount * 100
                 elif coupon.discount_type == "percent":
                     percent_discount = coupon.discount_amount
@@ -174,7 +174,7 @@ class Enrollment(BaseModel):
             self.disc_cost = self.disc_cost + single_camp_disc_cost
 
         # Final adjustment
-        if has_total_coupons and self.coupons[0] and self.coupons[0].discount_type == "dollars":
+        if has_total_coupons and self.coupons[0] and self.coupons[0].discount_type == "dollars" and not self.coupons[0].applies_to_all:
             self.disc_cost = self.disc_cost - \
                 self.coupons[0].discount_amount * 100
         self.disc_cost = max(self.disc_cost, 0)

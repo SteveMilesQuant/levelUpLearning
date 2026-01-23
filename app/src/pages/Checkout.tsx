@@ -9,13 +9,11 @@ import CheckoutTotalDisplay from "../components/CheckoutTotalDisplay";
 import CheckoutPayment from "../components/CheckoutPayment";
 import { CheckoutTotal } from "../hooks/useEnrollments";
 import useAlert from "../hooks/useAlerts";
-import { useNavigate } from "react-router-dom";
 
 const Checkout = () => {
   const { items, removeItem, clearCart, coupons, setCoupons } = useShoppingCart();
   const [totals, setTotals] = useState<CheckoutTotal>({ total_cost: 0.0, disc_cost: 0.0, coupons: [] });
   const { setAlert } = useAlert();
-  const navigate = useNavigate();
 
   const [isLoadingTotals, setIsLoadingTotals] = useState<boolean>(false);
   const [isLoadingPayment, setIsLoadingPayment] = useState<boolean>(false);
@@ -72,6 +70,11 @@ const Checkout = () => {
     setIsLoadingPayment(false);
   };
 
+  const total_coupon =
+    totals.coupons.length === 1 && totals.coupons[0].camp_ids?.length === 0 && (totals.coupons[0].applies_to_all || totals.coupons[0].discount_type !== "dollars")
+      ? totals.coupons[0]
+      : undefined;
+
   return (
     <BodyContainer>
       {items.length > 0 && (
@@ -84,7 +87,7 @@ const Checkout = () => {
                 camp_id={item.camp_id}
                 student_id={item.student_id}
                 onDelete={() => removeItem(item)}
-                coupon={totals.coupons.find(c => c.camp_ids?.includes(item.camp_id))}
+                coupon={total_coupon || totals.coupons.find(c => c.camp_ids?.includes(item.camp_id))}
               />
             ))}
             <Divider orientation="horizontal" marginY={5} />
