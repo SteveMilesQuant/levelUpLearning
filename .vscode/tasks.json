@@ -44,7 +44,7 @@
         {
             "label": "Cert check (test)",
             "type": "shell",
-            "command": "docker run --rm --user $(id -u):$(id -g) --env-file ./api/.env.dev -v \"$(pwd)/api:/lul-api\" -v \"$HOME/.ssh:/etc/letsencrypt:ro\" lul-cert-check",
+            "command": "CHECK_DISK_PCT=$(df --output=pcent / | tail -n 1 | tr -dc '0-9') && docker run --rm --user $(id -u):$(id -g) --env-file ./api/.env.dev -e CHECK_DISK_PCT=\"$CHECK_DISK_PCT\" -v \"$(pwd)/api:/lul-api\" -v \"$HOME/.ssh:/etc/letsencrypt:ro\" lul-cert-check",
             "options": {
                 "cwd": "${workspaceFolder}"
             },
