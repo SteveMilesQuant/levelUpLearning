@@ -91,10 +91,14 @@ class CampCore(BaseModel):
     daily_start_time: Optional[FastApiTime]
     daily_end_time: Optional[FastApiTime]
     cost: Optional[float]
+    half_day_cost: Optional[float]
     camp_type: Optional[str]
     enrollment_disabled: Optional[bool] = False
     capacity: Optional[int]
     coupons_allowed: Optional[bool] = True
+    single_day_only: Optional[bool] = True
+    enroll_full_day_allowed: Optional[bool] = True
+    enroll_half_day_allowed: Optional[bool] = True
 
 
 class CampData(CampCore):

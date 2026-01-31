@@ -49,6 +49,20 @@ export const campSchema = z.object({
       }
       return 0.0;
     }),
+  half_day_cost: z
+    .number({ invalid_type_error: "Cost is required." })
+    .nonnegative({ message: "Cost must be non-negative." })
+    .nullable()
+    .catch((ctx) => {
+      // I'd prefer use transform (string to number), but that doesn't play well with defaultValues
+      // You end up getting numbers you have to catch from the default values, which must be numbers
+      // Zod should fix this, or allow valueAsNumber (which it ignores)
+      if (typeof ctx.input === "string") {
+        const num = parseFloat(ctx.input);
+        if (!isNaN(num) && num >= 0.0) return num;
+      }
+      return null;
+    }),
   camp_type: z.string().optional(),
   enrollment_disabled: z.boolean(),
   capacity: z
@@ -65,6 +79,9 @@ export const campSchema = z.object({
       return CAMP_DATA_DEFAULTS.capacity || 19;
     }),
   coupons_allowed: z.boolean(),
+  single_day_only: z.boolean(),
+  enroll_full_day_allowed: z.boolean(),
+  enroll_half_day_allowed: z.boolean(),
 });
 
 export type FormData = z.infer<typeof campSchema>;
@@ -78,6 +95,7 @@ const useCampForm = (camp?: Camp) => {
     handleSubmit: handleFormSubmit,
     formState: { errors, isValid },
     reset,
+    watch
   } = useForm<FormData>({
     resolver: zodResolver(campSchema),
     defaultValues: useMemo(() => {
@@ -167,6 +185,7 @@ const useCampForm = (camp?: Camp) => {
     register,
     control,
     errors,
+    watch,
     handleClose,
     handleSubmit,
     isValid,

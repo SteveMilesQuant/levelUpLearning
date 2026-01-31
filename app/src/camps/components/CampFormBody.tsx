@@ -9,6 +9,9 @@ import {
   GridItem,
   Box,
   Checkbox,
+  HStack,
+  SimpleGrid,
+  Text
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import {
@@ -16,6 +19,7 @@ import {
   Controller,
   FieldErrors,
   UseFormRegister,
+  UseFormWatch,
 } from "react-hook-form";
 import { FormData } from "../hooks/useCampForm";
 import InputError from "../../components/InputError";
@@ -32,6 +36,7 @@ interface Props {
   camp?: Camp;
   register: UseFormRegister<FormData>;
   control: Control<FormData>;
+  watch: UseFormWatch<FormData>;
   errors: FieldErrors<FormData>;
   isReadOnly?: boolean;
   showPrimaryInstructor?: boolean;
@@ -41,12 +46,15 @@ const CampFormBody = ({
   camp,
   register,
   control,
+  watch,
   errors,
   isReadOnly,
   showPrimaryInstructor,
 }: Props) => {
   const { data: programs } = usePrograms();
   const { data: instructors } = useUsers({ role: "INSTRUCTOR" });
+  const enrollHalfDayAllowed = watch("enroll_half_day_allowed");
+  const singleDayOnly = watch("single_day_only");
 
   return (
     <Stack spacing={5}>
@@ -234,13 +242,51 @@ const CampFormBody = ({
         </Box>
       </FormControl>
       <FormControl>
-        <FormLabel>Cost</FormLabel>
+        <FormLabel>Number of days (default: full week)</FormLabel>
         <InputError
-          label={errors.cost?.message}
-          isOpen={errors.cost ? true : false}
+          label={errors.single_day_only?.message}
+          isOpen={errors.single_day_only ? true : false}
         >
-          <Input {...register("cost")} type="number" isReadOnly={isReadOnly} />
+          <Checkbox disabled={isReadOnly} {...register("single_day_only")}>Single day only</Checkbox>
         </InputError>
+      </FormControl>
+      {!singleDayOnly && <FormControl>
+        <FormLabel>Partial enrollment</FormLabel>
+        <HStack spacing={3}>
+          <InputError
+            label={errors.enroll_full_day_allowed?.message}
+            isOpen={errors.enroll_full_day_allowed ? true : false}
+          >
+            <Checkbox disabled={isReadOnly} {...register("enroll_full_day_allowed")}>Full day</Checkbox>
+          </InputError>
+          <InputError
+            label={errors.enroll_half_day_allowed?.message}
+            isOpen={errors.enroll_half_day_allowed ? true : false}
+          >
+            <Checkbox disabled={isReadOnly} {...register("enroll_half_day_allowed")}>AM/PM</Checkbox>
+          </InputError>
+        </HStack>
+      </FormControl>}
+      <FormControl>
+        <FormLabel>Cost</FormLabel>
+        <Grid templateColumns="auto 1fr" gap={3}>
+          <Text display="grid" placeItems="center">Full day:</Text>
+          <InputError
+            label={errors.cost?.message}
+            isOpen={errors.cost ? true : false}
+          >
+            <Input {...register("cost")} type="number" isReadOnly={isReadOnly} />
+          </InputError>
+          {enrollHalfDayAllowed &&
+            <>
+              <Text display="grid" placeItems="center">Half day:</Text><InputError
+                label={errors.half_day_cost?.message}
+                isOpen={errors.half_day_cost ? true : false}
+              >
+                <Input {...register("half_day_cost")} type="number" isReadOnly={isReadOnly} />
+              </InputError>
+            </>}
+        </Grid>
       </FormControl>
       <FormControl>
         <FormLabel>Disable enrollment</FormLabel>

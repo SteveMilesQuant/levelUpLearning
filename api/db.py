@@ -190,10 +190,14 @@ class CampDb(Base):
     daily_start_time: Mapped[time] = mapped_column(Time, nullable=True)
     daily_end_time: Mapped[time] = mapped_column(Time, nullable=True)
     cost: Mapped[float] = mapped_column(nullable=True)
+    half_day_cost: Mapped[float] = mapped_column(nullable=True)
     camp_type: Mapped[str] = mapped_column(Text, nullable=True)
     enrollment_disabled: Mapped[bool] = mapped_column(nullable=True)
     capacity: Mapped[int] = mapped_column(nullable=True)
     coupons_allowed: Mapped[bool] = mapped_column(nullable=True)
+    single_day_only: Mapped[bool] = mapped_column(nullable=True)
+    enroll_full_day_allowed: Mapped[bool] = mapped_column(nullable=True)
+    enroll_half_day_allowed: Mapped[bool] = mapped_column(nullable=True)
 
     program: Mapped['ProgramDb'] = relationship(
         back_populates='camps', lazy='joined')
