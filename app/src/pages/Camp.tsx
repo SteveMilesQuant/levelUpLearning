@@ -85,10 +85,12 @@ const Camp = () => {
           <AuthButton bgColor="brand.buttonBg" onSuccess={newOnOpen}>Register</AuthButton>
         );
 
+  const isPublicFacing = (campsContextType === CampsContextType.publicFullDay || campsContextType === CampsContextType.publicHalfDay || campsContextType === CampsContextType.publicSingleDay);
+
   const headerButton =
     campsContextType === CampsContextType.schedule
       ? publishButton
-      : campsContextType === CampsContextType.camps
+      : isPublicFacing
         ? <HStack spacing={5}>{capacityString && <Text size="xl" fontWeight="bold" fontFamily="verdana" textColor="brand.tertiary">{capacityString}</Text>}{enrollButton}</HStack>
         : undefined;
 
@@ -100,11 +102,11 @@ const Camp = () => {
       <CampTabs
         camp={camp}
         isReadOnly={campsContextType !== CampsContextType.schedule}
-        isPublicFacing={campsContextType === CampsContextType.camps}
+        isPublicFacing={isPublicFacing}
       />
       <HStack>
 
-        {campsContextType === CampsContextType.camps && user && (
+        {isPublicFacing && user && (
           <>
             <EnrollStudentModal
               title="Enroll Student"

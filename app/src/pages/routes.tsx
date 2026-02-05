@@ -24,6 +24,7 @@ import BoastOne from "./BoastOne";
 import { ProtectedRoute } from "./ProtectedRoute";
 import AdminData from "./AdminData";
 import EnrollmentForms from "./EnrollmentForms";
+import CampsPublic from "./CampsPublic";
 
 const router = createBrowserRouter([
   {
@@ -51,7 +52,29 @@ const router = createBrowserRouter([
       {
         path: "camps",
         element: (
-          <CampsContext.Provider value={CampsContextType.camps}>
+          <CampsPublic />
+        ),
+      },
+      {
+        path: "camps/fullday",
+        element: (
+          <CampsContext.Provider value={CampsContextType.publicFullDay}>
+            <Camps />
+          </CampsContext.Provider>
+        ),
+      },
+      {
+        path: "camps/halfday",
+        element: (
+          <CampsContext.Provider value={CampsContextType.publicHalfDay}>
+            <Camps />
+          </CampsContext.Provider>
+        ),
+      },
+      {
+        path: "camps/singleday",
+        element: (
+          <CampsContext.Provider value={CampsContextType.publicSingleDay}>
             <Camps />
           </CampsContext.Provider>
         ),
@@ -59,7 +82,7 @@ const router = createBrowserRouter([
       {
         path: "camps/:id",
         element: (
-          <CampsContext.Provider value={CampsContextType.camps}>
+          <CampsContext.Provider value={CampsContextType.publicFullDay}>
             <Camp />
           </CampsContext.Provider>
         ),

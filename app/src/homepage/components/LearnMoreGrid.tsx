@@ -1,4 +1,4 @@
-import { SimpleGrid, Stack, useBreakpointValue } from '@chakra-ui/react'
+import { SimpleGrid, Stack } from '@chakra-ui/react'
 import LearnMoreItem from './LearnMoreItem'
 import SectionTitle from './SectionTitle';
 

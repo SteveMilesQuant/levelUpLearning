@@ -1,11 +1,13 @@
 import { createContext } from "react";
 
 export enum CampsContextType {
-  camps,
+  publicFullDay,
+  publicHalfDay,
+  publicSingleDay,
   teach,
   schedule,
 }
 
-const CampsContext = createContext<CampsContextType>(CampsContextType.camps);
+const CampsContext = createContext<CampsContextType>(CampsContextType.publicFullDay);
 
 export default CampsContext;

@@ -5,7 +5,6 @@ import {
   CampGrid,
   CampsContext,
   CampsContextType,
-  useCamps,
   CampQuery,
 } from "../camps";
 import { useContext, useState } from "react";
@@ -28,14 +27,6 @@ const Camps = () => {
     campQuery["is_published"] = true;
   if (campsContextType === CampsContextType.teach)
     campQuery["instructor_id"] = user?.id;
-  const {
-    data: camps,
-    isLoading,
-    error,
-  } = useCamps(campQuery, campsContextType === CampsContextType.teach && !user);
-
-  if (isLoading) return null;
-  if (error) throw error;
 
   const pageTitle =
     campsContextType === CampsContextType.schedule
@@ -44,14 +35,7 @@ const Camps = () => {
         ? "Teach Camps"
         : "Upcoming Camps";
   const isReadOnly = campsContextType !== CampsContextType.schedule;
-
-  const campList = camps.filter(
-    (c) =>
-      !c.dates ||
-      c.dates.length === 0 ||
-      (showPastCamps && new Date(c.dates[0] + "T00:00:00") <= new Date()) ||
-      (!showPastCamps && new Date(c.dates[0] + "T00:00:00") > new Date())
-  );
+  const disableQuery = campsContextType === CampsContextType.teach && !user;
 
   return (
     <BodyContainer>
@@ -76,7 +60,7 @@ const Camps = () => {
       >
         {pageTitle}
       </PageHeader>
-      <CampGrid camps={campList} isReadOnly={isReadOnly} />
+      <CampGrid campQuery={campQuery} isReadOnly={isReadOnly} showPastCamps={showPastCamps} disableQuery={disableQuery} />
       {!isReadOnly && (
         <CampFormModal
           title="Add Camp"

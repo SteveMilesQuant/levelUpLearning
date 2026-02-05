@@ -1,22 +1,40 @@
 import { Box, Divider, Stack } from "@chakra-ui/react";
-import { useDeleteCamp } from "../hooks/useCamps";
+import useCamps, { CampQuery, useDeleteCamp } from "../hooks/useCamps";
 import CampCard from "./CampCard";
 import { Camp } from "../Camp";
 import { locale } from "../../constants";
 import GoofyText from "../../components/GoofyText";
 
 interface Props {
-  camps: Camp[];
+  campQuery: CampQuery;
   isReadOnly?: boolean;
+  showPastCamps: boolean;
+  disableQuery: boolean;
 }
 
-const CampGrid = ({ camps, isReadOnly }: Props) => {
+const CampGrid = ({ campQuery, isReadOnly, showPastCamps, disableQuery }: Props) => {
   const deleteCamp = useDeleteCamp();
+  const {
+    data: camps,
+    isLoading,
+    error,
+  } = useCamps(campQuery, disableQuery);
+
+  if (isLoading) return null;
+  if (error) throw error;
+
+  const campsFiltered = camps.filter(
+    (c) =>
+      !c.dates ||
+      c.dates.length === 0 ||
+      (showPastCamps && new Date(c.dates[0] + "T00:00:00") <= new Date()) ||
+      (!showPastCamps && new Date(c.dates[0] + "T00:00:00") > new Date())
+  );
 
   const campsByMonth: {
     [id: string]: { id: string; heading: string; camps: Camp[] };
   } = {};
-  camps.forEach((camp) => {
+  campsFiltered.forEach((camp) => {
     const startDate =
       camp.dates && camp.dates.length > 0 ? new Date(camp.dates[0]) : undefined;
     const month = startDate?.getMonth();
