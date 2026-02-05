@@ -23,17 +23,39 @@ const Camps = () => {
   const [showPastCamps, setShowPastCamps] = useState(false);
 
   const campQuery = {} as CampQuery;
+  if (campsContextType === CampsContextType.publicSingleDay) {
+    campQuery["single_day_only"] = true;
+  }
+  else if (campsContextType === CampsContextType.publicFullDay) {
+    campQuery["enroll_full_day_allowed"] = true;
+    campQuery["single_day_only"] = false;
+  }
+  else if (campsContextType === CampsContextType.publicHalfDay) {
+    campQuery["enroll_half_day_allowed"] = true;
+    campQuery["single_day_only"] = false;
+  }
+  else if (campsContextType === CampsContextType.teach)
+    campQuery["instructor_id"] = user?.id;
+
   if (campsContextType !== CampsContextType.schedule)
     campQuery["is_published"] = true;
-  if (campsContextType === CampsContextType.teach)
-    campQuery["instructor_id"] = user?.id;
+
 
   const pageTitle =
     campsContextType === CampsContextType.schedule
       ? "Schedule Camps"
       : campsContextType === CampsContextType.teach
         ? "Teach Camps"
-        : "Upcoming Camps";
+        : campsContextType === CampsContextType.publicFullDay
+          ?
+          "Upcoming Full Day Camps"
+          : campsContextType === CampsContextType.publicHalfDay
+            ?
+            "Upcoming Half Day Camps"
+            : campsContextType === CampsContextType.publicSingleDay
+              ?
+              "Upcoming Single Day Events"
+              : "";
   const isReadOnly = campsContextType !== CampsContextType.schedule;
   const disableQuery = campsContextType === CampsContextType.teach && !user;
 

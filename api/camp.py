@@ -169,11 +169,18 @@ def camp_sort(camp: Camp) -> date:
     return date.min
 
 
-async def all_camps(session: Any, is_published=None):
-    if is_published is None:
-        stmt = select(CampDb)
-    else:
-        stmt = select(CampDb).where(CampDb.is_published == is_published)
+async def all_camps(session: Any, is_published=None, enroll_full_day_allowed=None, enroll_half_day_allowed=None, single_day_only=None):
+    stmt = select(CampDb)
+    if is_published is not None:
+        stmt = stmt.where(CampDb.is_published == is_published)
+    if enroll_full_day_allowed is not None:
+        stmt = stmt.where(
+            CampDb.enroll_full_day_allowed == enroll_full_day_allowed)
+    if enroll_half_day_allowed is not None:
+        stmt = stmt.where(
+            CampDb.enroll_half_day_allowed == enroll_half_day_allowed)
+    if single_day_only is not None:
+        stmt = stmt.where(CampDb.single_day_only == single_day_only)
     result = await session.execute(stmt)
     camps = []
     for db_camp in result.unique():

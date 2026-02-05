@@ -551,7 +551,14 @@ async def delete_level(request: Request, program_id: int, level_id: int):
 
 # When not requesting an instructor, this is a public route
 @api_router.get("/camps", response_model=List[CampResponse])
-async def get_camps(request: Request, is_published: Optional[bool] = None, instructor_id: Optional[int] = None):
+async def get_camps(
+        request: Request,
+        is_published: Optional[bool] = None,
+        instructor_id: Optional[int] = None,
+        enroll_full_day_allowed: Optional[bool] = None,
+        enroll_half_day_allowed: Optional[bool] = None,
+        single_day_only: Optional[bool] = None
+):
     '''Get a list of camps, subject to filter conditions.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session, required=False)
@@ -573,9 +580,18 @@ async def get_camps(request: Request, is_published: Optional[bool] = None, instr
             if is_published is not None:
                 camps = list(
                     filter(lambda camp: camp.is_published == is_published, camps))
+            if enroll_full_day_allowed is not None:
+                camps = list(
+                    filter(lambda camp: camp.enroll_full_day_allowed == enroll_full_day_allowed, camps))
+            if enroll_half_day_allowed is not None:
+                camps = list(
+                    filter(lambda camp: camp.enroll_half_day_allowed == enroll_half_day_allowed, camps))
+            if single_day_only is not None:
+                camps = list(
+                    filter(lambda camp: camp.single_day_only == single_day_only, camps))
         else:
             # Public access
-            camps = await all_camps(session, is_published)
+            camps = await all_camps(session, is_published, enroll_full_day_allowed, enroll_half_day_allowed, single_day_only)
 
             # For public access, we only care about camps in the future
             if is_published:

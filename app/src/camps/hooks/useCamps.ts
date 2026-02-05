@@ -6,6 +6,9 @@ import { CACHE_KEY_CAMPS, Camp, CampData } from "../Camp";
 export interface CampQuery {
   is_published?: boolean;
   instructor_id?: number;
+  enroll_full_day_allowed?: boolean;
+  enroll_half_day_allowed?: boolean;
+  single_day_only?: boolean;
 }
 
 const campHooks = new APIHooks<Camp, CampData>(
