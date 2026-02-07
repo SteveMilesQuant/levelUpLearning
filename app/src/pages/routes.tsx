@@ -80,9 +80,25 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "camps/:id",
+        path: "camps/fullday/:id",
         element: (
           <CampsContext.Provider value={CampsContextType.publicFullDay}>
+            <Camp />
+          </CampsContext.Provider>
+        ),
+      },
+      {
+        path: "camps/halfday/:id",
+        element: (
+          <CampsContext.Provider value={CampsContextType.publicHalfDay}>
+            <Camp />
+          </CampsContext.Provider>
+        ),
+      },
+      {
+        path: "camps/singleday/:id",
+        element: (
+          <CampsContext.Provider value={CampsContextType.publicSingleDay}>
             <Camp />
           </CampsContext.Provider>
         ),

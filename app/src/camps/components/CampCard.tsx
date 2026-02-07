@@ -41,7 +41,11 @@ const CampCard = ({ camp, onDelete }: Props) => {
       ? "/schedule/" + camp.id
       : campsContextType === CampsContextType.teach
         ? "/teach/" + camp.id
-        : "/camps/" + camp.id;
+        : campsContextType === CampsContextType.publicSingleDay
+          ? "/camps/singleday/" + camp.id
+          : campsContextType === CampsContextType.publicHalfDay
+            ? "/camps/halfday/" + camp.id
+            : "/camps/fullday/" + camp.id; // CampsContextType.publicFullDay
 
   const datesList = camp.dates?.map(
     (date_str) => new Date(date_str + "T00:00:00")

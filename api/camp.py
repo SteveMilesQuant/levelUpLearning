@@ -63,6 +63,9 @@ class Camp(CampResponse):
         self.current_enrollment = len(self._db_obj.students or [])
 
     async def update(self, session: Any):
+        if self.single_day_only:
+            self.enroll_full_day_allowed = False
+            self.enroll_half_day_allowed = False
         for dbDate in self._db_obj.dates:
             await session.delete(dbDate)
         await session.commit()
