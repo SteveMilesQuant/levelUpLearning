@@ -10,21 +10,27 @@ import {
   ModalFooter,
   HStack,
   Text,
-  ListItem,
   IconButton,
   Stack,
   Box,
+  Checkbox,
 } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
 import { useState } from "react";
-import { Camp } from "../../camps";
+import { Camp, CampsContextType } from "../../camps";
 import { MdAddShoppingCart } from "react-icons/md";
 import useShoppingCart from "../../hooks/useShoppingCart";
 import TextButton from "../../components/TextButton";
 
+enum HalfDayType {
+  AM,
+  PM,
+}
+
 interface Props {
   title: string;
   camp: Camp;
+  campsContextType: CampsContextType;
   gradeRange: number[];
   isOpen: boolean;
   onClose: () => void;
@@ -34,6 +40,7 @@ interface Props {
 const EnrollStudentModal = ({
   title,
   camp,
+  campsContextType,
   gradeRange,
   isOpen,
   onClose,
@@ -44,6 +51,7 @@ const EnrollStudentModal = ({
     number | undefined
   >(undefined);
   const { items, addItem } = useShoppingCart();
+  const [amOrPm, setAmOrPm] = useState<HalfDayType | undefined>(undefined);
 
   if (isLoading) return null;
   if (error) throw error;
@@ -57,6 +65,9 @@ const EnrollStudentModal = ({
   const enrolledStudents = allStudents.filter(
     (student) => !unenrolledStudents.find((s) => s.id == student.id)
   );
+
+  const selectAm = () => setAmOrPm(HalfDayType.AM);
+  const selectPm = () => setAmOrPm(HalfDayType.PM);
 
   // If the camp starts before June, use the current school year
   // Otherwise, use the coming school year
@@ -88,7 +99,7 @@ const EnrollStudentModal = ({
           <Stack spacing={4}>
             <Heading fontSize="xl">Select for enrollment:</Heading>
             {unenrolledStudents.map((s) => (
-              <Box
+              <HStack
                 paddingX={3}
                 paddingY={1}
                 key={s.id}
@@ -100,9 +111,16 @@ const EnrollStudentModal = ({
                   cursor: "pointer",
                 }}
                 borderRadius={10}
+                justify="space-between"
               >
                 <Text>{`${s.name} (Grade ${s.grade_level})`}</Text>
-              </Box>
+                {campsContextType === CampsContextType.publicHalfDay && s.id === selectedStudentId &&
+                  <HStack bgColor="white" borderRadius={10} paddingX={3} paddingY={1}>
+                    <Checkbox onChange={selectAm} isChecked={amOrPm !== HalfDayType.PM}>AM</Checkbox>
+                    <Checkbox onChange={selectPm} isChecked={amOrPm === HalfDayType.PM}>PM</Checkbox>
+                  </HStack>
+                }
+              </HStack>
             ))}
             {enrolledStudents.length > 0 && (
               <>

@@ -165,6 +165,7 @@ const Camp = () => {
             <EnrollStudentModal
               title="Enroll Student"
               camp={camp}
+              campsContextType={campsContextType}
               gradeRange={camp.program.grade_range}
               isOpen={newIsOpen}
               onClose={newOnClose}
