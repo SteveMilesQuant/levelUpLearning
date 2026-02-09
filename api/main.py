@@ -871,6 +871,7 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
                     coupon_id=single_enrollment.coupon.id if single_enrollment.coupon else None,
                     camp_id=camp.id,
                     user_id=user.id,
+                    half_day=single_enrollment.half_day,
                     student_id=student.id,
                     total_cost=single_enrollment.total_cost,
                     disc_cost=single_enrollment.disc_cost
@@ -894,7 +895,7 @@ async def enroll_students_in_camps(request: Request, enrollment_data: Enrollment
             for single_enrollment in enrollments.enrollments:
                 camp = single_enrollment.camp
                 student = single_enrollment.student
-                await camp.add_student(session=db_session, student=student)
+                await camp.add_student(session=db_session, student=student, half_day=single_enrollment.half_day)
                 await student.create(db_session)
 
         return CheckoutTotal(total_cost=enrollments.total_cost, disc_cost=enrollments.disc_cost, coupons=enrollments.coupons)

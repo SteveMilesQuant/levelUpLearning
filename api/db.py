@@ -1,12 +1,12 @@
 from datetime import date as dt_date, time
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy import Text, String, Date, Time
+from sqlalchemy import Text, String, Date, Time, Enum
 from sqlalchemy.types import LargeBinary
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
-from datamodels import FastApiDate, UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
+from datamodels import FastApiDate, HalfDayEnum, UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
 
 
 class Base(DeclarativeBase):
@@ -229,6 +229,10 @@ class PaymentRecordDb(Base):
     camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
     student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    half_day = Column(
+        Enum(HalfDayEnum, name="half_day_enum"),
+        nullable=True
+    )
     total_cost: Mapped[int] = mapped_column(nullable=True)
     disc_cost: Mapped[int] = mapped_column(nullable=True)
 

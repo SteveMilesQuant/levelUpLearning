@@ -8,3 +8,5 @@ ALTER TABLE camp ADD COLUMN enroll_half_day_allowed BOOLEAN DEFAULT FALSE;
 UPDATE camp SET enroll_half_day_allowed = FALSE WHERE enroll_half_day_allowed IS NULL;
 
 ALTER TABLE camp ADD COLUMN half_day_cost FLOAT;
+
+ALTER TABLE payment_record ADD COLUMN half_day ENUM('AM','PM') NULL;

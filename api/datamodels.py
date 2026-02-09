@@ -23,6 +23,11 @@ class FastApiTime(time):
         return self.strftime('%H:%M:%S')
 
 
+class HalfDayEnum(Enum):
+    AM = "AM"
+    PM = "PM"
+
+
 class RoleEnum(Enum):
     GUARDIAN = 0
     INSTRUCTOR = 1
@@ -146,6 +151,7 @@ class StudentMoveData(BaseModel):
 class SingleEnrollmentData(BaseModel):
     student_id: int
     camp_id: int
+    half_day: Optional[HalfDayEnum]
 
 
 class EnrollmentData(BaseModel):

@@ -2,12 +2,16 @@ import { Stack, Text } from "@chakra-ui/react";
 import { Camp } from "../Camp";
 import { locale } from "../../constants";
 import FlexTextarea from "../../components/FlexTextarea";
+import { useContext } from "react";
+import CampsContext, { CampsContextType } from "../campsContext";
 
 interface Props {
   camp?: Camp;
 }
 
 const CampTabPublic = ({ camp }: Props) => {
+  const campsContextType = useContext(CampsContext);
+
   if (!camp) return null;
 
   const datesList = camp.dates?.map(
@@ -52,6 +56,8 @@ const CampTabPublic = ({ camp }: Props) => {
       })
       : "TBD";
 
+  const camp_cost = (campsContextType == CampsContextType.publicHalfDay && camp.enroll_half_day_allowed ? camp.half_day_cost : camp.cost) || 0;
+
   return (
     <Stack spacing={5}>
       <Text>
@@ -72,10 +78,10 @@ const CampTabPublic = ({ camp }: Props) => {
         <strong>Location: </strong>
         {camp.location || "TBD"}
       </Text>
-      {(!camp.enrollment_disabled && (camp.cost || camp.cost === 0.0)) && (
+      {!camp.enrollment_disabled && (
         <Text>
           <strong>Cost: </strong>
-          {camp.cost > 0.0 ? "$" + camp.cost : "Free"}
+          {camp_cost > 0.0 ? "$" + camp_cost : "Free"}
         </Text>
       )}
       <FlexTextarea value={camp.program.description} />

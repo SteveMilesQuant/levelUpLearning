@@ -1,7 +1,7 @@
 from pydantic import PrivateAttr
 from typing import Optional, Any, List
 from calendar import month_name
-from datamodels import CampData, CampResponse
+from datamodels import CampData, CampResponse, HalfDayEnum
 from datamodels import UserResponse, ProgramResponse
 from db import CampDb, CampDateDb, UserDb, StudentDb
 from datetime import date, datetime
@@ -111,7 +111,7 @@ class Camp(CampResponse):
         await session.refresh(self._db_obj, ['instructors'])
         return self._db_obj.instructors
 
-    async def add_student(self, session: Any, student: Any):
+    async def add_student(self, session: Any, student: Any, half_day: Optional[HalfDayEnum]):
         await session.refresh(self._db_obj, ['students'])
         for db_student in self._db_obj.students:
             if db_student.id == student.id:

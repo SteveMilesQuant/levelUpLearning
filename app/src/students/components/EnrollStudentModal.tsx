@@ -16,16 +16,12 @@ import {
   Checkbox,
 } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Camp, CampsContextType } from "../../camps";
 import { MdAddShoppingCart } from "react-icons/md";
 import useShoppingCart from "../../hooks/useShoppingCart";
 import TextButton from "../../components/TextButton";
-
-enum HalfDayType {
-  AM,
-  PM,
-}
+import { HalfDayType } from "../../hooks/useEnrollments";
 
 interface Props {
   title: string;
@@ -51,7 +47,7 @@ const EnrollStudentModal = ({
     number | undefined
   >(undefined);
   const { items, addItem } = useShoppingCart();
-  const [amOrPm, setAmOrPm] = useState<HalfDayType | undefined>(undefined);
+  const [amOrPm, setAmOrPm] = useState<HalfDayType | undefined>(campsContextType == CampsContextType.publicHalfDay ? "AM" : undefined);
 
   if (isLoading) return null;
   if (error) throw error;
@@ -66,8 +62,8 @@ const EnrollStudentModal = ({
     (student) => !unenrolledStudents.find((s) => s.id == student.id)
   );
 
-  const selectAm = () => setAmOrPm(HalfDayType.AM);
-  const selectPm = () => setAmOrPm(HalfDayType.PM);
+  const selectAm = () => setAmOrPm("AM");
+  const selectPm = () => setAmOrPm("PM");
 
   // If the camp starts before June, use the current school year
   // Otherwise, use the coming school year
@@ -116,8 +112,8 @@ const EnrollStudentModal = ({
                 <Text>{`${s.name} (Grade ${s.grade_level})`}</Text>
                 {campsContextType === CampsContextType.publicHalfDay && s.id === selectedStudentId &&
                   <HStack bgColor="white" borderRadius={10} paddingX={3} paddingY={1}>
-                    <Checkbox onChange={selectAm} isChecked={amOrPm !== HalfDayType.PM}>AM</Checkbox>
-                    <Checkbox onChange={selectPm} isChecked={amOrPm === HalfDayType.PM}>PM</Checkbox>
+                    <Checkbox onChange={selectAm} isChecked={amOrPm !== "PM"}>AM</Checkbox>
+                    <Checkbox onChange={selectPm} isChecked={amOrPm === "PM"}>PM</Checkbox>
                   </HStack>
                 }
               </HStack>
@@ -149,7 +145,7 @@ const EnrollStudentModal = ({
               variant="ghost"
               onClick={() => {
                 if (selectedStudentId) {
-                  addItem({ camp_id: camp.id, student_id: selectedStudentId });
+                  addItem({ camp_id: camp.id, student_id: selectedStudentId, half_day: amOrPm });
                   onClose();
                 }
               }}
