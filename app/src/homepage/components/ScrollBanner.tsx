@@ -20,7 +20,7 @@ const ScrollBanner = () => {
                 fontSize={fontSize}
                 whiteSpace="nowrap"
             >
-                Summer Camps Enrolling Now! Cary Location Coming Soon!
+                Summer Camps Enrolling Now!
             </Text>
         </Box>
     )
