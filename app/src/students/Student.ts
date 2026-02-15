@@ -1,4 +1,5 @@
 import { Camp } from "../camps";
+import { HalfDayType } from "../hooks/useEnrollments";
 import { User } from "../users";
 
 export interface StudentData {
@@ -6,9 +7,13 @@ export interface StudentData {
   grade_level: number;
 }
 
+export interface StudentCamp extends Camp {
+  half_day?: HalfDayType;
+}
+
 export interface Student extends StudentData {
   id: number;
-  camps: Camp[];
+  student_camps: StudentCamp[];
   guardians: User[];
 }
 

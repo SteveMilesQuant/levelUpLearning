@@ -11,7 +11,7 @@ from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
 from db import init_db, close_db, PaymentRecordDb, ImageDb
-from datamodels import CheckoutTotal, FastApiDate, Object
+from datamodels import CampStudentResponse, CheckoutTotal, FastApiDate, Object
 from datamodels import RoleEnum, UserPublicResponse, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
 from datamodels import StudentData, StudentResponse, StudentMoveData
@@ -262,9 +262,9 @@ async def post_move_student(request: Request, student_id: int, student_move_data
         if student.id is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Student id={student_id} not found.")
-        tgt_camp = next((camp for camp in student.camps if camp.id ==
-                         student_move_data.to_camp_id), None)
-        if tgt_camp is not None:
+        tgt_student_camp = next((sc for sc in student.student_camps if sc.id ==
+                                 student_move_data.to_camp_id), None)
+        if tgt_student_camp is not None:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Student id={student_id} already enrolled in target camp id={student_move_data.to_camp_id}")
         tgt_camp = Camp(id=student_move_data.to_camp_id)
@@ -273,15 +273,15 @@ async def post_move_student(request: Request, student_id: int, student_move_data
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Target camp id={student_move_data.to_camp_id} not found.")
 
-        src_camp = next((camp for camp in student.camps if camp.id ==
-                         student_move_data.from_camp_id), None)
-        if src_camp is None:
+        src_student_camp = next((sc for sc in student.student_camps if sc.id ==
+                                 student_move_data.from_camp_id), None)
+        if src_student_camp is None:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Student id={student_id} not enrolled in source camp id={student_move_data.from_camp_id}")
-        src_camp = Camp(id=src_camp.id)
+        src_camp = Camp(id=src_student_camp.id)
         await src_camp.create(session)
 
-        await tgt_camp.add_student(session=session, student=student)
+        await tgt_camp.add_student(session=session, student=student, half_day=src_student_camp.half_day)
         await src_camp.remove_student(session=session, student=student)
 
 
@@ -769,7 +769,7 @@ async def remove_instructor_from_camp(request: Request, camp_id: int, instructor
 ###############################################################################
 
 
-@api_router.get("/camps/{camp_id}/students", response_model=List[StudentResponse])
+@api_router.get("/camps/{camp_id}/students", response_model=List[CampStudentResponse])
 async def get_camp_students(request: Request, camp_id: int):
     '''Get all students enrolled in a camp.'''
     async with app.db_sessionmaker() as session:
@@ -782,15 +782,18 @@ async def get_camp_students(request: Request, camp_id: int):
         if not await camp.user_authorized(session, user):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail=f"User not authorized for detailed view of camp id={camp_id}.")
-        students = []
-        for db_student in await camp.students(session):
-            student = Student(db_obj=db_student)
+        db_camp_students = await camp.camp_students(session)
+        camp_students = []
+        for db_camp_student in db_camp_students:
+            student = Student(db_obj=db_camp_student.student)
             await student.create(session)
-            students.append(student)
-        return students
+            camp_students.append(CampStudentResponse(
+                **student.dict(), half_day=db_camp_student.half_day)
+            )
+        return camp_students
 
 
-@api_router.get("/camps/{camp_id}/students/{student_id}", response_model=StudentResponse)
+@api_router.get("/camps/{camp_id}/students/{student_id}", response_model=CampStudentResponse)
 async def get_camp_student(request: Request, camp_id: int, student_id: int):
     '''Get a single student enrolled in a camp.'''
     async with app.db_sessionmaker() as session:
@@ -803,13 +806,13 @@ async def get_camp_student(request: Request, camp_id: int, student_id: int):
         if not await camp.user_authorized(session, user):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail=f"User not authorized for detailed view of camp id={camp_id}.")
-        for db_student in await camp.students(session):
-            if db_student.id == student_id:
-                student = Student(db_obj=db_student)
-                await student.create(session)
-                return student
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
+        db_camp_student = next((cs for cs in await camp.camp_students(session) if cs.student_id == student_id), None)
+        if db_camp_student is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
+        student = Student(db_obj=db_camp_student.student)
+        await student.create(session)
+        return CampStudentResponse(**student.dict(), half_day=db_camp_student.half_day)
 
 
 @api_router.delete("/camps/{camp_id}/students/{student_id}")

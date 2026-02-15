@@ -3,7 +3,7 @@ from typing import Optional, Any, List
 from calendar import month_name
 from datamodels import CampData, CampResponse, HalfDayEnum
 from datamodels import UserResponse, ProgramResponse
-from db import CampDb, CampDateDb, UserDb, StudentDb
+from db import CampDb, CampDateDb, CampStudentDb, UserDb
 from datetime import date, datetime
 from sqlalchemy import select
 
@@ -59,8 +59,18 @@ class Camp(CampResponse):
             **self._db_obj.primary_instructor.dict())
         self.program = ProgramResponse(**self._db_obj.program.dict())
 
-        await session.refresh(self._db_obj, ['students'])
-        self.current_enrollment = len(self._db_obj.students or [])
+        await session.refresh(self._db_obj, ['camp_students'])
+        self.current_am_enrollment = sum(
+            1 for cs in (self._db_obj.camp_students or [])
+            if cs.half_day != HalfDayEnum.PM
+        )
+        self.current_pm_enrollment = sum(
+            1 for cs in (self._db_obj.camp_students or [])
+            if cs.half_day != HalfDayEnum.AM
+        )
+        self.current_enrollment = max(
+            self.current_am_enrollment, self.current_pm_enrollment
+        )
 
     async def update(self, session: Any):
         if self.single_day_only:
@@ -84,6 +94,7 @@ class Camp(CampResponse):
                 **self._db_obj.primary_instructor.dict())
 
     async def delete(self, session: Any):
+        await session.refresh(self._db_obj, ['camp_students'])
         await session.delete(self._db_obj)
         await session.commit()
 
@@ -112,24 +123,25 @@ class Camp(CampResponse):
         return self._db_obj.instructors
 
     async def add_student(self, session: Any, student: Any, half_day: Optional[HalfDayEnum]):
-        await session.refresh(self._db_obj, ['students'])
-        for db_student in self._db_obj.students:
-            if db_student.id == student.id:
+        await session.refresh(self._db_obj, ['camp_students'])
+        for db_camp_student in self._db_obj.camp_students:
+            if db_camp_student.student.id == student.id:
                 return
-        self._db_obj.students.append(student._db_obj)
+        dbCampStudent = CampStudentDb(
+            camp_id=self.id, student_id=student.id, half_day=half_day)
+        session.add(dbCampStudent)
         await session.commit()
 
     async def remove_student(self, session: Any, student: Any):
-        await session.refresh(self._db_obj, ['students'])
-        self._db_obj.students.remove(student._db_obj)
-        await session.refresh(student._db_obj, ['guardians', 'camps'])
-        if len(student._db_obj.guardians) == 0 and len(student._db_obj.camps) == 0:
-            await student.delete(session)
+        await session.refresh(self._db_obj, ['camp_students'])
+        for db_camp_student in self._db_obj.camp_students:
+            if db_camp_student.student.id == student.id:
+                await session.delete(db_camp_student)
         await session.commit()
 
-    async def students(self, session: Any) -> List[StudentDb]:
-        await session.refresh(self._db_obj, ['students'])
-        return self._db_obj.students
+    async def camp_students(self, session: Any) -> List[CampStudentDb]:
+        await session.refresh(self._db_obj, ['camp_students'])
+        return self._db_obj.camp_students
 
     async def user_authorized(self, session: Any, user: Any) -> bool:
         if user.has_role('ADMIN'):

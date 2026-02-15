@@ -7,16 +7,21 @@ import APIHooks, {
 import { CACHE_KEY_STUDENTS, Student, StudentData } from "../Student";
 import { CACHE_KEY_CAMPS } from "../../camps";
 import { UseMutationResult, UseQueryResult } from "@tanstack/react-query";
+import { HalfDayType } from "../../hooks/useEnrollments";
+
+export interface CampStudent extends Student {
+  half_day?: HalfDayType;
+}
 
 const useStudentHooks = (campId: number) =>
-  new APIHooks<Student, StudentData>(
-    new APIClient<Student, StudentData>(`/camps/${campId}/students`),
+  new APIHooks<CampStudent, StudentData>(
+    new APIClient<CampStudent, StudentData>(`/camps/${campId}/students`),
     [...CACHE_KEY_CAMPS, campId.toString(), ...CACHE_KEY_STUDENTS],
     ms("5m")
   );
 
 const useCampStudents = (campId?: number) => {
-  if (!campId) return {} as UseQueryResult<Student[], Error>;
+  if (!campId) return {} as UseQueryResult<CampStudent[], Error>;
   const studentHooks = useStudentHooks(campId);
   return studentHooks.useDataList();
 };

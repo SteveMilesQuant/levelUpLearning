@@ -134,7 +134,7 @@ class User(UserResponse):
         await session.refresh(self._db_obj, ['students'])
         self._db_obj.students.remove(student._db_obj)
         if len(student._db_obj.guardians) == 0:
-            student.camps = []
+            student.student_camps = []
             await student.delete(session)
         await session.commit()
 

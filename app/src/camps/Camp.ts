@@ -25,6 +25,8 @@ export interface Camp extends CampData {
   program: Program;
   primary_instructor: User;
   current_enrollment?: number;
+  current_am_enrollment?: number;
+  current_pm_enrollment?: number;
 }
 
 export const CACHE_KEY_CAMPS = ["camps"];

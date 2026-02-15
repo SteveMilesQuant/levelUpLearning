@@ -134,7 +134,7 @@ class Enrollment(BaseModel):
             if student._db_obj not in user_students:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} does not belong to this user.")
-            if camp._db_obj in student._db_obj.camps:
+            if any(sc.id == camp.id for sc in student.student_camps):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} is already enrolled in camp id={camp.id}.")
 

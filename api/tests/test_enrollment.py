@@ -355,8 +355,8 @@ def test_move_student():
     assert response.status_code == status.HTTP_200_OK
     response_json = response.json()
     src_camp = next(
-        (camp for camp in response_json['camps'] if camp['id'] == camp_id), None)
+        (camp for camp in response_json['student_camps'] if camp['id'] == camp_id), None)
     tgt_camp = next(
-        (camp for camp in response_json['camps'] if camp['id'] == tgt_camp_id), None)
+        (camp for camp in response_json['student_camps'] if camp['id'] == tgt_camp_id), None)
     assert src_camp is None
     assert tgt_camp is not None
