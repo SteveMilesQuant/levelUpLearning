@@ -54,7 +54,7 @@ const EnrollStudentModal = ({
 
   const unenrolledStudents = allStudents.filter(
     (student) =>
-      !student.camps.find((s_camp) => s_camp.id === camp.id) &&
+      !student.student_camps.find((s_camp) => s_camp.id === camp.id) &&
       !items.find((i) => i.camp_id === camp.id && i.student_id === student.id)
   );
 

@@ -7,9 +7,10 @@ import { useContext } from "react";
 import CampsContext, { CampsContextType } from "../campsContext";
 import CardContainer from "../../components/CardContainer";
 import { useCampInstructors } from "../../users";
+import { StudentCamp } from "../../students/Student";
 
 interface Props {
-  camp: Camp;
+  camp: Camp | StudentCamp;
   onDelete?: () => void;
 }
 

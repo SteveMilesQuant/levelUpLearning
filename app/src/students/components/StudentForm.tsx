@@ -17,7 +17,7 @@ const StudentForm = ({ student }: Props) => {
   const studentForm = useStudentForm(student);
   const deleteStudent = useDeleteStudent({
     onSuccess: () => {
-      student.camps.forEach((camp) => {
+      student.student_camps.forEach((camp) => {
         queryClient.removeQueries({
           queryKey: [
             ...CACHE_KEY_CAMPS,

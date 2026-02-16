@@ -169,7 +169,8 @@ class Enrollment(BaseModel):
                 camp=camp,
                 coupon=coupon,
                 total_cost=single_camp_total_cost * 100,
-                disc_cost=single_camp_disc_cost
+                disc_cost=single_camp_disc_cost,
+                half_day=e_in.half_day
             )
             self.enrollments.append(enrollment)
 

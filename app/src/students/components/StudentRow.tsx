@@ -30,6 +30,10 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
     onClose: moveStudentOnClose,
   } = useDisclosure();
 
+  const camp = student.student_camps.find(
+    (c) => c.id === campId
+  );
+  const campHalfDayStr = camp?.half_day ? camp?.half_day : "Full day";
 
   return (
     <Tr>
@@ -40,6 +44,7 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
           ?.map((g) => `${g.full_name} (${g.email_address})`)
           .join(", ")}
       </Td>
+      <Td>{campHalfDayStr}</Td>
       {!isReadOnly && (
         <>
           <Td>

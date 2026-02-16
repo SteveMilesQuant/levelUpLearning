@@ -2,7 +2,6 @@ import { HStack, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import {
   CampFormModal,
-  CampGrid,
   CampsContext,
   CampsContextType,
   CampQuery,
@@ -11,6 +10,7 @@ import { useContext, useState } from "react";
 import { useUser } from "../users";
 import BodyContainer from "../components/BodyContainer";
 import TextButton from "../components/TextButton";
+import CampsQuery from "../camps/components/CampsQuery";
 
 const Camps = () => {
   const campsContextType = useContext(CampsContext);
@@ -82,7 +82,7 @@ const Camps = () => {
       >
         {pageTitle}
       </PageHeader>
-      <CampGrid campQuery={campQuery} isReadOnly={isReadOnly} showPastCamps={showPastCamps} disableQuery={disableQuery} />
+      <CampsQuery campQuery={campQuery} isReadOnly={isReadOnly} showPastCamps={showPastCamps} disableQuery={disableQuery} />
       {!isReadOnly && (
         <CampFormModal
           title="Add Camp"

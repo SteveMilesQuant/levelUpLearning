@@ -19,14 +19,8 @@ interface Props {
 }
 
 const StudentPage = ({ student }: Props) => {
-  const futureCamps = student.camps.filter(
-    (c) =>
-      c.dates &&
-      c.dates.length > 0 &&
-      new Date(c.dates[0] + "T00:00:00") > new Date()
-  );
-
-  const pastCamps = student.camps.filter(
+  console.log(student);
+  const hasPastCamps = student.student_camps.some(
     (c) =>
       c.dates &&
       c.dates.length > 0 &&
@@ -41,7 +35,7 @@ const StudentPage = ({ student }: Props) => {
           <Tab>
             <strong>Enrolled Camps</strong>
           </Tab>
-          {pastCamps.length > 0 && (
+          {hasPastCamps && (
             <Tab>
               <strong>Past Camps</strong>
             </Tab>
@@ -49,16 +43,16 @@ const StudentPage = ({ student }: Props) => {
         </TabList>
         <TabPanels>
           <TabPanel>
-            <CampGrid camps={futureCamps} isReadOnly={true} />
+            <CampGrid camps={student.student_camps} isReadOnly={true} showPastCamps={false} />
             <Box marginY={5}>
               <LinkBox as={RouterLink} to="/camps">
                 <TextButton>Find camps</TextButton>
               </LinkBox>
             </Box>
           </TabPanel>
-          {pastCamps.length > 0 && (
+          {hasPastCamps && (
             <TabPanel>
-              <CampGrid camps={pastCamps} isReadOnly={true} />
+              <CampGrid camps={student.student_camps} isReadOnly={true} showPastCamps={true} />
             </TabPanel>
           )}
         </TabPanels>

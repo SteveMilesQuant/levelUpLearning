@@ -1,27 +1,19 @@
 import { Box, Divider, Stack } from "@chakra-ui/react";
-import useCamps, { CampQuery, useDeleteCamp } from "../hooks/useCamps";
+import { useDeleteCamp } from "../hooks/useCamps";
 import CampCard from "./CampCard";
 import { Camp } from "../Camp";
 import { locale } from "../../constants";
 import GoofyText from "../../components/GoofyText";
+import { StudentCamp } from "../../students/Student";
 
 interface Props {
-  campQuery: CampQuery;
+  camps: Camp[] | StudentCamp[];
   isReadOnly?: boolean;
   showPastCamps: boolean;
-  disableQuery: boolean;
 }
 
-const CampGrid = ({ campQuery, isReadOnly, showPastCamps, disableQuery }: Props) => {
+const CampGrid = ({ camps, isReadOnly, showPastCamps }: Props) => {
   const deleteCamp = useDeleteCamp();
-  const {
-    data: camps,
-    isLoading,
-    error,
-  } = useCamps(campQuery, disableQuery);
-
-  if (isLoading) return null;
-  if (error) throw error;
 
   const campsFiltered = camps.filter(
     (c) =>
