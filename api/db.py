@@ -185,6 +185,8 @@ class CampDb(Base):
     is_published: Mapped[bool]
     daily_start_time: Mapped[time] = mapped_column(Time, nullable=True)
     daily_end_time: Mapped[time] = mapped_column(Time, nullable=True)
+    daily_pm_start_time: Mapped[time] = mapped_column(Time, nullable=True)
+    daily_am_end_time: Mapped[time] = mapped_column(Time, nullable=True)
     cost: Mapped[float] = mapped_column(nullable=True)
     half_day_cost: Mapped[float] = mapped_column(nullable=True)
     camp_type: Mapped[str] = mapped_column(Text, nullable=True)

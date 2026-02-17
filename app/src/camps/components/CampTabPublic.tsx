@@ -4,6 +4,7 @@ import { locale } from "../../constants";
 import FlexTextarea from "../../components/FlexTextarea";
 import { useContext } from "react";
 import CampsContext, { CampsContextType } from "../campsContext";
+import { dateStrToDate, timeRangeToStr } from "../../utils/date";
 
 interface Props {
   camp?: Camp;
@@ -39,22 +40,14 @@ const CampTabPublic = ({ camp }: Props) => {
         : datesListStr.join(" ")
       : "TBD";
 
-  const startTime = camp.daily_start_time
-    ? new Date("2023-01-01T" + camp.daily_start_time)
-    : null;
-  const endTime = camp.daily_end_time
-    ? new Date("2023-01-01T" + camp.daily_end_time)
-    : null;
+  const startTime = dateStrToDate(camp.daily_start_time);
+  const endTime = dateStrToDate(camp.daily_end_time);
+  const startTimePm = dateStrToDate(camp.daily_pm_start_time);
+  const endTimeAm = dateStrToDate(camp.daily_am_end_time);
   const timeStr =
-    startTime && endTime
-      ? startTime.toLocaleString(locale, {
-        timeStyle: "short",
-      }) +
-      " to " +
-      endTime.toLocaleString(locale, {
-        timeStyle: "short",
-      })
-      : "TBD";
+    campsContextType === CampsContextType.publicHalfDay
+      ? timeRangeToStr(startTime, endTimeAm) + ", " + timeRangeToStr(startTimePm, endTime)
+      : timeRangeToStr(startTime, endTime);
 
   const camp_cost = (campsContextType == CampsContextType.publicHalfDay && camp.enroll_half_day_allowed ? camp.half_day_cost : camp.cost) || 0;
 

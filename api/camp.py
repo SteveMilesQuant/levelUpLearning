@@ -166,9 +166,9 @@ class Camp(CampResponse):
         to_date = self.dates[len(self.dates)-1]
         return f'{month_name[from_date.month]} {from_date.day}-{month_name[to_date.month]} {to_date.day}'
 
-    def daily_time_range(self) -> str:
-        start = self.daily_start_time
-        end = self.daily_end_time
+    def daily_time_range(self, half_day: Optional[HalfDayEnum]) -> str:
+        start = self.daily_pm_start_time if half_day == HalfDayEnum.PM else self.daily_start_time
+        end = self.daily_am_end_time if half_day == HalfDayEnum.AM else self.daily_end_time
         start_hour = start.hour
         if start_hour > 12:
             start_hour = start_hour - 12

@@ -198,50 +198,6 @@ const CampFormBody = ({
         />
       </FormControl>
       <FormControl>
-        <FormLabel>Daily start time</FormLabel>
-        <Box paddingX={3}>
-          <Controller
-            control={control}
-            name="z_daily_start_time"
-            render={({ field }) => (
-              <DatePicker
-                placeholderText="Select date"
-                onChange={(date) => field.onChange(date)}
-                selected={field.value}
-                showTimeSelect
-                showTimeSelectOnly
-                timeIntervals={15}
-                timeCaption="Time"
-                dateFormat="h:mm aa"
-                readOnly={isReadOnly}
-              />
-            )}
-          />
-        </Box>
-      </FormControl>
-      <FormControl>
-        <FormLabel>Daily end time</FormLabel>
-        <Box paddingX={3}>
-          <Controller
-            control={control}
-            name="z_daily_end_time"
-            render={({ field }) => (
-              <DatePicker
-                placeholderText="Select date"
-                onChange={(date) => field.onChange(date)}
-                selected={field.value}
-                showTimeSelect
-                showTimeSelectOnly
-                timeIntervals={15}
-                timeCaption="Time"
-                dateFormat="h:mm aa"
-                readOnly={isReadOnly}
-              />
-            )}
-          />
-        </Box>
-      </FormControl>
-      <FormControl>
         <FormLabel>Number of days (default: full week)</FormLabel>
         <InputError
           label={errors.single_day_only?.message}
@@ -267,6 +223,85 @@ const CampFormBody = ({
           </InputError>
         </HStack>
       </FormControl>}
+      <FormControl>
+        <FormLabel>Daily time range</FormLabel>
+        <Grid templateColumns="repeat(4, max-content)" gap={3} justifyContent="start">
+          <Text><strong>Start:</strong></Text>
+          <Controller
+            control={control}
+            name="z_daily_start_time"
+            render={({ field }) => (
+              <DatePicker
+                placeholderText="Select date"
+                onChange={(date) => field.onChange(date)}
+                selected={field.value}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={15}
+                timeCaption="Time"
+                dateFormat="h:mm aa"
+                readOnly={isReadOnly}
+              />
+            )}
+          />
+          <Text><strong>End:</strong></Text>
+          <Controller
+            control={control}
+            name="z_daily_end_time"
+            render={({ field }) => (
+              <DatePicker
+                placeholderText="Select date"
+                onChange={(date) => field.onChange(date)}
+                selected={field.value}
+                showTimeSelect
+                showTimeSelectOnly
+                timeIntervals={15}
+                timeCaption="Time"
+                dateFormat="h:mm aa"
+                readOnly={isReadOnly}
+              />
+            )}
+          />
+          {enrollHalfDayAllowed && <>
+            <Text><strong>AM end:</strong></Text>
+            <Controller
+              control={control}
+              name="z_daily_am_end_time"
+              render={({ field }) => (
+                <DatePicker
+                  placeholderText="Select date"
+                  onChange={(date) => field.onChange(date)}
+                  selected={field.value}
+                  showTimeSelect
+                  showTimeSelectOnly
+                  timeIntervals={15}
+                  timeCaption="Time"
+                  dateFormat="h:mm aa"
+                  readOnly={isReadOnly}
+                />
+              )}
+            />
+            <Text><strong>PM start:</strong></Text>
+            <Controller
+              control={control}
+              name="z_daily_pm_start_time"
+              render={({ field }) => (
+                <DatePicker
+                  placeholderText="Select date"
+                  onChange={(date) => field.onChange(date)}
+                  selected={field.value}
+                  showTimeSelect
+                  showTimeSelectOnly
+                  timeIntervals={15}
+                  timeCaption="Time"
+                  dateFormat="h:mm aa"
+                  readOnly={isReadOnly}
+                />
+              )}
+            />
+          </>}
+        </Grid>
+      </FormControl>
       <FormControl>
         <FormLabel>Cost</FormLabel>
         <Grid templateColumns="auto 1fr" gap={3}>

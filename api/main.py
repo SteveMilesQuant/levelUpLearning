@@ -642,6 +642,7 @@ async def post_new_camp(request: Request, new_camp_data: CampData):
 async def put_update_camp(request: Request, camp_id: int, updated_camp_data: CampData):
     '''Update a camp.'''
     async with app.db_sessionmaker() as session:
+        print(updated_camp_data)
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,

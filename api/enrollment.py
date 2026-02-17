@@ -234,7 +234,7 @@ class Enrollment(BaseModel):
             for enrollment in enrollment_list:
                 camp = enrollment.camp
                 date_range = camp.date_range()
-                daily_time_range = camp.daily_time_range()
+                daily_time_range = camp.daily_time_range(enrollment.half_day)
                 location = camp.location if camp.location and camp.location != "" else "TBD"
                 enrollment_summary = enrollment_summary + \
                     f"\t{camp.program.title} ({date_range} from {daily_time_range})\n\t\tLocation: {location}\n"

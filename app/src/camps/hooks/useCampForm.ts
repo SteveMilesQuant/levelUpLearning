@@ -35,6 +35,8 @@ export const campSchema = z.object({
   location: z.string().optional(),
   z_daily_start_time: z.date().optional(),
   z_daily_end_time: z.date().optional(),
+  z_daily_am_end_time: z.date().optional(),
+  z_daily_pm_start_time: z.date().optional(),
   z_dates: z.date().optional().array(),
   cost: z
     .number({ invalid_type_error: "Cost is required." })
@@ -112,6 +114,14 @@ const useCampForm = (camp?: Camp) => {
           camp && camp.daily_end_time
             ? new Date("2023-01-01T" + camp.daily_end_time)
             : undefined,
+        z_daily_am_end_time:
+          camp && camp.daily_am_end_time
+            ? new Date("2023-01-01T" + camp.daily_am_end_time)
+            : undefined,
+        z_daily_pm_start_time:
+          camp && camp.daily_pm_start_time
+            ? new Date("2023-01-01T" + camp.daily_pm_start_time)
+            : undefined,
         z_dates: camp?.dates?.map(
           (date_str) => new Date(date_str + "T00:00:00")
         ),
@@ -136,6 +146,8 @@ const useCampForm = (camp?: Camp) => {
 
     const start = data.z_daily_start_time;
     const end = data.z_daily_end_time;
+    const startpm = data.z_daily_pm_start_time;
+    const endam = data.z_daily_am_end_time;
     const dates = data.z_dates.map(
       (date: Date) =>
         date.getFullYear() +
@@ -162,6 +174,20 @@ const useCampForm = (camp?: Camp) => {
         end.getMinutes() +
         (end.getSeconds() < 10 ? ":0" : ":") +
         end.getSeconds()
+        : undefined,
+      daily_pm_start_time: startpm
+        ? startpm.getHours() +
+        (startpm.getMinutes() < 10 ? ":0" : ":") +
+        +startpm.getMinutes() +
+        (startpm.getSeconds() < 10 ? ":0" : ":") +
+        startpm.getSeconds()
+        : undefined,
+      daily_am_end_time: endam
+        ? endam.getHours() +
+        (endam.getMinutes() < 10 ? ":0" : ":") +
+        endam.getMinutes() +
+        (endam.getSeconds() < 10 ? ":0" : ":") +
+        endam.getSeconds()
         : undefined,
       dates,
       program: { ...program },

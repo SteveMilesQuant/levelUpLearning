@@ -8,6 +8,8 @@ export interface CampData {
   location?: string;
   daily_start_time?: string;
   daily_end_time?: string;
+  daily_pm_start_time?: string;
+  daily_am_end_time?: string;
   cost?: number;
   half_day_cost?: number | null;
   camp_type?: string;

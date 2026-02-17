@@ -8,6 +8,10 @@ import CampsContext, { CampsContextType } from "../campsContext";
 import CardContainer from "../../components/CardContainer";
 import { useCampInstructors } from "../../users";
 import { StudentCamp } from "../../students/Student";
+import { dateStrToDate, timeRangeToStr } from "../../utils/date";
+
+
+
 
 interface Props {
   camp: Camp | StudentCamp;
@@ -73,22 +77,19 @@ const CampCard = ({ camp, onDelete }: Props) => {
         : datesListStr.join(", ")
       : "TBD";
 
-  const startTime = camp.daily_start_time
-    ? new Date("2023-01-01T" + camp.daily_start_time)
-    : null;
-  const endTime = camp.daily_end_time
-    ? new Date("2023-01-01T" + camp.daily_end_time)
-    : null;
+  const startTime = dateStrToDate(camp.daily_start_time);
+  const endTime = dateStrToDate(camp.daily_end_time);
+  const startTimePm = dateStrToDate(camp.daily_pm_start_time);
+  const endTimeAm = dateStrToDate(camp.daily_am_end_time);
   const timeStr =
-    startTime && endTime
-      ? startTime.toLocaleString(locale, {
-        timeStyle: "short",
-      }) +
-      " to " +
-      endTime.toLocaleString(locale, {
-        timeStyle: "short",
-      })
-      : "TBD";
+    "half_day" in camp && camp.half_day
+      ? camp.half_day === "AM"
+        ? timeRangeToStr(startTime, endTimeAm)
+        : timeRangeToStr(startTimePm, endTime)
+      :
+      campsContextType === CampsContextType.publicHalfDay
+        ? timeRangeToStr(startTime, endTimeAm) + ", " + timeRangeToStr(startTimePm, endTime)
+        : timeRangeToStr(startTime, endTime);
 
   const currentCapacity = (camp.capacity || 0) - (camp.current_enrollment || 0);
   const capacityString = currentCapacity <= 0
