@@ -44,7 +44,6 @@ const useShoppingCart = () => {
   }, []);
 
   const addItem = (item: SingleEnrollment) => {
-    console.log(item);
     const storedItemsStr = localStorage.getItem("shoppingCart") || "[]";
     const storedItems: SingleEnrollment[] = JSON.parse(storedItemsStr);
     const alreadyThere = storedItems.find(

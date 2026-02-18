@@ -42,15 +42,19 @@ const CampCard = ({ camp, onDelete }: Props) => {
       })
       .join("");
   const linkTarget =
-    campsContextType === CampsContextType.schedule
-      ? "/schedule/" + camp.id
-      : campsContextType === CampsContextType.teach
-        ? "/teach/" + camp.id
-        : campsContextType === CampsContextType.publicSingleDay
-          ? "/camps/singleday/" + camp.id
-          : campsContextType === CampsContextType.publicHalfDay
-            ? "/camps/halfday/" + camp.id
-            : "/camps/fullday/" + camp.id; // CampsContextType.publicFullDay
+    "half_day" in camp && camp.half_day
+      ? "/camps/halfday/" + camp.id
+      : campsContextType === CampsContextType.schedule
+        ? "/schedule/" + camp.id
+        : campsContextType === CampsContextType.teach
+          ? "/teach/" + camp.id
+          : campsContextType === CampsContextType.publicSingleDay
+            ? "/camps/singleday/" + camp.id
+            : campsContextType === CampsContextType.publicHalfDay
+              ? "/camps/halfday/" + camp.id
+              : camp.single_day_only
+                ? "/camps/singleday/" + camp.id
+                : "/camps/fullday/" + camp.id; // CampsContextType.publicFullDay
 
   const datesList = camp.dates?.map(
     (date_str) => new Date(date_str + "T00:00:00")
@@ -90,6 +94,12 @@ const CampCard = ({ camp, onDelete }: Props) => {
       campsContextType === CampsContextType.publicHalfDay
         ? timeRangeToStr(startTime, endTimeAm) + ", " + timeRangeToStr(startTimePm, endTime)
         : timeRangeToStr(startTime, endTime);
+  const timeStrAddendum =
+    "half_day" in camp && camp.half_day
+      ? camp.half_day === "AM"
+        ? "(AM only)"
+        : "(PM only)"
+      : undefined;
 
   const currentCapacity = (camp.capacity || 0) - (camp.current_enrollment || 0);
   const capacityString = currentCapacity <= 0
@@ -145,6 +155,7 @@ const CampCard = ({ camp, onDelete }: Props) => {
           <Text>
             <strong>Time: </strong>
             {timeStr}
+            {timeStrAddendum && <strong> {timeStrAddendum}</strong>}
           </Text>
         </HStack>
       </Stack>

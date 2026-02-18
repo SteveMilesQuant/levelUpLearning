@@ -19,7 +19,6 @@ interface Props {
 }
 
 const StudentPage = ({ student }: Props) => {
-  console.log(student);
   const hasPastCamps = student.student_camps.some(
     (c) =>
       c.dates &&
