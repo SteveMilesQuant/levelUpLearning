@@ -47,7 +47,7 @@ Whether you're celebrating a birthday, earning a badge, or just looking for a me
 
                 <FAQItem
                     question="What does my child need to bring with them to camp?"
-                    answer="For fully day campers: pack a lunch, two snacks, and a water bottle for your child to stay energized throughout the day. Half day campers only need one snack and a water bottle." />
+                    answer="For full day campers: pack a lunch, two snacks, and a water bottle for your child to stay energized throughout the day. Half day campers only need one snack and a water bottle." />
             </Stack>
         </Stack>
     )
