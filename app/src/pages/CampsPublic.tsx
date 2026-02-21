@@ -1,26 +1,29 @@
 import { HStack, IconButton, SimpleGrid, Stack, Text, useBreakpointValue } from "@chakra-ui/react"
-import FunInfoBox from "../homepage/components/FunInfoBox"
+import FunInfoImage from "../components/FunInfoImage"
 import { FaPlus } from "react-icons/fa"
 import { useNavigate } from "react-router-dom";
 import BodyContainer from "../components/BodyContainer";
+import fullDayImg from "../assets/FullDayCamp.webp";
+import halfDayImg from "../assets/HalfDayCamp.webp";
+import singleDayImg from "../assets/SingleDayEvent.webp";
 
 const CampsPublic = () => {
     const iconSize = useBreakpointValue({ base: "0.9em", md: "1.2em" });
     const navigate = useNavigate();
 
-    const gridColumns = { base: 1, lg: 3 };
-    const spacing = { base: 2, lg: 5, xl: 8 };
+    const gridColumns = { base: 1, md: 3, lg: 3 };
+    const spacing = { base: 3, lg: 5, xl: 8 };
     const paddingX = { base: 4, xl: 15 };
-    const teaserBoxTitleFontSize = { base: 14, md: 24, lg: 28, xl: 28 };
-    const teaserBoxLearnMoreFontSize = { base: 12, md: 22, lg: 24, xl: 24 };
-    const teaserBoxHeight = { base: 100, md: 125, lg: 150, xl: 200 };
+    const teaserBoxTitleFontSize = { base: 16, md: 18, lg: 20, xl: 30 };
+    const teaserBoxLearnMoreFontSize = { base: 14, md: 16, lg: 18, xl: 24 };
+    const bodyPadding = { base: 0, md: 4, lg: 4, xl: 10 };
 
     return (
-        <BodyContainer>
-            <Stack fontFamily="kent" width="full" justify="space-around" paddingY={spacing} paddingX={{ base: 0, xl: 5 }}>
+        <BodyContainer paddingY={bodyPadding}>
+            <Stack fontFamily="kent" width="full" justify="space-around" paddingY={spacing} paddingX={{ base: 12, md: 5, lg: 5, xl: 5 }}>
                 <SimpleGrid columns={gridColumns} paddingX={paddingX} spacing={spacing}>
-                    <FunInfoBox height={teaserBoxHeight} onOpen={() => { navigate("/camps/fullday"); }}>
-                        <Text fontSize={teaserBoxTitleFontSize} textColor="brand.primary" textAlign="center" lineHeight={1.2}>Full Day Summer Camps</Text>
+                    <FunInfoImage onOpen={() => { navigate("/camps/fullday"); }} imageUrl={fullDayImg}>
+                        <Text fontSize={teaserBoxTitleFontSize} textColor="brand.primary" textAlign="center" lineHeight={1.2}>Full Day<br />Summer Camps</Text>
                         <HStack justifyContent="center">
                             <Text fontSize={teaserBoxLearnMoreFontSize} textAlign="center" textColor="brand.gradient2" >View Dates</Text>
                             <IconButton
@@ -31,9 +34,9 @@ const CampsPublic = () => {
                                 variant="ghost"
                             />
                         </HStack>
-                    </FunInfoBox>
-                    <FunInfoBox height={teaserBoxHeight} onOpen={() => { navigate("/camps/halfday"); }}>
-                        <Text fontSize={teaserBoxTitleFontSize} textColor="brand.primary" textAlign="center" lineHeight={1.2}>Half Day Summer Camps</Text>
+                    </FunInfoImage>
+                    <FunInfoImage onOpen={() => { navigate("/camps/halfday"); }} imageUrl={halfDayImg}>
+                        <Text fontSize={teaserBoxTitleFontSize} textColor="brand.primary" textAlign="center" lineHeight={1.2}>Half Day<br />Summer Camps</Text>
                         <HStack justifyContent="center">
                             <Text fontSize={teaserBoxLearnMoreFontSize} textAlign="center" textColor="brand.gradient2" >View Dates</Text>
                             <IconButton
@@ -44,9 +47,9 @@ const CampsPublic = () => {
                                 variant="ghost"
                             />
                         </HStack>
-                    </FunInfoBox>
-                    <FunInfoBox height={teaserBoxHeight} onOpen={() => { navigate("/camps/singleday"); }}>
-                        <Text fontSize={teaserBoxTitleFontSize} textColor="brand.primary" textAlign="center" lineHeight={1.2}>Single Day Events</Text>
+                    </FunInfoImage>
+                    <FunInfoImage onOpen={() => { navigate("/camps/singleday"); }} imageUrl={singleDayImg}>
+                        <Text fontSize={teaserBoxTitleFontSize} textColor="brand.primary" textAlign="center" lineHeight={1.2}>Single Day<br />Events</Text>
                         <HStack justifyContent="center">
                             <Text fontSize={teaserBoxLearnMoreFontSize} textAlign="center" textColor="brand.gradient2" >View Dates</Text>
                             <IconButton
@@ -57,7 +60,7 @@ const CampsPublic = () => {
                                 variant="ghost"
                             />
                         </HStack>
-                    </FunInfoBox>
+                    </FunInfoImage>
                 </SimpleGrid>
             </Stack >
         </BodyContainer>
