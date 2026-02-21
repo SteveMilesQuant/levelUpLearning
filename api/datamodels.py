@@ -23,6 +23,11 @@ class FastApiTime(time):
         return self.strftime('%H:%M:%S')
 
 
+class HalfDayEnum(str, Enum):
+    AM = "AM"
+    PM = "PM"
+
+
 class RoleEnum(Enum):
     GUARDIAN = 0
     INSTRUCTOR = 1
@@ -40,16 +45,19 @@ class RoleResponse(BaseModel):
 
 
 class UserPublicData(BaseModel):
+    '''Empoyee editable data'''
     full_name: Optional[str] = ''
     instructor_subjects: Optional[str] = ''
     instructor_description: Optional[str] = ''
 
 
 class UserPublicResponse(UserPublicData):
+    '''Employee response'''
     id: Optional[int] = None
 
 
 class UserData(UserPublicData):
+    '''Login user data, editable by that user'''
     email_address: Optional[str] = ''
     phone_number: Optional[str] = ''
     email_verified: Optional[bool] = False
@@ -57,11 +65,13 @@ class UserData(UserPublicData):
 
 
 class UserResponse(UserData):
+    '''User response, with access roles assigned by admin'''
     id: Optional[int] = None
     roles: Optional[List[str]] = []
 
 
 class ProgramData(BaseModel):
+    '''Program data, editable by designers'''
     title: Optional[str] = ''
     grade_range: Optional[Tuple[int, int]]
     tags: Optional[str] = ''
@@ -69,35 +79,46 @@ class ProgramData(BaseModel):
 
 
 class ProgramResponse(ProgramData):
+    '''Program response'''
     id: Optional[int]
 
 
 class LevelData(BaseModel):
+    '''Program level data, editable by designers (not yet fully implemented)'''
     title: Optional[str] = ''
     description: Optional[str] = ''
     list_index: Optional[int] = 0
 
 
 class LevelResponse(LevelData):
+    '''Program level response'''
     id: Optional[int]
     program_id: Optional[int]
 
 
 class CampCore(BaseModel):
+    '''Basic editable camp data'''
     program_id: Optional[int]
     primary_instructor_id: Optional[int]
     location: Optional[str]
     is_published: Optional[bool] = False
     daily_start_time: Optional[FastApiTime]
     daily_end_time: Optional[FastApiTime]
+    daily_am_end_time: Optional[FastApiTime]
+    daily_pm_start_time: Optional[FastApiTime]
     cost: Optional[float]
+    half_day_cost: Optional[float]
     camp_type: Optional[str]
     enrollment_disabled: Optional[bool] = False
     capacity: Optional[int]
     coupons_allowed: Optional[bool] = True
+    single_day_only: Optional[bool] = False
+    enroll_full_day_allowed: Optional[bool] = True
+    enroll_half_day_allowed: Optional[bool] = False
 
 
 class CampData(CampCore):
+    '''Editable camp data, including a list of dates'''
     dates: Optional[List[FastApiDate]] = []
 
     def dict(self, *args, **kwargs):
@@ -107,31 +128,47 @@ class CampData(CampCore):
 
 
 class CampResponse(CampData):
+    '''Camp response, including program and primary instructor'''
     id: Optional[int]
     primary_instructor: Optional[UserPublicResponse] = None
     program: Optional[ProgramResponse] = None
     current_enrollment: Optional[int] = None
+    current_am_enrollment: Optional[int] = None
+    current_pm_enrollment: Optional[int] = None
 
     def dict(self, *args, **kwargs):
         ret = super().dict(*args, **kwargs)
         return ret
 
 
+class StudentCampResponse(CampResponse):
+    '''Camp response, plus any enrollment metadata'''
+    half_day: Optional[HalfDayEnum]
+
+
 class StudentData(BaseModel):
+    '''User-editable student data'''
     name: Optional[str] = None
     grade_level: Optional[int] = None
 
 
 class StudentResponse(StudentData):
+    '''Student response, including associated camps and guardians'''
     id: Optional[int] = None
-    camps: Optional[List[CampResponse]] = []
+    student_camps: Optional[List[StudentCampResponse]] = []
     guardians: Optional[List[UserResponse]] = []
 
     def dict(self, *args, **kwargs):
         ret = super().dict(*args, **kwargs)
-        ret['camps'] = [camp.dict() for camp in self.camps]
+        ret['student_camps'] = [student_camp.dict()
+                                for student_camp in self.student_camps]
         ret['guardians'] = [guardian.dict() for guardian in self.guardians]
         return ret
+
+
+class CampStudentResponse(StudentResponse):
+    '''Student response, plus any enrollment metadata'''
+    half_day: Optional[HalfDayEnum]
 
 
 class StudentMoveData(BaseModel):
@@ -142,6 +179,7 @@ class StudentMoveData(BaseModel):
 class SingleEnrollmentData(BaseModel):
     student_id: int
     camp_id: int
+    half_day: Optional[HalfDayEnum]
 
 
 class EnrollmentData(BaseModel):

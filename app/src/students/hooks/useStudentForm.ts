@@ -44,11 +44,11 @@ const useStudentForm = (student?: Student) => {
   const updateStudent = useUpdateStudent({
     onSuccess: () => {
       // Invalidate each of this student's camps
-      student?.camps.forEach((student) => {
+      student?.student_camps.forEach((s_camp) => {
         queryClient.invalidateQueries({
           queryKey: [
             ...CACHE_KEY_CAMPS,
-            student.id.toString(),
+            s_camp.id.toString(),
             ...CACHE_KEY_STUDENTS,
           ],
         });
@@ -65,7 +65,7 @@ const useStudentForm = (student?: Student) => {
 
     const newStudent = {
       id: 0,
-      camps: [],
+      student_camps: [],
       ...student,
       ...data,
     } as Student;

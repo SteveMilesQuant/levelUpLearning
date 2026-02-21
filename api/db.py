@@ -1,12 +1,12 @@
 from datetime import date as dt_date, time
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy import Text, String, Date, Time
+from sqlalchemy import Text, String, Date, Time, Enum
 from sqlalchemy.types import LargeBinary
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
-from datamodels import FastApiDate, UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
+from datamodels import FastApiDate, HalfDayEnum, UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
 
 
 class Base(DeclarativeBase):
@@ -39,13 +39,6 @@ camp_x_instructors = Table(
     Base.metadata,
     Column('camp_id', ForeignKey('camp.id'), primary_key=True),
     Column('instructor_id', ForeignKey('user.id'), primary_key=True),
-)
-
-camp_x_students = Table(
-    'camp_x_students',
-    Base.metadata,
-    Column('camp_id', ForeignKey('camp.id'), primary_key=True),
-    Column('student_id', ForeignKey('student.id'), primary_key=True),
 )
 
 event_x_images = Table(
@@ -111,13 +104,16 @@ class StudentDb(Base):
 
     guardians: Mapped[List['UserDb']] = relationship(
         secondary=user_x_students, back_populates='students', lazy='joined')
-    camps: Mapped[List['CampDb']] = relationship(
-        secondary=camp_x_students, back_populates='students', lazy='joined')
+    student_camps: Mapped[List["CampStudentDb"]] = relationship(
+        back_populates="student",
+        cascade="all",
+        lazy="selectin"
+    )
 
     def dict(self):
         returnVal = {}
         for key, _ in StudentResponse():
-            if key not in ['camps', 'guardians']:
+            if key not in ['student_camps', 'guardians']:
                 returnVal[key] = getattr(self, key)
         return returnVal
 
@@ -189,11 +185,17 @@ class CampDb(Base):
     is_published: Mapped[bool]
     daily_start_time: Mapped[time] = mapped_column(Time, nullable=True)
     daily_end_time: Mapped[time] = mapped_column(Time, nullable=True)
+    daily_pm_start_time: Mapped[time] = mapped_column(Time, nullable=True)
+    daily_am_end_time: Mapped[time] = mapped_column(Time, nullable=True)
     cost: Mapped[float] = mapped_column(nullable=True)
+    half_day_cost: Mapped[float] = mapped_column(nullable=True)
     camp_type: Mapped[str] = mapped_column(Text, nullable=True)
     enrollment_disabled: Mapped[bool] = mapped_column(nullable=True)
     capacity: Mapped[int] = mapped_column(nullable=True)
     coupons_allowed: Mapped[bool] = mapped_column(nullable=True)
+    single_day_only: Mapped[bool] = mapped_column(nullable=True)
+    enroll_full_day_allowed: Mapped[bool] = mapped_column(nullable=True)
+    enroll_half_day_allowed: Mapped[bool] = mapped_column(nullable=True)
 
     program: Mapped['ProgramDb'] = relationship(
         back_populates='camps', lazy='joined')
@@ -202,15 +204,40 @@ class CampDb(Base):
         lazy='joined', cascade='all, delete')
     instructors: Mapped[List['UserDb']] = relationship(
         secondary=camp_x_instructors, back_populates='camps', lazy='raise')
-    students: Mapped[List['StudentDb']] = relationship(
-        secondary=camp_x_students, back_populates='camps', lazy='raise')
+    camp_students: Mapped[List["CampStudentDb"]] = relationship(
+        back_populates="camp",
+        cascade="all",
+        lazy="raise"
+    )
 
     def dict(self):
         returnVal = {}
         for key, _ in CampResponse():
-            if key not in ['program', 'primary_instructor', 'start_time', 'current_enrollment']:
+            if key not in ['program', 'primary_instructor', 'start_time',
+                           'current_enrollment', 'current_am_enrollment', 'current_pm_enrollment'
+                           ]:
                 returnVal[key] = getattr(self, key)
         return returnVal
+
+
+class CampStudentDb(Base):
+    __tablename__ = "camp_x_students"
+
+    camp_id: Mapped[int] = mapped_column(
+        ForeignKey("camp.id"), primary_key=True
+    )
+    student_id: Mapped[int] = mapped_column(
+        ForeignKey("student.id"), primary_key=True
+    )
+    half_day = Column(
+        Enum(HalfDayEnum, name="half_day_enum"),
+        nullable=True  # NULL means full day
+    )
+
+    camp: Mapped["CampDb"] = relationship(
+        back_populates="camp_students", lazy="selectin")
+    student: Mapped["StudentDb"] = relationship(
+        back_populates="student_camps", lazy="selectin")
 
 
 class PaymentRecordDb(Base):
@@ -225,6 +252,10 @@ class PaymentRecordDb(Base):
     camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'))
     student_id: Mapped[int] = mapped_column(ForeignKey('student.id'))
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    half_day = Column(
+        Enum(HalfDayEnum, name="half_day_enum"),
+        nullable=True
+    )
     total_cost: Mapped[int] = mapped_column(nullable=True)
     disc_cost: Mapped[int] = mapped_column(nullable=True)
 

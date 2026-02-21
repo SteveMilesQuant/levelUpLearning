@@ -8,9 +8,12 @@ import ms from "ms";
 import { CACHE_KEY_COUPONS } from "../coupons";
 import { CouponData } from "../coupons/Coupon";
 
+export type HalfDayType = "AM" | "PM";
+
 export interface SingleEnrollment {
   student_id: number;
   camp_id: number;
+  half_day?: HalfDayType;
 }
 
 // Enrollment data is for users trying to enroll their students in camps

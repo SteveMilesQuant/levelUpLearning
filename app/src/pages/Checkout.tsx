@@ -86,6 +86,7 @@ const Checkout = () => {
                 key={item.camp_id + ", " + item.student_id}
                 camp_id={item.camp_id}
                 student_id={item.student_id}
+                half_day={item.half_day}
                 onDelete={() => removeItem(item)}
                 coupon={total_coupon || totals.coupons.find(c => c.camp_ids?.includes(item.camp_id))}
               />

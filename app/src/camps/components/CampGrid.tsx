@@ -4,19 +4,29 @@ import CampCard from "./CampCard";
 import { Camp } from "../Camp";
 import { locale } from "../../constants";
 import GoofyText from "../../components/GoofyText";
+import { StudentCamp } from "../../students/Student";
 
 interface Props {
-  camps: Camp[];
+  camps: Camp[] | StudentCamp[];
   isReadOnly?: boolean;
+  showPastCamps: boolean;
 }
 
-const CampGrid = ({ camps, isReadOnly }: Props) => {
+const CampGrid = ({ camps, isReadOnly, showPastCamps }: Props) => {
   const deleteCamp = useDeleteCamp();
+
+  const campsFiltered = camps.filter(
+    (c) =>
+      !c.dates ||
+      c.dates.length === 0 ||
+      (showPastCamps && new Date(c.dates[0] + "T00:00:00") <= new Date()) ||
+      (!showPastCamps && new Date(c.dates[0] + "T00:00:00") > new Date())
+  );
 
   const campsByMonth: {
     [id: string]: { id: string; heading: string; camps: Camp[] };
   } = {};
-  camps.forEach((camp) => {
+  campsFiltered.forEach((camp) => {
     const startDate =
       camp.dates && camp.dates.length > 0 ? new Date(camp.dates[0]) : undefined;
     const month = startDate?.getMonth();

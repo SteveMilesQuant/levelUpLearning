@@ -5,7 +5,7 @@ from user import User
 from pydantic import BaseModel
 from uuid import uuid4
 from fastapi import HTTPException, status
-from datamodels import Object, FastApiDate, EnrollmentData
+from datamodels import HalfDayEnum, Object, FastApiDate, EnrollmentData
 from db import StudentDb
 from emailserver import EmailServer
 from student import Student
@@ -33,6 +33,7 @@ Level Up Learning'''
 class SingleEnrollment(BaseModel):
     student: Student
     camp: Camp
+    half_day: Optional[HalfDayEnum]
     coupon: Optional[Coupon]
     total_cost: Optional[int] = 0
     disc_cost: Optional[int] = 0
@@ -133,9 +134,19 @@ class Enrollment(BaseModel):
             if student._db_obj not in user_students:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} does not belong to this user.")
-            if camp._db_obj in student._db_obj.camps:
+            if any(sc.id == camp.id for sc in student.student_camps):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} is already enrolled in camp id={camp.id}.")
+
+            # Check half day permission
+            if e_in.half_day in ("AM", "PM"):
+                if not camp.enroll_half_day_allowed:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp.id} does not allow half day enrollment.")
+            else:
+                if not camp.single_day_only and not camp.enroll_full_day_allowed:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp.id} does not allow full day enrollment (i.e. only half day).")
 
             # Find an applicable coupon (should only be one)
             if has_total_coupons:
@@ -149,7 +160,10 @@ class Enrollment(BaseModel):
             # Account for coupon
             percent_discount = 0
             fixed_discount = 0
-            single_camp_total_cost = (camp.cost or 0)
+            if not camp.enroll_half_day_allowed or e_in.half_day is None:
+                single_camp_total_cost = (camp.cost or 0)
+            else:
+                single_camp_total_cost = (camp.half_day_cost or 0)
             if coupon and camp.coupons_allowed:
                 # fixed total coupon handled at end, so as to not count double
                 if coupon.discount_type == "dollars" and (has_camp_coupons or coupon.applies_to_all):
@@ -165,7 +179,8 @@ class Enrollment(BaseModel):
                 camp=camp,
                 coupon=coupon,
                 total_cost=single_camp_total_cost * 100,
-                disc_cost=single_camp_disc_cost
+                disc_cost=single_camp_disc_cost,
+                half_day=e_in.half_day
             )
             self.enrollments.append(enrollment)
 
@@ -229,7 +244,7 @@ class Enrollment(BaseModel):
             for enrollment in enrollment_list:
                 camp = enrollment.camp
                 date_range = camp.date_range()
-                daily_time_range = camp.daily_time_range()
+                daily_time_range = camp.daily_time_range(enrollment.half_day)
                 location = camp.location if camp.location and camp.location != "" else "TBD"
                 enrollment_summary = enrollment_summary + \
                     f"\t{camp.program.title} ({date_range} from {daily_time_range})\n\t\tLocation: {location}\n"

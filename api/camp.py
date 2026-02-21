@@ -1,9 +1,9 @@
 from pydantic import PrivateAttr
 from typing import Optional, Any, List
 from calendar import month_name
-from datamodels import CampData, CampResponse
+from datamodels import CampData, CampResponse, HalfDayEnum
 from datamodels import UserResponse, ProgramResponse
-from db import CampDb, CampDateDb, UserDb, StudentDb
+from db import CampDb, CampDateDb, CampStudentDb, UserDb
 from datetime import date, datetime
 from sqlalchemy import select
 
@@ -59,10 +59,23 @@ class Camp(CampResponse):
             **self._db_obj.primary_instructor.dict())
         self.program = ProgramResponse(**self._db_obj.program.dict())
 
-        await session.refresh(self._db_obj, ['students'])
-        self.current_enrollment = len(self._db_obj.students or [])
+        await session.refresh(self._db_obj, ['camp_students'])
+        self.current_am_enrollment = sum(
+            1 for cs in (self._db_obj.camp_students or [])
+            if cs.half_day != HalfDayEnum.PM
+        )
+        self.current_pm_enrollment = sum(
+            1 for cs in (self._db_obj.camp_students or [])
+            if cs.half_day != HalfDayEnum.AM
+        )
+        self.current_enrollment = max(
+            self.current_am_enrollment, self.current_pm_enrollment
+        )
 
     async def update(self, session: Any):
+        if self.single_day_only:
+            self.enroll_full_day_allowed = False
+            self.enroll_half_day_allowed = False
         for dbDate in self._db_obj.dates:
             await session.delete(dbDate)
         await session.commit()
@@ -81,6 +94,7 @@ class Camp(CampResponse):
                 **self._db_obj.primary_instructor.dict())
 
     async def delete(self, session: Any):
+        await session.refresh(self._db_obj, ['camp_students'])
         await session.delete(self._db_obj)
         await session.commit()
 
@@ -108,25 +122,26 @@ class Camp(CampResponse):
         await session.refresh(self._db_obj, ['instructors'])
         return self._db_obj.instructors
 
-    async def add_student(self, session: Any, student: Any):
-        await session.refresh(self._db_obj, ['students'])
-        for db_student in self._db_obj.students:
-            if db_student.id == student.id:
+    async def add_student(self, session: Any, student: Any, half_day: Optional[HalfDayEnum]):
+        await session.refresh(self._db_obj, ['camp_students'])
+        for db_camp_student in self._db_obj.camp_students:
+            if db_camp_student.student.id == student.id:
                 return
-        self._db_obj.students.append(student._db_obj)
+        dbCampStudent = CampStudentDb(
+            camp_id=self.id, student_id=student.id, half_day=half_day)
+        session.add(dbCampStudent)
         await session.commit()
 
     async def remove_student(self, session: Any, student: Any):
-        await session.refresh(self._db_obj, ['students'])
-        self._db_obj.students.remove(student._db_obj)
-        await session.refresh(student._db_obj, ['guardians', 'camps'])
-        if len(student._db_obj.guardians) == 0 and len(student._db_obj.camps) == 0:
-            await student.delete(session)
+        await session.refresh(self._db_obj, ['camp_students'])
+        for db_camp_student in self._db_obj.camp_students:
+            if db_camp_student.student.id == student.id:
+                await session.delete(db_camp_student)
         await session.commit()
 
-    async def students(self, session: Any) -> List[StudentDb]:
-        await session.refresh(self._db_obj, ['students'])
-        return self._db_obj.students
+    async def camp_students(self, session: Any) -> List[CampStudentDb]:
+        await session.refresh(self._db_obj, ['camp_students'])
+        return self._db_obj.camp_students
 
     async def user_authorized(self, session: Any, user: Any) -> bool:
         if user.has_role('ADMIN'):
@@ -151,9 +166,9 @@ class Camp(CampResponse):
         to_date = self.dates[len(self.dates)-1]
         return f'{month_name[from_date.month]} {from_date.day}-{month_name[to_date.month]} {to_date.day}'
 
-    def daily_time_range(self) -> str:
-        start = self.daily_start_time
-        end = self.daily_end_time
+    def daily_time_range(self, half_day: Optional[HalfDayEnum]) -> str:
+        start = self.daily_pm_start_time if half_day == HalfDayEnum.PM else self.daily_start_time
+        end = self.daily_am_end_time if half_day == HalfDayEnum.AM else self.daily_end_time
         start_hour = start.hour
         if start_hour > 12:
             start_hour = start_hour - 12
@@ -169,11 +184,18 @@ def camp_sort(camp: Camp) -> date:
     return date.min
 
 
-async def all_camps(session: Any, is_published=None):
-    if is_published is None:
-        stmt = select(CampDb)
-    else:
-        stmt = select(CampDb).where(CampDb.is_published == is_published)
+async def all_camps(session: Any, is_published=None, enroll_full_day_allowed=None, enroll_half_day_allowed=None, single_day_only=None):
+    stmt = select(CampDb)
+    if is_published is not None:
+        stmt = stmt.where(CampDb.is_published == is_published)
+    if enroll_full_day_allowed is not None:
+        stmt = stmt.where(
+            CampDb.enroll_full_day_allowed == enroll_full_day_allowed)
+    if enroll_half_day_allowed is not None:
+        stmt = stmt.where(
+            CampDb.enroll_half_day_allowed == enroll_half_day_allowed)
+    if single_day_only is not None:
+        stmt = stmt.where(CampDb.single_day_only == single_day_only)
     result = await session.execute(stmt)
     camps = []
     for db_camp in result.unique():

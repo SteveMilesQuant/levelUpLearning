@@ -1,7 +1,7 @@
 from pydantic import PrivateAttr
 from typing import Optional, Any
 from db import StudentDb
-from datamodels import StudentData, StudentResponse, CampResponse, UserResponse
+from datamodels import StudentCampResponse, StudentData, StudentResponse, UserResponse
 from camp import Camp
 from user import User
 
@@ -31,14 +31,16 @@ class Student(StudentResponse):
         else:
             # Otherwise, update attributes from fetched object
             for key, _ in StudentResponse():
-                if key not in ['camps', 'guardians']:
+                if key not in ['student_camps', 'guardians']:
                     setattr(self, key, getattr(self._db_obj, key))
 
-        self.camps = []
-        for db_camp in self._db_obj.camps:
-            camp = Camp(db_obj=db_camp)
+        await session.refresh(self._db_obj, ['student_camps'])
+        self.student_camps = []
+        for db_student_camp in self._db_obj.student_camps:
+            camp = Camp(db_obj=db_student_camp.camp)
             await camp.create(session)
-            self.camps.append(CampResponse(**camp.dict()))
+            self.student_camps.append(StudentCampResponse(
+                **camp.dict(), half_day=db_student_camp.half_day))
 
         self.guardians = []
         for db_guardian in self._db_obj.guardians:
@@ -52,5 +54,7 @@ class Student(StudentResponse):
         await session.commit()
 
     async def delete(self, session: Any):
+        for db_camp_student in self._db_obj.student_camps:
+            await session.delete(db_camp_student)
         await session.delete(self._db_obj)
         await session.commit()

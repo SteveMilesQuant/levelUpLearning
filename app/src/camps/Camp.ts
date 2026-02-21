@@ -8,12 +8,18 @@ export interface CampData {
   location?: string;
   daily_start_time?: string;
   daily_end_time?: string;
+  daily_pm_start_time?: string;
+  daily_am_end_time?: string;
   cost?: number;
+  half_day_cost?: number | null;
   camp_type?: string;
   dates?: string[];
   enrollment_disabled?: boolean;
   capacity?: number;
   coupons_allowed?: boolean;
+  single_day_only?: boolean;
+  enroll_full_day_allowed?: boolean;
+  enroll_half_day_allowed?: boolean;
 }
 
 export interface Camp extends CampData {
@@ -21,6 +27,8 @@ export interface Camp extends CampData {
   program: Program;
   primary_instructor: User;
   current_enrollment?: number;
+  current_am_enrollment?: number;
+  current_pm_enrollment?: number;
 }
 
 export const CACHE_KEY_CAMPS = ["camps"];

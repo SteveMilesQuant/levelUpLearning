@@ -10,21 +10,23 @@ import {
   ModalFooter,
   HStack,
   Text,
-  ListItem,
   IconButton,
   Stack,
   Box,
+  Checkbox,
 } from "@chakra-ui/react";
 import useStudents from "../hooks/useStudents";
-import { useState } from "react";
-import { Camp } from "../../camps";
+import { useEffect, useState } from "react";
+import { Camp, CampsContextType } from "../../camps";
 import { MdAddShoppingCart } from "react-icons/md";
 import useShoppingCart from "../../hooks/useShoppingCart";
 import TextButton from "../../components/TextButton";
+import { HalfDayType } from "../../hooks/useEnrollments";
 
 interface Props {
   title: string;
   camp: Camp;
+  campsContextType: CampsContextType;
   gradeRange: number[];
   isOpen: boolean;
   onClose: () => void;
@@ -34,6 +36,7 @@ interface Props {
 const EnrollStudentModal = ({
   title,
   camp,
+  campsContextType,
   gradeRange,
   isOpen,
   onClose,
@@ -44,19 +47,23 @@ const EnrollStudentModal = ({
     number | undefined
   >(undefined);
   const { items, addItem } = useShoppingCart();
+  const [amOrPm, setAmOrPm] = useState<HalfDayType | undefined>(campsContextType == CampsContextType.publicHalfDay ? "AM" : undefined);
 
   if (isLoading) return null;
   if (error) throw error;
 
   const unenrolledStudents = allStudents.filter(
     (student) =>
-      !student.camps.find((s_camp) => s_camp.id === camp.id) &&
+      !student.student_camps.find((s_camp) => s_camp.id === camp.id) &&
       !items.find((i) => i.camp_id === camp.id && i.student_id === student.id)
   );
 
   const enrolledStudents = allStudents.filter(
     (student) => !unenrolledStudents.find((s) => s.id == student.id)
   );
+
+  const selectAm = () => setAmOrPm("AM");
+  const selectPm = () => setAmOrPm("PM");
 
   // If the camp starts before June, use the current school year
   // Otherwise, use the coming school year
@@ -88,7 +95,7 @@ const EnrollStudentModal = ({
           <Stack spacing={4}>
             <Heading fontSize="xl">Select for enrollment:</Heading>
             {unenrolledStudents.map((s) => (
-              <Box
+              <HStack
                 paddingX={3}
                 paddingY={1}
                 key={s.id}
@@ -100,9 +107,16 @@ const EnrollStudentModal = ({
                   cursor: "pointer",
                 }}
                 borderRadius={10}
+                justify="space-between"
               >
                 <Text>{`${s.name} (Grade ${s.grade_level})`}</Text>
-              </Box>
+                {campsContextType === CampsContextType.publicHalfDay && s.id === selectedStudentId &&
+                  <HStack bgColor="white" borderRadius={10} paddingX={3} paddingY={1}>
+                    <Checkbox onChange={selectAm} isChecked={amOrPm !== "PM"}>AM</Checkbox>
+                    <Checkbox onChange={selectPm} isChecked={amOrPm === "PM"}>PM</Checkbox>
+                  </HStack>
+                }
+              </HStack>
             ))}
             {enrolledStudents.length > 0 && (
               <>
@@ -131,7 +145,7 @@ const EnrollStudentModal = ({
               variant="ghost"
               onClick={() => {
                 if (selectedStudentId) {
-                  addItem({ camp_id: camp.id, student_id: selectedStudentId });
+                  addItem({ camp_id: camp.id, student_id: selectedStudentId, half_day: amOrPm });
                   onClose();
                 }
               }}

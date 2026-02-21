@@ -11,21 +11,32 @@ import { formatCamp, useCamp } from "../camps";
 import { useStudent } from "../students";
 import { IoClose } from "react-icons/io5";
 import { CouponData } from "../coupons/Coupon";
+import { HalfDayType } from "../hooks/useEnrollments";
 
 interface Props {
   camp_id: number;
   student_id: number;
+  half_day?: HalfDayType;
   coupon?: CouponData;
   onDelete: () => void;
 }
 
-const CartItemCard = ({ camp_id, student_id, coupon, onDelete }: Props) => {
+const CartItemCard = ({ camp_id, student_id, half_day, coupon, onDelete }: Props) => {
   const { data: camp } = useCamp(camp_id);
   const { data: student } = useStudent(student_id);
 
   if (!camp || !student) return null;
 
-  const total_cost = (camp.cost || 0) * 100;
+  let total_cost: number;
+  let half_day_str: string;
+  if (camp.enroll_half_day_allowed && half_day) {
+    total_cost = (camp.half_day_cost || 0) * 100;
+    half_day_str = `(${half_day} ONLY)`;
+  }
+  else {
+    total_cost = (camp.cost || 0) * 100;
+    half_day_str = "";
+  }
   const disc_cost = camp.coupons_allowed ?
     coupon?.discount_type === "percent" ? total_cost * (100 - coupon.discount_amount) / 100 : total_cost - (coupon?.discount_amount || 0) * 100
     : total_cost;
@@ -44,7 +55,7 @@ const CartItemCard = ({ camp_id, student_id, coupon, onDelete }: Props) => {
         <Stack>
           <HStack align="start" justify="space-between">
             <Text>
-              Enrollment for {student.name} into {camp_title}
+              Enrollment for {student.name} into {camp_title} <strong>{half_day_str}</strong>
             </Text>
             <Box>
               <IconButton

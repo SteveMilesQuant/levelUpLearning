@@ -35,6 +35,8 @@ export const campSchema = z.object({
   location: z.string().optional(),
   z_daily_start_time: z.date().optional(),
   z_daily_end_time: z.date().optional(),
+  z_daily_am_end_time: z.date().optional(),
+  z_daily_pm_start_time: z.date().optional(),
   z_dates: z.date().optional().array(),
   cost: z
     .number({ invalid_type_error: "Cost is required." })
@@ -48,6 +50,20 @@ export const campSchema = z.object({
         if (!isNaN(num) && num >= 0.0) return num;
       }
       return 0.0;
+    }),
+  half_day_cost: z
+    .number({ invalid_type_error: "Cost is required." })
+    .nonnegative({ message: "Cost must be non-negative." })
+    .nullable()
+    .catch((ctx) => {
+      // I'd prefer use transform (string to number), but that doesn't play well with defaultValues
+      // You end up getting numbers you have to catch from the default values, which must be numbers
+      // Zod should fix this, or allow valueAsNumber (which it ignores)
+      if (typeof ctx.input === "string") {
+        const num = parseFloat(ctx.input);
+        if (!isNaN(num) && num >= 0.0) return num;
+      }
+      return null;
     }),
   camp_type: z.string().optional(),
   enrollment_disabled: z.boolean(),
@@ -65,6 +81,9 @@ export const campSchema = z.object({
       return CAMP_DATA_DEFAULTS.capacity || 19;
     }),
   coupons_allowed: z.boolean(),
+  single_day_only: z.boolean(),
+  enroll_full_day_allowed: z.boolean(),
+  enroll_half_day_allowed: z.boolean(),
 });
 
 export type FormData = z.infer<typeof campSchema>;
@@ -78,6 +97,7 @@ const useCampForm = (camp?: Camp) => {
     handleSubmit: handleFormSubmit,
     formState: { errors, isValid },
     reset,
+    watch
   } = useForm<FormData>({
     resolver: zodResolver(campSchema),
     defaultValues: useMemo(() => {
@@ -93,6 +113,14 @@ const useCampForm = (camp?: Camp) => {
         z_daily_end_time:
           camp && camp.daily_end_time
             ? new Date("2023-01-01T" + camp.daily_end_time)
+            : undefined,
+        z_daily_am_end_time:
+          camp && camp.daily_am_end_time
+            ? new Date("2023-01-01T" + camp.daily_am_end_time)
+            : undefined,
+        z_daily_pm_start_time:
+          camp && camp.daily_pm_start_time
+            ? new Date("2023-01-01T" + camp.daily_pm_start_time)
             : undefined,
         z_dates: camp?.dates?.map(
           (date_str) => new Date(date_str + "T00:00:00")
@@ -118,6 +146,8 @@ const useCampForm = (camp?: Camp) => {
 
     const start = data.z_daily_start_time;
     const end = data.z_daily_end_time;
+    const startpm = data.z_daily_pm_start_time;
+    const endam = data.z_daily_am_end_time;
     const dates = data.z_dates.map(
       (date: Date) =>
         date.getFullYear() +
@@ -145,6 +175,20 @@ const useCampForm = (camp?: Camp) => {
         (end.getSeconds() < 10 ? ":0" : ":") +
         end.getSeconds()
         : undefined,
+      daily_pm_start_time: startpm
+        ? startpm.getHours() +
+        (startpm.getMinutes() < 10 ? ":0" : ":") +
+        +startpm.getMinutes() +
+        (startpm.getSeconds() < 10 ? ":0" : ":") +
+        startpm.getSeconds()
+        : undefined,
+      daily_am_end_time: endam
+        ? endam.getHours() +
+        (endam.getMinutes() < 10 ? ":0" : ":") +
+        endam.getMinutes() +
+        (endam.getSeconds() < 10 ? ":0" : ":") +
+        endam.getSeconds()
+        : undefined,
       dates,
       program: { ...program },
       primary_instructor: { ...instructor },
@@ -167,6 +211,7 @@ const useCampForm = (camp?: Camp) => {
     register,
     control,
     errors,
+    watch,
     handleClose,
     handleSubmit,
     isValid,

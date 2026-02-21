@@ -2,16 +2,15 @@ import { HStack, useDisclosure } from "@chakra-ui/react";
 import PageHeader from "../components/PageHeader";
 import {
   CampFormModal,
-  CampGrid,
   CampsContext,
   CampsContextType,
-  useCamps,
   CampQuery,
 } from "../camps";
 import { useContext, useState } from "react";
 import { useUser } from "../users";
 import BodyContainer from "../components/BodyContainer";
 import TextButton from "../components/TextButton";
+import CampsQuery from "../camps/components/CampsQuery";
 
 const Camps = () => {
   const campsContextType = useContext(CampsContext);
@@ -24,34 +23,41 @@ const Camps = () => {
   const [showPastCamps, setShowPastCamps] = useState(false);
 
   const campQuery = {} as CampQuery;
+  if (campsContextType === CampsContextType.publicSingleDay) {
+    campQuery["single_day_only"] = true;
+  }
+  else if (campsContextType === CampsContextType.publicFullDay) {
+    campQuery["enroll_full_day_allowed"] = true;
+    campQuery["single_day_only"] = false;
+  }
+  else if (campsContextType === CampsContextType.publicHalfDay) {
+    campQuery["enroll_half_day_allowed"] = true;
+    campQuery["single_day_only"] = false;
+  }
+  else if (campsContextType === CampsContextType.teach)
+    campQuery["instructor_id"] = user?.id;
+
   if (campsContextType !== CampsContextType.schedule)
     campQuery["is_published"] = true;
-  if (campsContextType === CampsContextType.teach)
-    campQuery["instructor_id"] = user?.id;
-  const {
-    data: camps,
-    isLoading,
-    error,
-  } = useCamps(campQuery, campsContextType === CampsContextType.teach && !user);
 
-  if (isLoading) return null;
-  if (error) throw error;
 
   const pageTitle =
     campsContextType === CampsContextType.schedule
       ? "Schedule Camps"
       : campsContextType === CampsContextType.teach
         ? "Teach Camps"
-        : "Upcoming Camps";
+        : campsContextType === CampsContextType.publicFullDay
+          ?
+          "Upcoming Full Day Camps"
+          : campsContextType === CampsContextType.publicHalfDay
+            ?
+            "Upcoming Half Day Camps"
+            : campsContextType === CampsContextType.publicSingleDay
+              ?
+              "Upcoming Single Day Events"
+              : "";
   const isReadOnly = campsContextType !== CampsContextType.schedule;
-
-  const campList = camps.filter(
-    (c) =>
-      !c.dates ||
-      c.dates.length === 0 ||
-      (showPastCamps && new Date(c.dates[0] + "T00:00:00") <= new Date()) ||
-      (!showPastCamps && new Date(c.dates[0] + "T00:00:00") > new Date())
-  );
+  const disableQuery = campsContextType === CampsContextType.teach && !user;
 
   return (
     <BodyContainer>
@@ -76,7 +82,7 @@ const Camps = () => {
       >
         {pageTitle}
       </PageHeader>
-      <CampGrid camps={campList} isReadOnly={isReadOnly} />
+      <CampsQuery campQuery={campQuery} isReadOnly={isReadOnly} showPastCamps={showPastCamps} disableQuery={disableQuery} />
       {!isReadOnly && (
         <CampFormModal
           title="Add Camp"

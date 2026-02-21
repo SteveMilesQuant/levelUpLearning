@@ -7,9 +7,14 @@ import { useContext } from "react";
 import CampsContext, { CampsContextType } from "../campsContext";
 import CardContainer from "../../components/CardContainer";
 import { useCampInstructors } from "../../users";
+import { StudentCamp } from "../../students/Student";
+import { dateStrToDate, timeRangeToStr } from "../../utils/date";
+
+
+
 
 interface Props {
-  camp: Camp;
+  camp: Camp | StudentCamp;
   onDelete?: () => void;
 }
 
@@ -37,11 +42,19 @@ const CampCard = ({ camp, onDelete }: Props) => {
       })
       .join("");
   const linkTarget =
-    campsContextType === CampsContextType.schedule
-      ? "/schedule/" + camp.id
-      : campsContextType === CampsContextType.teach
-        ? "/teach/" + camp.id
-        : "/camps/" + camp.id;
+    "half_day" in camp && camp.half_day
+      ? "/camps/halfday/" + camp.id
+      : campsContextType === CampsContextType.schedule
+        ? "/schedule/" + camp.id
+        : campsContextType === CampsContextType.teach
+          ? "/teach/" + camp.id
+          : campsContextType === CampsContextType.publicSingleDay
+            ? "/camps/singleday/" + camp.id
+            : campsContextType === CampsContextType.publicHalfDay
+              ? "/camps/halfday/" + camp.id
+              : camp.single_day_only
+                ? "/camps/singleday/" + camp.id
+                : "/camps/fullday/" + camp.id; // CampsContextType.publicFullDay
 
   const datesList = camp.dates?.map(
     (date_str) => new Date(date_str + "T00:00:00")
@@ -68,22 +81,25 @@ const CampCard = ({ camp, onDelete }: Props) => {
         : datesListStr.join(", ")
       : "TBD";
 
-  const startTime = camp.daily_start_time
-    ? new Date("2023-01-01T" + camp.daily_start_time)
-    : null;
-  const endTime = camp.daily_end_time
-    ? new Date("2023-01-01T" + camp.daily_end_time)
-    : null;
+  const startTime = dateStrToDate(camp.daily_start_time);
+  const endTime = dateStrToDate(camp.daily_end_time);
+  const startTimePm = dateStrToDate(camp.daily_pm_start_time);
+  const endTimeAm = dateStrToDate(camp.daily_am_end_time);
   const timeStr =
-    startTime && endTime
-      ? startTime.toLocaleString(locale, {
-        timeStyle: "short",
-      }) +
-      " to " +
-      endTime.toLocaleString(locale, {
-        timeStyle: "short",
-      })
-      : "TBD";
+    "half_day" in camp && camp.half_day
+      ? camp.half_day === "AM"
+        ? timeRangeToStr(startTime, endTimeAm)
+        : timeRangeToStr(startTimePm, endTime)
+      :
+      campsContextType === CampsContextType.publicHalfDay
+        ? timeRangeToStr(startTime, endTimeAm) + ", " + timeRangeToStr(startTimePm, endTime)
+        : timeRangeToStr(startTime, endTime);
+  const timeStrAddendum =
+    "half_day" in camp && camp.half_day
+      ? camp.half_day === "AM"
+        ? "(AM only)"
+        : "(PM only)"
+      : undefined;
 
   const currentCapacity = (camp.capacity || 0) - (camp.current_enrollment || 0);
   const capacityString = currentCapacity <= 0
@@ -139,6 +155,7 @@ const CampCard = ({ camp, onDelete }: Props) => {
           <Text>
             <strong>Time: </strong>
             {timeStr}
+            {timeStrAddendum && <strong> {timeStrAddendum}</strong>}
           </Text>
         </HStack>
       </Stack>

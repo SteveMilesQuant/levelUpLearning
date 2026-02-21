@@ -68,6 +68,8 @@ def test_post_camp(camp: CampData):
         include=UserPublicResponse().dict())
     camp_json['program'] = program_response
     camp_json['current_enrollment'] = 0
+    camp_json['current_am_enrollment'] = 0
+    camp_json['current_pm_enrollment'] = 0
     assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match posted camp {camp_json}.'
     all_camps_json.append(new_camp_json)
 
@@ -236,23 +238,29 @@ def test_camp_student(camp_index: int, student: StudentData):
     assert 'application/json' in content_type
 
     camp_json['current_enrollment'] = camp_json['current_enrollment'] + 1
-    student_json['camps'] = [camp_json]
+    camp_json['current_am_enrollment'] = camp_json['current_am_enrollment'] + 1
+    camp_json['current_pm_enrollment'] = camp_json['current_pm_enrollment'] + 1
+    student_camp_json = camp_json.copy()
+    student_camp_json['half_day'] = None
+    student_json['student_camps'] = [student_camp_json]
     student_json['guardians'] = [
         app.test.users.admin.dict(include=UserResponse().dict())]
+    camp_student_json = student_json.copy()
+    camp_student_json['half_day'] = None
 
     response = client.get(
         f'/camps/{camp_id}/students/{student_id}', headers=app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     get_student_json = response.json()
-    assert get_student_json == student_json, 'Get student failed'
+    assert get_student_json == camp_student_json, 'Get student failed'
 
     response = client.get(
         f'/camps/{camp_id}/students', headers=app.test.users.admin_headers)
     content_type = response.headers['content-type']
     assert 'application/json' in content_type
     student_list_json = response.json()
-    assert student_list_json[0] == student_json, 'Get students failed'
+    assert student_list_json[0] == camp_student_json, 'Get students failed'
 
     response = client.delete(
         f'/camps/{camp_id}/students/{student_id}', headers=app.test.users.admin_headers)
