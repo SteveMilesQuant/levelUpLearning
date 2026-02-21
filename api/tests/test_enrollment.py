@@ -31,10 +31,7 @@ def test_create_seed_data():
                  primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=0, dates=[FastApiDate(2025, 2, 1)]),
         CampData(program_id=enroll_program.id,
                  primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=220, dates=[FastApiDate(2025, 2, 1)],
-                 enroll_full_day_allowed=False, enroll_half_day_allowed=True, half_day_cost=100),
-        CampData(program_id=enroll_program.id,
-                 primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=30, dates=[FastApiDate(2025, 2, 1)],
-                 single_day_only=True)
+                 enroll_full_day_allowed=False, enroll_half_day_allowed=True, half_day_cost=100)
     ]
     global enroll_camps_json
     enroll_camps_json = []
@@ -90,13 +87,21 @@ def test_create_seed_data():
     global enroll_student_id
     enroll_student_id = enroll_student_json['id']
 
-    global enroll_camp_1, enroll_camp_2, enroll_free_camp
+    global enroll_camp_1, enroll_camp_2, enroll_free_camp, enroll_am_camp_1, enroll_pm_camp_1, enroll_am_camp_4, enroll_pm_camp_4
     enroll_camp_1 = SingleEnrollmentData(
         camp_id=enroll_camps_json[0]['id'], student_id=enroll_student_id)
     enroll_camp_2 = SingleEnrollmentData(
         camp_id=enroll_camps_json[1]['id'], student_id=enroll_student_id)
     enroll_free_camp = SingleEnrollmentData(
         camp_id=enroll_camps_json[2]['id'], student_id=enroll_student_id)
+    enroll_am_camp_1 = SingleEnrollmentData(
+        camp_id=enroll_camps_json[0]['id'], student_id=enroll_student_id, half_day="AM")
+    enroll_pm_camp_1 = SingleEnrollmentData(
+        camp_id=enroll_camps_json[0]['id'], student_id=enroll_student_id, half_day="PM")
+    enroll_am_camp_4 = SingleEnrollmentData(
+        camp_id=enroll_camps_json[3]['id'], student_id=enroll_student_id, half_day="AM")
+    enroll_pm_camp_4 = SingleEnrollmentData(
+        camp_id=enroll_camps_json[3]['id'], student_id=enroll_student_id, half_day="PM")
 
 
 def test_coupon_permission():
@@ -253,6 +258,8 @@ def test_enrollment_permission():
 def test_totals():
     camp_1_cost = enroll_camps_json[0]['cost']
     camp_2_cost = enroll_camps_json[1]['cost']
+    camp_1_halfday_cost = enroll_camps_json[0]['half_day_cost']
+    camp_4_halfday_cost = enroll_camps_json[3]['half_day_cost']
 
     # Total coupon - fixed
     enrollment_data = EnrollmentData(
@@ -342,6 +349,35 @@ def test_totals():
     assert response_json['total_cost'] == total_cost
     disc_cost = total_cost - 200 * \
         enroll_coupons_json['BOTHCAMPS_FIXED']['discount_amount']
+    assert response_json['disc_cost'] == disc_cost
+
+    # Half day - no coupon
+    enrollment_data = EnrollmentData(
+        enrollments=[enroll_am_camp_1, enroll_pm_camp_4], coupons=[], execute_transaction=False)
+    enrollment_data_json = json.loads(json.dumps(
+        enrollment_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post('/enroll', json=enrollment_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_201_CREATED
+    response_json = response.json()
+    total_cost = (camp_1_halfday_cost + camp_4_halfday_cost) * 100
+    assert response_json['total_cost'] == total_cost
+    disc_cost = total_cost
+    assert response_json['disc_cost'] == disc_cost
+
+    # Half day - percent coupon (THIRDBASIC)
+    enrollment_data = EnrollmentData(
+        enrollments=[enroll_pm_camp_1, enroll_am_camp_4], coupons=["THIRDBASIC"], execute_transaction=False)
+    enrollment_data_json = json.loads(json.dumps(
+        enrollment_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post('/enroll', json=enrollment_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_201_CREATED
+    response_json = response.json()
+    total_cost = (camp_1_halfday_cost + camp_4_halfday_cost) * 100
+    assert response_json['total_cost'] == total_cost
+    disc_cost = total_cost * \
+        (100 - enroll_coupons_json['THIRDBASIC']['discount_amount']) / 100
     assert response_json['disc_cost'] == disc_cost
 
 
