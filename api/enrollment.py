@@ -144,7 +144,7 @@ class Enrollment(BaseModel):
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp.id} does not allow half day enrollment.")
             else:
-                if not camp.enroll_full_day_allowed:
+                if not camp.single_day_only and not camp.enroll_full_day_allowed:
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp.id} does not allow full day enrollment (i.e. only half day).")
 
