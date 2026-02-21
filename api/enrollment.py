@@ -138,6 +138,16 @@ class Enrollment(BaseModel):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail=f"Student id={e_in.student_id} is already enrolled in camp id={camp.id}.")
 
+            # Check half day permission
+            if e_in.half_day in ("AM", "PM"):
+                if not camp.enroll_half_day_allowed:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp.id} does not allow half day enrollment.")
+            else:
+                if not camp.enroll_full_day_allowed:
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN, detail=f"Camp id={camp.id} does not allow full day enrollment (i.e. only half day).")
+
             # Find an applicable coupon (should only be one)
             if has_total_coupons:
                 coupon = self.coupons[0]

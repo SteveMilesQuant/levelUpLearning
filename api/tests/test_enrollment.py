@@ -1,4 +1,3 @@
-import pytest
 import json
 import asyncio
 from fastapi import status
@@ -24,11 +23,18 @@ def test_create_seed_data():
     # Seed camps
     enroll_raw_camps_data = [
         CampData(program_id=enroll_program.id,
-                 primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=150, dates=[FastApiDate(2025, 1, 1)]),
+                 primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=150, dates=[FastApiDate(2025, 1, 1)],
+                 enroll_half_day_allowed=True, half_day_cost=90),
         CampData(program_id=enroll_program.id,
                  primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=50, dates=[FastApiDate(2025, 2, 1)]),
         CampData(program_id=enroll_program.id,
-                 primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=0, dates=[FastApiDate(2025, 2, 1)])
+                 primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=0, dates=[FastApiDate(2025, 2, 1)]),
+        CampData(program_id=enroll_program.id,
+                 primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=220, dates=[FastApiDate(2025, 2, 1)],
+                 enroll_full_day_allowed=False, enroll_half_day_allowed=True, half_day_cost=100),
+        CampData(program_id=enroll_program.id,
+                 primary_instructor_id=app.test.users.admin.id, is_published=True, capacity=10, cost=30, dates=[FastApiDate(2025, 2, 1)],
+                 single_day_only=True)
     ]
     global enroll_camps_json
     enroll_camps_json = []
@@ -98,9 +104,9 @@ def test_coupon_permission():
         enrollments=[enroll_free_camp], coupons=['BASIC'], execute_transaction=True)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
-    assert response.status_code == status.HTTP_201_CREATED, f'Error with initial enrollment with coupon BASIC.'
+    assert response.status_code == status.HTTP_201_CREATED, 'Error with initial enrollment with coupon BASIC.'
     response_json = response.json()
     total_cost = 0
     assert response_json['total_cost'] == total_cost
@@ -112,7 +118,7 @@ def test_coupon_permission():
         enrollments=[enroll_free_camp], coupons=['BASIC'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()[
@@ -123,7 +129,7 @@ def test_coupon_permission():
         enrollments=[enroll_camp_1], coupons=['MAXUSES_1'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_410_GONE
     assert response.json()[
@@ -134,7 +140,7 @@ def test_coupon_permission():
         enrollments=[enroll_camp_1], coupons=['ANOTHERBASIC', 'CAMPONE'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()[
@@ -144,7 +150,7 @@ def test_coupon_permission():
         enrollments=[enroll_camp_1], coupons=['CAMPONE', 'ANOTHERBASIC'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()[
@@ -155,7 +161,7 @@ def test_coupon_permission():
         enrollments=[enroll_camp_1], coupons=['ANOTHERBASIC', 'THIRDBASIC'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()[
@@ -166,7 +172,7 @@ def test_coupon_permission():
         enrollments=[enroll_camp_1], coupons=['CAMPTWO'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()[
@@ -177,7 +183,7 @@ def test_coupon_permission():
         enrollments=[enroll_camp_1], coupons=['CAMPONE', 'BOTHCAMPS'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()[
@@ -187,7 +193,7 @@ def test_coupon_permission():
         enrollments=[enroll_camp_1], coupons=['CAMPONE', 'CAMPONEAGAIN'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()[
@@ -197,11 +203,51 @@ def test_coupon_permission():
         enrollments=[enroll_camp_2], coupons=['CAMPTWO', 'BOTHCAMPS'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()[
         'detail'] == f"Sorry, but we only allow one coupon per camp. The coupon codes BOTHCAMPS and CAMPTWO are both intended for the camp id = {enroll_camps_json[1]['id']} (Creative Writing Workshop on 2025-02-01)."
+
+
+def test_enrollment_permission():
+    # Try half day when it's not allowed
+    invalid_am_enrollment = SingleEnrollmentData(
+        camp_id=enroll_camps_json[1]['id'], student_id=enroll_student_id, half_day="AM")
+    enrollment_data = EnrollmentData(
+        enrollments=[invalid_am_enrollment], coupons=[], execute_transaction=False)
+    enrollment_data_json = json.loads(json.dumps(
+        enrollment_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post('/enroll', json=enrollment_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()[
+        'detail'] == f"Camp id={enroll_camps_json[1]['id']} does not allow half day enrollment."
+
+    invalid_pm_enrollment = SingleEnrollmentData(
+        camp_id=enroll_camps_json[1]['id'], student_id=enroll_student_id, half_day="AM")
+    enrollment_data = EnrollmentData(
+        enrollments=[invalid_pm_enrollment], coupons=[], execute_transaction=False)
+    enrollment_data_json = json.loads(json.dumps(
+        enrollment_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post('/enroll', json=enrollment_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()[
+        'detail'] == f"Camp id={enroll_camps_json[1]['id']} does not allow half day enrollment."
+
+    # Try full day when it's not allowed
+    invalid_full_day_enrollment = SingleEnrollmentData(
+        camp_id=enroll_camps_json[3]['id'], student_id=enroll_student_id)
+    enrollment_data = EnrollmentData(
+        enrollments=[invalid_full_day_enrollment], coupons=[], execute_transaction=False)
+    enrollment_data_json = json.loads(json.dumps(
+        enrollment_data.dict(), indent=4, sort_keys=True, default=str))
+    response = client.post('/enroll', json=enrollment_data_json,
+                           headers=app.test.users.test_enroll_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()[
+        'detail'] == f"Camp id={enroll_camps_json[3]['id']} does not allow full day enrollment (i.e. only half day)."
 
 
 def test_totals():
@@ -213,7 +259,7 @@ def test_totals():
         enrollments=[enroll_camp_1, enroll_camp_2], coupons=['ANOTHERBASIC'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_201_CREATED
     response_json = response.json()
@@ -228,7 +274,7 @@ def test_totals():
         enrollments=[enroll_camp_1, enroll_camp_2], coupons=['THIRDBASIC'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_201_CREATED
     response_json = response.json()
@@ -243,7 +289,7 @@ def test_totals():
         enrollments=[enroll_camp_1, enroll_camp_2], coupons=['CAMPONE'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_201_CREATED
     response_json = response.json()
@@ -258,7 +304,7 @@ def test_totals():
         enrollments=[enroll_camp_1, enroll_camp_2], coupons=['CAMPONE', 'CAMPTWO'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_201_CREATED
     response_json = response.json()
@@ -273,7 +319,7 @@ def test_totals():
         enrollments=[enroll_camp_1, enroll_camp_2], coupons=['BOTHCAMPS'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_201_CREATED
     response_json = response.json()
@@ -288,7 +334,7 @@ def test_totals():
         enrollments=[enroll_camp_1, enroll_camp_2], coupons=['BOTHCAMPS_FIXED'], execute_transaction=False)
     enrollment_data_json = json.loads(json.dumps(
         enrollment_data.dict(), indent=4, sort_keys=True, default=str))
-    response = client.post(f'/enroll', json=enrollment_data_json,
+    response = client.post('/enroll', json=enrollment_data_json,
                            headers=app.test.users.test_enroll_headers)
     assert response.status_code == status.HTTP_201_CREATED
     response_json = response.json()

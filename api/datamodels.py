@@ -23,7 +23,7 @@ class FastApiTime(time):
         return self.strftime('%H:%M:%S')
 
 
-class HalfDayEnum(Enum):
+class HalfDayEnum(str, Enum):
     AM = "AM"
     PM = "PM"
 
