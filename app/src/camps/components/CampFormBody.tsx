@@ -113,7 +113,7 @@ const CampFormBody = ({
         </FormControl>
       )}
       <FormControl>
-        <FormLabel>Camp type</FormLabel>
+        <FormLabel>Display Location</FormLabel>
         <InputError
           label={errors.location?.message}
           isOpen={errors.location ? true : false}
