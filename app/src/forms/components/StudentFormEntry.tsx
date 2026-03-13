@@ -24,11 +24,12 @@ const StudentFormEntry = ({
     if (!existingForm && !isEditing) {
         return (
             <Box>
-                <Text color="gray.500" marginBottom={3}>
+                <Text color="brand.text" marginBottom={3}>
                     No form submitted yet for {studentName}.
                 </Text>
                 <Button
-                    colorScheme="blue"
+                    bgColor="brand.buttonBg"
+                    color="brand.primary"
                     size="sm"
                     onClick={() => setIsEditing(true)}
                 >
@@ -62,7 +63,8 @@ const StudentFormEntry = ({
                 />
             ) : (
                 <Button
-                    colorScheme="blue"
+                    bgColor="brand.buttonBg"
+                    color="brand.primary"
                     marginTop={4}
                     onClick={() => {
                         formHook.handleSubmit();

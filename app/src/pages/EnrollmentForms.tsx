@@ -56,7 +56,7 @@ const EnrollmentForms = () => {
             <Heading size="lg" marginBottom={2}>
                 Student Information Forms
             </Heading>
-            <Text marginBottom={6} color="gray.600">
+            <Text marginBottom={6} color="brand.text">
                 Please fill out the form below for each of your students so we have all
                 the necessary information for camp.
             </Text>
@@ -71,9 +71,9 @@ const EnrollmentForms = () => {
                                         {student.name} — Grade {student.grade_level}
                                     </Text>
                                     {existingForm ? (
-                                        <Badge colorScheme="green">Completed</Badge>
+                                        <Badge bgColor="brand.green" color="brand.primary">Completed</Badge>
                                     ) : (
-                                        <Badge colorScheme="yellow">Not yet completed</Badge>
+                                        <Badge bgColor="brand.secondary" color="brand.primary">Not yet completed</Badge>
                                     )}
                                 </HStack>
                                 <AccordionIcon />
