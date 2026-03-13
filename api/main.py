@@ -298,18 +298,11 @@ async def get_forms(request: Request):
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         forms = []
-        if user.has_role('ADMIN'):
-            result = await session.execute(select(StudentFormDb))
-            for db_form in result.scalars().all():
-                form = StudentForm(db_obj=db_form)
+        for db_student in await user.students(session):
+            if db_student.form is not None:
+                form = StudentForm(db_obj=db_student.form)
                 await form.create(session)
                 forms.append(form)
-        else:
-            for db_student in await user.students(session):
-                if db_student.form is not None:
-                    form = StudentForm(db_obj=db_student.form)
-                    await form.create(session)
-                    forms.append(form)
         return forms
 
 
@@ -742,7 +735,6 @@ async def post_new_camp(request: Request, new_camp_data: CampData):
 async def put_update_camp(request: Request, camp_id: int, updated_camp_data: CampData):
     '''Update a camp.'''
     async with app.db_sessionmaker() as session:
-        print(updated_camp_data)
         user = await get_authorized_user(request, session)
         if not user.has_role('ADMIN'):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,

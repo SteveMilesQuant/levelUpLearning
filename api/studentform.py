@@ -41,6 +41,7 @@ class StudentForm(StudentFormResponse):
                     setattr(self, key, getattr(self._db_obj, key))
 
         # Populate denormalized student fields
+        await session.refresh(self._db_obj, ['student'])
         if self._db_obj.student:
             self.student_name = self._db_obj.student.name
             self.student_grade_level = self._db_obj.student.grade_level

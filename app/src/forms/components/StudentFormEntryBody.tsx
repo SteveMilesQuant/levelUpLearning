@@ -1,4 +1,6 @@
 import {
+    Alert,
+    AlertIcon,
     FormControl,
     FormLabel,
     Input,
@@ -8,6 +10,7 @@ import {
     Select,
     SimpleGrid,
     Stack,
+    Text,
 } from "@chakra-ui/react";
 import { Control, Controller, FieldErrors, UseFormRegister } from "react-hook-form";
 import InputError from "../../components/InputError";
@@ -23,15 +26,20 @@ const REFERRAL_OPTIONS = [
     "Other",
 ];
 
+const GRADE_OPTIONS = Array.from(Array(12).keys()).map((x) => x + 1);
+
 interface Props {
     register: UseFormRegister<FormData>;
     errors: FieldErrors<FormData>;
     control: Control<FormData>;
     isReadOnly?: boolean;
     page?: number;
+    studentGrade?: number;
+    onGradeChange?: (grade: number) => void;
 }
 
 export const FORM_PAGE_TITLES = [
+    "Confirm Grade Level",
     "Contact Information",
     "Safety & Health",
     "Additional Information",
@@ -45,12 +53,43 @@ const StudentFormEntryBody = ({
     control,
     isReadOnly,
     page,
+    studentGrade,
+    onGradeChange,
 }: Props) => {
     const showAll = page === undefined;
 
     return (
         <SimpleGrid columns={1} gap={5}>
             {(showAll || page === 0) && <>
+                <Alert status="info" borderRadius="md">
+                    <AlertIcon />
+                    <Text fontSize="sm">
+                        Please confirm your child's grade level for the <strong>coming
+                            school year</strong> (after this summer). If your child was in 3rd
+                        grade this past year, they would now be entering 4th grade.
+                    </Text>
+                </Alert>
+
+                <FormControl>
+                    <FormLabel>Grade Level for Upcoming School Year *</FormLabel>
+                    <Select
+                        value={studentGrade ?? ""}
+                        onChange={(e) => onGradeChange?.(parseInt(e.target.value))}
+                        isDisabled={isReadOnly}
+                        _disabled={{ opacity: 1 }}
+                    >
+                        <option value="" disabled>Select grade</option>
+                        {GRADE_OPTIONS.map((grade) => (
+                            <option key={grade} value={grade}>
+                                {grade}
+                            </option>
+                        ))}
+                    </Select>
+                </FormControl>
+            </>
+            }
+
+            {(showAll || page === 1) && <>
                 <FormControl>
                     <FormLabel>Child's Current School *</FormLabel>
                     <InputError
@@ -103,7 +142,7 @@ const StudentFormEntryBody = ({
                 </FormControl>
             </>}
 
-            {(showAll || page === 1) && <>
+            {(showAll || page === 2) && <>
                 <FormControl>
                     <FormLabel>
                         Emergency Contact (name and number) *
@@ -145,7 +184,7 @@ const StudentFormEntryBody = ({
                 </FormControl>
             </>}
 
-            {(showAll || page === 2) && <>
+            {(showAll || page === 3) && <>
                 <FormControl>
                     <FormLabel>
                         Anything else important for us to know about your child?

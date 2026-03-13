@@ -15,6 +15,7 @@ import {
     useDisclosure,
 } from "@chakra-ui/react";
 import useStudentFormEntry from "../hooks/useStudentFormEntry";
+import { useUpdateStudent } from "../../students/hooks/useStudents";
 import { StudentFormResponse } from "../StudentFormTypes";
 import StudentFormEntryBody, {
     FORM_PAGE_TITLES,
@@ -36,10 +37,13 @@ const StudentFormEntry = ({
 }: Props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [page, setPage] = useState(0);
+    const [grade, setGrade] = useState(studentGrade);
     const formHook = useStudentFormEntry({ studentId, existingForm });
+    const updateStudent = useUpdateStudent();
 
     const handleOpen = () => {
         setPage(0);
+        setGrade(studentGrade);
         onOpen();
     };
 
@@ -58,6 +62,15 @@ const StudentFormEntry = ({
     };
 
     const handleSubmit = () => {
+        if (grade !== studentGrade) {
+            updateStudent.mutate({
+                id: studentId,
+                name: studentName,
+                grade_level: grade,
+                student_camps: [],
+                guardians: [],
+            });
+        }
         formHook.handleSubmit();
         onClose();
     };
@@ -93,6 +106,8 @@ const StudentFormEntry = ({
                             errors={formHook.errors}
                             control={formHook.control}
                             page={page}
+                            studentGrade={grade}
+                            onGradeChange={setGrade}
                         />
                     </ModalBody>
                     <ModalFooter>
