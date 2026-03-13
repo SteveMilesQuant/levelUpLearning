@@ -1,13 +1,9 @@
 import {
-    Accordion,
-    AccordionItem,
-    AccordionButton,
-    AccordionPanel,
-    AccordionIcon,
     Badge,
     Box,
     Heading,
     HStack,
+    SimpleGrid,
     Spinner,
     Text,
 } from "@chakra-ui/react";
@@ -16,6 +12,17 @@ import useStudents from "../students/hooks/useStudents";
 import useForms from "../forms/hooks/useForms";
 import StudentFormEntry from "../forms/components/StudentFormEntry";
 import { StudentFormResponse } from "../forms";
+import { Student } from "../students";
+
+const hasFutureCamp = (student: Student): boolean => {
+    const now = new Date();
+    return student.student_camps.some(
+        (camp) =>
+            camp.dates &&
+            camp.dates.length > 0 &&
+            new Date(camp.dates[camp.dates.length - 1] + "T23:59:59") >= now
+    );
+};
 
 const EnrollmentForms = () => {
     const { data: students, isLoading: studentsLoading } = useStudents();
@@ -31,15 +38,17 @@ const EnrollmentForms = () => {
         );
     }
 
-    if (!students || students.length === 0) {
+    const enrolledStudents = students?.filter(hasFutureCamp) || [];
+
+    if (enrolledStudents.length === 0) {
         return (
             <BodyContainer>
                 <Heading size="lg" marginBottom={4}>
                     Student Information Forms
                 </Heading>
                 <Text>
-                    You don't have any students yet. Add a student first, then come back
-                    to fill out their information form.
+                    No forms needed right now. Forms will appear here when your students
+                    are enrolled in an upcoming camp.
                 </Text>
             </BodyContainer>
         );
@@ -60,36 +69,42 @@ const EnrollmentForms = () => {
                 Please fill out the form below for each of your students so we have all
                 the necessary information for camp.
             </Text>
-            <Accordion allowMultiple defaultIndex={students.length === 1 ? [0] : []}>
-                {students.map((student) => {
+            <SimpleGrid columns={1} gap={4}>
+                {enrolledStudents.map((student) => {
                     const existingForm = getFormForStudent(student.id);
                     return (
-                        <AccordionItem key={student.id}>
-                            <AccordionButton>
-                                <HStack flex="1" textAlign="left" spacing={3}>
-                                    <Text fontWeight="bold">
-                                        {student.name} — Grade {student.grade_level}
-                                    </Text>
-                                    {existingForm ? (
-                                        <Badge bgColor="brand.green" color="brand.primary">Completed</Badge>
-                                    ) : (
-                                        <Badge bgColor="brand.secondary" color="brand.primary">Not yet completed</Badge>
-                                    )}
-                                </HStack>
-                                <AccordionIcon />
-                            </AccordionButton>
-                            <AccordionPanel pb={4}>
-                                <StudentFormEntry
-                                    studentId={student.id}
-                                    studentName={student.name}
-                                    studentGrade={student.grade_level}
-                                    existingForm={existingForm}
-                                />
-                            </AccordionPanel>
-                        </AccordionItem>
+                        <HStack
+                            key={student.id}
+                            padding={4}
+                            borderWidth="1px"
+                            borderRadius="md"
+                            borderColor="brand.secondary"
+                            justify="space-between"
+                        >
+                            <HStack spacing={3}>
+                                <Text fontWeight="bold">
+                                    {student.name} — Grade {student.grade_level}
+                                </Text>
+                                {existingForm ? (
+                                    <Badge bgColor="brand.green" color="brand.primary">
+                                        Completed
+                                    </Badge>
+                                ) : (
+                                    <Badge bgColor="brand.secondary" color="brand.primary">
+                                        Not yet completed
+                                    </Badge>
+                                )}
+                            </HStack>
+                            <StudentFormEntry
+                                studentId={student.id}
+                                studentName={student.name}
+                                studentGrade={student.grade_level}
+                                existingForm={existingForm}
+                            />
+                        </HStack>
                     );
                 })}
-            </Accordion>
+            </SimpleGrid>
         </BodyContainer>
     );
 };
