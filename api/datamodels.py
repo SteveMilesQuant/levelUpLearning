@@ -265,3 +265,25 @@ class EventResponse(EventData):
     id: Optional[int]
     title_image: Optional[ImageData]
     carousel_images: Optional[List[ImageData]]
+
+
+class StudentFormData(BaseModel):
+    '''User-editable student information form data'''
+    student_id: Optional[int] = None
+    child_school: Optional[str] = ''
+    parent_name: Optional[str] = ''
+    parent_email: Optional[str] = ''
+    parent_phone: Optional[str] = ''
+    emergency_contact: Optional[str] = ''
+    allergies: Optional[str] = ''
+    pickup_persons: Optional[str] = ''
+    additional_info: Optional[str] = ''
+    photo_permission: Optional[bool] = None
+    referral_source: Optional[str] = ''
+
+
+class StudentFormResponse(StudentFormData):
+    '''Student information form response, with student details'''
+    id: Optional[int] = None
+    student_name: Optional[str] = ''
+    student_grade_level: Optional[int] = None

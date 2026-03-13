@@ -10,11 +10,12 @@ from mangum import Mangum
 from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
-from db import init_db, close_db, PaymentRecordDb, ImageDb
+from db import init_db, close_db, PaymentRecordDb, ImageDb, StudentFormDb
 from datamodels import CampStudentResponse, CheckoutTotal, FastApiDate, Object
 from datamodels import RoleEnum, UserPublicResponse, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
 from datamodels import StudentData, StudentResponse, StudentMoveData
+from datamodels import StudentFormData, StudentFormResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
 from datamodels import ResourceGroupData, ResourceGroupResponse, ResourceData, ResourceResponse
@@ -23,6 +24,7 @@ from authentication import user_id_to_auth_token, auth_token_to_user_id
 from emailserver import EmailServer
 from user import User, init_roles, all_users
 from student import Student
+from studentform import StudentForm
 from program import Program, all_programs
 from program import Level
 from camp import Camp, all_camps
@@ -283,6 +285,104 @@ async def post_move_student(request: Request, student_id: int, student_move_data
 
         await tgt_camp.add_student(session=session, student=student, half_day=src_student_camp.half_day)
         await src_camp.remove_student(session=session, student=student)
+
+
+###############################################################################
+# FORMS
+###############################################################################
+
+
+@api_router.get("/forms", response_model=List[StudentFormResponse])
+async def get_forms(request: Request):
+    '''Get all student information forms for the current user's students. Admins get all forms.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        forms = []
+        if user.has_role('ADMIN'):
+            result = await session.execute(select(StudentFormDb))
+            for db_form in result.scalars().all():
+                form = StudentForm(db_obj=db_form)
+                await form.create(session)
+                forms.append(form)
+        else:
+            for db_student in await user.students(session):
+                if db_student.form is not None:
+                    form = StudentForm(db_obj=db_student.form)
+                    await form.create(session)
+                    forms.append(form)
+        return forms
+
+
+@api_router.get("/forms/{student_id}", response_model=Optional[StudentFormResponse])
+async def get_form(request: Request, student_id: int):
+    '''Get the form for a specific student.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            student_ids = [s.id for s in await user.students(session)]
+            if student_id not in student_ids:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                    detail=f"User does not have permission for student id={student_id}")
+        form = StudentForm(student_id=student_id)
+        await form.create(session)
+        if form.id is None:
+            return None
+        return form
+
+
+@api_router.post("/forms", response_model=StudentFormResponse, status_code=status.HTTP_201_CREATED)
+async def post_new_form(request: Request, new_form_data: StudentFormData):
+    '''Create a new student information form.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            student_ids = [s.id for s in await user.students(session)]
+            if new_form_data.student_id not in student_ids:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                    detail=f"User does not have permission for student id={new_form_data.student_id}")
+        new_form = StudentForm(**new_form_data.dict())
+        await new_form.create(session)
+        if new_form.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Post new form failed")
+        return new_form
+
+
+@api_router.put("/forms/{form_id}", response_model=StudentFormResponse)
+async def put_update_form(request: Request, form_id: int, updated_form: StudentFormData):
+    '''Update a student information form.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        form = StudentForm(id=form_id)
+        await form.create(session)
+        if form.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Form id={form_id} not found.")
+        if not user.has_role('ADMIN'):
+            student_ids = [s.id for s in await user.students(session)]
+            if form.student_id not in student_ids:
+                raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                    detail=f"User does not have permission for form id={form_id}")
+        form = form.copy(update=updated_form.dict(
+            exclude_unset=True, exclude={'student_id'}))
+        await form.update(session=session)
+        return form
+
+
+@api_router.delete("/forms/{form_id}")
+async def delete_form(request: Request, form_id: int):
+    '''Delete a student information form (admin only).'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"Only admins can delete forms.")
+        form = StudentForm(id=form_id)
+        await form.create(session)
+        if form.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Form id={form_id} not found.")
+        await form.delete(session=session)
 
 
 ###############################################################################

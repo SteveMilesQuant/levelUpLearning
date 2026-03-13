@@ -1,6 +1,7 @@
 import {
   FaDatabase,
   FaGraduationCap,
+  FaWpforms,
 } from "react-icons/fa";
 import { GiHamburgerMenu, GiTeacher } from "react-icons/gi";
 import {
@@ -84,6 +85,14 @@ const SideIconList = () => {
       },
       icon: <Image height="2em" src={magnifyingGlass} alt="Magnifying glass" />,
       label: "Find Camps",
+    },
+    {
+      primary: {
+        role: "GUARDIAN",
+        endpoint: "/forms",
+      },
+      icon: <FaWpforms size="2em" />,
+      label: "Forms",
     },
     {
       primary: {

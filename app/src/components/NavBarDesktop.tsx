@@ -76,6 +76,11 @@ const NavBarDesktop = () => {
                                         zIndex={1}
 
                                     >
+                                        {isGuardian &&
+                                            <LinkBox as={RouterLink} to="/forms">
+                                                <Text fontFamily={fontFamily} fontSize={fontSize}>Forms</Text>
+                                            </LinkBox>
+                                        }
                                         <HStack width="full" justify="space-between">
                                             <LinkBox as={RouterLink} to="/resources">
                                                 <Text fontFamily={fontFamily} fontSize={fontSize}>Resources</Text>

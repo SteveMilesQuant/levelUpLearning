@@ -6,7 +6,7 @@ from sqlalchemy.types import LargeBinary
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
-from datamodels import FastApiDate, HalfDayEnum, UserResponse, StudentResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
+from datamodels import FastApiDate, HalfDayEnum, UserResponse, StudentResponse, StudentFormResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
 
 
 class Base(DeclarativeBase):
@@ -109,11 +109,42 @@ class StudentDb(Base):
         cascade="all",
         lazy="selectin"
     )
+    form: Mapped[Optional['StudentFormDb']] = relationship(
+        back_populates='student', uselist=False, lazy='joined',
+        cascade='all, delete-orphan')
 
     def dict(self):
         returnVal = {}
         for key, _ in StudentResponse():
             if key not in ['student_camps', 'guardians']:
+                returnVal[key] = getattr(self, key)
+        return returnVal
+
+
+class StudentFormDb(Base):
+    __tablename__ = 'student_form'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    student_id: Mapped[int] = mapped_column(
+        ForeignKey('student.id'), unique=True)
+    child_school: Mapped[str] = mapped_column(Text)
+    parent_name: Mapped[str] = mapped_column(Text)
+    parent_email: Mapped[str] = mapped_column(Text, nullable=True)
+    parent_phone: Mapped[str] = mapped_column(Text)
+    emergency_contact: Mapped[str] = mapped_column(Text)
+    allergies: Mapped[str] = mapped_column(Text)
+    pickup_persons: Mapped[str] = mapped_column(Text)
+    additional_info: Mapped[str] = mapped_column(Text, nullable=True)
+    photo_permission: Mapped[bool] = mapped_column()
+    referral_source: Mapped[str] = mapped_column(Text, nullable=True)
+
+    student: Mapped['StudentDb'] = relationship(
+        back_populates='form', lazy='joined')
+
+    def dict(self):
+        returnVal = {}
+        for key, _ in StudentFormResponse():
+            if key not in ['student_name', 'student_grade_level']:
                 returnVal[key] = getattr(self, key)
         return returnVal
 
