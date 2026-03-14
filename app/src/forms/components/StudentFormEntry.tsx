@@ -20,6 +20,7 @@ import { StudentFormResponse } from "../StudentFormTypes";
 import StudentFormEntryBody, {
     FORM_PAGE_TITLES,
     FORM_TOTAL_PAGES,
+    FIELD_TO_PAGE,
 } from "./StudentFormEntryBody";
 
 interface Props {
@@ -68,7 +69,20 @@ const StudentFormEntry = ({
         if (page > 0) setPage(page - 1);
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        const isValid = await formHook.triggerValidation();
+        if (!isValid) {
+            // Navigate to the first page that has errors
+            const errorFields = Object.keys(formHook.errors);
+            const errorPages = errorFields
+                .map((f) => FIELD_TO_PAGE[f])
+                .filter((p) => p !== undefined);
+            if (errorPages.length > 0) {
+                setPage(Math.min(...errorPages));
+            }
+            return;
+        }
+
         if (grade !== studentGrade) {
             updateStudent.mutate({
                 id: studentId,

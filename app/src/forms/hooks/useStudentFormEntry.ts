@@ -43,6 +43,7 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
         control,
         setValue,
         watch,
+        trigger,
     } = useForm<FormData>({
         resolver: zodResolver(studentFormSchema),
         defaultValues: useMemo(() => {
@@ -116,6 +117,7 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
         control,
         setValue,
         watch,
+        triggerValidation: trigger,
     };
 };
 

@@ -47,6 +47,19 @@ export const FORM_PAGE_TITLES = [
 
 export const FORM_TOTAL_PAGES = FORM_PAGE_TITLES.length;
 
+export const FIELD_TO_PAGE: Record<string, number> = {
+    child_school: 1,
+    parent_name: 1,
+    parent_email: 1,
+    parent_phone: 1,
+    emergency_contact: 2,
+    allergies: 2,
+    pickup_persons: 2,
+    additional_info: 3,
+    photo_permission: 3,
+    referral_source: 3,
+};
+
 const StudentFormEntryBody = ({
     register,
     errors,
