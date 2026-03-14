@@ -3,11 +3,12 @@ import json
 import os
 from fastapi import status
 from fastapi.testclient import TestClient
-from datamodels import StudentData, FastApiDate, UserResponse
+from datamodels import StudentData, StudentFormData, FastApiDate, UserResponse
 from main import app
 
 client = TestClient(app)
 all_students_json = {}
+all_forms_json = {}
 
 
 # Test adding students
@@ -116,3 +117,183 @@ def test_student_permission():
     assert response.status_code == status.HTTP_403_FORBIDDEN
     returned_json = response.json()
     assert returned_json == student_error_json
+
+
+###############################################################################
+# STUDENT FORM TESTS
+###############################################################################
+
+# Test creating forms for students
+@pytest.mark.parametrize(('student_name', 'form_data'), (
+    ('Cheri Tester', StudentFormData(
+        child_school='Test Elementary',
+        parent_name='Parent Cheri',
+        parent_email='cheri@test.com',
+        parent_phone='555-0001',
+        emergency_contact='Emergency Cheri 555-9991',
+        allergies='None',
+        pickup_persons='Parent Cheri',
+        additional_info='',
+        photo_permission=True,
+        referral_source='Google Search',
+    )),
+    ('Renee Tester', StudentFormData(
+        child_school='Test Middle School',
+        parent_name='Parent Renee',
+        parent_email='renee@test.com',
+        parent_phone='555-0002',
+        emergency_contact='Emergency Renee 555-9992',
+        allergies='Peanuts',
+        pickup_persons='Parent Renee, Aunt Renee',
+        additional_info='Needs extra supervision',
+        photo_permission=False,
+        referral_source='Friend Recommended',
+    )),
+))
+def test_post_form(student_name, form_data):
+    student_json = all_students_json[student_name]
+    form_data.student_id = student_json['id']
+    form_json = json.loads(json.dumps(form_data.dict(), default=str))
+    response = client.post('/forms', json=form_json,
+                           headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_201_CREATED, f'Error posting form for {student_name}'
+    new_form_json = response.json()
+    assert new_form_json['id'] is not None
+    assert new_form_json['student_id'] == student_json['id']
+    assert new_form_json['child_school'] == form_data.child_school
+    assert new_form_json['parent_name'] == form_data.parent_name
+    assert new_form_json['parent_phone'] == form_data.parent_phone
+    assert new_form_json['photo_permission'] == form_data.photo_permission
+    assert new_form_json['student_name'] == student_name
+    assert new_form_json['student_grade_level'] is not None
+    all_forms_json[student_name] = new_form_json
+
+
+# Test getting forms
+def test_get_forms():
+    # Get all forms for the guardian
+    response = client.get('/forms', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_200_OK
+    forms_list = response.json()
+    assert len(forms_list) == len(all_forms_json)
+
+    # Get form by student_id
+    for student_name, form_json in all_forms_json.items():
+        student_id = form_json['student_id']
+        response = client.get(
+            f'/forms/{student_id}', headers=app.test.users.guardian_headers)
+        assert response.status_code == status.HTTP_200_OK, f'Error getting form for {student_name}'
+        got_form_json = response.json()
+        assert got_form_json['id'] == form_json['id']
+        assert got_form_json['child_school'] == form_json['child_school']
+        assert got_form_json['student_name'] == student_name
+
+
+# Test getting form for student with no form returns None
+def test_get_form_no_form():
+    # Karen was deleted earlier, but we can check a non-existent student form
+    # by checking a student that has no form yet (if any exist)
+    # Instead, re-add a student just for this test via admin
+    student = StudentData(name='Formless Student',
+                          birthdate=FastApiDate(2010, 1, 1), grade_level=5)
+    student_json = json.loads(json.dumps(student.dict(), default=str))
+    response = client.post('/students', json=student_json,
+                           headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_201_CREATED
+    new_student_id = response.json()['id']
+
+    response = client.get(
+        f'/forms/{new_student_id}', headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() is None
+
+    # Cleanup
+    response = client.delete(
+        f'/students/{new_student_id}', headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+
+
+# Test updating a form
+def test_put_form():
+    form_json = all_forms_json['Cheri Tester']
+    form_id = form_json['id']
+    updated_data = StudentFormData(
+        student_id=form_json['student_id'],
+        child_school='Updated School',
+        parent_name='Updated Parent',
+        parent_email='updated@test.com',
+        parent_phone='555-9999',
+        emergency_contact='Updated Emergency 555-8888',
+        allergies='Shellfish',
+        pickup_persons='Updated Parent',
+        additional_info='Updated info',
+        photo_permission=False,
+        referral_source='Facebook Ad',
+    )
+    updated_json = json.loads(json.dumps(updated_data.dict(), default=str))
+    response = client.put(
+        f'/forms/{form_id}', json=updated_json,
+        headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_200_OK, f'Error updating form id={form_id}'
+    result_json = response.json()
+    assert result_json['child_school'] == 'Updated School'
+    assert result_json['parent_name'] == 'Updated Parent'
+    assert result_json['parent_phone'] == '555-9999'
+    assert result_json['photo_permission'] is False
+    assert result_json['allergies'] == 'Shellfish'
+    all_forms_json['Cheri Tester'] = result_json
+
+
+# Test form permission — guardian cannot access another user's student form
+def test_form_permission():
+    # Use instructor headers (different user) to try to create a form for guardian's student
+    student_json = all_students_json['Cheri Tester']
+    form_data = StudentFormData(
+        student_id=student_json['id'],
+        child_school='Hacker School',
+        parent_name='Hacker',
+        parent_phone='555-0000',
+        emergency_contact='None',
+        allergies='None',
+        pickup_persons='None',
+        photo_permission=True,
+    )
+    form_json = json.loads(json.dumps(form_data.dict(), default=str))
+    response = client.post('/forms', json=form_json,
+                           headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Instructor also cannot get the form by student_id
+    response = client.get(
+        f'/forms/{student_json["id"]}', headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+# Test deleting a form (admin only)
+def test_delete_form():
+    form_json = all_forms_json['Renee Tester']
+    form_id = form_json['id']
+
+    # Non-admin cannot delete
+    response = client.delete(
+        f'/forms/{form_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Admin can delete
+    response = client.delete(
+        f'/forms/{form_id}', headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+
+    # Verify it's gone
+    student_id = form_json['student_id']
+    response = client.get(
+        f'/forms/{student_id}', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() is None
+
+
+# Test deleting form for non-existent id
+def test_delete_form_not_found():
+    response = client.delete(
+        '/forms/99999', headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_404_NOT_FOUND

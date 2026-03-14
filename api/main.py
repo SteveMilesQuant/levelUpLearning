@@ -317,7 +317,7 @@ async def get_form(request: Request, student_id: int):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                     detail=f"User does not have permission for student id={student_id}")
         form = StudentForm(student_id=student_id)
-        await form.create(session)
+        await form.create(session, create_if_missing=False)
         if form.id is None:
             return None
         return form

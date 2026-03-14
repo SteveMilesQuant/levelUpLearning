@@ -11,7 +11,7 @@ class StudentForm(StudentFormResponse):
         super().__init__(**data)
         self._db_obj = db_obj
 
-    async def create(self, session: Optional[Any]):
+    async def create(self, session: Optional[Any], create_if_missing: bool = True):
         if self._db_obj is None and self.id is not None:
             self._db_obj = await session.get(StudentFormDb, [self.id])
             if self._db_obj is None:
@@ -25,9 +25,11 @@ class StudentForm(StudentFormResponse):
                 select(StudentFormDb).where(
                     StudentFormDb.student_id == self.student_id)
             )
-            self._db_obj = result.scalar_one_or_none()
+            self._db_obj = result.unique().scalar_one_or_none()
 
         if self._db_obj is None:
+            if not create_if_missing:
+                return
             # Create new
             form_data = self.dict(include=StudentFormData().dict())
             self._db_obj = StudentFormDb(**form_data)
