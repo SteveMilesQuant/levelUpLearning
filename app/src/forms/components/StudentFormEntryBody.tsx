@@ -1,6 +1,7 @@
 import {
     Alert,
     AlertIcon,
+    Box,
     FormControl,
     FormLabel,
     Input,
@@ -216,28 +217,30 @@ const StudentFormEntryBody = ({
                         label={errors.photo_permission?.message}
                         isOpen={!!errors.photo_permission}
                     >
-                        <Controller
-                            name="photo_permission"
-                            control={control}
-                            render={({ field }) => (
-                                <RadioGroup
-                                    onChange={(val) => field.onChange(val === "true")}
-                                    value={
-                                        field.value === true
-                                            ? "true"
-                                            : field.value === false
-                                                ? "false"
-                                                : ""
-                                    }
-                                    isDisabled={isReadOnly}
-                                >
-                                    <Stack direction="row" spacing={5}>
-                                        <Radio value="true">Yes, I give my permission</Radio>
-                                        <Radio value="false">No, do not use my child's pictures</Radio>
-                                    </Stack>
-                                </RadioGroup>
-                            )}
-                        />
+                        <Box>
+                            <Controller
+                                name="photo_permission"
+                                control={control}
+                                render={({ field }) => (
+                                    <RadioGroup
+                                        onChange={(val) => field.onChange(val === "true")}
+                                        value={
+                                            field.value === true
+                                                ? "true"
+                                                : field.value === false
+                                                    ? "false"
+                                                    : ""
+                                        }
+                                        isDisabled={isReadOnly}
+                                    >
+                                        <Stack direction="row" spacing={5}>
+                                            <Radio value="true">Yes, I give my permission</Radio>
+                                            <Radio value="false">No, do not use my child's pictures</Radio>
+                                        </Stack>
+                                    </RadioGroup>
+                                )}
+                            />
+                        </Box>
                     </InputError>
                 </FormControl>
 
