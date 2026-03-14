@@ -29,6 +29,13 @@ interface Props {
     existingForm?: StudentFormResponse;
 }
 
+const isFormCurrentYear = (form?: StudentFormResponse): boolean => {
+    if (!form?.updated_at) return false;
+    const updatedDate = new Date(form.updated_at);
+    const jan1 = new Date(new Date().getFullYear(), 0, 1);
+    return updatedDate >= jan1;
+};
+
 const StudentFormEntry = ({
     studentId,
     studentName,
@@ -85,7 +92,11 @@ const StudentFormEntry = ({
                 size="sm"
                 onClick={handleOpen}
             >
-                {existingForm ? "View / Edit Form" : "Fill Out Form"}
+                {!existingForm
+                    ? "Fill Out Form"
+                    : isFormCurrentYear(existingForm)
+                        ? "View / Edit Form"
+                        : "Update Form"}
             </Button>
 
             <Modal isOpen={isOpen} onClose={handleClose} size="lg">

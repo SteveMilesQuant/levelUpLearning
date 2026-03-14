@@ -41,7 +41,8 @@ const theme = extendTheme({
       selected: "rgb(203, 213, 224)",
       disabled: "rgb(237, 242, 247)",
       lightGray: "#fafafa",
-      green: "rgb(183, 255, 114)"
+      green: "rgb(183, 255, 114)",
+      warning: "rgb(255, 214, 102)"
     },
   },
 });

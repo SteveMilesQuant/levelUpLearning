@@ -24,6 +24,13 @@ const hasFutureCamp = (student: Student): boolean => {
     );
 };
 
+const isFormCurrentYear = (form?: StudentFormResponse): boolean => {
+    if (!form?.updated_at) return false;
+    const updatedDate = new Date(form.updated_at);
+    const jan1 = new Date(new Date().getFullYear(), 0, 1);
+    return updatedDate >= jan1;
+};
+
 const EnrollmentForms = () => {
     const { data: students, isLoading: studentsLoading } = useStudents();
     const { data: forms, isLoading: formsLoading } = useForms();
@@ -85,9 +92,13 @@ const EnrollmentForms = () => {
                                 <Text fontWeight="bold">
                                     {student.name} — Grade {student.grade_level}
                                 </Text>
-                                {existingForm ? (
+                                {isFormCurrentYear(existingForm) ? (
                                     <Badge bgColor="brand.green" color="brand.primary">
-                                        Completed
+                                        Updated for {new Date().getFullYear()}
+                                    </Badge>
+                                ) : existingForm ? (
+                                    <Badge bgColor="brand.warning" color="brand.primary">
+                                        Needs annual update
                                     </Badge>
                                 ) : (
                                     <Badge bgColor="brand.secondary" color="brand.primary">

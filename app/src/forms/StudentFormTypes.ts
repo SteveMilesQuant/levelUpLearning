@@ -16,6 +16,7 @@ export interface StudentFormResponse extends StudentFormData {
     id: number;
     student_name: string;
     student_grade_level: number;
+    updated_at: string | null;
 }
 
 export const CACHE_KEY_FORMS = ["forms"];

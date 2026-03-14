@@ -1,5 +1,6 @@
 from pydantic import PrivateAttr
 from typing import Optional, Any
+from datetime import datetime, timezone
 from db import StudentFormDb
 from datamodels import StudentFormData, StudentFormResponse
 
@@ -33,14 +34,19 @@ class StudentForm(StudentFormResponse):
             # Create new
             form_data = self.dict(include=StudentFormData().dict())
             self._db_obj = StudentFormDb(**form_data)
+            self._db_obj.updated_at = datetime.now(timezone.utc)
             session.add(self._db_obj)
             await session.commit()
             self.id = self._db_obj.id
+            self.updated_at = self._db_obj.updated_at.isoformat()
         else:
             # Populate from DB
             for key, _ in StudentFormResponse():
                 if key not in ['student_name', 'student_grade_level']:
-                    setattr(self, key, getattr(self._db_obj, key))
+                    val = getattr(self._db_obj, key)
+                    if key == 'updated_at' and val is not None:
+                        val = val.isoformat()
+                    setattr(self, key, val)
 
         # Populate denormalized student fields
         await session.refresh(self._db_obj, ['student'])
@@ -52,7 +58,9 @@ class StudentForm(StudentFormResponse):
         for key, _ in StudentFormData():
             if key != 'student_id':
                 setattr(self._db_obj, key, getattr(self, key))
+        self._db_obj.updated_at = datetime.now(timezone.utc)
         await session.commit()
+        self.updated_at = self._db_obj.updated_at.isoformat()
 
     async def delete(self, session: Any):
         await session.delete(self._db_obj)

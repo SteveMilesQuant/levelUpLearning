@@ -166,6 +166,7 @@ def test_post_form(student_name, form_data):
     assert new_form_json['photo_permission'] == form_data.photo_permission
     assert new_form_json['student_name'] == student_name
     assert new_form_json['student_grade_level'] is not None
+    assert new_form_json['updated_at'] is not None
     all_forms_json[student_name] = new_form_json
 
 
@@ -241,6 +242,8 @@ def test_put_form():
     assert result_json['parent_phone'] == '555-9999'
     assert result_json['photo_permission'] is False
     assert result_json['allergies'] == 'Shellfish'
+    assert result_json['updated_at'] is not None
+    assert result_json['updated_at'] >= form_json['updated_at']
     all_forms_json['Cheri Tester'] = result_json
 
 

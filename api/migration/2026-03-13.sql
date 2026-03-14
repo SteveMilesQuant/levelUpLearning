@@ -11,5 +11,6 @@ CREATE TABLE student_form (
     additional_info TEXT,
     photo_permission BOOLEAN NOT NULL,
     referral_source TEXT,
+    updated_at DATETIME,
     FOREIGN KEY (student_id) REFERENCES student(id) ON DELETE CASCADE
 );

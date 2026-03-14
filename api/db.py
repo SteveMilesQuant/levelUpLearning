@@ -1,7 +1,7 @@
-from datetime import date as dt_date, time
+from datetime import date as dt_date, datetime as dt_datetime, time
 from typing import Optional, List
 from sqlalchemy import Table, Column, ForeignKey
-from sqlalchemy import Text, String, Date, Time, Enum
+from sqlalchemy import Text, String, Date, Time, Enum, DateTime
 from sqlalchemy.types import LargeBinary
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -137,6 +137,8 @@ class StudentFormDb(Base):
     additional_info: Mapped[str] = mapped_column(Text, nullable=True)
     photo_permission: Mapped[bool] = mapped_column()
     referral_source: Mapped[str] = mapped_column(Text, nullable=True)
+    updated_at: Mapped[Optional[dt_datetime]
+                       ] = mapped_column(DateTime, nullable=True)
 
     student: Mapped['StudentDb'] = relationship(
         back_populates='form', lazy='joined')
@@ -146,6 +148,8 @@ class StudentFormDb(Base):
         for key, _ in StudentFormResponse():
             if key not in ['student_name', 'student_grade_level']:
                 returnVal[key] = getattr(self, key)
+                if key == 'updated_at' and returnVal[key] is not None:
+                    returnVal[key] = returnVal[key].isoformat()
         return returnVal
 
 
