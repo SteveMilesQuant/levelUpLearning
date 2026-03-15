@@ -30,6 +30,7 @@ import InputError from "../../components/InputError";
 import { formatPhone } from "../../utils/phone";
 import { UserPickupFormResponse } from "../PickupPersonsTypes";
 import { useUpdatePickupPersons } from "../hooks/usePickupPersons";
+import { useUser } from "../../users";
 
 const schema = z.object({
     pickup_persons: z
@@ -51,12 +52,12 @@ const isCurrentYear = (pickupForm?: UserPickupFormResponse): boolean => {
     return updatedDate >= jan1;
 };
 
-const getDefaultPersons = (pickupForm?: UserPickupFormResponse) =>
+const getDefaultPersons = (pickupForm?: UserPickupFormResponse, userName?: string, userPhone?: string) =>
     (pickupForm?.pickup_persons?.length ?? 0) > 0
         ? [...pickupForm!.pickup_persons]
             .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
             .map(({ name, phone }) => ({ name, phone: formatPhone(phone) }))
-        : [{ name: "", phone: "" }];
+        : [{ name: userName ?? "", phone: formatPhone(userPhone ?? "") }];
 
 interface Props {
     pickupForm?: UserPickupFormResponse;
@@ -65,6 +66,9 @@ interface Props {
 const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const updatePickupPersons = useUpdatePickupPersons();
+    const { data: user } = useUser();
+
+    const defaultPersons = () => getDefaultPersons(pickupForm, user?.full_name, "");
 
     const {
         register,
@@ -74,7 +78,7 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
         formState: { errors },
     } = useForm<FormData>({
         resolver: zodResolver(schema),
-        defaultValues: { pickup_persons: getDefaultPersons(pickupForm) },
+        defaultValues: { pickup_persons: defaultPersons() },
     });
 
     const { fields, append, remove } = useFieldArray({
@@ -83,12 +87,12 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
     });
 
     const handleOpen = () => {
-        reset({ pickup_persons: getDefaultPersons(pickupForm) });
+        reset({ pickup_persons: defaultPersons() });
         onOpen();
     };
 
     const handleClose = () => {
-        reset({ pickup_persons: getDefaultPersons(pickupForm) });
+        reset({ pickup_persons: defaultPersons() });
         onClose();
     };
 
@@ -152,7 +156,7 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
                         <FormControl>
                             <FormLabel>Authorized Pickup Persons *</FormLabel>
                             {errors.pickup_persons?.root?.message && (
-                                <Text color="red.500" fontSize="sm" mb={2}>
+                                <Text color="brand.danger" fontSize="sm" mb={2}>
                                     {errors.pickup_persons.root.message}
                                 </Text>
                             )}
