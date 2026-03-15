@@ -12,9 +12,7 @@
 
 ## Database Migrations
 
-Before making any schema change, run `git show main:api/db.py` to check whether the affected table already exists on `main`:
-- **Table exists on `main`** → a migration script is required in `api/migration/YYYY-MM-DD.sql`.
-- **Table does not exist on `main`** (new table introduced in this branch) → no migration script needed; the table will be created fresh on deploy.
+Migration scripts are plain SQL files in `api/migration/YYYY-MM-DD.sql`. Whether one is needed will be specified by the user — do not create a migration script unless explicitly asked.
 
 ## Front End (TypeScript / React)
 
@@ -25,3 +23,6 @@ Before making any schema change, run `git show main:api/db.py` to check whether 
 - Paged modals: define `FIELD_TO_PAGE` mapping so validation errors navigate to the correct page.
 - Cache keys: define as exported constants (e.g., `CACHE_KEY_FORMS = ["forms"]`).
 - Barrel exports from `index.ts` in each module.
+- **Phone formatting**: use `formatPhone()` from `app/src/utils/phone.ts` to format phone number inputs to `(XXX) XXX - XXXX`. Apply it in `onChange` via `Controller`, and when pre-populating `defaultValues` from existing data.
+- **Dynamic field lists**: use `useFieldArray` from `react-hook-form`. Add rows with `ActionButton` + `FaPlus` (from `react-icons/fa`). Remove rows with `DeleteButton`. For the first row, use a `Tooltip` wrapping `AiOutlineQuestionCircle` (from `react-icons/ai`) to explain field behavior inline.
+- **Info icon**: `AiOutlineQuestionCircle` from `react-icons/ai` wrapped in a Chakra `Tooltip` and a `Box as="span"` for inline icon help text.

@@ -23,6 +23,7 @@ Or use the VS Code task: **Pytest**.
 - Pass auth via `headers=app.test.users.<role>_headers`.
 - Tests run in file order — use module-level dicts (e.g., `all_students_json`) to pass state between tests.
 - Use `@pytest.mark.parametrize` for multiple similar inputs.
+- **When changing a Pydantic model field** (type change, rename, add/remove): search all test files for any construction of that model class and update every occurrence. A field type change (e.g., `str` → `List[PickupPersonData]`) silently breaks parametrized tests that pass the old shape — these won't be caught by the TypeScript compiler and are easy to miss.
 - Always test:
   1. **Create** (POST) — verify 201 + response body
   2. **Read** (GET list + GET by id) — verify 200 + data matches
