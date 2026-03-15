@@ -132,6 +132,7 @@ def test_student_permission():
         parent_phone='555-0001',
         emergency_contact='Emergency Cheri 555-9991',
         allergies='None',
+        has_allergies=False,
         pickup_persons=[PickupPersonData(
             name='Parent Cheri', phone='555-0001')],
         additional_info='',
@@ -145,6 +146,7 @@ def test_student_permission():
         parent_phone='555-0002',
         emergency_contact='Emergency Renee 555-9992',
         allergies='Peanuts',
+        has_allergies=True,
         pickup_persons=[PickupPersonData(
             name='Parent Renee', phone='555-0002'), PickupPersonData(name='Aunt Renee', phone='555-0003')],
         additional_info='Needs extra supervision',
@@ -228,6 +230,7 @@ def test_put_form():
         parent_phone='555-9999',
         emergency_contact='Updated Emergency 555-8888',
         allergies='Shellfish',
+        has_allergies=True,
         pickup_persons=[PickupPersonData(
             name='Updated Parent', phone='555-9999')],
         additional_info='Updated info',
@@ -261,6 +264,7 @@ def test_form_permission():
         parent_phone='555-0000',
         emergency_contact='None',
         allergies='None',
+        has_allergies=False,
         pickup_persons=[PickupPersonData(name='None', phone='')],
         photo_permission=True,
     )
