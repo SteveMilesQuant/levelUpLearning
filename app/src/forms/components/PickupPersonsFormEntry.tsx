@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import {
     Badge,
     Box,
@@ -14,7 +15,7 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
-    Stack,
+    SimpleGrid,
     Text,
     Tooltip,
     useDisclosure,
@@ -160,13 +161,12 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
                                     {errors.pickup_persons.root.message}
                                 </Text>
                             )}
-                            <Stack spacing={2}>
+                            <SimpleGrid columns={3} spacingX={2} spacingY={2} alignItems="start" templateColumns="1fr 1fr auto">
+                                <Text fontSize="sm" fontWeight="semibold">Name</Text>
+                                <Text fontSize="sm" fontWeight="semibold">Phone</Text>
+                                <Box />
                                 {fields.map((field, i) => (
-                                    <HStack
-                                        key={field.id}
-                                        spacing={2}
-                                        alignItems="start"
-                                    >
+                                    <Fragment key={field.id}>
                                         <InputError
                                             label={
                                                 errors.pickup_persons?.[i]?.name
@@ -211,32 +211,31 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
                                                 )}
                                             />
                                         </InputError>
-                                        {i === 0 ? (
-                                            <Tooltip
-                                                label="This phone number will be used to text pickup confirmation codes, for the security of your children."
-                                                placement="top"
-                                            >
-                                                <Box
-                                                    as="span"
-                                                    display="inline-flex"
-                                                    alignItems="center"
-                                                    h="40px"
-                                                    color="brand.primary"
+                                        <Box display="flex" alignItems="center" h="40px">
+                                            {i === 0 ? (
+
+                                                <Tooltip
+                                                    label="These phone numbers will be used to text pickup confirmation codes, for the security of your children."
+                                                    placement="top"
                                                 >
-                                                    <AiOutlineQuestionCircle size="20px" />
-                                                </Box>
-                                            </Tooltip>
-                                        ) : (
-                                            <DeleteButton
-                                                onConfirm={() => remove(i)}
-                                            >
-                                                {fields[i].name ||
-                                                    `pickup person ${i + 1}`}
-                                            </DeleteButton>
-                                        )}
-                                    </HStack>
+                                                    <Box width="100%" alignItems="center" display="flex" justifyContent="center">
+                                                        <AiOutlineQuestionCircle size="20px" />
+                                                    </Box>
+
+                                                </Tooltip>
+
+                                            ) : (
+                                                <DeleteButton
+                                                    onConfirm={() => remove(i)}
+                                                >
+                                                    {fields[i].name ||
+                                                        `pickup person ${i + 1}`}
+                                                </DeleteButton>
+                                            )}
+                                        </Box>
+                                    </Fragment>
                                 ))}
-                            </Stack>
+                            </SimpleGrid>
                             <Box mt={2}>
                                 <ActionButton
                                     Component={FaPlus}
@@ -268,7 +267,7 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-        </HStack>
+        </HStack >
     );
 };
 
