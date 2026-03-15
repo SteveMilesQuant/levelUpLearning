@@ -13,7 +13,7 @@ import {
     Stack,
     Text,
 } from "@chakra-ui/react";
-import { Control, Controller, FieldErrors, UseFormRegister } from "react-hook-form";
+import { Control, Controller, FieldErrors, UseFormRegister, useWatch } from "react-hook-form";
 import InputError from "../../components/InputError";
 import { FormData } from "../hooks/useStudentFormEntry";
 
@@ -54,6 +54,7 @@ export const FIELD_TO_PAGE: Record<string, number> = {
     parent_email: 1,
     parent_phone: 1,
     emergency_contact: 2,
+    has_allergies: 2,
     allergies: 2,
     pickup_persons: 2,
     additional_info: 3,
@@ -71,6 +72,7 @@ const StudentFormEntryBody = ({
     onGradeChange,
 }: Props) => {
     const showAll = page === undefined;
+    const hasAllergies = useWatch({ control, name: "has_allergies" });
 
     return (
         <SimpleGrid columns={1} gap={5}>
@@ -173,14 +175,47 @@ const StudentFormEntryBody = ({
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel>Allergies or Other Health Concerns *</FormLabel>
+                    <FormLabel>Does your child have allergies or other health concerns? *</FormLabel>
+                    <InputError
+                        label={errors.has_allergies?.message}
+                        isOpen={!!errors.has_allergies}
+                    >
+                        <Box>
+                            <Controller
+                                name="has_allergies"
+                                control={control}
+                                render={({ field }) => (
+                                    <RadioGroup
+                                        onChange={(val) => field.onChange(val === "true")}
+                                        value={
+                                            field.value === true
+                                                ? "true"
+                                                : field.value === false
+                                                    ? "false"
+                                                    : ""
+                                        }
+                                        isDisabled={isReadOnly}
+                                    >
+                                        <Stack direction="row" spacing={5}>
+                                            <Radio value="true">Yes</Radio>
+                                            <Radio value="false">No</Radio>
+                                        </Stack>
+                                    </RadioGroup>
+                                )}
+                            />
+                        </Box>
+                    </InputError>
+                </FormControl>
+
+                {(hasAllergies || isReadOnly) && <FormControl>
+                    <FormLabel>Please describe the allergies or health concerns *</FormLabel>
                     <InputError
                         label={errors.allergies?.message}
                         isOpen={!!errors.allergies}
                     >
                         <Textarea {...register("allergies")} isReadOnly={isReadOnly} />
                     </InputError>
-                </FormControl>
+                </FormControl>}
 
                 <FormControl>
                     <FormLabel>

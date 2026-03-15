@@ -5,6 +5,7 @@ export interface StudentFormData {
     parent_email: string;
     parent_phone: string;
     emergency_contact: string;
+    has_allergies: boolean | null;
     allergies: string;
     pickup_persons: string;
     additional_info: string;

@@ -275,6 +275,7 @@ class StudentFormData(BaseModel):
     parent_email: Optional[str] = ''
     parent_phone: Optional[str] = ''
     emergency_contact: Optional[str] = ''
+    has_allergies: Optional[bool] = None
     allergies: Optional[str] = ''
     pickup_persons: Optional[str] = ''
     additional_info: Optional[str] = ''

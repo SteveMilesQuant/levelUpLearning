@@ -13,9 +13,11 @@ const studentFormSchema = z.object({
     emergency_contact: z
         .string()
         .min(1, { message: "Emergency contact is required." }),
-    allergies: z
-        .string()
-        .min(1, { message: "Allergies/health info is required. Enter 'None' if not applicable." }),
+    has_allergies: z.boolean({
+        required_error: "Please indicate if your child has allergies or health concerns.",
+        invalid_type_error: "Please indicate if your child has allergies or health concerns.",
+    }),
+    allergies: z.string().optional().default(""),
     pickup_persons: z
         .string()
         .min(1, { message: "Pickup person(s) required." }),
@@ -25,6 +27,14 @@ const studentFormSchema = z.object({
         invalid_type_error: "Photo permission selection is required.",
     }),
     referral_source: z.string().optional().default(""),
+}).superRefine((data, ctx) => {
+    if (data.has_allergies && !data.allergies?.trim()) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Please describe the allergies or health concerns.",
+            path: ["allergies"],
+        });
+    }
 });
 
 export type FormData = z.infer<typeof studentFormSchema>;
@@ -54,6 +64,7 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
                     parent_email: existingForm.parent_email || "",
                     parent_phone: existingForm.parent_phone || "",
                     emergency_contact: existingForm.emergency_contact || "",
+                    has_allergies: existingForm.has_allergies ?? undefined,
                     allergies: existingForm.allergies || "",
                     pickup_persons: existingForm.pickup_persons || "",
                     additional_info: existingForm.additional_info || "",
@@ -77,6 +88,7 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
                 parent_email: existingForm.parent_email || "",
                 parent_phone: existingForm.parent_phone || "",
                 emergency_contact: existingForm.emergency_contact || "",
+                has_allergies: existingForm.has_allergies ?? undefined,
                 allergies: existingForm.allergies || "",
                 pickup_persons: existingForm.pickup_persons || "",
                 additional_info: existingForm.additional_info || "",

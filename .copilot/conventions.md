@@ -10,6 +10,12 @@
 - When querying models that use joined eager loading, call `.unique()` before `.scalar_one_or_none()`.
 - DateTime fields stored in DB as `DateTime`, serialized to ISO 8601 strings in Pydantic responses.
 
+## Database Migrations
+
+Before making any schema change, run `git show main:api/db.py` to check whether the affected table already exists on `main`:
+- **Table exists on `main`** → a migration script is required in `api/migration/YYYY-MM-DD.sql`.
+- **Table does not exist on `main`** (new table introduced in this branch) → no migration script needed; the table will be created fresh on deploy.
+
 ## Front End (TypeScript / React)
 
 - TypeScript interfaces must mirror `api/datamodels.py` exactly. `Data` ↔ `StudentFormData`, `Response` ↔ `StudentFormResponse`.
