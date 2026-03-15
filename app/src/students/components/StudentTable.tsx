@@ -21,8 +21,8 @@ const StudentTable = ({ campId, isReadOnly }: Props) => {
           <Tr>
             <ThText>Name</ThText>
             <ThText>Grade</ThText>
-            <ThText>Guardians</ThText>
             <ThText>AM/PM</ThText>
+            <ThText>Forms</ThText>
             {!isReadOnly && (
               <ThText>
                 {/* Placeholder for delete button, which needs no header */}

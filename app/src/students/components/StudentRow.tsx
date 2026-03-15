@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import MoveStudentModal from "./MoveStudentModal";
 import ActionButton from "../../components/ActionButton";
 import { IoMoveOutline } from "react-icons/io5";
+import StudentFormIcons from "./StudentFormIcons";
 
 interface Props {
   campId: number;
@@ -39,12 +40,8 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
     <Tr>
       <Td>{student.name}</Td>
       <Td>{student.grade_level}</Td>
-      <Td>
-        {student.guardians
-          ?.map((g) => `${g.full_name} (${g.email_address})`)
-          .join(", ")}
-      </Td>
       <Td>{campHalfDayStr}</Td>
+      <Td><StudentFormIcons student={student} /></Td>
       {!isReadOnly && (
         <>
           <Td>
