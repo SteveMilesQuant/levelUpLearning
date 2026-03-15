@@ -1,8 +1,9 @@
 from pydantic import PrivateAttr
 from typing import List, Optional, Any
+from datetime import datetime, timezone
 from sqlalchemy import select, and_
-from datamodels import RoleEnum, RoleResponse, UserData, UserResponse
-from db import UserDb, RoleDb, StudentDb, ProgramDb, CampDb, PaymentRecordDb
+from datamodels import RoleEnum, RoleResponse, UserData, UserResponse, PickupPersonResponse, UserPickupFormData, UserPickupFormResponse
+from db import UserDb, RoleDb, StudentDb, ProgramDb, CampDb, PaymentRecordDb, PickupPersonDb
 
 
 class Role(RoleResponse):
@@ -165,6 +166,38 @@ class User(UserResponse):
     async def camps(self, session: Any) -> List[CampDb]:
         await session.refresh(self._db_obj, ['camps'])
         return self._db_obj.camps
+
+    async def get_pickup_persons(self, session: Any) -> UserPickupFormResponse:
+        await session.refresh(self._db_obj, ['pickup_persons'])
+        return UserPickupFormResponse(
+            updated_at=self._db_obj.pickup_persons_updated_at.isoformat()
+            if self._db_obj.pickup_persons_updated_at else None,
+            pickup_persons=[
+                PickupPersonResponse(id=p.id, name=p.name,
+                                     phone=p.phone, sort_order=p.sort_order)
+                for p in self._db_obj.pickup_persons
+            ]
+        )
+
+    async def update_pickup_persons(self, session: Any, pickup_form: UserPickupFormData) -> UserPickupFormResponse:
+        await session.refresh(self._db_obj, ['pickup_persons'])
+        self._db_obj.pickup_persons.clear()
+        for i, p in enumerate(pickup_form.pickup_persons or []):
+            name = p.get('name', '') if isinstance(p, dict) else p.name
+            phone = p.get('phone', '') if isinstance(p, dict) else p.phone
+            self._db_obj.pickup_persons.append(
+                PickupPersonDb(name=name, phone=phone, sort_order=i))
+        self._db_obj.pickup_persons_updated_at = datetime.now(timezone.utc)
+        await session.commit()
+        await session.refresh(self._db_obj, ['pickup_persons'])
+        return UserPickupFormResponse(
+            updated_at=self._db_obj.pickup_persons_updated_at.isoformat(),
+            pickup_persons=[
+                PickupPersonResponse(id=p.id, name=p.name,
+                                     phone=p.phone, sort_order=p.sort_order)
+                for p in self._db_obj.pickup_persons
+            ]
+        )
 
     async def has_used_coupon(self, session: Any, coupon_id: int) -> bool:
         stmt = select(PaymentRecordDb).where(

@@ -1,8 +1,8 @@
 from pydantic import PrivateAttr
 from typing import Optional, Any
 from datetime import datetime, timezone
-from db import StudentFormDb, PickupPersonDb
-from datamodels import StudentFormData, StudentFormResponse, PickupPersonResponse
+from db import StudentFormDb
+from datamodels import StudentFormData, StudentFormResponse
 
 
 class StudentForm(StudentFormResponse):
@@ -33,14 +33,8 @@ class StudentForm(StudentFormResponse):
                 return
             # Create new
             form_data = self.dict(include=StudentFormData().dict())
-            pickup_persons_data = form_data.pop('pickup_persons', []) or []
             self._db_obj = StudentFormDb(**form_data)
             self._db_obj.updated_at = datetime.now(timezone.utc)
-            for i, p in enumerate(pickup_persons_data):
-                name = p.get('name', '') if isinstance(p, dict) else p.name
-                phone = p.get('phone', '') if isinstance(p, dict) else p.phone
-                self._db_obj.pickup_persons.append(
-                    PickupPersonDb(name=name, phone=phone, sort_order=i))
             session.add(self._db_obj)
             await session.commit()
             self.id = self._db_obj.id
@@ -48,16 +42,11 @@ class StudentForm(StudentFormResponse):
         else:
             # Populate from DB
             for key, _ in StudentFormResponse():
-                if key not in ['student_name', 'student_grade_level', 'pickup_persons']:
+                if key not in ['student_name', 'student_grade_level']:
                     val = getattr(self._db_obj, key)
                     if key == 'updated_at' and val is not None:
                         val = val.isoformat()
                     setattr(self, key, val)
-            self.pickup_persons = [
-                PickupPersonResponse(id=p.id, name=p.name,
-                                     phone=p.phone, sort_order=p.sort_order)
-                for p in self._db_obj.pickup_persons
-            ]
 
         # Populate denormalized student fields
         await session.refresh(self._db_obj, ['student'])
@@ -67,15 +56,8 @@ class StudentForm(StudentFormResponse):
 
     async def update(self, session: Any):
         for key, _ in StudentFormData():
-            if key not in ('student_id', 'pickup_persons'):
+            if key != 'student_id':
                 setattr(self._db_obj, key, getattr(self, key))
-        # Replace pickup_persons: clear existing and re-insert in order
-        self._db_obj.pickup_persons.clear()
-        for i, p in enumerate(self.pickup_persons or []):
-            name = p.get('name', '') if isinstance(p, dict) else p.name
-            phone = p.get('phone', '') if isinstance(p, dict) else p.phone
-            self._db_obj.pickup_persons.append(
-                PickupPersonDb(name=name, phone=phone, sort_order=i))
         self._db_obj.updated_at = datetime.now(timezone.utc)
         await session.commit()
         self.updated_at = self._db_obj.updated_at.isoformat()

@@ -287,7 +287,6 @@ class StudentFormData(BaseModel):
     emergency_contact: Optional[str] = ''
     has_allergies: Optional[bool] = None
     allergies: Optional[str] = ''
-    pickup_persons: Optional[List[PickupPersonData]] = []
     additional_info: Optional[str] = ''
     photo_permission: Optional[bool] = None
     referral_source: Optional[str] = ''
@@ -298,5 +297,15 @@ class StudentFormResponse(StudentFormData):
     id: Optional[int] = None
     student_name: Optional[str] = ''
     student_grade_level: Optional[int] = None
+    updated_at: Optional[str] = None
+
+
+class UserPickupFormData(BaseModel):
+    '''User-level authorized pickup persons form data'''
+    pickup_persons: Optional[List[PickupPersonData]] = []
+
+
+class UserPickupFormResponse(UserPickupFormData):
+    '''User-level authorized pickup persons form response'''
     updated_at: Optional[str] = None
     pickup_persons: Optional[List[PickupPersonResponse]] = []

@@ -6,7 +6,7 @@ from sqlalchemy.types import LargeBinary
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
-from datamodels import FastApiDate, HalfDayEnum, UserResponse, StudentResponse, StudentFormResponse, PickupPersonResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
+from datamodels import FastApiDate, HalfDayEnum, UserResponse, StudentResponse, StudentFormResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
 
 
 class Base(DeclarativeBase):
@@ -77,6 +77,8 @@ class UserDb(Base):
     instructor_description: Mapped[str] = mapped_column(Text, nullable=True)
     email_verified: Mapped[bool]
     receive_marketing_emails: Mapped[bool]
+    pickup_persons_updated_at: Mapped[Optional[dt_datetime]] = mapped_column(
+        DateTime, nullable=True)
 
     roles: Mapped[List[RoleDb]] = relationship(
         secondary=user_x_roles, back_populates='users', lazy='joined')
@@ -86,6 +88,11 @@ class UserDb(Base):
         secondary=user_x_programs, back_populates='designers', lazy='raise')
     camps: Mapped[List['CampDb']] = relationship(
         secondary=camp_x_instructors, back_populates='instructors', lazy='raise')
+    pickup_persons: Mapped[List['PickupPersonDb']] = relationship(
+        back_populates='user',
+        order_by='PickupPersonDb.sort_order',
+        cascade='all, delete-orphan',
+        lazy='raise')
 
     def dict(self):
         returnVal = {}
@@ -125,12 +132,12 @@ class PickupPersonDb(Base):
     __tablename__ = 'pickup_person'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    student_form_id: Mapped[int] = mapped_column(ForeignKey('student_form.id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
     name: Mapped[str] = mapped_column(Text)
     phone: Mapped[str] = mapped_column(Text)
     sort_order: Mapped[int] = mapped_column()
 
-    student_form: Mapped['StudentFormDb'] = relationship(
+    user: Mapped['UserDb'] = relationship(
         back_populates='pickup_persons')
 
 
@@ -155,24 +162,14 @@ class StudentFormDb(Base):
 
     student: Mapped['StudentDb'] = relationship(
         back_populates='form', lazy='joined')
-    pickup_persons: Mapped[List['PickupPersonDb']] = relationship(
-        back_populates='student_form',
-        order_by='PickupPersonDb.sort_order',
-        cascade='all, delete-orphan',
-        lazy='joined')
 
     def dict(self):
         returnVal = {}
         for key, _ in StudentFormResponse():
-            if key not in ['student_name', 'student_grade_level', 'pickup_persons']:
+            if key not in ['student_name', 'student_grade_level']:
                 returnVal[key] = getattr(self, key)
                 if key == 'updated_at' and returnVal[key] is not None:
                     returnVal[key] = returnVal[key].isoformat()
-        returnVal['pickup_persons'] = [
-            PickupPersonResponse(id=p.id, name=p.name,
-                                 phone=p.phone, sort_order=p.sort_order)
-            for p in self.pickup_persons
-        ]
         return returnVal
 
 

@@ -12,16 +12,10 @@ import {
     SimpleGrid,
     Stack,
     Text,
-    HStack,
-    Tooltip,
 } from "@chakra-ui/react";
-import { Control, Controller, FieldErrors, UseFormRegister, useFieldArray, useWatch } from "react-hook-form";
+import { Control, Controller, FieldErrors, UseFormRegister, useWatch } from "react-hook-form";
 import InputError from "../../components/InputError";
 import { FormData } from "../hooks/useStudentFormEntry";
-import ActionButton from "../../components/ActionButton";
-import DeleteButton from "../../components/DeleteButton";
-import { FaPlus } from "react-icons/fa";
-import { AiOutlineQuestionCircle } from "react-icons/ai";
 import { formatPhone } from "../../utils/phone";
 
 const REFERRAL_OPTIONS = [
@@ -63,7 +57,6 @@ export const FIELD_TO_PAGE: Record<string, number> = {
     emergency_contact: 2,
     has_allergies: 2,
     allergies: 2,
-    pickup_persons: 2,
     additional_info: 3,
     photo_permission: 3,
     referral_source: 3,
@@ -80,7 +73,6 @@ const StudentFormEntryBody = ({
 }: Props) => {
     const showAll = page === undefined;
     const hasAllergies = useWatch({ control, name: "has_allergies" });
-    const { fields, append, remove } = useFieldArray({ control, name: "pickup_persons" });
 
     return (
         <SimpleGrid columns={1} gap={5}>
@@ -231,74 +223,6 @@ const StudentFormEntryBody = ({
                         <Textarea {...register("allergies")} isReadOnly={isReadOnly} />
                     </InputError>
                 </FormControl>}
-
-                <FormControl>
-                    <FormLabel>
-                        Authorized Pickup Persons *
-                    </FormLabel>
-                    {errors.pickup_persons?.root?.message && (
-                        <Text color="red.500" fontSize="sm" mb={2}>{errors.pickup_persons.root.message}</Text>
-                    )}
-                    <Stack spacing={2}>
-                        {fields.map((field, i) => (
-                            <HStack key={field.id} spacing={2} alignItems="start">
-                                <InputError
-                                    label={errors.pickup_persons?.[i]?.name?.message}
-                                    isOpen={!!errors.pickup_persons?.[i]?.name}
-                                >
-                                    <Input
-                                        {...register(`pickup_persons.${i}.name`)}
-                                        placeholder="Name"
-                                        isReadOnly={isReadOnly}
-                                    />
-                                </InputError>
-                                <InputError
-                                    label={errors.pickup_persons?.[i]?.phone?.message}
-                                    isOpen={!!errors.pickup_persons?.[i]?.phone}
-                                >
-                                    <Controller
-                                        name={`pickup_persons.${i}.phone`}
-                                        control={control}
-                                        render={({ field }) => (
-                                            <Input
-                                                {...field}
-                                                onChange={(e) => field.onChange(formatPhone(e.target.value))}
-                                                placeholder="Phone"
-                                                type="tel"
-                                                isReadOnly={isReadOnly}
-                                            />
-                                        )}
-                                    />
-                                </InputError>
-                                {i === 0 ? (
-                                    <Tooltip
-                                        label="This phone number will be used to text pickup confirmation codes, for the security of your children."
-                                        placement="top"
-                                    >
-                                        <Box as="span" display="inline-flex" alignItems="center" h="40px" color="brand.primary">
-                                            <AiOutlineQuestionCircle size="20px" />
-                                        </Box>
-                                    </Tooltip>
-                                ) : (
-                                    !isReadOnly && (
-                                        <DeleteButton onConfirm={() => remove(i)}>
-                                            {fields[i].name || `pickup person ${i + 1}`}
-                                        </DeleteButton>
-                                    )
-                                )}
-                            </HStack>
-                        ))}
-                    </Stack>
-                    {!isReadOnly && (
-                        <Box mt={2}>
-                            <ActionButton
-                                Component={FaPlus}
-                                label="Add pickup person"
-                                onClick={() => append({ name: "", phone: "" })}
-                            />
-                        </Box>
-                    )}
-                </FormControl>
             </>}
 
             {(showAll || page === 3) && <>

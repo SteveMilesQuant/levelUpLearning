@@ -16,6 +16,7 @@ from datamodels import RoleEnum, UserPublicResponse, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
 from datamodels import StudentData, StudentResponse, StudentMoveData
 from datamodels import StudentFormData, StudentFormResponse
+from datamodels import UserPickupFormData, UserPickupFormResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse
 from datamodels import ResourceGroupData, ResourceGroupResponse, ResourceData, ResourceResponse
@@ -376,6 +377,27 @@ async def delete_form(request: Request, form_id: int):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Form id={form_id} not found.")
         await form.delete(session=session)
+
+
+###############################################################################
+# PICKUP PERSONS
+###############################################################################
+
+
+@api_router.get("/pickup-persons", response_model=UserPickupFormResponse)
+async def get_pickup_persons(request: Request):
+    '''Get the authorized pickup persons for the current user.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        return await user.get_pickup_persons(session)
+
+
+@api_router.put("/pickup-persons", response_model=UserPickupFormResponse)
+async def put_pickup_persons(request: Request, pickup_form: UserPickupFormData):
+    '''Update the authorized pickup persons for the current user.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        return await user.update_pickup_persons(session, pickup_form)
 
 
 ###############################################################################

@@ -3,14 +3,16 @@ import {
     Box,
     Heading,
     HStack,
-    SimpleGrid,
     Spinner,
+    Stack,
     Text,
 } from "@chakra-ui/react";
 import BodyContainer from "../components/BodyContainer";
 import useStudents from "../students/hooks/useStudents";
 import useForms from "../forms/hooks/useForms";
+import usePickupPersons from "../forms/hooks/usePickupPersons";
 import StudentFormEntry from "../forms/components/StudentFormEntry";
+import PickupPersonsFormEntry from "../forms/components/PickupPersonsFormEntry";
 import { StudentFormResponse } from "../forms";
 import { Student } from "../students";
 
@@ -34,8 +36,9 @@ const isFormCurrentYear = (form?: StudentFormResponse): boolean => {
 const EnrollmentForms = () => {
     const { data: students, isLoading: studentsLoading } = useStudents();
     const { data: forms, isLoading: formsLoading } = useForms();
+    const { data: pickupForm, isLoading: pickupLoading } = usePickupPersons();
 
-    if (studentsLoading || formsLoading) {
+    if (studentsLoading || formsLoading || pickupLoading) {
         return (
             <BodyContainer>
                 <Box marginX="auto" width="fit-content">
@@ -46,20 +49,6 @@ const EnrollmentForms = () => {
     }
 
     const enrolledStudents = students?.filter(hasFutureCamp) || [];
-
-    if (enrolledStudents.length === 0) {
-        return (
-            <BodyContainer>
-                <Heading size="lg" marginBottom={4}>
-                    Student Information Forms
-                </Heading>
-                <Text>
-                    No forms needed right now. Forms will appear here when your students
-                    are enrolled in an upcoming camp.
-                </Text>
-            </BodyContainer>
-        );
-    }
 
     const getFormForStudent = (
         studentId: number
@@ -73,49 +62,58 @@ const EnrollmentForms = () => {
                 Student Information Forms
             </Heading>
             <Text marginBottom={6} color="brand.text">
-                Please fill out the form below for each of your students so we have all
-                the necessary information for camp.
+                Please fill out the forms below so we have all the necessary
+                information for camp.
             </Text>
-            <SimpleGrid columns={1} gap={4}>
-                {enrolledStudents.map((student) => {
-                    const existingForm = getFormForStudent(student.id);
-                    return (
-                        <HStack
-                            key={student.id}
-                            padding={4}
-                            borderWidth="1px"
-                            borderRadius="md"
-                            borderColor="brand.secondary"
-                            justify="space-between"
-                        >
-                            <HStack spacing={3}>
-                                <Text fontWeight="bold">
-                                    {student.name} — Grade {student.grade_level}
-                                </Text>
-                                {isFormCurrentYear(existingForm) ? (
-                                    <Badge bgColor="brand.green" color="brand.primary">
-                                        Updated for {new Date().getFullYear()}
-                                    </Badge>
-                                ) : existingForm ? (
-                                    <Badge bgColor="brand.warning" color="brand.primary">
-                                        Needs annual update
-                                    </Badge>
-                                ) : (
-                                    <Badge bgColor="brand.secondary" color="brand.primary">
-                                        Not yet completed
-                                    </Badge>
-                                )}
+            <Stack spacing={4}>
+                <PickupPersonsFormEntry pickupForm={pickupForm} />
+                {enrolledStudents.length === 0 ? (
+                    <Text>
+                        No student forms needed right now. Student forms will
+                        appear here when your students are enrolled in an upcoming
+                        camp.
+                    </Text>
+                ) : (
+                    enrolledStudents.map((student) => {
+                        const existingForm = getFormForStudent(student.id);
+                        return (
+                            <HStack
+                                key={student.id}
+                                padding={4}
+                                borderWidth="1px"
+                                borderRadius="md"
+                                borderColor="brand.secondary"
+                                justify="space-between"
+                            >
+                                <HStack spacing={3}>
+                                    <Text fontWeight="bold">
+                                        {student.name} — Grade {student.grade_level}
+                                    </Text>
+                                    {isFormCurrentYear(existingForm) ? (
+                                        <Badge bgColor="brand.green" color="brand.primary">
+                                            Updated for {new Date().getFullYear()}
+                                        </Badge>
+                                    ) : existingForm ? (
+                                        <Badge bgColor="brand.warning" color="brand.primary">
+                                            Needs annual update
+                                        </Badge>
+                                    ) : (
+                                        <Badge bgColor="brand.secondary" color="brand.primary">
+                                            Not yet completed
+                                        </Badge>
+                                    )}
+                                </HStack>
+                                <StudentFormEntry
+                                    studentId={student.id}
+                                    studentName={student.name}
+                                    studentGrade={student.grade_level}
+                                    existingForm={existingForm}
+                                />
                             </HStack>
-                            <StudentFormEntry
-                                studentId={student.id}
-                                studentName={student.name}
-                                studentGrade={student.grade_level}
-                                existingForm={existingForm}
-                            />
-                        </HStack>
-                    );
-                })}
-            </SimpleGrid>
+                        );
+                    })
+                )}
+            </Stack>
         </BodyContainer>
     );
 };

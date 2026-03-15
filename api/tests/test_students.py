@@ -3,12 +3,13 @@ import json
 import os
 from fastapi import status
 from fastapi.testclient import TestClient
-from datamodels import StudentData, StudentFormData, PickupPersonData, FastApiDate, UserResponse
+from datamodels import StudentData, StudentFormData, PickupPersonData, UserPickupFormData, FastApiDate, UserResponse
 from main import app
 
 client = TestClient(app)
 all_students_json = {}
 all_forms_json = {}
+all_pickup_form_json = {}
 
 
 # Test adding students
@@ -133,8 +134,6 @@ def test_student_permission():
         emergency_contact='Emergency Cheri 555-9991',
         allergies='None',
         has_allergies=False,
-        pickup_persons=[PickupPersonData(
-            name='Parent Cheri', phone='555-0001')],
         additional_info='',
         photo_permission=True,
         referral_source='Google Search',
@@ -147,8 +146,6 @@ def test_student_permission():
         emergency_contact='Emergency Renee 555-9992',
         allergies='Peanuts',
         has_allergies=True,
-        pickup_persons=[PickupPersonData(
-            name='Parent Renee', phone='555-0002'), PickupPersonData(name='Aunt Renee', phone='555-0003')],
         additional_info='Needs extra supervision',
         photo_permission=False,
         referral_source='Friend Recommended',
@@ -231,8 +228,6 @@ def test_put_form():
         emergency_contact='Updated Emergency 555-8888',
         allergies='Shellfish',
         has_allergies=True,
-        pickup_persons=[PickupPersonData(
-            name='Updated Parent', phone='555-9999')],
         additional_info='Updated info',
         photo_permission=False,
         referral_source='Facebook Ad',
@@ -265,7 +260,6 @@ def test_form_permission():
         emergency_contact='None',
         allergies='None',
         has_allergies=False,
-        pickup_persons=[PickupPersonData(name='None', phone='')],
         photo_permission=True,
     )
     form_json = json.loads(json.dumps(form_data.dict(), default=str))
@@ -307,3 +301,93 @@ def test_delete_form_not_found():
     response = client.delete(
         '/forms/99999', headers=app.test.users.admin_headers)
     assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+###############################################################################
+# PICKUP PERSONS TESTS
+###############################################################################
+
+
+def test_get_pickup_persons_empty():
+    response = client.get('/pickup-persons',
+                          headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data['updated_at'] is None
+    assert data['pickup_persons'] == []
+
+
+def test_put_pickup_persons():
+    pickup_form = UserPickupFormData(
+        pickup_persons=[
+            PickupPersonData(name='Parent Guardian', phone='555-1111'),
+            PickupPersonData(name='Aunt Guardian', phone='555-2222'),
+        ]
+    )
+    pickup_json = json.loads(json.dumps(pickup_form.dict(), default=str))
+    response = client.put('/pickup-persons', json=pickup_json,
+                          headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert data['updated_at'] is not None
+    assert len(data['pickup_persons']) == 2
+    assert data['pickup_persons'][0]['name'] == 'Parent Guardian'
+    assert data['pickup_persons'][0]['phone'] == '555-1111'
+    assert data['pickup_persons'][1]['name'] == 'Aunt Guardian'
+    assert data['pickup_persons'][1]['phone'] == '555-2222'
+    all_pickup_form_json['guardian'] = data
+
+
+def test_get_pickup_persons_after_update():
+    response = client.get('/pickup-persons',
+                          headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    saved = all_pickup_form_json['guardian']
+    assert data['updated_at'] is not None
+    assert len(data['pickup_persons']) == len(saved['pickup_persons'])
+    for got, expected in zip(data['pickup_persons'], saved['pickup_persons']):
+        assert got['name'] == expected['name']
+        assert got['phone'] == expected['phone']
+
+
+def test_put_pickup_persons_replaces_old():
+    pickup_form = UserPickupFormData(
+        pickup_persons=[
+            PickupPersonData(name='New Person Only', phone='555-3333'),
+        ]
+    )
+    pickup_json = json.loads(json.dumps(pickup_form.dict(), default=str))
+    response = client.put('/pickup-persons', json=pickup_json,
+                          headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert len(data['pickup_persons']) == 1
+    assert data['pickup_persons'][0]['name'] == 'New Person Only'
+    assert data['updated_at'] >= all_pickup_form_json['guardian']['updated_at']
+    all_pickup_form_json['guardian'] = data
+
+
+def test_pickup_persons_permission():
+    # Instructor sets their own pickup persons
+    pickup_form = UserPickupFormData(
+        pickup_persons=[
+            PickupPersonData(name='Instructor Contact', phone='555-4444'),
+        ]
+    )
+    pickup_json = json.loads(json.dumps(pickup_form.dict(), default=str))
+    response = client.put('/pickup-persons', json=pickup_json,
+                          headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_200_OK
+    instructor_data = response.json()
+
+    # Guardian's pickup persons are unchanged
+    response = client.get('/pickup-persons',
+                          headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_200_OK
+    guardian_data = response.json()
+    guardian_names = [p['name'] for p in guardian_data['pickup_persons']]
+    instructor_names = [p['name'] for p in instructor_data['pickup_persons']]
+    assert guardian_names != instructor_names
+    assert 'Instructor Contact' not in guardian_names
+    assert 'New Person Only' in guardian_names

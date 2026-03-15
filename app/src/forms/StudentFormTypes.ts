@@ -1,10 +1,3 @@
-export interface PickupPerson {
-    id?: number;
-    name: string;
-    phone: string;
-    sort_order?: number;
-}
-
 export interface StudentFormData {
     student_id: number;
     child_school: string;
@@ -14,7 +7,6 @@ export interface StudentFormData {
     emergency_contact: string;
     has_allergies: boolean | null;
     allergies: string;
-    pickup_persons: PickupPerson[];
     additional_info: string;
     photo_permission: boolean | null;
     referral_source: string;

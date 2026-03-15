@@ -19,12 +19,6 @@ const studentFormSchema = z.object({
         invalid_type_error: "Please indicate if your child has allergies or health concerns.",
     }),
     allergies: z.string().optional().default(""),
-    pickup_persons: z.array(
-        z.object({
-            name: z.string().min(1, { message: "Name is required." }),
-            phone: z.string().min(1, { message: "Phone is required." }),
-        })
-    ).min(1, { message: "At least one pickup person is required." }),
     additional_info: z.string().optional().default(""),
     photo_permission: z.boolean({
         required_error: "Photo permission selection is required.",
@@ -61,11 +55,6 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
     } = useForm<FormData>({
         resolver: zodResolver(studentFormSchema),
         defaultValues: useMemo(() => {
-            const pickupPersonsDefault = (existingForm?.pickup_persons?.length ?? 0) > 0
-                ? [...existingForm!.pickup_persons].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(({ name, phone }) => ({ name, phone: formatPhone(phone) }))
-                : existingForm
-                    ? [{ name: existingForm.parent_name || "", phone: formatPhone(existingForm.parent_phone || "") }]
-                    : [{ name: "", phone: "" }];
             if (existingForm) {
                 return {
                     child_school: existingForm.child_school || "",
@@ -75,13 +64,12 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
                     emergency_contact: existingForm.emergency_contact || "",
                     has_allergies: existingForm.has_allergies ?? undefined,
                     allergies: existingForm.allergies || "",
-                    pickup_persons: pickupPersonsDefault,
                     additional_info: existingForm.additional_info || "",
                     photo_permission: existingForm.photo_permission ?? undefined,
                     referral_source: existingForm.referral_source || "",
                 };
             }
-            return { pickup_persons: pickupPersonsDefault };
+            return {};
         }, [existingForm]),
     });
     const isValid = formIsValid;
@@ -91,9 +79,6 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
 
     const handleClose = () => {
         if (existingForm) {
-            const pickupPersonsReset = (existingForm.pickup_persons?.length ?? 0) > 0
-                ? [...existingForm.pickup_persons].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(({ name, phone }) => ({ name, phone: formatPhone(phone) }))
-                : [{ name: existingForm.parent_name || "", phone: formatPhone(existingForm.parent_phone || "") }];
             reset({
                 child_school: existingForm.child_school || "",
                 parent_name: existingForm.parent_name || "",
@@ -102,13 +87,12 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
                 emergency_contact: existingForm.emergency_contact || "",
                 has_allergies: existingForm.has_allergies ?? undefined,
                 allergies: existingForm.allergies || "",
-                pickup_persons: pickupPersonsReset,
                 additional_info: existingForm.additional_info || "",
                 photo_permission: existingForm.photo_permission ?? undefined,
                 referral_source: existingForm.referral_source || "",
             });
         } else {
-            reset({ pickup_persons: [{ name: "", phone: "" }] });
+            reset({});
         }
     };
 

@@ -10,8 +10,10 @@ import LinkIcon from './LinkIcon';
 import { useRef } from 'react';
 import { MdWarning } from 'react-icons/md';
 import useForms from '../forms/hooks/useForms';
+import usePickupPersons from '../forms/hooks/usePickupPersons';
 import useStudents from '../students/hooks/useStudents';
 import { isFormCurrentYear } from '../forms/StudentFormTypes';
+import { isPickupFormCurrentYear } from '../forms/PickupPersonsTypes';
 
 const NavBarDesktop = () => {
     const { data: user } = useUser();
@@ -35,7 +37,11 @@ const NavBarDesktop = () => {
 
     const { data: students } = useStudents();
     const { data: forms } = useForms();
-    const hasMissingForms = isGuardian && !!(students?.some(s => !isFormCurrentYear(forms?.find(f => f.student_id === s.id))));
+    const { data: pickupForm } = usePickupPersons();
+    const hasMissingForms = isGuardian && !!(
+        students?.some(s => !isFormCurrentYear(forms?.find(f => f.student_id === s.id)))
+        || !isPickupFormCurrentYear(pickupForm)
+    );
 
     return (
         <>
