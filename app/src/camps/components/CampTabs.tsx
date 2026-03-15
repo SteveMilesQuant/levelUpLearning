@@ -1,9 +1,12 @@
-import { Tabs, TabList, Tab, TabPanels, TabPanel } from "@chakra-ui/react";
+import { Tabs, TabList, Tab, TabPanels, TabPanel, Button, VStack, Stack, Box } from "@chakra-ui/react";
 import { StudentTable } from "../../students";
 import { InstructorList } from "../../users";
 import { Camp } from "../Camp";
 import CampForm from "./CampForm";
 import CampTabPublic from "./CampTabPublic";
+import useGeneratePickupCodes from "../hooks/useGeneratePickupCodes";
+import { useContext } from "react";
+import CampsContext, { CampsContextType } from "../campsContext";
 
 interface Props {
   camp: Camp;
@@ -12,6 +15,8 @@ interface Props {
 }
 
 const CampTabs = ({ camp, isReadOnly, isPublicFacing }: Props) => {
+  const campsContextType = useContext(CampsContext);
+  const { mutate: generateCodes, isLoading } = useGeneratePickupCodes(camp.id);
   return (
     <Tabs variant="enclosed">
       <TabList>
@@ -41,7 +46,22 @@ const CampTabs = ({ camp, isReadOnly, isPublicFacing }: Props) => {
         </TabPanel>
         {!isPublicFacing && (
           <TabPanel>
-            <StudentTable campId={camp.id} isReadOnly={isReadOnly} />
+            <Stack spacing={5}>
+              <StudentTable campId={camp.id} isReadOnly={isReadOnly} />
+              {campsContextType === CampsContextType.schedule &&
+                <Box>
+                  <Button
+                    textColor={camp.pickup_codes_generated ? "brand.warning" : "brand.primary"}
+                    isLoading={isLoading}
+                    onClick={() => generateCodes()}
+                  >
+                    {camp.pickup_codes_generated
+                      ? "Regenerate pickup codes"
+                      : "Generate pickup codes"}
+                  </Button>
+                </Box>
+              }
+            </Stack>
           </TabPanel>
         )}
       </TabPanels>

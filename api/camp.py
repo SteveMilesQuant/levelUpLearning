@@ -1,3 +1,5 @@
+import random
+import string
 from pydantic import PrivateAttr
 from typing import Optional, Any, List
 from calendar import month_name
@@ -165,6 +167,21 @@ class Camp(CampResponse):
         from_date = self.dates[0]
         to_date = self.dates[len(self.dates)-1]
         return f'{month_name[from_date.month]} {from_date.day}-{month_name[to_date.month]} {to_date.day}'
+
+    async def generate_codes(self, session: Any):
+        await session.refresh(self._db_obj, ['camp_students'])
+        seen_user_ids = set()
+        for camp_student in self._db_obj.camp_students:
+            for guardian in camp_student.student.guardians:
+                if guardian.id in seen_user_ids:
+                    continue
+                seen_user_ids.add(guardian.id)
+                await session.refresh(guardian, ['pickup_persons'])
+                for pickup_person in guardian.pickup_persons:
+                    pickup_person.code = ''.join(
+                        random.choices(string.ascii_uppercase, k=6))
+        self._db_obj.pickup_codes_generated = True
+        await session.commit()
 
     def daily_time_range(self, half_day: Optional[HalfDayEnum]) -> str:
         start = self.daily_pm_start_time if half_day == HalfDayEnum.PM else self.daily_start_time

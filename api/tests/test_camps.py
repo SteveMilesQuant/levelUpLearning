@@ -70,6 +70,7 @@ def test_post_camp(camp: CampData):
     camp_json['current_enrollment'] = 0
     camp_json['current_am_enrollment'] = 0
     camp_json['current_pm_enrollment'] = 0
+    camp_json['pickup_codes_generated'] = False
     assert camp_json == new_camp_json, f'Returned camp {new_camp_json} does not match posted camp {camp_json}.'
     all_camps_json.append(new_camp_json)
 
@@ -394,3 +395,34 @@ def test_permission():
     response = client.delete(
         f'/camps/{camp_id}/students/{student_id}', headers=app.test.users.guardian_headers)
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Non-admins should be blocked from generating pickup codes
+    response = client.post(
+        f'/camps/{camp_id}/generate-codes', headers=app.test.users.instructor_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response = client.post(
+        f'/camps/{camp_id}/generate-codes', headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Bad camp id should 404
+    response = client.post(
+        f'/camps/{bad_camp_id}/generate-codes', headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+
+def test_generate_pickup_codes():
+    camp_json = all_camps_json[0]
+    camp_id = camp_json['id']
+
+    # Admin should succeed with 204 No Content
+    response = client.post(f'/camps/{camp_id}/generate-codes',
+                           headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    # Camp should now report pickup_codes_generated: True
+    response = client.get(f'/camps/{camp_id}',
+                          headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+    got_camp_json = response.json()
+    assert got_camp_json['pickup_codes_generated'] is True
+    camp_json['pickup_codes_generated'] = True

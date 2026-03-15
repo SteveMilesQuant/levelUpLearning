@@ -136,6 +136,7 @@ class PickupPersonDb(Base):
     name: Mapped[str] = mapped_column(Text)
     phone: Mapped[str] = mapped_column(Text)
     sort_order: Mapped[int] = mapped_column()
+    code: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     user: Mapped['UserDb'] = relationship(
         back_populates='pickup_persons')
@@ -251,6 +252,8 @@ class CampDb(Base):
     single_day_only: Mapped[bool] = mapped_column(nullable=True)
     enroll_full_day_allowed: Mapped[bool] = mapped_column(nullable=True)
     enroll_half_day_allowed: Mapped[bool] = mapped_column(nullable=True)
+    pickup_codes_generated: Mapped[Optional[bool]
+                                   ] = mapped_column(nullable=True, default=False)
 
     program: Mapped['ProgramDb'] = relationship(
         back_populates='camps', lazy='joined')

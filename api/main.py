@@ -951,6 +951,23 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
         await camp.remove_student(session=session, student=student)
 
 
+@api_router.post("/camps/{camp_id}/generate-codes", status_code=status.HTTP_204_NO_CONTENT)
+async def post_generate_pickup_codes(request: Request, camp_id: int):
+    '''Generate 6-letter uppercase pickup codes for every pickup person of every
+    guardian of every student enrolled in the camp. Admin only.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User does not have permission to generate pickup codes.")
+        camp = Camp(id=camp_id)
+        await camp.create(session)
+        if camp.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+        await camp.generate_codes(session)
+
+
 ###############################################################################
 # ENROLLMENTS
 ###############################################################################

@@ -29,6 +29,7 @@ export interface Camp extends CampData {
   current_enrollment?: number;
   current_am_enrollment?: number;
   current_pm_enrollment?: number;
+  pickup_codes_generated?: boolean;
 }
 
 export const CACHE_KEY_CAMPS = ["camps"];

@@ -135,6 +135,7 @@ class CampResponse(CampData):
     current_enrollment: Optional[int] = None
     current_am_enrollment: Optional[int] = None
     current_pm_enrollment: Optional[int] = None
+    pickup_codes_generated: Optional[bool] = False
 
     def dict(self, *args, **kwargs):
         ret = super().dict(*args, **kwargs)
