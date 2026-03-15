@@ -301,6 +301,15 @@ class StudentFormResponse(StudentFormData):
     updated_at: Optional[str] = None
 
 
+class PickupRequest(BaseModel):
+    student_ids: List[int]
+    code: str
+
+
+class PickupResponse(BaseModel):
+    pickup_person_name: str
+
+
 class UserPickupFormData(BaseModel):
     '''User-level authorized pickup persons form data'''
     pickup_persons: Optional[List[PickupPersonData]] = []

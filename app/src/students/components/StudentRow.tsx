@@ -4,17 +4,21 @@ import DeleteButton from "../../components/DeleteButton";
 import { useDisenrollStudent } from "../hooks/useCampStudents";
 import { useQueryClient } from "@tanstack/react-query";
 import MoveStudentModal from "./MoveStudentModal";
+import PickupModal from "./PickupModal";
 import ActionButton from "../../components/ActionButton";
 import { IoMoveOutline } from "react-icons/io5";
+import { MdOutlineDriveEta } from "react-icons/md";
 import StudentFormIcons from "./StudentFormIcons";
 
 interface Props {
   campId: number;
   student: Student;
+  campStudents: Student[];
   isReadOnly?: boolean;
+  onPickupSuccess: (pickupPersonName: string) => void;
 }
 
-const StudentRow = ({ campId, student, isReadOnly }: Props) => {
+const StudentRow = ({ campId, student, campStudents, isReadOnly, onPickupSuccess }: Props) => {
   const queryClient = useQueryClient();
   const disenrollStudent = useDisenrollStudent(campId, {
     onSuccess: () => {
@@ -31,6 +35,12 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
     onClose: moveStudentOnClose,
   } = useDisclosure();
 
+  const {
+    isOpen: pickupIsOpen,
+    onOpen: pickupOnOpen,
+    onClose: pickupOnClose,
+  } = useDisclosure();
+
   const camp = student.student_camps.find(
     (c) => c.id === campId
   );
@@ -41,6 +51,21 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
       <Td>{student.name}</Td>
       <Td>{student.grade_level}</Td>
       <Td>{campHalfDayStr}</Td>
+      <Td>
+        <ActionButton
+          Component={MdOutlineDriveEta}
+          label="Pickup student"
+          onClick={pickupOnOpen}
+        />
+        <PickupModal
+          isOpen={pickupIsOpen}
+          onClose={pickupOnClose}
+          campId={campId}
+          student={student}
+          campStudents={campStudents}
+          onSuccess={onPickupSuccess}
+        />
+      </Td>
       <Td><StudentFormIcons student={student} /></Td>
       {!isReadOnly && (
         <>

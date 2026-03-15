@@ -10,7 +10,7 @@ from mangum import Mangum
 from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
-from db import init_db, close_db, PaymentRecordDb, ImageDb, StudentFormDb
+from db import init_db, close_db, PaymentRecordDb, ImageDb, PickupPersonDb, PickupLogDb
 from datamodels import CampStudentResponse, CheckoutTotal, FastApiDate, Object
 from datamodels import RoleEnum, UserPublicResponse, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
@@ -18,7 +18,7 @@ from datamodels import StudentData, StudentResponse, StudentMoveData
 from datamodels import StudentFormData, StudentFormResponse
 from datamodels import UserPickupFormData, UserPickupFormResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
-from datamodels import CampData, CampResponse
+from datamodels import CampData, CampResponse, PickupRequest, PickupResponse
 from datamodels import ResourceGroupData, ResourceGroupResponse, ResourceData, ResourceResponse
 from datamodels import EventData, EventResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
@@ -966,6 +966,64 @@ async def post_generate_pickup_codes(request: Request, camp_id: int):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
         await camp.generate_codes(session)
+
+
+@api_router.post("/camps/{camp_id}/pickup", response_model=PickupResponse)
+async def post_pickup_students(request: Request, camp_id: int, pickup_data: PickupRequest):
+    '''Validate a pickup code and log the pickup event for one or more students.
+    Accessible by admins and camp instructors.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        camp = Camp(id=camp_id)
+        await camp.create(session)
+        if camp.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+        if not await camp.user_authorized(session, user):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User not authorized for camp id={camp_id}.")
+
+        code = pickup_data.code.upper()
+
+        # Find a pickup person with this code
+        result = await session.execute(
+            select(PickupPersonDb).where(PickupPersonDb.code == code)
+        )
+        pickup_person = result.scalars().first()
+        if pickup_person is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="Invalid pickup code.")
+
+        # Validate each student and create a log record
+        db_camp_students = await camp.camp_students(session)
+        enrolled_student_ids = {cs.student_id for cs in db_camp_students}
+
+        from datetime import datetime as dt
+        for student_id in pickup_data.student_ids:
+            if student_id not in enrolled_student_ids:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail=f"Student id={student_id} is not enrolled in camp id={camp_id}.")
+            # Verify the pickup person is a guardian of this student
+            db_camp_student = next(
+                cs for cs in db_camp_students if cs.student_id == student_id)
+            guardian_ids = {g.id for g in db_camp_student.student.guardians}
+            if pickup_person.user_id not in guardian_ids:
+                student_name = db_camp_student.student.name
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail=f"Pickup code is not valid for student '{student_name}'.")
+
+            log_entry = PickupLogDb(
+                code=code,
+                pickup_person_name=pickup_person.name,
+                pickup_person_phone=pickup_person.phone,
+                student_id=student_id,
+                camp_id=camp_id,
+                created_at=dt.utcnow(),
+            )
+            session.add(log_entry)
+
+        await session.commit()
+        return PickupResponse(pickup_person_name=pickup_person.name)
 
 
 ###############################################################################

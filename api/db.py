@@ -298,6 +298,20 @@ class CampStudentDb(Base):
         back_populates="student_camps", lazy="selectin")
 
 
+class PickupLogDb(Base):
+    __tablename__ = 'pickup_log'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    code: Mapped[str] = mapped_column(String(6), nullable=False)
+    pickup_person_name: Mapped[str] = mapped_column(Text, nullable=False)
+    pickup_person_phone: Mapped[str] = mapped_column(Text, nullable=False)
+    student_id: Mapped[int] = mapped_column(
+        ForeignKey('student.id'), nullable=False)
+    camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'), nullable=False)
+    created_at: Mapped[dt_datetime] = mapped_column(
+        DateTime, nullable=False, default=dt_datetime.utcnow)
+
+
 class PaymentRecordDb(Base):
     __tablename__ = 'payment_record'
 

@@ -135,7 +135,7 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
                 size="sm"
                 onClick={handleOpen}
             >
-                {!hasForm ? "Fill Out Form" : isCurrent ? "View / Edit" : "Update"}
+                {!hasForm ? "Fill Out Form" : isCurrent ? "View / Edit Form" : "Update Form"}
             </Button>
 
             <Modal isOpen={isOpen} onClose={handleClose} size="lg">

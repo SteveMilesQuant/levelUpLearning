@@ -277,6 +277,91 @@ def test_camp_student(camp_index: int, student: StudentData):
     assert response.json() == []
 
 
+# Test the pickup endpoint: valid code, invalid code, and unenrolled student
+def test_pickup():
+    camp_json = all_camps_json[0]
+    camp_id = camp_json['id']
+
+    # Create a student enrolled by the admin guardian
+    student_data_json = {'name': 'Pickup Test Student', 'grade_level': 6}
+    response = client.post('/students', json=student_data_json,
+                           headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_201_CREATED
+    student_id = response.json()['id']
+
+    # Create a second student (not enrolled) to test the unenrolled case
+    response2 = client.post('/students', json={'name': 'Unenrolled Student', 'grade_level': 7},
+                            headers=app.test.users.admin_headers)
+    assert response2.status_code == status.HTTP_201_CREATED
+    unenrolled_student_id = response2.json()['id']
+
+    # Enroll the first student
+    enrollment_data_json = json.loads(json.dumps(
+        EnrollmentData(
+            enrollments=[SingleEnrollmentData(
+                camp_id=camp_id, student_id=student_id)],
+            coupons=[],
+            execute_transaction=True,
+        ).dict(), indent=4, sort_keys=True, default=str))
+    response = client.post('/enroll', json=enrollment_data_json,
+                           headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_201_CREATED
+
+    # Give the admin user a pickup person
+    pickup_name = 'Grandma Smith'
+    pickup_phone = '555-0199'
+    response = client.put('/pickup-persons',
+                          json={'pickup_persons': [
+                              {'name': pickup_name, 'phone': pickup_phone}]},
+                          headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+
+    # Generate pickup codes for the camp
+    response = client.post(f'/camps/{camp_id}/generate-codes',
+                           headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+
+    # Retrieve generated code directly from DB (not exposed in API response)
+    async def get_code():
+        from db import PickupPersonDb
+        from sqlalchemy import select
+        async with app.db_sessionmaker() as session:
+            result = await session.execute(
+                select(PickupPersonDb).where(
+                    PickupPersonDb.user_id == app.test.users.admin.id)
+            )
+            person = result.scalars().first()
+            return person.code
+    code = asyncio.run(get_code())
+    assert code is not None and len(code) == 6
+
+    # Invalid code → 400
+    response = client.post(f'/camps/{camp_id}/pickup',
+                           json={'student_ids': [
+                               student_id], 'code': 'XXXXXX'},
+                           headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    # Unenrolled student with valid code → 400
+    response = client.post(f'/camps/{camp_id}/pickup',
+                           json={'student_ids': [
+                               unenrolled_student_id], 'code': code},
+                           headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    # Valid code, enrolled student → 200 with pickup person name
+    response = client.post(f'/camps/{camp_id}/pickup',
+                           json={'student_ids': [student_id], 'code': code},
+                           headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['pickup_person_name'] == pickup_name
+
+    # Disenroll the student
+    response = client.delete(f'/camps/{camp_id}/students/{student_id}',
+                             headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+
+
 # Test removing instructors
 @pytest.mark.parametrize(('camp_index', 'instructor_id'), (
     (0, app.test.users.instructor.id),
