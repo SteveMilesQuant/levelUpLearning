@@ -6,7 +6,7 @@ from sqlalchemy.types import LargeBinary
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.pool import NullPool
-from datamodels import FastApiDate, HalfDayEnum, UserResponse, StudentResponse, StudentFormResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
+from datamodels import FastApiDate, HalfDayEnum, UserResponse, StudentResponse, StudentFormResponse, PickupPersonResponse, ProgramResponse, LevelResponse, CampResponse, ImageData
 
 
 class Base(DeclarativeBase):
@@ -121,6 +121,19 @@ class StudentDb(Base):
         return returnVal
 
 
+class PickupPersonDb(Base):
+    __tablename__ = 'pickup_person'
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    student_form_id: Mapped[int] = mapped_column(ForeignKey('student_form.id'))
+    name: Mapped[str] = mapped_column(Text)
+    phone: Mapped[str] = mapped_column(Text)
+    sort_order: Mapped[int] = mapped_column()
+
+    student_form: Mapped['StudentFormDb'] = relationship(
+        back_populates='pickup_persons')
+
+
 class StudentFormDb(Base):
     __tablename__ = 'student_form'
 
@@ -134,7 +147,6 @@ class StudentFormDb(Base):
     emergency_contact: Mapped[str] = mapped_column(Text)
     has_allergies: Mapped[bool] = mapped_column()
     allergies: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    pickup_persons: Mapped[str] = mapped_column(Text)
     additional_info: Mapped[str] = mapped_column(Text, nullable=True)
     photo_permission: Mapped[bool] = mapped_column()
     referral_source: Mapped[str] = mapped_column(Text, nullable=True)
@@ -143,14 +155,24 @@ class StudentFormDb(Base):
 
     student: Mapped['StudentDb'] = relationship(
         back_populates='form', lazy='joined')
+    pickup_persons: Mapped[List['PickupPersonDb']] = relationship(
+        back_populates='student_form',
+        order_by='PickupPersonDb.sort_order',
+        cascade='all, delete-orphan',
+        lazy='joined')
 
     def dict(self):
         returnVal = {}
         for key, _ in StudentFormResponse():
-            if key not in ['student_name', 'student_grade_level']:
+            if key not in ['student_name', 'student_grade_level', 'pickup_persons']:
                 returnVal[key] = getattr(self, key)
                 if key == 'updated_at' and returnVal[key] is not None:
                     returnVal[key] = returnVal[key].isoformat()
+        returnVal['pickup_persons'] = [
+            PickupPersonResponse(id=p.id, name=p.name,
+                                 phone=p.phone, sort_order=p.sort_order)
+            for p in self.pickup_persons
+        ]
         return returnVal
 
 

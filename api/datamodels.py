@@ -267,6 +267,16 @@ class EventResponse(EventData):
     carousel_images: Optional[List[ImageData]]
 
 
+class PickupPersonData(BaseModel):
+    name: str = ''
+    phone: str = ''
+
+
+class PickupPersonResponse(PickupPersonData):
+    id: Optional[int] = None
+    sort_order: Optional[int] = None
+
+
 class StudentFormData(BaseModel):
     '''User-editable student information form data'''
     student_id: Optional[int] = None
@@ -277,7 +287,7 @@ class StudentFormData(BaseModel):
     emergency_contact: Optional[str] = ''
     has_allergies: Optional[bool] = None
     allergies: Optional[str] = ''
-    pickup_persons: Optional[str] = ''
+    pickup_persons: Optional[List[PickupPersonData]] = []
     additional_info: Optional[str] = ''
     photo_permission: Optional[bool] = None
     referral_source: Optional[str] = ''
@@ -289,3 +299,4 @@ class StudentFormResponse(StudentFormData):
     student_name: Optional[str] = ''
     student_grade_level: Optional[int] = None
     updated_at: Optional[str] = None
+    pickup_persons: Optional[List[PickupPersonResponse]] = []

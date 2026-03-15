@@ -4,6 +4,7 @@ import { FieldValues, useForm } from "react-hook-form";
 import { z } from "zod";
 import { StudentFormResponse } from "../StudentFormTypes";
 import { useAddForm, useUpdateForm } from "./useForms";
+import { formatPhone } from "../../utils/phone";
 
 const studentFormSchema = z.object({
     child_school: z.string().min(1, { message: "School is required." }),
@@ -18,9 +19,12 @@ const studentFormSchema = z.object({
         invalid_type_error: "Please indicate if your child has allergies or health concerns.",
     }),
     allergies: z.string().optional().default(""),
-    pickup_persons: z
-        .string()
-        .min(1, { message: "Pickup person(s) required." }),
+    pickup_persons: z.array(
+        z.object({
+            name: z.string().min(1, { message: "Name is required." }),
+            phone: z.string().min(1, { message: "Phone is required." }),
+        })
+    ).min(1, { message: "At least one pickup person is required." }),
     additional_info: z.string().optional().default(""),
     photo_permission: z.boolean({
         required_error: "Photo permission selection is required.",
@@ -57,22 +61,27 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
     } = useForm<FormData>({
         resolver: zodResolver(studentFormSchema),
         defaultValues: useMemo(() => {
+            const pickupPersonsDefault = (existingForm?.pickup_persons?.length ?? 0) > 0
+                ? [...existingForm!.pickup_persons].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(({ name, phone }) => ({ name, phone: formatPhone(phone) }))
+                : existingForm
+                    ? [{ name: existingForm.parent_name || "", phone: formatPhone(existingForm.parent_phone || "") }]
+                    : [{ name: "", phone: "" }];
             if (existingForm) {
                 return {
                     child_school: existingForm.child_school || "",
                     parent_name: existingForm.parent_name || "",
                     parent_email: existingForm.parent_email || "",
-                    parent_phone: existingForm.parent_phone || "",
+                    parent_phone: formatPhone(existingForm.parent_phone || ""),
                     emergency_contact: existingForm.emergency_contact || "",
                     has_allergies: existingForm.has_allergies ?? undefined,
                     allergies: existingForm.allergies || "",
-                    pickup_persons: existingForm.pickup_persons || "",
+                    pickup_persons: pickupPersonsDefault,
                     additional_info: existingForm.additional_info || "",
                     photo_permission: existingForm.photo_permission ?? undefined,
                     referral_source: existingForm.referral_source || "",
                 };
             }
-            return {};
+            return { pickup_persons: pickupPersonsDefault };
         }, [existingForm]),
     });
     const isValid = formIsValid;
@@ -82,21 +91,24 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
 
     const handleClose = () => {
         if (existingForm) {
+            const pickupPersonsReset = (existingForm.pickup_persons?.length ?? 0) > 0
+                ? [...existingForm.pickup_persons].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(({ name, phone }) => ({ name, phone: formatPhone(phone) }))
+                : [{ name: existingForm.parent_name || "", phone: formatPhone(existingForm.parent_phone || "") }];
             reset({
                 child_school: existingForm.child_school || "",
                 parent_name: existingForm.parent_name || "",
                 parent_email: existingForm.parent_email || "",
-                parent_phone: existingForm.parent_phone || "",
+                parent_phone: formatPhone(existingForm.parent_phone || ""),
                 emergency_contact: existingForm.emergency_contact || "",
                 has_allergies: existingForm.has_allergies ?? undefined,
                 allergies: existingForm.allergies || "",
-                pickup_persons: existingForm.pickup_persons || "",
+                pickup_persons: pickupPersonsReset,
                 additional_info: existingForm.additional_info || "",
                 photo_permission: existingForm.photo_permission ?? undefined,
                 referral_source: existingForm.referral_source || "",
             });
         } else {
-            reset({});
+            reset({ pickup_persons: [{ name: "", phone: "" }] });
         }
     };
 
