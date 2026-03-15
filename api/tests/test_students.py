@@ -3,7 +3,7 @@ import json
 import os
 from fastapi import status
 from fastapi.testclient import TestClient
-from datamodels import StudentData, StudentFormData, FastApiDate, UserResponse
+from datamodels import StudentData, StudentFormData, PickupPersonData, FastApiDate, UserResponse
 from main import app
 
 client = TestClient(app)
@@ -132,7 +132,8 @@ def test_student_permission():
         parent_phone='555-0001',
         emergency_contact='Emergency Cheri 555-9991',
         allergies='None',
-        pickup_persons='Parent Cheri',
+        pickup_persons=[PickupPersonData(
+            name='Parent Cheri', phone='555-0001')],
         additional_info='',
         photo_permission=True,
         referral_source='Google Search',
@@ -144,7 +145,8 @@ def test_student_permission():
         parent_phone='555-0002',
         emergency_contact='Emergency Renee 555-9992',
         allergies='Peanuts',
-        pickup_persons='Parent Renee, Aunt Renee',
+        pickup_persons=[PickupPersonData(
+            name='Parent Renee', phone='555-0002'), PickupPersonData(name='Aunt Renee', phone='555-0003')],
         additional_info='Needs extra supervision',
         photo_permission=False,
         referral_source='Friend Recommended',
@@ -226,7 +228,8 @@ def test_put_form():
         parent_phone='555-9999',
         emergency_contact='Updated Emergency 555-8888',
         allergies='Shellfish',
-        pickup_persons='Updated Parent',
+        pickup_persons=[PickupPersonData(
+            name='Updated Parent', phone='555-9999')],
         additional_info='Updated info',
         photo_permission=False,
         referral_source='Facebook Ad',
@@ -258,7 +261,7 @@ def test_form_permission():
         parent_phone='555-0000',
         emergency_contact='None',
         allergies='None',
-        pickup_persons='None',
+        pickup_persons=[PickupPersonData(name='None', phone='')],
         photo_permission=True,
     )
     form_json = json.loads(json.dumps(form_data.dict(), default=str))
