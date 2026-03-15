@@ -41,7 +41,7 @@ app/src/theme.ts        Chakra theme with brand colors
 - **Pydantic models** (`api/datamodels.py`): `<Entity>Data` (editable fields) → `<Entity>Response(Data)` adds `id`. These correspond 1:1 with front end TypeScript interfaces.
 - **Entity classes** (`api/<module>.py`): Extend Response, hold `_db_obj: PrivateAttr`. Methods: `create(session)` (fetch or insert), `update(session)`, `delete(session)`.
 - **Endpoints** (`api/main.py`): Grouped by `# SECTION` comments. Auth via `get_authorized_user(request, session)`. Role checks: `user.has_role('ADMIN')`.
-- **Migrations**: Plain SQL in `api/migration/YYYY-MM-DD.sql`.
+- **Migrations**: Plain SQL in `api/migration/YYYY-MM-DD.sql` — only needed for changes to *existing* tables (e.g., ALTER, DROP column). New tables are created automatically by SQLAlchemy (`metadata.create_all()`); no migration SQL is required for them.
 
 ### Front End
 
@@ -53,7 +53,7 @@ app/src/theme.ts        Chakra theme with brand colors
 
 ## Workflow for Adding a Feature
 
-1. **Database**: Update `api/db.py` with new/modified model. Create migration SQL.
+1. **Database**: Update `api/db.py` with new/modified model. If modifying an *existing* table (e.g., adding/dropping a column), create a migration SQL file in `api/migration/YYYY-MM-DD.sql`. For brand-new tables, SQLAlchemy handles creation automatically — no migration needed.
 2. **Pydantic models**: Update `api/datamodels.py` (Data + Response classes).
 3. **Entity class**: Create or update `api/<module>.py`.
 4. **Endpoints**: Add to `api/main.py` under appropriate section.
