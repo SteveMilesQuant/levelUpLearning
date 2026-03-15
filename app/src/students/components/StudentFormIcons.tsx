@@ -23,7 +23,7 @@ const StudentFormIcons = ({ student }: Props) => {
     if (!hasCurrentForm) {
         return (
             <Tooltip label="No form">
-                <Box as="span" color="red.500" display="inline-flex">
+                <Box as="span" color="brand.danger" display="inline-flex">
                     <TbFileOff size="1.5em" />
                 </Box>
             </Tooltip>
@@ -60,7 +60,7 @@ const StudentFormIcons = ({ student }: Props) => {
 
                 {form!.photo_permission === false && (
                     <Tooltip label="No photos allowed">
-                        <Box as="span" color="red.500" display="inline-flex">
+                        <Box as="span" color="brand.danger" display="inline-flex">
                             <MdNoPhotography size="1.5em" />
                         </Box>
                     </Tooltip>

@@ -1,4 +1,4 @@
-import { Box, HStack, LinkBox, Image, Text, Stack, useDisclosure, useOutsideClick } from '@chakra-ui/react';
+import { Box, HStack, LinkBox, Image, Text, Stack, Tooltip, useDisclosure, useOutsideClick } from '@chakra-ui/react';
 import { Link as RouterLink } from "react-router-dom";
 import AuthButton from './AuthButton';
 import ShoppingCart from './ShoppingCart';
@@ -8,6 +8,10 @@ import { useUser } from '../users';
 import { AiFillEdit } from 'react-icons/ai';
 import LinkIcon from './LinkIcon';
 import { useRef } from 'react';
+import { MdWarning } from 'react-icons/md';
+import useForms from '../forms/hooks/useForms';
+import useStudents from '../students/hooks/useStudents';
+import { isFormCurrentYear } from '../forms/StudentFormTypes';
 
 const NavBarDesktop = () => {
     const { data: user } = useUser();
@@ -28,6 +32,10 @@ const NavBarDesktop = () => {
     const isGuardian = user?.roles.includes("GUARDIAN");
     const isInstructor = user?.roles.includes("INSTRUCTOR");
     const isAdmin = user?.roles.includes("ADMIN");
+
+    const { data: students } = useStudents();
+    const { data: forms } = useForms();
+    const hasMissingForms = isGuardian && !!(students?.some(s => !isFormCurrentYear(forms?.find(f => f.student_id === s.id))));
 
     return (
         <>
@@ -77,9 +85,18 @@ const NavBarDesktop = () => {
 
                                     >
                                         {isGuardian &&
-                                            <LinkBox as={RouterLink} to="/forms">
-                                                <Text fontFamily={fontFamily} fontSize={fontSize}>Forms</Text>
-                                            </LinkBox>
+                                            <HStack width="full" justify="space-between">
+                                                <LinkBox as={RouterLink} to="/forms">
+                                                    <Text fontFamily={fontFamily} fontSize={fontSize}>Forms</Text>
+                                                </LinkBox>
+                                                {hasMissingForms &&
+                                                    <Tooltip label="Student forms need to be filled out">
+                                                        <Box as="span" color="brand.danger" display="inline-flex">
+                                                            <MdWarning size="2em" />
+                                                        </Box>
+                                                    </Tooltip>
+                                                }
+                                            </HStack>
                                         }
                                         <HStack width="full" justify="space-between">
                                             <LinkBox as={RouterLink} to="/resources">

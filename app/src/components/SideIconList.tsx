@@ -7,6 +7,7 @@ import { GiHamburgerMenu, GiTeacher } from "react-icons/gi";
 import {
   MdOutlineDesignServices,
   MdSettings,
+  MdWarning,
 } from "react-icons/md";
 import { GiPartyPopper } from "react-icons/gi";
 import {
@@ -15,6 +16,7 @@ import {
   DrawerContent,
   DrawerOverlay,
   IconButton,
+  Tooltip,
   useDisclosure,
   Text,
   LinkBox,
@@ -32,6 +34,9 @@ import {
 import { useUser } from "../users";
 import { Link as RouterLink } from "react-router-dom";
 import { AiFillEdit } from "react-icons/ai";
+import useForms from '../forms/hooks/useForms';
+import useStudents from '../students/hooks/useStudents';
+import { isFormCurrentYear } from '../forms/StudentFormTypes';
 import lightbulb from "../assets/LightBulb.svg";
 import star from "../assets/Star.svg";
 import magnifyingGlass from "../assets/MagnifyingGlass.svg";
@@ -56,6 +61,11 @@ interface SideIcon extends SideIconData {
 const SideIconList = () => {
   const { data: user } = useUser();
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const { data: students } = useStudents();
+  const { data: forms } = useForms();
+  const isGuardian = user?.roles.includes("GUARDIAN");
+  const hasMissingForms = isGuardian && !!(students?.some(s => !isFormCurrentYear(forms?.find(f => f.student_id === s.id))));
 
   const allIconsNoId: SideIconData[] = [
     {
@@ -233,7 +243,7 @@ const SideIconList = () => {
                           </LinkBox>
                         </Box>
                       </HStack>
-                      {sideIcon.editable && user?.roles.includes(sideIcon.editable.role) &&
+                      {sideIcon.editable && user?.roles.includes(sideIcon.editable.role) ? (
                         <Box onClick={onClose}>
                           <LinkIcon
                             icon={<AiFillEdit size="2em" />}
@@ -241,7 +251,13 @@ const SideIconList = () => {
                             label={sideIcon.label + " (edit)"}
                           />
                         </Box>
-                      }
+                      ) : sideIcon.primary.endpoint === '/forms' && hasMissingForms ? (
+                        <Tooltip label="Student forms need to be filled out">
+                          <Box as="span" color="brand.danger" display="inline-flex">
+                            <MdWarning size="2em" />
+                          </Box>
+                        </Tooltip>
+                      ) : null}
                     </HStack>
                   ))}
               </Stack>

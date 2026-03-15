@@ -42,7 +42,8 @@ const theme = extendTheme({
       disabled: "rgb(237, 242, 247)",
       lightGray: "#fafafa",
       green: "rgb(183, 255, 114)",
-      warning: "rgb(255, 214, 102)"
+      warning: "rgb(255, 214, 102)",
+      danger: "#C53030"
     },
   },
 });
