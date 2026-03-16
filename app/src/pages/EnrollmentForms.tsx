@@ -14,17 +14,8 @@ import usePickupPersons from "../forms/hooks/usePickupPersons";
 import StudentFormEntry from "../forms/components/StudentFormEntry";
 import PickupPersonsFormEntry from "../forms/components/PickupPersonsFormEntry";
 import { StudentFormResponse } from "../forms";
-import { Student } from "../students";
+import { hasFutureCamp } from "../students";
 
-const hasFutureCamp = (student: Student): boolean => {
-    const now = new Date();
-    return student.student_camps.some(
-        (camp) =>
-            camp.dates &&
-            camp.dates.length > 0 &&
-            new Date(camp.dates[camp.dates.length - 1] + "T23:59:59") >= now
-    );
-};
 
 const isFormCurrentYear = (form?: StudentFormResponse): boolean => {
     if (!form?.updated_at) return false;

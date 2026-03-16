@@ -1,4 +1,5 @@
 export { type User } from "./User";
+export { default as useHasMissingForms } from "./hooks/useHasMissingForms";
 export { default as useAuth } from "./hooks/useAuth";
 export { useCampInstructors } from "./hooks/useCampInstructors";
 export { default as useAllRoles } from "./hooks/useAllRoles";

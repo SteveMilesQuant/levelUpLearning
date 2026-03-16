@@ -32,13 +32,9 @@ import {
   IoPricetagsOutline,
 } from "react-icons/io5";
 import { useUser } from "../users";
+import { useHasMissingForms } from "../users";
 import { Link as RouterLink } from "react-router-dom";
 import { AiFillEdit } from "react-icons/ai";
-import useForms from '../forms/hooks/useForms';
-import usePickupPersons from '../forms/hooks/usePickupPersons';
-import useStudents from '../students/hooks/useStudents';
-import { isFormCurrentYear } from '../forms/StudentFormTypes';
-import { isPickupFormCurrentYear } from '../forms/PickupPersonsTypes';
 import lightbulb from "../assets/LightBulb.svg";
 import star from "../assets/Star.svg";
 import magnifyingGlass from "../assets/MagnifyingGlass.svg";
@@ -64,14 +60,7 @@ const SideIconList = () => {
   const { data: user } = useUser();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const { data: students } = useStudents();
-  const { data: forms } = useForms();
-  const { data: pickupForm } = usePickupPersons();
-  const isGuardian = user?.roles.includes("GUARDIAN");
-  const hasMissingForms = isGuardian && !!(
-    students?.some(s => !isFormCurrentYear(forms?.find(f => f.student_id === s.id)))
-    || !isPickupFormCurrentYear(pickupForm)
-  );
+  const hasMissingForms = useHasMissingForms();
 
   const allIconsNoId: SideIconData[] = [
     {
