@@ -103,12 +103,14 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
             updateForm.mutate({
                 ...existingForm,
                 ...data,
+                updated_at: new Date().toISOString(),
             } as StudentFormResponse);
         } else {
             addForm.mutate({
                 student_id: studentId,
                 ...data,
-            } as any);
+                updated_at: new Date().toISOString(),
+            } as StudentFormResponse);
         }
     };
 
