@@ -23,6 +23,7 @@ from datamodels import ResourceGroupData, ResourceGroupResponse, ResourceData, R
 from datamodels import EventData, EventResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
 from emailserver import EmailServer
+from smsserver import SmsServer
 from user import User, init_roles, all_users
 from student import Student
 from studentform import StudentForm
@@ -98,6 +99,11 @@ async def startup():
             password=os.environ.get("SMTP_PASSWORD", None),
             sender_emails={CONFIRMATION_SENDER_EMAIL_KEY: os.environ.get(
                 "CONFIRMATION_EMAIL_SENDER", None)}
+        )
+        app.sms_server = SmsServer(
+            account_sid=os.environ.get("TWILIO_SID"),
+            auth_token=os.environ.get("TWILIO_AUTH_TOKEN"),
+            from_number=os.environ.get("TWILIO_PHONE_NUMBER")
         )
 
     app.db_engine, app.db_sessionmaker = await init_db(
@@ -965,7 +971,8 @@ async def post_generate_pickup_codes(request: Request, camp_id: int):
         if camp.id is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
-        await camp.generate_codes(session)
+        sms_server = getattr(app, 'sms_server', None)
+        await camp.generate_codes(session, sms_server=sms_server)
 
 
 @api_router.get("/camps/{camp_id}/pickup", response_model=PickupLookupResponse)

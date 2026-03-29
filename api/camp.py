@@ -168,20 +168,49 @@ class Camp(CampResponse):
         to_date = self.dates[len(self.dates)-1]
         return f'{month_name[from_date.month]} {from_date.day}-{month_name[to_date.month]} {to_date.day}'
 
-    async def generate_codes(self, session: Any):
+    async def generate_codes(self, session: Any, sms_server=None):
         await session.refresh(self._db_obj, ['camp_students'])
         seen_user_ids = set()
+        # Track which students each pickup person can pick up
+        pickup_person_students = {}
         for camp_student in self._db_obj.camp_students:
+            student_name = camp_student.student.name
             for guardian in camp_student.student.guardians:
                 if guardian.id in seen_user_ids:
+                    # Still need to map students to already-processed pickup persons
+                    await session.refresh(guardian, ['pickup_persons'])
+                    for pickup_person in guardian.pickup_persons:
+                        if pickup_person.id in pickup_person_students:
+                            pickup_person_students[pickup_person.id]['students'].add(
+                                student_name)
                     continue
                 seen_user_ids.add(guardian.id)
                 await session.refresh(guardian, ['pickup_persons'])
                 for pickup_person in guardian.pickup_persons:
                     pickup_person.code = ''.join(
                         random.choices(string.ascii_uppercase, k=6))
+                    pickup_person_students[pickup_person.id] = {
+                        'phone': pickup_person.phone,
+                        'code': pickup_person.code,
+                        'students': {student_name}
+                    }
         self._db_obj.pickup_codes_generated = True
         await session.commit()
+
+        if sms_server is not None:
+            program_title = self._db_obj.program.title
+            date_range = self.date_range()
+            for pp_data in pickup_person_students.values():
+                if not pp_data['phone']:
+                    continue
+                student_list = ', '.join(sorted(pp_data['students']))
+                body = (
+                    f"Level Up Learning Pickup Code: {pp_data['code']}\n"
+                    f"Camp: {program_title}\n"
+                    f"Dates: {date_range}\n"
+                    f"Students: {student_list}"
+                )
+                sms_server.send_sms(to=pp_data['phone'], body=body)
 
     def daily_time_range(self, half_day: Optional[HalfDayEnum]) -> str:
         start = self.daily_pm_start_time if half_day == HalfDayEnum.PM else self.daily_start_time
