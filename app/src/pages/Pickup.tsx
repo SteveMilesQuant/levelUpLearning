@@ -9,6 +9,7 @@ import {
     HStack,
     Input,
     Stack,
+    Switch,
     Text,
 } from "@chakra-ui/react";
 import { useContext, useState } from "react";
@@ -17,7 +18,7 @@ import PageHeader from "../components/PageHeader";
 import AlertMessage from "../components/AlertMessage";
 import usePickupLookup, {
     PickupStudentInfo,
-} from "../students/hooks/usePickupLookup";
+} from "../camps/hooks/usePickupLookup";
 import usePickup from "../students/hooks/usePickup";
 import TextButton from "../components/TextButton";
 import CampsContext, { CampsContextType } from "../camps/campsContext";
@@ -36,6 +37,7 @@ const Pickup = () => {
     const [pickupPersonName, setPickupPersonName] = useState<string | null>(null);
     const [students, setStudents] = useState<PickupStudentInfo[]>([]);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [pickUpAll, setPickUpAll] = useState(true);
 
     const { mutate: lookupCode, isLoading: isLookingUp } =
         usePickupLookup(campId);
@@ -49,6 +51,7 @@ const Pickup = () => {
                 setPickupPersonName(data.pickup_person_name);
                 setStudents(data.students);
                 setSelectedIds(data.students.map((s) => s.id));
+                setPickUpAll(true);
             },
             onError: (err: any) => {
                 const detail =
@@ -69,6 +72,7 @@ const Pickup = () => {
                     setPickupPersonName(null);
                     setStudents([]);
                     setSelectedIds([]);
+                    setPickUpAll(true);
                     setCode("");
                 },
                 onError: (err: any) => {
@@ -91,9 +95,18 @@ const Pickup = () => {
         setPickupPersonName(null);
         setStudents([]);
         setSelectedIds([]);
+        setPickUpAll(true);
         setCode("");
         setErrorMsg(null);
         setSuccessMsg(null);
+    };
+
+    const handlePickUpAllToggle = () => {
+        const next = !pickUpAll;
+        setPickUpAll(next);
+        if (next) {
+            setSelectedIds(students.map((s) => s.id));
+        }
     };
 
     const backPath =
@@ -105,7 +118,7 @@ const Pickup = () => {
         <BodyContainer>
             <PageHeader
                 rightButton={
-                    <TextButton onClick={() => navigate(backPath)}>Back</TextButton>
+                    <TextButton onClick={() => navigate(backPath)}>Back to camp</TextButton>
                 }
             >
                 Student Pickup
@@ -159,6 +172,14 @@ const Pickup = () => {
                         <Heading fontSize="xl">
                             Pickup by: {pickupPersonName}
                         </Heading>
+                        <FormControl display="flex" alignItems="center">
+                            <FormLabel htmlFor="pickup-all" mb="0">Pick up all</FormLabel>
+                            <Switch
+                                id="pickup-all"
+                                isChecked={pickUpAll}
+                                onChange={handlePickUpAllToggle}
+                            />
+                        </FormControl>
                         <FormControl>
                             <FormLabel>Who is being picked up?</FormLabel>
                             <Stack spacing={2} paddingX={2}>
@@ -166,6 +187,7 @@ const Pickup = () => {
                                     <Checkbox
                                         key={s.id}
                                         isChecked={selectedIds.includes(s.id)}
+                                        isDisabled={pickUpAll}
                                         onChange={() => toggleStudent(s.id)}
                                     >
                                         <Text>{s.name}</Text>
