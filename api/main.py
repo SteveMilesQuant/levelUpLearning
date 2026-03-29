@@ -403,7 +403,8 @@ async def put_pickup_persons(request: Request, pickup_form: UserPickupFormData):
     '''Update the authorized pickup persons for the current user.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
-        return await user.update_pickup_persons(session, pickup_form)
+        sms_server = getattr(app, 'sms_server', None)
+        return await user.update_pickup_persons(session, pickup_form, sms_server=sms_server)
 
 
 ###############################################################################

@@ -13,7 +13,7 @@ const InputError = ({ children, label, isOpen }: Props) => {
       label={label}
       isOpen={isOpen}
       hasArrow
-      bg="red.500"
+      bg="brand.danger"
       placement="top"
       gutter={9}
     >

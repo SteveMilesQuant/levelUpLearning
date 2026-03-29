@@ -48,7 +48,7 @@ const StudentFormIcons = ({ student }: Props) => {
                     <Tooltip label="Has allergies">
                         <Box
                             as="span"
-                            color="red.500"
+                            color="brand.danger"
                             display="inline-flex"
                             cursor="pointer"
                             onClick={allergyOnOpen}

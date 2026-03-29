@@ -198,15 +198,16 @@ class Camp(CampResponse):
         await session.commit()
 
         if sms_server is not None:
-            program_title = self._db_obj.program.title
+            location = self.location or ''
             date_range = self.date_range()
             for pp_data in pickup_person_students.values():
                 if not pp_data['phone']:
                     continue
                 student_list = ', '.join(sorted(pp_data['students']))
                 body = (
-                    f"Level Up Learning Pickup Code: {pp_data['code']}\n"
-                    f"Camp: {program_title}\n"
+                    f"This is your Level Up Learning pickup code "
+                    f"for the week (save this code!):  {pp_data['code']}\n\n"
+                    f"Location: {location}\n"
                     f"Dates: {date_range}\n"
                     f"Students: {student_list}"
                 )

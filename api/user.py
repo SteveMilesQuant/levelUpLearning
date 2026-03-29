@@ -179,17 +179,39 @@ class User(UserResponse):
             ]
         )
 
-    async def update_pickup_persons(self, session: Any, pickup_form: UserPickupFormData) -> UserPickupFormResponse:
+    async def update_pickup_persons(self, session: Any, pickup_form: UserPickupFormData, sms_server=None) -> UserPickupFormResponse:
         await session.refresh(self._db_obj, ['pickup_persons'])
         self._db_obj.pickup_persons.clear()
+        new_persons = []
         for i, p in enumerate(pickup_form.pickup_persons or []):
             name = p.get('name', '') if isinstance(p, dict) else p.name
             phone = p.get('phone', '') if isinstance(p, dict) else p.phone
             self._db_obj.pickup_persons.append(
                 PickupPersonDb(name=name, phone=phone, sort_order=i))
+            new_persons.append({'name': name, 'phone': phone})
         self._db_obj.pickup_persons_updated_at = datetime.now(timezone.utc)
         await session.commit()
         await session.refresh(self._db_obj, ['pickup_persons'])
+
+        if sms_server is not None:
+            await session.refresh(self._db_obj, ['students'])
+            student_names = ', '.join(
+                s.name for s in self._db_obj.students) or 'your children'
+            guardian_name = self.full_name
+            for person in new_persons:
+                if not person['phone']:
+                    continue
+                body = (
+                    f"Welcome to Level Up Learning NC! "
+                    f"You've been identified as a pickup person by "
+                    f"{guardian_name} for students {student_names}. "
+                    f"We'll use this number to send your unique pickup "
+                    f"code for camp this week. If this is correct, "
+                    f"please respond with START or otherwise reply "
+                    f"with STOP."
+                )
+                sms_server.send_sms(to=person['phone'], body=body)
+
         return UserPickupFormResponse(
             updated_at=self._db_obj.pickup_persons_updated_at.isoformat(),
             pickup_persons=[
