@@ -1080,12 +1080,17 @@ async def post_pickup_students(request: Request, camp_id: int, pickup_data: Pick
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                     detail=f"Pickup code is not valid for student '{student_name}'.")
 
+            guardian = next(
+                g for g in db_camp_student.student.guardians
+                if g.id == pickup_person.user_id)
             log_entry = PickupLogDb(
                 code=code,
                 pickup_person_name=pickup_person.name,
                 pickup_person_phone=pickup_person.phone,
-                student_id=student_id,
-                camp_id=camp_id,
+                guardian_name=guardian.full_name,
+                camp_name=camp.program.title,
+                camp_start_date=min(camp.dates) if camp.dates else None,
+                camp_location=camp.location,
                 created_at=dt.utcnow(),
             )
             session.add(log_entry)

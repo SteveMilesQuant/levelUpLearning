@@ -325,9 +325,11 @@ class PickupLogDb(Base):
     code: Mapped[str] = mapped_column(String(6), nullable=False)
     pickup_person_name: Mapped[str] = mapped_column(Text, nullable=False)
     pickup_person_phone: Mapped[str] = mapped_column(Text, nullable=False)
-    student_id: Mapped[int] = mapped_column(
-        ForeignKey('student.id'), nullable=False)
-    camp_id: Mapped[int] = mapped_column(ForeignKey('camp.id'), nullable=False)
+    guardian_name: Mapped[str] = mapped_column(Text, nullable=False)
+    camp_name: Mapped[str] = mapped_column(Text, nullable=False)
+    camp_start_date: Mapped[Optional[dt_date]] = mapped_column(
+        Date, nullable=True)
+    camp_location: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[dt_datetime] = mapped_column(
         DateTime, nullable=False, default=dt_datetime.utcnow)
 
