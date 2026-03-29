@@ -18,7 +18,7 @@ from datamodels import StudentData, StudentResponse, StudentMoveData
 from datamodels import StudentFormData, StudentFormResponse
 from datamodels import UserPickupFormData, UserPickupFormResponse
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
-from datamodels import CampData, CampResponse, PickupRequest, PickupResponse
+from datamodels import CampData, CampResponse, PickupRequest, PickupResponse, PickupLookupResponse
 from datamodels import ResourceGroupData, ResourceGroupResponse, ResourceData, ResourceResponse
 from datamodels import EventData, EventResponse
 from authentication import user_id_to_auth_token, auth_token_to_user_id
@@ -966,6 +966,48 @@ async def post_generate_pickup_codes(request: Request, camp_id: int):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
         await camp.generate_codes(session)
+
+
+@api_router.get("/camps/{camp_id}/pickup", response_model=PickupLookupResponse)
+async def get_pickup_lookup(request: Request, camp_id: int, code: str):
+    '''Look up which students can be picked up with the given code.
+    Returns the pickup person name and list of eligible students.
+    Accessible by admins and camp instructors.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        camp = Camp(id=camp_id)
+        await camp.create(session)
+        if camp.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+        if not await camp.user_authorized(session, user):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User not authorized for camp id={camp_id}.")
+
+        code = code.upper()
+        result = await session.execute(
+            select(PickupPersonDb).where(PickupPersonDb.code == code)
+        )
+        pickup_person = result.scalars().first()
+        if pickup_person is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="Invalid pickup code.")
+
+        db_camp_students = await camp.camp_students(session)
+        students = []
+        for cs in db_camp_students:
+            guardian_ids = {g.id for g in cs.student.guardians}
+            if pickup_person.user_id in guardian_ids:
+                students.append({'id': cs.student_id, 'name': cs.student.name})
+
+        if not students:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                detail="No students in this camp match the provided pickup code.")
+
+        return PickupLookupResponse(
+            pickup_person_name=pickup_person.name,
+            students=students
+        )
 
 
 @api_router.post("/camps/{camp_id}/pickup", response_model=PickupResponse)

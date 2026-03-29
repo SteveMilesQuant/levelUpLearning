@@ -22,6 +22,7 @@ import Equip from "./Equip";
 import Resources from "./Resources";
 import Boast from "./Boast";
 import BoastOne from "./BoastOne";
+import Pickup from "./Pickup";
 import { ProtectedRoute } from "./ProtectedRoute";
 import AdminData from "./AdminData";
 import EnrollmentForms from "./EnrollmentForms";
@@ -125,6 +126,16 @@ const router = createBrowserRouter([
               <ProtectedRoute allowedRole="INSTRUCTOR">
                 <CampsContext.Provider value={CampsContextType.teach}>
                   <Camps />
+                </CampsContext.Provider>
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "teach/:id/pickup",
+            element: (
+              <ProtectedRoute allowedRole="INSTRUCTOR">
+                <CampsContext.Provider value={CampsContextType.teach}>
+                  <Pickup />
                 </CampsContext.Provider>
               </ProtectedRoute>
             ),
