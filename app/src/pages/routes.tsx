@@ -14,6 +14,7 @@ import Settings from "./Settings";
 import About from "./About";
 import Privacy from "./Privacy";
 import DataRequest from "./DataRequest";
+import TermsAndConditions from "./TermsAndConditions";
 import Checkout from "./Checkout";
 import Coupons from "./Coupons";
 import Events from "./Events";
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
       {
         path: "data-request",
         element: <DataRequest />,
+      },
+      {
+        path: "terms-and-conditions",
+        element: <TermsAndConditions />,
       },
       {
         path: "camps",

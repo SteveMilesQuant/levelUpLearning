@@ -47,6 +47,8 @@ const Footer = () => {
                 <Link textColor="white" fontSize={fontSize} href="/privacy">Privacy</Link>
                 <BsDot color="white" />
                 <Link textColor="white" fontSize={fontSize} href="/data-request">Data requests</Link>
+                <BsDot color="white" />
+                <Link textColor="white" fontSize={fontSize} href="/terms-and-conditions">Terms</Link>
             </HStack>
         </Stack>
     )
