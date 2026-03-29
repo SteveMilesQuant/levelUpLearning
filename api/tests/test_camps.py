@@ -342,6 +342,29 @@ def test_pickup():
                            headers=app.test.users.admin_headers)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
+    # GET lookup: invalid code → 400
+    response = client.get(f'/camps/{camp_id}/pickup',
+                          params={'code': 'XXXXXX'},
+                          headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+    # GET lookup: valid code → 200 with pickup person name + students
+    response = client.get(f'/camps/{camp_id}/pickup',
+                          params={'code': code},
+                          headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+    lookup_data = response.json()
+    assert lookup_data['pickup_person_name'] == pickup_name
+    assert len(lookup_data['students']) >= 1
+    lookup_student_ids = [s['id'] for s in lookup_data['students']]
+    assert student_id in lookup_student_ids
+
+    # GET lookup: guardian (non-instructor) should be forbidden
+    response = client.get(f'/camps/{camp_id}/pickup',
+                          params={'code': code},
+                          headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
     # Unenrolled student with valid code → 400
     response = client.post(f'/camps/{camp_id}/pickup',
                            json={'student_ids': [
