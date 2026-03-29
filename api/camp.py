@@ -5,7 +5,7 @@ from typing import Optional, Any, List
 from calendar import month_name
 from datamodels import CampData, CampResponse, HalfDayEnum
 from datamodels import UserResponse, ProgramResponse
-from db import CampDb, CampDateDb, CampStudentDb, UserDb
+from db import CampDb, CampDateDb, CampStudentDb, UserDb, PickupPersonCodeDb
 from datetime import date, datetime
 from sqlalchemy import select
 
@@ -187,11 +187,27 @@ class Camp(CampResponse):
                 seen_user_ids.add(guardian.id)
                 await session.refresh(guardian, ['pickup_persons'])
                 for pickup_person in guardian.pickup_persons:
-                    pickup_person.code = ''.join(
+                    code = ''.join(
                         random.choices(string.ascii_uppercase, k=6))
+                    # Upsert: check for existing code row for this person+camp
+                    result = await session.execute(
+                        select(PickupPersonCodeDb).where(
+                            PickupPersonCodeDb.pickup_person_id == pickup_person.id,
+                            PickupPersonCodeDb.camp_id == self.id
+                        )
+                    )
+                    existing = result.scalars().first()
+                    if existing:
+                        existing.code = code
+                    else:
+                        session.add(PickupPersonCodeDb(
+                            pickup_person_id=pickup_person.id,
+                            camp_id=self.id,
+                            code=code
+                        ))
                     pickup_person_students[pickup_person.id] = {
                         'phone': pickup_person.phone,
-                        'code': pickup_person.code,
+                        'code': code,
                         'students': {student_name}
                     }
         self._db_obj.pickup_codes_generated = True

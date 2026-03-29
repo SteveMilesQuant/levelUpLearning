@@ -10,7 +10,7 @@ from mangum import Mangum
 from sqlalchemy import select
 from typing import Optional, List, Literal
 from datetime import timedelta
-from db import init_db, close_db, PaymentRecordDb, ImageDb, PickupPersonDb, PickupLogDb
+from db import init_db, close_db, PaymentRecordDb, ImageDb, PickupPersonDb, PickupPersonCodeDb, PickupLogDb
 from datamodels import CampStudentResponse, CheckoutTotal, FastApiDate, Object
 from datamodels import RoleEnum, UserPublicResponse, UserData, UserResponse
 from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentResponse
@@ -994,12 +994,21 @@ async def get_pickup_lookup(request: Request, camp_id: int, code: str):
 
         code = code.upper()
         result = await session.execute(
-            select(PickupPersonDb).where(PickupPersonDb.code == code)
+            select(PickupPersonCodeDb).where(
+                PickupPersonCodeDb.code == code,
+                PickupPersonCodeDb.camp_id == camp_id
+            )
         )
-        pickup_person = result.scalars().first()
-        if pickup_person is None:
+        code_entry = result.scalars().first()
+        if code_entry is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail="Invalid pickup code.")
+
+        pickup_person_id = code_entry.pickup_person_id
+        result = await session.execute(
+            select(PickupPersonDb).where(PickupPersonDb.id == pickup_person_id)
+        )
+        pickup_person = result.scalars().first()
 
         db_camp_students = await camp.camp_students(session)
         students = []
@@ -1035,14 +1044,23 @@ async def post_pickup_students(request: Request, camp_id: int, pickup_data: Pick
 
         code = pickup_data.code.upper()
 
-        # Find a pickup person with this code
+        # Find a pickup person with this code for this camp
         result = await session.execute(
-            select(PickupPersonDb).where(PickupPersonDb.code == code)
+            select(PickupPersonCodeDb).where(
+                PickupPersonCodeDb.code == code,
+                PickupPersonCodeDb.camp_id == camp_id
+            )
         )
-        pickup_person = result.scalars().first()
-        if pickup_person is None:
+        code_entry = result.scalars().first()
+        if code_entry is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                                 detail="Invalid pickup code.")
+
+        pickup_person_id = code_entry.pickup_person_id
+        result = await session.execute(
+            select(PickupPersonDb).where(PickupPersonDb.id == pickup_person_id)
+        )
+        pickup_person = result.scalars().first()
 
         # Validate each student and create a log record
         db_camp_students = await camp.camp_students(session)

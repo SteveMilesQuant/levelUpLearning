@@ -323,15 +323,15 @@ def test_pickup():
 
     # Retrieve generated code directly from DB (not exposed in API response)
     async def get_code():
-        from db import PickupPersonDb
+        from db import PickupPersonCodeDb
         from sqlalchemy import select
         async with app.db_sessionmaker() as session:
             result = await session.execute(
-                select(PickupPersonDb).where(
-                    PickupPersonDb.user_id == app.test.users.admin.id)
+                select(PickupPersonCodeDb).where(
+                    PickupPersonCodeDb.camp_id == camp_id)
             )
-            person = result.scalars().first()
-            return person.code
+            code_entry = result.scalars().first()
+            return code_entry.code
     code = asyncio.run(get_code())
     assert code is not None and len(code) == 6
 

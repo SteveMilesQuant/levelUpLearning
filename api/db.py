@@ -1,6 +1,6 @@
 from datetime import date as dt_date, datetime as dt_datetime, time
 from typing import Optional, List
-from sqlalchemy import Table, Column, ForeignKey
+from sqlalchemy import Table, Column, ForeignKey, UniqueConstraint
 from sqlalchemy import Text, String, Date, Time, Enum, DateTime
 from sqlalchemy.types import LargeBinary
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
@@ -136,10 +136,30 @@ class PickupPersonDb(Base):
     name: Mapped[str] = mapped_column(Text)
     phone: Mapped[str] = mapped_column(Text)
     sort_order: Mapped[int] = mapped_column()
-    code: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     user: Mapped['UserDb'] = relationship(
         back_populates='pickup_persons')
+    codes: Mapped[List['PickupPersonCodeDb']] = relationship(
+        back_populates='pickup_person',
+        cascade='all, delete-orphan',
+        lazy='raise')
+
+
+class PickupPersonCodeDb(Base):
+    __tablename__ = 'pickup_person_code'
+    __table_args__ = (
+        UniqueConstraint('pickup_person_id', 'camp_id'),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    pickup_person_id: Mapped[int] = mapped_column(
+        ForeignKey('pickup_person.id', ondelete='CASCADE'))
+    camp_id: Mapped[int] = mapped_column(
+        ForeignKey('camp.id', ondelete='CASCADE'))
+    code: Mapped[str] = mapped_column(String(6), nullable=False)
+
+    pickup_person: Mapped['PickupPersonDb'] = relationship(
+        back_populates='codes')
 
 
 class StudentFormDb(Base):
