@@ -3,7 +3,8 @@ import { axiosInstance } from "../../services/api-client";
 
 interface PickupRequest {
     student_ids: number[];
-    code: string;
+    code?: string;
+    pickup_person_id?: number;
 }
 
 interface PickupResponse {

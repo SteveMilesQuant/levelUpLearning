@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, root_validator
 from typing import Optional, Tuple, List, Literal
 from datetime import date, datetime, time
 from enum import Enum
@@ -326,7 +326,19 @@ class PickupLookupResponse(BaseModel):
 
 class PickupRequest(BaseModel):
     student_ids: List[int]
-    code: str
+    code: Optional[str] = None
+    pickup_person_id: Optional[int] = None
+
+    @root_validator
+    def check_code_or_pickup_person(cls, values):
+        code = values.get('code')
+        pickup_person_id = values.get('pickup_person_id')
+        if code and pickup_person_id:
+            raise ValueError(
+                'Provide either code or pickup_person_id, not both.')
+        if not code and not pickup_person_id:
+            raise ValueError('Either code or pickup_person_id is required.')
+        return values
 
 
 class PickupResponse(BaseModel):

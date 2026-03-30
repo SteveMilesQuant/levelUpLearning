@@ -14,6 +14,7 @@ const StudentTable = ({ campId, isReadOnly }: Props) => {
   const { data: students, isLoading, error } = useCampStudents(campId);
   const campsContextType = useContext(CampsContext);
   const isSchedule = campsContextType === CampsContextType.schedule;
+  const isTeaching = campsContextType === CampsContextType.teach;
 
   if (isLoading) return null;
   if (error) throw error;
@@ -27,6 +28,7 @@ const StudentTable = ({ campId, isReadOnly }: Props) => {
             <ThText>Grade</ThText>
             <ThText>AM/PM</ThText>
             <ThText>Forms</ThText>
+            {isTeaching && <ThText>Manual Pickup</ThText>}
             {isSchedule && <ThText>Pickup</ThText>}
             {!isReadOnly && (
               <ThText>

@@ -9,6 +9,7 @@ import ActionButton from "../../components/ActionButton";
 import { IoMoveOutline } from "react-icons/io5";
 import StudentFormIcons from "./StudentFormIcons";
 import StudentPickupIcon from "./StudentPickupIcon";
+import ManualPickupIcon from "./ManualPickupIcon";
 import CampsContext, { CampsContextType } from "../../camps/campsContext";
 
 interface Props {
@@ -21,6 +22,7 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
   const queryClient = useQueryClient();
   const campsContextType = useContext(CampsContext);
   const isSchedule = campsContextType === CampsContextType.schedule;
+  const isTeaching = campsContextType === CampsContextType.teach;
   const disenrollStudent = useDisenrollStudent(campId, {
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -47,6 +49,9 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
       <Td>{student.grade_level}</Td>
       <Td>{campHalfDayStr}</Td>
       <Td><StudentFormIcons student={student} /></Td>
+      {isTeaching && (
+        <Td><ManualPickupIcon campId={campId} studentId={student.id} studentName={student.name} /></Td>
+      )}
       {isSchedule && (
         <Td><StudentPickupIcon campId={campId} studentId={student.id} studentName={student.name} /></Td>
       )}

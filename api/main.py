@@ -1083,8 +1083,8 @@ async def get_pickup_lookup(request: Request, camp_id: int, code: str):
 
 @api_router.post("/camps/{camp_id}/pickup", response_model=PickupResponse)
 async def post_pickup_students(request: Request, camp_id: int, pickup_data: PickupRequest):
-    '''Validate a pickup code and log the pickup event for one or more students.
-    Accessible by admins and camp instructors.'''
+    '''Validate a pickup code or pickup person id and log the pickup event for
+    one or more students. Accessible by admins and camp instructors.'''
     async with app.db_sessionmaker() as session:
         user = await get_authorized_user(request, session)
         camp = Camp(id=camp_id)
@@ -1096,25 +1096,35 @@ async def post_pickup_students(request: Request, camp_id: int, pickup_data: Pick
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                 detail=f"User not authorized for camp id={camp_id}.")
 
-        code = pickup_data.code.upper()
-
-        # Find a pickup person with this code for this camp
-        result = await session.execute(
-            select(PickupPersonCodeDb).where(
-                PickupPersonCodeDb.code == code,
-                PickupPersonCodeDb.camp_id == camp_id
+        if pickup_data.pickup_person_id is not None:
+            # Manual pickup: look up the pickup person directly
+            result = await session.execute(
+                select(PickupPersonDb).where(
+                    PickupPersonDb.id == pickup_data.pickup_person_id)
             )
-        )
-        code_entry = result.scalars().first()
-        if code_entry is None:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                detail="Invalid pickup code.")
-
-        pickup_person_id = code_entry.pickup_person_id
-        result = await session.execute(
-            select(PickupPersonDb).where(PickupPersonDb.id == pickup_person_id)
-        )
-        pickup_person = result.scalars().first()
+            pickup_person = result.scalars().first()
+            if pickup_person is None:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail="Invalid pickup person.")
+            code = None
+        else:
+            # Code-based pickup: look up the code for this camp
+            code = pickup_data.code.upper()
+            result = await session.execute(
+                select(PickupPersonCodeDb).where(
+                    PickupPersonCodeDb.code == code,
+                    PickupPersonCodeDb.camp_id == camp_id
+                )
+            )
+            code_entry = result.scalars().first()
+            if code_entry is None:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                                    detail="Invalid pickup code.")
+            result = await session.execute(
+                select(PickupPersonDb).where(
+                    PickupPersonDb.id == code_entry.pickup_person_id)
+            )
+            pickup_person = result.scalars().first()
 
         # Validate each student and create a log record
         db_camp_students = await camp.camp_students(session)
@@ -1132,7 +1142,7 @@ async def post_pickup_students(request: Request, camp_id: int, pickup_data: Pick
             if pickup_person.user_id not in guardian_ids:
                 student_name = db_camp_student.student.name
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
-                                    detail=f"Pickup code is not valid for student '{student_name}'.")
+                                    detail=f"Pickup person is not authorized for student '{student_name}'.")
 
             guardian = next(
                 g for g in db_camp_student.student.guardians
