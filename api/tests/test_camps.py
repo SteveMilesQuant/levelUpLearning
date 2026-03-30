@@ -379,6 +379,68 @@ def test_pickup():
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['pickup_person_name'] == pickup_name
 
+    # --- Test student pickup persons endpoint ---
+    response = client.get(f'/camps/{camp_id}/students/{student_id}/pickup-persons',
+                          headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+    pp_list = response.json()
+    assert len(pp_list) >= 1
+    pp = next(p for p in pp_list if p['name'] == pickup_name)
+    assert pp['phone'] == pickup_phone
+    assert pp['sms_consent'] is None
+    assert 'guardian_name' in pp
+    pickup_person_id = pp['id']
+
+    # Guardian should be forbidden
+    response = client.get(f'/camps/{camp_id}/students/{student_id}/pickup-persons',
+                          headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Non-enrolled student should 404
+    response = client.get(f'/camps/{camp_id}/students/{unenrolled_student_id}/pickup-persons',
+                          headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    # --- Test PATCH sms_consent ---
+    response = client.patch(f'/pickup-persons/{pickup_person_id}',
+                            json={'sms_consent': True},
+                            headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['sms_consent'] is True
+
+    # Verify it persists
+    response = client.get(f'/camps/{camp_id}/students/{student_id}/pickup-persons',
+                          headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+    pp = next(p for p in response.json() if p['id'] == pickup_person_id)
+    assert pp['sms_consent'] is True
+
+    # Set to denied
+    response = client.patch(f'/pickup-persons/{pickup_person_id}',
+                            json={'sms_consent': False},
+                            headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['sms_consent'] is False
+
+    # Reset to null (unconfirmed)
+    response = client.patch(f'/pickup-persons/{pickup_person_id}',
+                            json={'sms_consent': None},
+                            headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['sms_consent'] is None
+
+    # Non-admin should be forbidden
+    response = client.patch(f'/pickup-persons/{pickup_person_id}',
+                            json={'sms_consent': True},
+                            headers=app.test.users.guardian_headers)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    # Non-existent pickup person should 404
+    response = client.patch(f'/pickup-persons/99999',
+                            json={'sms_consent': True},
+                            headers=app.test.users.admin_headers)
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
     # Disenroll the student
     response = client.delete(f'/camps/{camp_id}/students/{student_id}',
                              headers=app.test.users.admin_headers)

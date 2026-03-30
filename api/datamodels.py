@@ -276,6 +276,7 @@ class PickupPersonData(BaseModel):
 class PickupPersonResponse(PickupPersonData):
     id: Optional[int] = None
     sort_order: Optional[int] = None
+    sms_consent: Optional[bool] = None
 
 
 class StudentFormData(BaseModel):
@@ -299,6 +300,18 @@ class StudentFormResponse(StudentFormData):
     student_name: Optional[str] = ''
     student_grade_level: Optional[int] = None
     updated_at: Optional[str] = None
+
+
+class StudentPickupPersonResponse(BaseModel):
+    id: int
+    name: str
+    phone: str
+    sms_consent: Optional[bool] = None
+    guardian_name: str
+
+
+class PickupPersonPatchData(BaseModel):
+    sms_consent: Optional[bool] = None
 
 
 class PickupStudentInfo(BaseModel):

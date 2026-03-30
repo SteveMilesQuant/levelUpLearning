@@ -1,4 +1,5 @@
 import { HStack, Td, Tr, useDisclosure } from "@chakra-ui/react";
+import { useContext } from "react";
 import { CACHE_KEY_STUDENTS, Student } from "../Student";
 import DeleteButton from "../../components/DeleteButton";
 import { useDisenrollStudent } from "../hooks/useCampStudents";
@@ -7,6 +8,8 @@ import MoveStudentModal from "./MoveStudentModal";
 import ActionButton from "../../components/ActionButton";
 import { IoMoveOutline } from "react-icons/io5";
 import StudentFormIcons from "./StudentFormIcons";
+import StudentPickupIcon from "./StudentPickupIcon";
+import CampsContext, { CampsContextType } from "../../camps/campsContext";
 
 interface Props {
   campId: number;
@@ -16,6 +19,8 @@ interface Props {
 
 const StudentRow = ({ campId, student, isReadOnly }: Props) => {
   const queryClient = useQueryClient();
+  const campsContextType = useContext(CampsContext);
+  const isSchedule = campsContextType === CampsContextType.schedule;
   const disenrollStudent = useDisenrollStudent(campId, {
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -42,6 +47,9 @@ const StudentRow = ({ campId, student, isReadOnly }: Props) => {
       <Td>{student.grade_level}</Td>
       <Td>{campHalfDayStr}</Td>
       <Td><StudentFormIcons student={student} /></Td>
+      {isSchedule && (
+        <Td><StudentPickupIcon campId={campId} studentId={student.id} studentName={student.name} /></Td>
+      )}
       {!isReadOnly && (
         <>
           <Td>

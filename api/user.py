@@ -174,7 +174,8 @@ class User(UserResponse):
             if self._db_obj.pickup_persons_updated_at else None,
             pickup_persons=[
                 PickupPersonResponse(id=p.id, name=p.name,
-                                     phone=p.phone, sort_order=p.sort_order)
+                                     phone=p.phone, sort_order=p.sort_order,
+                                     sms_consent=p.sms_consent)
                 for p in self._db_obj.pickup_persons
             ]
         )
@@ -216,7 +217,8 @@ class User(UserResponse):
             updated_at=self._db_obj.pickup_persons_updated_at.isoformat(),
             pickup_persons=[
                 PickupPersonResponse(id=p.id, name=p.name,
-                                     phone=p.phone, sort_order=p.sort_order)
+                                     phone=p.phone, sort_order=p.sort_order,
+                                     sms_consent=p.sms_consent)
                 for p in self._db_obj.pickup_persons
             ]
         )

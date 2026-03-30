@@ -3,6 +3,15 @@ export interface PickupPerson {
     name: string;
     phone: string;
     sort_order?: number;
+    sms_consent?: boolean | null;
+}
+
+export interface StudentPickupPerson {
+    id: number;
+    name: string;
+    phone: string;
+    sms_consent: boolean | null;
+    guardian_name: string;
 }
 
 export interface UserPickupFormData {

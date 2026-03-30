@@ -17,6 +17,7 @@ from datamodels import CouponData, CouponResponse, EnrollmentData, EnrollmentRes
 from datamodels import StudentData, StudentResponse, StudentMoveData
 from datamodels import StudentFormData, StudentFormResponse
 from datamodels import UserPickupFormData, UserPickupFormResponse
+from datamodels import StudentPickupPersonResponse, PickupPersonPatchData
 from datamodels import ProgramData, ProgramResponse, LevelData, LevelResponse
 from datamodels import CampData, CampResponse, PickupRequest, PickupResponse, PickupLookupResponse
 from datamodels import ResourceGroupData, ResourceGroupResponse, ResourceData, ResourceResponse
@@ -405,6 +406,26 @@ async def put_pickup_persons(request: Request, pickup_form: UserPickupFormData):
         user = await get_authorized_user(request, session)
         sms_server = getattr(app, 'sms_server', None)
         return await user.update_pickup_persons(session, pickup_form, sms_server=sms_server)
+
+
+@api_router.patch("/pickup-persons/{pickup_person_id}", response_model=dict)
+async def patch_pickup_person(request: Request, pickup_person_id: int, patch_data: PickupPersonPatchData):
+    '''Update the sms_consent field of a pickup person. Admin only.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        if not user.has_role('ADMIN'):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="User does not have permission to update pickup persons.")
+        result = await session.execute(
+            select(PickupPersonDb).where(PickupPersonDb.id == pickup_person_id)
+        )
+        pickup_person = result.scalars().first()
+        if pickup_person is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Pickup person id={pickup_person_id} not found.")
+        pickup_person.sms_consent = patch_data.sms_consent
+        await session.commit()
+        return {"id": pickup_person.id, "sms_consent": pickup_person.sms_consent}
 
 
 ###############################################################################
@@ -956,6 +977,37 @@ async def remove_student_from_camp(request: Request, camp_id: int, student_id: i
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                                 detail=f"Student id={student_id} not found.")
         await camp.remove_student(session=session, student=student)
+
+
+@api_router.get("/camps/{camp_id}/students/{student_id}/pickup-persons",
+                response_model=List[StudentPickupPersonResponse])
+async def get_student_pickup_persons(request: Request, camp_id: int, student_id: int):
+    '''Get all pickup persons for a student in a camp, via the student's guardians.
+    Accessible by admins and camp instructors.'''
+    async with app.db_sessionmaker() as session:
+        user = await get_authorized_user(request, session)
+        camp = Camp(id=camp_id)
+        await camp.create(session)
+        if camp.id is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
+        if not await camp.user_authorized(session, user):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail=f"User not authorized for camp id={camp_id}.")
+        db_camp_students = await camp.camp_students(session)
+        camp_student = next(
+            (cs for cs in db_camp_students if cs.student_id == student_id), None)
+        if camp_student is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail=f"Student id={student_id} not enrolled in camp id={camp_id}.")
+        result = []
+        for guardian in camp_student.student.guardians:
+            await session.refresh(guardian, ['pickup_persons'])
+            for pp in guardian.pickup_persons:
+                result.append(StudentPickupPersonResponse(
+                    id=pp.id, name=pp.name, phone=pp.phone,
+                    sms_consent=pp.sms_consent, guardian_name=guardian.full_name))
+        return result
 
 
 @api_router.post("/camps/{camp_id}/generate-codes", status_code=status.HTTP_204_NO_CONTENT)

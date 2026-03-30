@@ -136,6 +136,8 @@ class PickupPersonDb(Base):
     name: Mapped[str] = mapped_column(Text)
     phone: Mapped[str] = mapped_column(Text)
     sort_order: Mapped[int] = mapped_column()
+    sms_consent: Mapped[Optional[bool]] = mapped_column(
+        nullable=True, default=None)
 
     user: Mapped['UserDb'] = relationship(
         back_populates='pickup_persons')

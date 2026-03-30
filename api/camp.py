@@ -208,7 +208,8 @@ class Camp(CampResponse):
                     pickup_person_students[pickup_person.id] = {
                         'phone': pickup_person.phone,
                         'code': code,
-                        'students': {student_name}
+                        'students': {student_name},
+                        'sms_consent': pickup_person.sms_consent
                     }
         self._db_obj.pickup_codes_generated = True
         await session.commit()
@@ -218,6 +219,8 @@ class Camp(CampResponse):
             date_range = self.date_range()
             for pp_data in pickup_person_students.values():
                 if not pp_data['phone']:
+                    continue
+                if pp_data['sms_consent'] is not True:
                     continue
                 student_list = ', '.join(sorted(pp_data['students']))
                 body = (
