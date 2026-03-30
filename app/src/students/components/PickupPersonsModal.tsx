@@ -27,16 +27,16 @@ interface Props {
 }
 
 const consentLabel = (sms_consent: boolean | null): string => {
-    if (sms_consent === true) return "consented";
-    if (sms_consent === false) return "denied";
-    return "unconfirmed";
+    if (sms_consent === true) return "Consented";
+    if (sms_consent === false) return "Denied";
+    return "Unconfirmed";
 };
 
 const PickupPersonsModal = ({ isOpen, onClose, studentName, pickupPersons }: Props) => {
     const updateConsent = useUpdateSmsConsent();
 
     const handleConsentChange = (pickupPersonId: number, value: string) => {
-        const sms_consent = value === "consented" ? true : value === "denied" ? false : null;
+        const sms_consent = value === "Consented" ? true : value === "Denied" ? false : null;
         updateConsent.mutate({ pickupPersonId, sms_consent });
     };
 
@@ -70,9 +70,9 @@ const PickupPersonsModal = ({ isOpen, onClose, studentName, pickupPersons }: Pro
                                             value={consentLabel(pp.sms_consent)}
                                             onChange={(e) => handleConsentChange(pp.id, e.target.value)}
                                         >
-                                            <option value="unconfirmed">Unconfirmed</option>
-                                            <option value="consented">Consented</option>
-                                            <option value="denied">Denied</option>
+                                            <option value="Unconfirmed">Unconfirmed</option>
+                                            <option value="Consented">Consented</option>
+                                            <option value="Denied">Denied</option>
                                         </Select>
                                     </Td>
                                 </Tr>

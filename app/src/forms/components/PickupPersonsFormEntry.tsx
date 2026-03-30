@@ -161,9 +161,31 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
                                     {errors.pickup_persons.root.message}
                                 </Text>
                             )}
-                            <SimpleGrid columns={3} spacingX={2} spacingY={2} alignItems="start" templateColumns="1fr 1fr auto">
+                            <SimpleGrid columns={4} spacingX={2} spacingY={2} alignItems="start" templateColumns="1fr 1fr auto auto">
                                 <Text fontSize="sm" fontWeight="semibold">Name</Text>
-                                <Text fontSize="sm" fontWeight="semibold">Phone</Text>
+                                <Tooltip
+                                    label="These phone numbers will be used to text pickup confirmation codes, for the security of your children."
+                                    placement="top"
+                                >
+                                    <HStack spacing={1} cursor="default">
+                                        <Text fontSize="sm" fontWeight="semibold">Phone</Text>
+                                        <AiOutlineQuestionCircle size="14px" />
+                                    </HStack>
+                                </Tooltip>
+                                <Tooltip
+                                    label={
+                                        "Consented: replied START to our welcome text.\n" +
+                                        "Denied: replied STOP.\n" +
+                                        "Unconfirmed: hasn't replied yet."
+                                    }
+                                    whiteSpace="pre-line"
+                                    placement="top"
+                                >
+                                    <HStack spacing={1} cursor="default">
+                                        <Text fontSize="sm" fontWeight="semibold">SMS</Text>
+                                        <AiOutlineQuestionCircle size="14px" />
+                                    </HStack>
+                                </Tooltip>
                                 <Box />
                                 {fields.map((field, i) => (
                                     <Fragment key={field.id}>
@@ -212,26 +234,25 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
                                             />
                                         </InputError>
                                         <Box display="flex" alignItems="center" h="40px">
-                                            {i === 0 ? (
-
-                                                <Tooltip
-                                                    label="These phone numbers will be used to text pickup confirmation codes, for the security of your children."
-                                                    placement="top"
-                                                >
-                                                    <Box width="100%" alignItems="center" display="flex" justifyContent="center">
-                                                        <AiOutlineQuestionCircle size="20px" />
-                                                    </Box>
-
-                                                </Tooltip>
-
-                                            ) : (
+                                            <Text fontSize="sm" color="brand.text">
+                                                {pickupForm?.pickup_persons?.[i]?.sms_consent === true
+                                                    ? "Consented"
+                                                    : pickupForm?.pickup_persons?.[i]?.sms_consent === false
+                                                        ? "Denied"
+                                                        : i < (pickupForm?.pickup_persons?.length ?? 0)
+                                                            ? "Unconfirmed"
+                                                            : "—"}
+                                            </Text>
+                                        </Box>
+                                        <Box display="flex" alignItems="center" h="40px">
+                                            {i > 0 &&
                                                 <DeleteButton
                                                     onConfirm={() => remove(i)}
                                                 >
                                                     {fields[i].name ||
                                                         `pickup person ${i + 1}`}
                                                 </DeleteButton>
-                                            )}
+                                            }
                                         </Box>
                                     </Fragment>
                                 ))}

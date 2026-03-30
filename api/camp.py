@@ -168,7 +168,7 @@ class Camp(CampResponse):
         to_date = self.dates[len(self.dates)-1]
         return f'{month_name[from_date.month]} {from_date.day}-{month_name[to_date.month]} {to_date.day}'
 
-    async def generate_codes(self, session: Any, sms_server=None):
+    async def generate_codes(self, session: Any, sms_server=None, email_server=None):
         await session.refresh(self._db_obj, ['camp_students'])
         seen_user_ids = set()
         # Track which students each pickup person can pick up
@@ -207,20 +207,26 @@ class Camp(CampResponse):
                         ))
                     pickup_person_students[pickup_person.id] = {
                         'phone': pickup_person.phone,
+                        'name': pickup_person.name,
                         'code': code,
                         'students': {student_name},
-                        'sms_consent': pickup_person.sms_consent
+                        'sms_consent': pickup_person.sms_consent,
+                        'guardian_name': guardian.full_name,
                     }
         self._db_obj.pickup_codes_generated = True
         await session.commit()
 
+        texts_sent = 0
+        skipped = []
+        location = self.location or ''
+        date_range = self.date_range() if self.dates else ''
+
         if sms_server is not None:
-            location = self.location or ''
-            date_range = self.date_range()
             for pp_data in pickup_person_students.values():
-                if not pp_data['phone']:
-                    continue
-                if pp_data['sms_consent'] is not True:
+                if not pp_data['phone'] or pp_data['sms_consent'] is not True:
+                    consent_label = {True: 'Consented', False: 'Denied'}.get(
+                        pp_data['sms_consent'], 'Unconfirmed')
+                    skipped.append(pp_data | {'consent_label': consent_label})
                     continue
                 student_list = ', '.join(sorted(pp_data['students']))
                 body = (
@@ -231,6 +237,57 @@ class Camp(CampResponse):
                     f"Students: {student_list}"
                 )
                 sms_server.send_sms(to=pp_data['phone'], body=body)
+                texts_sent += 1
+
+        if email_server is not None:
+            await self._send_code_summary_email(
+                email_server, texts_sent, skipped, location, date_range)
+
+    async def _send_code_summary_email(self, email_server, texts_sent, skipped, location, date_range):
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        from enrollment import CONFIRMATION_SENDER_EMAIL_KEY
+
+        sender_email = email_server.sender_emails.get(
+            CONFIRMATION_SENDER_EMAIL_KEY)
+        if sender_email is None:
+            return
+
+        camp_name = self.program.title if self.program else 'Unknown'
+        subject = f"Pickup codes generated — {camp_name}"
+
+        lines = [
+            f"Hey there,\n",
+            f"Pickup codes were just generated for <b>{camp_name}</b>.",
+            f"Location: {location}",
+            f"Dates: {date_range}\n",
+            f"<b>{texts_sent}</b> pickup code text(s) sent.",
+        ]
+
+        if skipped:
+            lines.append(f"\n<b>{len(skipped)}</b> skipped (not texted):")
+            for s in skipped:
+                lines.append(
+                    f"   • {s['name']} (phone: {s['phone'] or 'none'}, "
+                    f"guardian: {s['guardian_name']}, "
+                    f"sms status: {s['consent_label']})")
+        else:
+            lines.append("\nNo texts were skipped — everyone is consented!")
+
+        lines.append(f"\nYour friendly pickup-code bot")
+
+        message = MIMEMultipart("alternative")
+        message.attach(
+            MIMEText(
+                '<pre style="font-family: georgia,serif;">'
+                + '\n'.join(lines) + '</pre>', 'html'
+            )
+        )
+        message["Subject"] = subject
+        message["From"] = sender_email
+        message["Cc"] = sender_email
+        message["To"] = "steven.miles.quant@gmail.com"
+        await email_server.send_email(message)
 
     def daily_time_range(self, half_day: Optional[HalfDayEnum]) -> str:
         start = self.daily_pm_start_time if half_day == HalfDayEnum.PM else self.daily_start_time

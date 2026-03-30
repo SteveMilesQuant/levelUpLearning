@@ -1025,7 +1025,9 @@ async def post_generate_pickup_codes(request: Request, camp_id: int):
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=f"Camp id={camp_id} not found.")
         sms_server = getattr(app, 'sms_server', None)
-        await camp.generate_codes(session, sms_server=sms_server)
+        email_server = getattr(app, 'email_server', None)
+        await camp.generate_codes(session, sms_server=sms_server,
+                                  email_server=email_server)
 
 
 @api_router.get("/camps/{camp_id}/pickup", response_model=PickupLookupResponse)
