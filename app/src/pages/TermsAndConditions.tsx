@@ -136,6 +136,148 @@ const TermsAndConditions = () => {
                 </Text>
                 <Text>Phone: (919) 439-0924</Text>
                 <Text>Effective as of March 29, 2026</Text>
+
+                <Box height={6} />
+
+                <Text fontWeight="bold" fontSize={14} id="waiver">
+                    Level Up Learning Summer Camp Waiver, Release of Liability, and Hold Harmless Agreement
+                </Text>
+                <Text>
+                    By checking the box, I, the parent or legal guardian of the
+                    participating child, acknowledge and agree to the following terms
+                    regarding my child's participation in Level Up Learning summer camp
+                    programs, organized by Karen Miles and Megan Miller of Level Up
+                    Learning, including camps held at partnering churches or other
+                    locations:
+                </Text>
+
+                <OrderedList spacing={3} paddingLeft={4}>
+                    <ListItem>
+                        <Text fontWeight="bold">Acknowledgment and Assumption of Risk</Text>
+                        <Text>
+                            I understand that participation in camp activities involves
+                            inherent risks, including but not limited to physical activity
+                            and social interaction. I voluntarily assume full responsibility
+                            for any injury, loss, or damage to my child or family members
+                            resulting from participation.
+                        </Text>
+                    </ListItem>
+                    <ListItem>
+                        <Text fontWeight="bold">Indemnification</Text>
+                        <Text>
+                            I agree to indemnify, defend, and hold harmless Karen Miles,
+                            Megan Miller, Level Up Learning, and all associated parties
+                            (including rental locations) from any claims, damages, judgments,
+                            costs, or expenses (including attorney fees) arising from my
+                            child's participation in the camp.
+                        </Text>
+                    </ListItem>
+                    <ListItem>
+                        <Text fontWeight="bold">Fees for Damages</Text>
+                        <Text>
+                            I agree to pay for any damages caused by my child or family
+                            members to camp facilities or property due to negligent,
+                            reckless, or willful behavior.
+                        </Text>
+                    </ListItem>
+                    <ListItem>
+                        <Text fontWeight="bold">Consent</Text>
+                        <Text>
+                            I consent to the participation of my child in the Level Up
+                            Learning camp, and agree on behalf of the above minor to all of
+                            the terms and conditions of this agreement.
+                        </Text>
+                    </ListItem>
+                    <ListItem>
+                        <Text fontWeight="bold">Medical Treatment Authorization</Text>
+                        <Text>
+                            In the event of an injury to the above minor during the
+                            above-described activities, I give my permission to Karen Miles
+                            and Megan Miller or to the employees, representatives, or agents
+                            of Level Up Learning to arrange for all necessary medical
+                            treatment for which I shall be financially responsible.
+                        </Text>
+                        <Text marginTop={2}>
+                            This authority begins on the first day of camp and remains in
+                            effect until the camp concludes or I revoke it in writing.
+                        </Text>
+                        <Text marginTop={2}>This includes:</Text>
+                        <OrderedList styleType="lower-alpha" paddingLeft={4} marginTop={1}>
+                            <ListItem>
+                                The power to seek appropriate medical treatment or attention
+                                on behalf of my child as may be required by the
+                                circumstances, including without limitation, that of a
+                                licensed medical physician and/or a hospital;
+                            </ListItem>
+                            <ListItem>
+                                The power to authorize medical treatment or medical
+                                procedures in an emergency situation.
+                            </ListItem>
+                        </OrderedList>
+                    </ListItem>
+                    <ListItem>
+                        <Text fontWeight="bold">Applicable Law</Text>
+                        <Text>
+                            Any legal or equitable claim that may arise from participation in
+                            the above shall be resolved under North Carolina law.
+                        </Text>
+                    </ListItem>
+                    <ListItem>
+                        <Text fontWeight="bold">No Duress and Legal Counsel</Text>
+                        <Text>
+                            I agree and acknowledge that I am under no pressure or duress to
+                            sign this agreement and that I have been given a reasonable
+                            opportunity to review it before signing. I further agree and
+                            acknowledge that I am free to have my own legal counsel review
+                            this agreement if I so desire. I further agree and acknowledge
+                            that Karen Miles and Megan Miller have offered to refund any fees
+                            I have paid to use its facilities if I choose not to sign this
+                            agreement.
+                        </Text>
+                    </ListItem>
+                    <ListItem>
+                        <Text fontWeight="bold">Arm's Length Agreement</Text>
+                        <Text>
+                            This agreement and each of its terms are the product of an arm's
+                            length negotiation between the Parties. In the event any
+                            ambiguity is found to exist in the interpretation of this
+                            agreement or any of its provisions, the Parties, and each of
+                            them, explicitly reject the application of any legal or equitable
+                            rule of interpretation which would lead to a construction either
+                            "for" or "against" a particular party based upon their status as
+                            the drafter of a specific term, language, or provision giving
+                            rise to such ambiguity.
+                        </Text>
+                    </ListItem>
+                    <ListItem>
+                        <Text fontWeight="bold">Enforceability</Text>
+                        <Text>
+                            The invalidity or unenforceability of any provision of this
+                            agreement, whether standing alone or as applied to a particular
+                            occurrence or circumstance, shall not affect the validity or
+                            enforceability of any other provision of this agreement or of any
+                            other applications of such provision, as the case may be. Such
+                            invalid or unenforceable provision shall be deemed not to be a
+                            part of this agreement.
+                        </Text>
+                    </ListItem>
+                    <ListItem>
+                        <Text fontWeight="bold">Dispute Resolution</Text>
+                        <Text>
+                            The parties will attempt to resolve any dispute arising out of or
+                            relating to this agreement through friendly negotiations among
+                            the parties. If the matter is not resolved by negotiation, the
+                            parties will resolve the dispute using the below Alternative
+                            Dispute Resolution (ADR) procedure: Any controversies or
+                            disputes arising out of or relating to this agreement will be
+                            submitted to mediation in accordance with any statutory rules of
+                            mediation. If mediation does not successfully resolve the
+                            dispute, then the parties may proceed to seek an alternative form
+                            of resolution in accordance with any other rights and remedies
+                            afforded to them by law.
+                        </Text>
+                    </ListItem>
+                </OrderedList>
             </Stack>
         </BodyContainer>
     );

@@ -25,6 +25,9 @@ const studentFormSchema = z.object({
         invalid_type_error: "Photo permission selection is required.",
     }),
     referral_source: z.string().optional().default(""),
+    terms_acknowledged: z.boolean().refine((val) => val === true, {
+        message: "You must acknowledge the terms to continue.",
+    }),
 }).superRefine((data, ctx) => {
     if (data.has_allergies && !data.allergies?.trim()) {
         ctx.addIssue({
@@ -67,6 +70,7 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
                     additional_info: existingForm.additional_info || "",
                     photo_permission: existingForm.photo_permission ?? undefined,
                     referral_source: existingForm.referral_source || "",
+                    terms_acknowledged: false,
                 };
             }
             return {};
@@ -90,6 +94,7 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
                 additional_info: existingForm.additional_info || "",
                 photo_permission: existingForm.photo_permission ?? undefined,
                 referral_source: existingForm.referral_source || "",
+                terms_acknowledged: false,
             });
         } else {
             reset({});
@@ -98,17 +103,18 @@ const useStudentFormEntry = ({ studentId, existingForm }: Props) => {
 
     const handleSubmitLocal = (data: FieldValues) => {
         if (!isValid) return;
+        const { terms_acknowledged: _, ...formData } = data;
 
         if (existingForm) {
             updateForm.mutate({
                 ...existingForm,
-                ...data,
+                ...formData,
                 updated_at: new Date().toISOString(),
             } as StudentFormResponse);
         } else {
             addForm.mutate({
                 student_id: studentId,
-                ...data,
+                ...formData,
                 updated_at: new Date().toISOString(),
             } as StudentFormResponse);
         }

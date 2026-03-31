@@ -2,9 +2,11 @@ import {
     Alert,
     AlertIcon,
     Box,
+    Checkbox,
     FormControl,
     FormLabel,
     Input,
+    Link,
     Textarea,
     Radio,
     RadioGroup,
@@ -60,6 +62,7 @@ export const FIELD_TO_PAGE: Record<string, number> = {
     additional_info: 3,
     photo_permission: 3,
     referral_source: 3,
+    terms_acknowledged: 3,
 };
 
 const StudentFormEntryBody = ({
@@ -285,6 +288,45 @@ const StudentFormEntryBody = ({
                             </option>
                         ))}
                     </Select>
+                </FormControl>
+
+                <FormControl>
+                    <InputError
+                        label={errors.terms_acknowledged?.message}
+                        isOpen={!!errors.terms_acknowledged}
+                    >
+                        <Box>
+                            <Controller
+                                name="terms_acknowledged"
+                                control={control}
+                                render={({ field }) => (
+                                    <Checkbox
+                                        isChecked={!!field.value}
+                                        onChange={(e) => field.onChange(e.target.checked)}
+                                        isDisabled={isReadOnly}
+                                        alignItems="flex-start"
+                                        spacing={3}
+                                    >
+                                        <Text fontSize="sm">
+                                            By checking this box, I acknowledge that I have read,
+                                            understand, and agree to all{" "}
+                                            <Link
+                                                href="/terms-and-conditions#waiver"
+                                                color="brand.primary"
+                                                textDecoration="underline"
+                                                isExternal
+                                            >
+                                                terms
+                                            </Link>{" "}
+                                            outlined above, including the Waiver, Release of
+                                            Liability, Hold Harmless Agreement, Medical
+                                            Authorization, and Dispute Resolution.
+                                        </Text>
+                                    </Checkbox>
+                                )}
+                            />
+                        </Box>
+                    </InputError>
                 </FormControl>
             </>}
         </SimpleGrid>
