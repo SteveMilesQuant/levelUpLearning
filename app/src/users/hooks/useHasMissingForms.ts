@@ -8,8 +8,8 @@ import useUser from './useUser';
 
 const useHasMissingForms = (): boolean => {
     const { data: user } = useUser();
-    const { data: students } = useStudents();
-    const { data: forms } = useForms();
+    const { data: students } = useStudents(undefined, !user);
+    const { data: forms } = useForms(undefined, !user);
     const { data: pickupForm } = usePickupPersons();
     const isGuardian = user?.roles.includes("GUARDIAN");
     return !!(isGuardian && (

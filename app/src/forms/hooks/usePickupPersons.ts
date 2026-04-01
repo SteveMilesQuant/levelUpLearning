@@ -7,18 +7,22 @@ import {
     UserPickupFormResponse,
 } from "../PickupPersonsTypes";
 import ms from "ms";
+import useAuth from "../../users/hooks/useAuth";
 
 const STALE_TIME = ms("5m");
 
-const usePickupPersons = () =>
-    useQuery<UserPickupFormResponse, Error>({
+const usePickupPersons = () => {
+    const { signedIn } = useAuth();
+    return useQuery<UserPickupFormResponse, Error>({
         queryKey: CACHE_KEY_PICKUP_PERSONS,
         queryFn: () =>
             axiosInstance
                 .get<UserPickupFormResponse>("/pickup-persons")
                 .then((res) => res.data),
         staleTime: STALE_TIME,
+        enabled: signedIn,
     });
+};
 
 export const useUpdatePickupPersons = () => {
     const queryClient = useQueryClient();
