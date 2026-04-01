@@ -26,5 +26,7 @@ iam_policy.json
 util
 .vscode/*
 !.vscode/tasks.json
+!.vscode/mcp.json
 docker-compose.override.yml
 api/lul.env
+.mcp/virt

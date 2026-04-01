@@ -1,0 +1,14 @@
+{
+    "servers": {
+        "leveluplearning": {
+            "type": "stdio",
+            "command": "${workspaceFolder}/.mcp/virt/bin/python",
+            "args": [
+                "${workspaceFolder}/.mcp/server.py"
+            ],
+            "env": {
+                "WORKSPACE": "${workspaceFolder}"
+            }
+        }
+    }
+}
