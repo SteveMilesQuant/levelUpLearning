@@ -149,13 +149,13 @@ const PickupPersonsFormEntry = ({ pickupForm }: Props) => {
                             fontWeight="normal"
                             marginTop={1}
                         >
-                            List everyone authorized to pick up your children from camp.
+                            List everyone authorized to pick up your child(ren) from camp.
                         </Text>
                     </ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
                         <FormControl>
-                            <FormLabel>Authorized Pickup Persons *</FormLabel>
+                            <FormLabel>Authorized Pickup Persons</FormLabel>
                             {errors.pickup_persons?.root?.message && (
                                 <Text color="brand.danger" fontSize="sm" mb={2}>
                                     {errors.pickup_persons.root.message}

@@ -14,6 +14,7 @@ import {
     SimpleGrid,
     Stack,
     Text,
+    FormHelperText,
 } from "@chakra-ui/react";
 import { Control, Controller, FieldErrors, UseFormRegister, useWatch } from "react-hook-form";
 import InputError from "../../components/InputError";
@@ -27,7 +28,11 @@ const REFERRAL_OPTIONS = [
     "Google Ad",
     "Google Search",
     "Yard Sign",
-    "Other",
+    "Local Event",
+    "Instagram",
+    "Nextdoor",
+    "Fun 4 Raleigh Kids",
+    "Other...",
 ];
 
 const GRADE_OPTIONS = Array.from(Array(12).keys()).map((x) => x + 1);
@@ -138,7 +143,7 @@ const StudentFormEntryBody = ({
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel>Preferred Parent Email</FormLabel>
+                    <FormLabel>Parent Preferred Email</FormLabel>
                     <Input
                         {...register("parent_email")}
                         type="email"
@@ -241,13 +246,16 @@ const StudentFormEntryBody = ({
 
                 <FormControl>
                     <FormLabel>
-                        Photo Permission for Advertising Purposes *
+                        Photo Permission for Promotional Purposes *
                     </FormLabel>
+                    <FormHelperText mt={-2} mb={2} color="brand.text">
+                        As a small business, we share some camp moments to show other families the fun and engaging experiences we offer. Do you give permission for us to use photos of your child for promotional purposes?
+                    </FormHelperText>
                     <InputError
                         label={errors.photo_permission?.message}
                         isOpen={!!errors.photo_permission}
                     >
-                        <Box>
+                        <Box marginY={2}>
                             <Controller
                                 name="photo_permission"
                                 control={control}
@@ -263,7 +271,7 @@ const StudentFormEntryBody = ({
                                         }
                                         isDisabled={isReadOnly}
                                     >
-                                        <Stack direction="row" spacing={5}>
+                                        <Stack direction="column" spacing={2}>
                                             <Radio value="true">Yes, I give my permission</Radio>
                                             <Radio value="false">No, do not use my child's pictures</Radio>
                                         </Stack>
@@ -310,15 +318,15 @@ const StudentFormEntryBody = ({
                                         <Text fontSize="sm">
                                             By checking this box, I acknowledge that I have read,
                                             understand, and agree to all{" "}
+                                            terms outlined{" "}
                                             <Link
                                                 href="/terms-and-conditions#waiver"
                                                 color="brand.primary"
                                                 textDecoration="underline"
                                                 isExternal
                                             >
-                                                terms
-                                            </Link>{" "}
-                                            outlined above, including the Waiver, Release of
+                                                here
+                                            </Link>. Including the Waiver, Release of
                                             Liability, Hold Harmless Agreement, Medical
                                             Authorization, and Dispute Resolution.
                                         </Text>

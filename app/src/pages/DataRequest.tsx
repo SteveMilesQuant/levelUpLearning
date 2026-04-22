@@ -5,7 +5,7 @@ import { Text } from "@chakra-ui/react";
 const DataRequest = () => {
   return (
     <BodyContainer>
-      <PageHeader>Data requests</PageHeader>
+      <PageHeader>Data Requests</PageHeader>
       <Text>
         Please direct all requests for personal data via email to
         data-request@leveluplearningnc.com.

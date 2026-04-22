@@ -56,7 +56,10 @@ const Checkout = () => {
     setCoupons([]);
     setAlert({
       status: "success",
-      message: `Enrollment successful. You should be able to see the camps your students are enrolled in by viewing them in "My Students". You have been redirected to /forms - pleas ensure you fill out these forms before camp starts!`,
+      message: `Enrollment successful. You can see the camps your students are enrolled in by ` +
+        `viewing them in "My Students."\nYou have been redirected to the forms page. ` +
+        `You can complete the required forms now or return to this page later. All forms ` +
+        `must be completed before camp begins.`,
     });
     setIsLoadingPayment(false);
     navigate("/forms");

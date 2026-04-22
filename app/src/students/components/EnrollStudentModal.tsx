@@ -136,7 +136,10 @@ const EnrollStudentModal = ({
           </Stack>
         </ModalBody>
         <ModalFooter>
-          <HStack justifyContent="right">
+          <HStack justifyContent="right" spacing={4}>
+            <Text fontSize="lg">
+              Add to cart:
+            </Text>
             <IconButton
               icon={<MdAddShoppingCart size="2em" />}
               aria-label="Navigation"
