@@ -47,108 +47,80 @@ You won't need to do this for localhost deployment, but for the AWS deployments,
    - <code>docker push ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_app</code>
    - <code>docker push ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_api</code>
 
-## Localhost development deployment (Docker or npm/uvicorn)
+## New server setup
 
-If you want to develop this locally, you can have live runs from your localhost (http://localhost), which will be faster to refresh as you make changes. Note that you will get a console error from your browser ("WebSocket connection to 'ws://localhost/' failed") that you can ignore for now. I will fix that later.
+### Prerequisites
 
-1. Either way...
-   - Change directory to the git repo folder (i.e. that contains docker-compose.yml)
-   - Copy ./app/.env.template to ./app/.env and update the values with values you noted before, or have chosen, except for the following the following change.
-     - VITE_API_URL=http://localhost:3000/
-   - Copy ./api/.env.template to ./api/.env and update the values with values you noted before, or have chosen, except for the following the following change.
-     - Delete the line with "API_ROOT_PATH". You don't need to set this here.
-2. Option 1: as docker containers and open web page at http://localhost (slower turnover, but obviously easier)
-   - <code>docker-compose up --build -d</code>
-3. Option 2: using npm and uvicorn command lines and open web page at http://localhost:5173 (faster turnover for really active development)
-   - Run app (front end)
-     - Change directory to the app directory
-     - Install dependencies
-       - Install nodejs
-       - <code>npm install</code>
-     - Run the server: <code>npm run dev</code>
-   - Run api (back end; separate terminal)
-     - Change directory to the api directory
-     - Install dependencies
-       - Install python3 and pip
-     - (Optional, but recommended) create a virtual env for this project with the venv module
-       - <code>python3 -m venv virt</code>
-     - (if using a virtual env, do every login) <code>source virt/bin/activate</code>
-     - (only do once) <code>python3 -m pip install -r ./requirements.txt</code>
-     - Convert text in .env to environment variables
-       - <code>export $(grep -v '^#' .env | xargs)</code>
-       - Note that <code>source .env</code> will not work because it will not set the variables for subprocesses
-     - Run the server: <code>uvicorn main:app --port 3000</code>
+Before running the launch task, ensure the following are in place.
 
-## Single machine deployment (AWS EC2 and Docker)
+**`~/.ssh/lul.pem`** — EC2 key pair. In the AWS EC2 console, create a key pair named `lul` and save the downloaded `.pem` file to `~/.ssh/lul.pem`. Set permissions with `chmod 400 ~/.ssh/lul.pem`.
 
-If you want to get this website up and running on a single server (i.e. without scaling), this is an easy way to go before you get into Kubernetes.
-
-### Setup
-
-1. Create EC2 instance
-   - OS: Amazon Linux is easy to connect to via AWS's web-based interface and is free, but you're welcome to use what you want
-   - Instance type: t2.micro is free, to a certain degree
-   - Allow both HTTP and HTTPS traffic
-2. Install dependencies
-   - Install docker and nginx: <code>sudo yum install -y docker nginx</code>
-   - Start docker: <code>sudo service docker start</code>
-   - Be sure to also do the post-install steps you can find online for docker (add your user to the "docker" group, so you don't have to keep doing everything as "sudo")
-   - Additionally, install docker-compose, using steps you can Google
-3. Get SSL Certificates (one way is given here using certbot, but there are certainly a lot of ways to do this)
-   - First, ensure your domain points to the IP address of this machine. See the "Get a domain" task in section "Common set up" above. Certbot will ping that address and expects to reach itself running on your server.
-   - Second, ensure nginx is down for the time being: <code>sudo service nginx stop</code>. Nginx will get in the way of the communication certbot is trying to do.
-   - Pull down the certbot docker image, run it to generate the certificates, and copy them to the target location. (Replace <code>\<your-domain\></code> and <code>\<your-email\></code> in the block below)
+**`./api/.env.prod`** — Production environment file. This is copied to the EC2 instance at launch time. Create it with the following values:
 
 ```
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-LETSENCRYPT_VOLUME_DIR=$DIR/letsencrypt
-DOMAIN="<your-domain>.com"
-EMAIL="<your-email>"
-docker run \
-   --rm \
-   --name certbot \
-   -p 80:80 \
-   -p 443:443 \
-   -v "$LETSENCRYPT_VOLUME_DIR:/etc/letsencrypt" \
-   certbot/certbot \
-   certonly \
-   -d $DOMAIN \
-   --standalone \
-   --email=$EMAIL \
-   --agree-tos \
-   --no-eff-email
-sudo cp --recursive --dereference $DIR/letsencrypt/live/$DOMAIN /usr/local/nginx/conf
-sudo chown $USER:$USER --recursive /usr/local/nginx/conf/$DOMAIN
+DB_USER=
+DB_PASSWORD=
+DB_HOST=
+DB_PORT=
+DB_SCHEMA_NAME=
+SECRET_KEY=                  # any long random string used to sign JWTs
+GOOGLE_CLIENT_ID=            # from Google OAuth setup (see Common set up step 3)
+GOOGLE_CLIENT_SECRET=        # from Google OAuth setup
+SQUARE_ACCESS_TOKEN=         # from your Square developer dashboard
+SQUARE_ENVIRONMENT=          # production or sandbox
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASSWORD=
+CONFIRMATION_EMAIL_SENDER=   # from-address for enrollment confirmation emails
+API_ROOT_PATH=/api
 ```
 
-4. Configure nginx to route traffic
-   - Open /etc/nginx/nginx.conf in a text editor (e.g. <code>sudo vi /etc/nginx/nginx.conf</code>)
-     - It should have a line with <code>include /etc/nginx/conf.d/\*.conf;</code>
-     - If it also has a server specification below that, comment it out or delete it
-   - Copy the template server configuration to the nginx location we set up
-     - <code>sudo cp ~/levelUpLearning/nginx/lul_nginx_ec2.conf.template /etc/nginx/conf.d/lul_nginx_ec2.conf</code>
-     - This step may require that you pull down the git repo, which requires you to install git. Since this is the only step that requires the git repo, you may wish to just type/copy it in instead
-   - Update /etc/nginx/conf.d/lul_nginx_ec2.conf to refer to your domain and ssl certificates
-     - <code>sudo vi /etc/nginx/conf.d/lul_nginx_ec2.conf</code>
-     - Type <code>:%s/\<your-domain\>/</code> then followed by your domain name (e.g. <code>:%s/\<your-domain\>/stevenmilesquant</code>)
-   - Restart nginx: <code>sudo service nginx restart</code>
+**`.vscode/settings.json`** — VS Code settings consumed by the tasks. Create this file in the `.vscode/` folder with the following keys (the launch task will automatically populate `awsEc2InstanceId` and `awsEc2InstanceIPAddress` after launch):
 
-### Build the docker images and push up to AWS ECR
+```json
+{
+  "awsSecurityGroupId": "<EC2 security group ID from AWS console>",
+  "gitHubOwner":        "<your GitHub username or org>",
+  "gitHubRepo":         "<repository name>",
+  "gitHubPat":          "<GitHub Personal Access Token>"
+}
+```
 
-Follow the steps in the secion above on this topic, if you haven't already. Be sure to do this on your build machine (e.g. on Ubuntu), not on you AWS EC2 instance. The build can blow out the heap on these lightweight servers.
+For the PAT: generate a **classic** token at https://github.com/settings/tokens with the **`repo` scope**. This is used to obtain a runner registration token from the GitHub API.
 
-### Pull down the images and run the docker containers
+**GitHub Actions secrets** — Set the following under your repository's Settings → Secrets and variables → Actions:
 
-From your deployment server (e.g. AWS EC2 instance)...
+| Secret | Description |
+|---|---|
+| `AWS_ACCESS_KEY_ID` | AWS IAM access key with EC2 and ECR permissions |
+| `AWS_SECRET_ACCESS_KEY` | Corresponding secret |
+| `ECR_REGISTRY` | ECR registry host, e.g. `############.dkr.ecr.us-east-2.amazonaws.com` |
+| `ECR_REPOSITORY` | ECR repository name |
 
-1. Configure login to ECR
-   - <code>aws configure</code>
-   - <code>aws ecr get-login-password | docker login -u AWS --password-stdin https://############.dkr.ecr.us-east-1.amazonaws.com</code>
-2. Pull down the images from the ECR repo
-   - <code>docker pull ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_app</code>
-   - <code>docker pull ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_api</code>
-   - Note that the names "leveluplearning_app" and "leveluplearning_api" were automatically generated by docker-compose on your build machine using the name of the directory containing your docker-compose.yml file (e.g. "levelUpLearning")
-3. Copy api/.env.template (from the git repo) to ~/lul.env and update the values with values you noted before, or have chosen. No need to do this for the app, since those values were absorbed during the build phase.
-4. Run the containers
-   - <code>docker run -d --name lul-app -p 8080:8080 ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_app</code>
-   - <code>docker run -d --env-file ~/lul.env --name lul-api -p 3000:3000 ############.dkr.ecr.us-east-1.amazonaws.com/lul-docker-repo:leveluplearning_api</code>
+### Steps
+
+1. **Run the "Launch EC2" task** (Terminal → Run Task → Launch EC2). This script:
+   - Launches a new Ubuntu t3.micro instance in `us-east-2` with a 30 GB gp3 volume using the key pair `lul`
+   - Waits until both system and instance health checks pass
+   - Copies `./api/.env.prod` and the `./scripts/` directory to the instance
+   - Downloads and configures a GitHub Actions self-hosted runner on the instance, labeled `new-runner`, running as a systemd service
+   - Writes the new instance ID and public IP back to `.vscode/settings.json` automatically (`awsEc2InstanceId` and `awsEc2InstanceIPAddress`)
+
+2. **Run the "New Server Setup" workflow** (GitHub → Actions → New Server Setup → Run workflow). This targets the `new-runner` and:
+   - Installs system packages (`unzip`, `curl`), AWS CLI, Docker, and nginx
+   - Copies the nginx configuration files from `./scripts/` (`nginx.conf` and `lul_nginx_ec2.conf`) to the correct system paths
+   - Adds a weekly cronjob (`0 19 * * 0`) to run the SSL certificate health check script. **IMPORTANT** Check that this worked with `crontab -l` on that machine - it can quietly fail.
+   - Pulls the latest Docker images from ECR and starts the app and API containers (ports 8080 and 3000 respectively)
+
+3. **Update Route 53**: In the AWS console, update the A record for your domain to point to the new EC2 instance's public IP address. This value is written automatically to `.vscode/settings.json` as `awsEc2InstanceIPAddress` by the launch task.
+
+4. **Relabel the GitHub Actions runner**: Go to your repository's Settings → Actions → Runners, find the runner for the new instance, and change its label from `new-runner` to `active-deployment`. This is required for the post-routing workflow and for all future CI/CD deployments. Likewise remove `active-deployment` from your old EC2.
+
+5. **Run the "Post-routing steps" workflow** (GitHub → Actions → Post-routing steps → Run workflow). This targets the `active-deployment` runner and:
+   - Stops nginx temporarily
+   - Runs certbot in standalone mode to obtain an SSL certificate from Let's Encrypt for your domain
+   - Copies the certificate to `/usr/local/nginx/conf/<domain>/`
+   - Restarts nginx with HTTPS enabled
+
+The server is now fully operational with HTTPS.

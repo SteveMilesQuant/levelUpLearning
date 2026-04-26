@@ -6,7 +6,7 @@ REG_TOKEN=$(curl -s -X POST \
   | jq -r .token)
 echo REG_TOKEN=$REG_TOKEN
 
-ssh -o StrictHostKeyChecking=no -i ~/.ssh/lul.pem ec2-user@$IP_ADDRESS "REG_TOKEN=$REG_TOKEN bash -s" <<'EOF'
+ssh -o StrictHostKeyChecking=no -i ~/.ssh/lul.pem ubuntu@$IP_ADDRESS "REG_TOKEN=$REG_TOKEN bash -s" <<'EOF'
 ./actions-runner/config.sh remove --token $REG_TOKEN
 EOF
 
