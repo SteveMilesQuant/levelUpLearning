@@ -3,7 +3,16 @@ REGION=us-east-2
 AMI_ID=ami-0f5fcdfbd140e4ab7
 
 
-INSTANCE_ID=$(aws ec2 run-instances --image-id "$AMI_ID" --count 1 --instance-type t3.micro --key-name lul --security-group-ids "$SEC_GROUP_ID" --region $REGION --query "Instances[0].InstanceId" --output text)
+INSTANCE_ID=$(aws ec2 run-instances \
+  --image-id "$AMI_ID" \
+  --count 1 \
+  --instance-type t3.micro \
+  --key-name lul \
+  --security-group-ids "$SEC_GROUP_ID" \
+  --region $REGION \
+  --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":30,"VolumeType":"gp3","DeleteOnTermination":true}}]' \
+  --query "Instances[0].InstanceId" \
+  --output text)
 echo "INSTANCE_ID=$INSTANCE_ID"
 jq --arg id "$INSTANCE_ID" '.awsEc2InstanceId = $id' .vscode/settings.json > .vscode/settings.tmp && mv .vscode/settings.tmp .vscode/settings.json
 
@@ -16,6 +25,7 @@ REG_TOKEN=$(curl -s -X POST \
   -H "Accept: application/vnd.github+json" \
   https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/actions/runners/registration-token \
   | jq -r .token)
+echo REG_TOKEN=$REG_TOKEN
 
 while true; do
   SYS_STATUS=$(aws ec2 describe-instance-status \
